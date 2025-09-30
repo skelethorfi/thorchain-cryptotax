@@ -16,6 +16,7 @@
     "@xchainjs/xchain-thornode": "^1.0.3",
     "@xchainjs/xchain-util": "^2.0.3",
     "axios-request-throttle": "^1.0.0",
+    "axios": "^1.12.2",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.1",
     "fs-extra": "^10.1.0",
