@@ -5,6 +5,7 @@ import {format} from 'date-fns-tz';
 import {CryptoTaxTransaction, writeCsv} from "../cryptotax";
 import {MidgardService} from "../cryptotax-thorchain/MidgardService";
 import {ThornodeService} from "../cryptotax-thorchain/ThornodeService";
+import {MayaMidgardService} from "../cryptotax-thorchain/MayaMidgardService";
 import {Action, ActionStatusEnum, ActionTypeEnum} from "@xchainjs/xchain-midgard";
 import {ITaxConfig} from "./ITaxConfig";
 import {Reporter} from "./Reporter";
@@ -22,6 +23,7 @@ export class Exporter {
     viewblock: Viewblock;
     midgard: MidgardService;
     thornode: ThornodeService;
+    mayamidgard: MayaMidgardService;
     report: Reporter;
 
     constructor(filename: string, cachePath: string) {
@@ -29,6 +31,7 @@ export class Exporter {
         this.viewblock = new Viewblock(path.join(cachePath, 'viewblock'));
         this.midgard = new MidgardService(path.join(cachePath, 'midgard'));
         this.thornode = new ThornodeService(path.join(cachePath, 'thornode'));
+        this.mayamidgard = new MayaMidgardService(path.join(cachePath, 'mayamidgard'));
         this.report = new Reporter();
     }
 
@@ -69,6 +72,11 @@ export class Exporter {
 
         // Get Midgard actions
         let actions: Action[] = await this.midgard.getActions(wallet.address);
+
+        // Get Maya Midgard actions
+        let mayaActions: Action[] = await this.mayamidgard.getActions(wallet.address);
+
+        actions = [...actions, ...mayaActions];
 
         actions = this.excludeNonSuccess(actions);
 
