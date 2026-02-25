@@ -1,5 +1,8 @@
 
-export const TypeMsgSend = '/types.MsgSend';
+export const TypeMsgSends = [
+    '/cosmos.bank.v1beta1.MsgSend',
+    '/types.MsgSend'
+]
 
 export interface ViewblockTxV2 {
     blockIndex: number;
@@ -26,7 +29,7 @@ export interface ViewblockTxV2 {
 }
 
 export interface ViewblockMsg {
-    "@type": string;      // "/types.MsgSend"
+    "@type": string;      // see TypeMsgSends array for possibilities
     from_address: string;
     to_address: string;
     amount: {
