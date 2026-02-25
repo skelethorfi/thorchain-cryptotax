@@ -1,7 +1,7 @@
 import {ViewblockEvent, ViewblockEventSend, ViewblockTx} from "../viewblock";
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from "../cryptotax";
 import assert from "assert";
-import {TypeMsgSend, ViewblockMsg, ViewblockTxV2} from "../viewblock";
+import {TypeMsgSends, ViewblockMsg, ViewblockTxV2} from "../viewblock";
 
 // 0.02 RUNE
 const DEFAULT_RUNE_GAS = '2000000';
@@ -42,7 +42,7 @@ export class BaseMapper implements IThorchainMapper {
 
         // mapping new tx format to old format
 
-        const msgs = this.tx.msgs.filter(msg => msg['@type'] === TypeMsgSend);
+        const msgs = this.tx.msgs.filter(msg => TypeMsgSends.includes(msg['@type']));
         assert.equal(msgs.length, 1);
 
         const msg: ViewblockMsg = msgs[0];
