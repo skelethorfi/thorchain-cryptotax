@@ -20,7 +20,7 @@ export class ThornameMapper implements Mapper {
 
         const input: Transaction = action.in[0];
         const thornameMetadata = (action as any).metadata?.thorname;
-        const walletAddress = input.address || thornameMetadata?.owner || thornameMetadata?.address || '';
+        const walletAddress = input.address || thornameMetadata?.owner || '';
         const txId = input.txID ?? '';
         const numCoins = input.coins.length;
 
