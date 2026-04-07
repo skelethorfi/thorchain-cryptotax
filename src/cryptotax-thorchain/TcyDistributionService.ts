@@ -1,13 +1,11 @@
-import {Cache} from "../cache/Cache";
-import {register9Rheader} from '@xchainjs/xchain-util';
-import axios from "axios";
+import { Cache } from '../cache/Cache';
+import axios from 'axios';
 import axiosThrottle from 'axios-request-throttle';
+import { API_URLS } from '../config/apiUrls';
 
-const MIDGARD_API_9R_V2_URL = 'https://midgard.ninerealms.com/v2';
+const MIDGARD_API_URL = API_URLS.midgard;
 
 axiosThrottle.use(axios, { requestsPerSecond: 1 });
-
-register9Rheader(axios);
 
 // Interface for TCY distribution item
 export interface TcyDistributionItem {
@@ -51,7 +49,7 @@ export class TcyDistributionService {
 
     constructor(cachePath: string = '_cache') {
         this.cache = new Cache(cachePath);
-        this.baseUrl = MIDGARD_API_9R_V2_URL;
+        this.baseUrl = MIDGARD_API_URL;
     }
 
     async getTcyDistribution(address: string): Promise<TcyDistribution> {
@@ -61,7 +59,7 @@ export class TcyDistributionService {
             return this.cache.read(cacheKey);
         }
 
-        const url = `${this.baseUrl}/tcy/distribution/${address}`;
+        const url = `${this.baseUrl}/v2/tcy/distribution/${address}`;
         const response = await axios.get(url);
         const data: TcyDistribution = response.data;
 

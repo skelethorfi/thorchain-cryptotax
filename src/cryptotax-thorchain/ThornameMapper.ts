@@ -19,19 +19,21 @@ export class ThornameMapper implements Mapper {
         const transactions: CryptoTaxTransaction[] = [];
 
         const input: Transaction = action.in[0];
+        const thornameMetadata = (action as any).metadata?.thorname;
+        const walletAddress = input.address || thornameMetadata?.owner || thornameMetadata?.address || '';
         const txId = input.txID ?? '';
         const numCoins = input.coins.length;
 
         if (numCoins === 0) {
             transactions.push({
-                walletExchange: input.address,
+                walletExchange: walletAddress,
                 timestamp,
                 type: CryptoTaxTransactionType.Expense,
                 baseCurrency: '',
                 baseAmount: '',
                 feeCurrency: 'RUNE',
                 feeAmount: baseToAssetAmountString(DEFAULT_RUNE_GAS),
-                from: input.address,
+                from: walletAddress,
                 to: 'thorchain',
                 blockchain: 'THOR',
                 id: `${idPrefix}.thorname`,
@@ -42,14 +44,14 @@ export class ThornameMapper implements Mapper {
             const amount = baseToAssetAmountString(inputCoin.amount);
 
             transactions.push({
-                walletExchange: input.address,
+                walletExchange: walletAddress,
                 timestamp,
                 type: CryptoTaxTransactionType.Expense,
                 baseCurrency: 'RUNE',
                 baseAmount: amount,
                 feeCurrency: 'RUNE',
                 feeAmount: baseToAssetAmountString(DEFAULT_RUNE_GAS),
-                from: input.address,
+                from: walletAddress,
                 to: 'thorchain',
                 blockchain: 'THOR',
                 id: `${idPrefix}.thorname`,

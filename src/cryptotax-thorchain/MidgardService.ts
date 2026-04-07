@@ -1,9 +1,9 @@
 import {Cache} from "../cache/Cache";
-import {Action, Configuration, MIDGARD_API_9R_URL, MidgardApi} from '@xchainjs/xchain-midgard';
+import {Action, Configuration, MidgardApi} from '@xchainjs/xchain-midgard';
 import assert from "assert";
-import {register9Rheader} from '@xchainjs/xchain-util';
 import axios from "axios";
 import axiosThrottle from 'axios-request-throttle';
+import {API_URLS} from "../config/apiUrls";
 
 axiosThrottle.use(axios, { requestsPerSecond: 1 });
 
@@ -14,9 +14,7 @@ axiosThrottle.use(axios, { requestsPerSecond: 1 });
 // NOTE:
 // can load balance between 2 like web3tax
 // MIDGARD_URL_A: "https://midgard.thorchain.info/v2/actions?limit=50&address={WALLETS}&offset={OFFSET}"
-// MIDGARD_URL_B: "https://midgard.ninerealms.com/v2/actions?limit=50&address={WALLETS}&offset={OFFSET}"
-
-register9Rheader(axios);
+// MIDGARD_URL_B: "https://midgard.thorswap.net/v2/actions?limit=50&address={WALLETS}&offset={OFFSET}"
 
 export class MidgardService {
     cache: Cache;
@@ -24,7 +22,7 @@ export class MidgardService {
 
     constructor(cachePath: string = '_cache') {
         this.cache = new Cache(cachePath);
-        const apiConfig = new Configuration({ basePath: MIDGARD_API_9R_URL });
+        const apiConfig = new Configuration({ basePath: API_URLS.midgard });
         this.api = new MidgardApi(apiConfig);
     }
 

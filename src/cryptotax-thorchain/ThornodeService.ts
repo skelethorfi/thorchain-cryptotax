@@ -1,16 +1,12 @@
-import {THORNODE_API_9R_URL, Configuration, TransactionsApi, TxStatusResponse} from "@xchainjs/xchain-thornode";
-import {register9Rheader} from "@xchainjs/xchain-util"
+import {Configuration, TransactionsApi, TxStatusResponse} from "@xchainjs/xchain-thornode";
 import axios from "axios";
 import axiosThrottle from 'axios-request-throttle';
 import {Cache} from "../cache/Cache";
+import {API_URLS} from "../config/apiUrls";
 
 // Seems like not all transactions may be on the latest API URL
 // Following how THORChain Explorer handles it - https://github.com/thorchain/thorchain-explorer-v2/blob/main/api/thornode.api.js
-const THORNODE_API_ARCHIVE_URL = 'https://thornode-v1.ninerealms.com/';
-
 axiosThrottle.use(axios, { requestsPerSecond: 1 });
-
-register9Rheader(axios);
 
 export class ThornodeService {
     cache: Cache;
@@ -29,7 +25,7 @@ export class ThornodeService {
         // The response will not be cached if it's missing the transaction data.
         this.cache = new Cache(cachePath);
 
-        const apiUrl = isArchive ? THORNODE_API_ARCHIVE_URL : THORNODE_API_9R_URL;
+        const apiUrl = isArchive ? API_URLS.thornodeArchive : API_URLS.thornode;
         const apiConfig = new Configuration({basePath: apiUrl});
         this.api = new TransactionsApi(apiConfig);
 
