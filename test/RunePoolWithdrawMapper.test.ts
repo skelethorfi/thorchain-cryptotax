@@ -21,7 +21,7 @@ describe('RunePoolWithdrawMapper', () => {
             baseAmount: '190',
             from: 'thor1-user-wallet-11111',
             to: 'thorchain',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: '2020-12-31T13:00:00.000Z.return-lp-token',
             description: '1/2 - Return LP token to RUNEPool; 0000000000000000000000000000000000000000000000000000000000000000',
         });
@@ -34,7 +34,7 @@ describe('RunePoolWithdrawMapper', () => {
             baseAmount: '220',
             from: 'thorchain',
             to: 'thor1-user-wallet-11111',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: '2020-12-31T13:00:00.000Z.remove-liquidity',
             description: '2/2 - Withdraw 220 RUNE from RUNEPool; 0000000000000000000000000000000000000000000000000000000000000000',
         });

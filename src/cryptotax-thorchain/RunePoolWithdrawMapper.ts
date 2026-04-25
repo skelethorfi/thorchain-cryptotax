@@ -37,7 +37,7 @@ export class RunePoolWithdrawMapper implements Mapper {
             baseAmount: liquidityUnits,
             from: output.address,
             to: 'thorchain',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: `${idPrefix}.return-lp-token`,
             description: `1/2 - Return LP token to ${poolName}; ${txId}`,
         });
@@ -52,7 +52,7 @@ export class RunePoolWithdrawMapper implements Mapper {
             baseAmount: amount,
             from: 'thorchain',
             to: output.address,
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: `${idPrefix}.remove-liquidity`,
             description: `2/2 - Withdraw ${amount} RUNE from ${poolName}; ${txId}`,
         });

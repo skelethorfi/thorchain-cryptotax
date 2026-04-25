@@ -25,7 +25,7 @@ export class TcyDistributionMapper {
             baseAmount: amount,
             from: 'thorchain',
             to: this.walletAddress,
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             description: `1/1 - Received ${amount} RUNE from TCY staking`,
             id: `${idPrefix}.staking`,
             referencePricePerUnit: price,

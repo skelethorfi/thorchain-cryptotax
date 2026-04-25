@@ -33,7 +33,7 @@ export class ThornameMapper implements Mapper {
                 feeAmount: baseToAssetAmountString(getDefaultRuneGas()),
                 from: walletAddress,
                 to: 'thorchain',
-                blockchain: 'THOR',
+                blockchain: 'THORChain',
                 id: `${idPrefix}.thorname`,
                 description: `1/1 - Update Thorname; ${txId}`,
             });
@@ -51,7 +51,7 @@ export class ThornameMapper implements Mapper {
                 feeAmount: baseToAssetAmountString(getDefaultRuneGas()),
                 from: walletAddress,
                 to: 'thorchain',
-                blockchain: 'THOR',
+                blockchain: 'THORChain',
                 id: `${idPrefix}.thorname`,
                 description: `1/1 - Register/fund Thorname with ${amount} RUNE; ${txId}`,
             });

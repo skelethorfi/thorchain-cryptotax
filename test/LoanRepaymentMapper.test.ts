@@ -43,7 +43,7 @@ describe('LoanRepaymentMapper', () => {
             feeAmount: '0.000001',
             from: 'thor1-user-wallet-11111',
             to: 'thorchain',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: '2020-12-31T13:00:00.000Z.loan-repayment',
             description: '1/2 - LoanRepayment deposit RUNE to repay BTC loan. Closed loan; ' +
                 '0000000000000000000000000000000000000000000000000000000000000000'

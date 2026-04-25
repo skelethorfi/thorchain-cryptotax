@@ -21,7 +21,7 @@ describe('RunePoolDepositMapper', () => {
             baseAmount: '200',
             from: 'thor1-user-wallet-11111',
             to: 'thorchain',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: '2020-12-31T13:00:00.000Z.add-liquidity',
             description: '1/2 - Deposit 200 RUNE to RUNEPool; 0000000000000000000000000000000000000000000000000000000000000000',
         });
@@ -34,7 +34,7 @@ describe('RunePoolDepositMapper', () => {
             baseAmount: '190',
             from: 'thorchain',
             to: 'thor1-user-wallet-11111',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: '2020-12-31T13:00:00.000Z.receive-lp-token',
             description: '2/2 - Receive LP token from RUNEPool; 0000000000000000000000000000000000000000000000000000000000000000',
         });

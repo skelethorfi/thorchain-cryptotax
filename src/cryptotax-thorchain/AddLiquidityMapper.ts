@@ -138,7 +138,7 @@ export class AddLiquidityMapper implements Mapper {
             baseAmount: liquidityUnits,
             from: 'thorchain',
             to: lpTokenReceivingAddress,
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: `${idPrefix}.receive-lp-token`,
             description: `${currentTxNum}/${totalTxs} - Receive LP token from ${poolName} (${symmDesc}); ${txId}`,
             ...referencePrice

@@ -32,7 +32,7 @@ export class BondMapper implements Mapper {
             feeAmount: baseToAssetAmountString(getDefaultRuneGas()),
             from: input.address,
             to: 'thorchain',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: `${idPrefix}.bond`,
             description: `1/1 - Bond ${amount} RUNE to ${nodeAddress}; ${txId}`,
         });

@@ -37,7 +37,7 @@ export class RunePoolDepositMapper implements Mapper {
             baseAmount: amount,
             from: input.address,
             to: 'thorchain',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: `${idPrefix}.add-liquidity`,
             description: `1/2 - Deposit ${amount} RUNE to ${poolName}; ${txId}`,
         });
@@ -52,7 +52,7 @@ export class RunePoolDepositMapper implements Mapper {
             baseAmount: liquidityUnits,
             from: 'thorchain',
             to: input.address,
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: `${idPrefix}.receive-lp-token`,
             description: `2/2 - Receive LP token from ${poolName}; ${txId}`,
         });

@@ -23,7 +23,7 @@ describe('BondMapper', () => {
             feeAmount: '0.02',
             from: 'thor1-user-wallet-11111',
             to: 'thorchain',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: '2020-12-31T13:00:00.000Z.bond',
             description: '1/1 - Bond 1 RUNE to thor1-node-address; 0000000000000000000000000000000000000000000000000000000000000000',
         });

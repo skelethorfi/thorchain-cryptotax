@@ -38,7 +38,7 @@ export class RujiraMergeDepositMapper implements Mapper {
             baseAmount: amount,
             from: input.address,
             to: 'thorchain',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: `${idPrefix}.rujira-merge-deposit`,
             description: `1/1 - wasm-rujira-merge/deposit ${amount} ${asset}; ${txId}`,
         });

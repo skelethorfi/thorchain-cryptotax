@@ -21,7 +21,7 @@ describe('TcyStakeMapper', () => {
             baseAmount: '9999.5555',
             from: 'thor1-user-wallet-11111',
             to: 'thorchain',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: '2020-12-31T13:00:00.000Z.tcy_stake',
             description: '1/1 - Stake 9999.5555 TCY; 0000000000000000000000000000000000000000000000000000000000000000',
         });

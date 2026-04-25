@@ -29,7 +29,7 @@ export class TcyClaimMapper implements Mapper {
             baseAmount: amount,
             from: 'thorchain',
             to: output.address,
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: `${idPrefix}.tcy_claim`,
             description: `1/1 - Claim ${amount} TCY for address ${input.address}; ${txId}`,
         });

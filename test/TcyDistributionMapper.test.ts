@@ -19,7 +19,7 @@ describe("TcyDistributionMapper", () => {
             baseAmount: '1.23456',
             from: 'thorchain',
             to: 'thor1-user-wallet-11111',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             description: '1/1 - Received 1.23456 RUNE from TCY staking',
             id: '2020-12-31T13:00:00.000Z.staking',
             referencePricePerUnit: '1.23456789',

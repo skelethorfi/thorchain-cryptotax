@@ -5,6 +5,7 @@ import {parseMidgardAsset, parseMidgardDate} from "./MidgardUtils";
 import {baseToAssetAmountString} from "../utils/Amount";
 import {isEmpty} from "lodash";
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
+import {formatBlockchainForOutput} from "./ThorchainUtils";
 
 // https://dev.thorchain.org/concepts/memos.html#open-loan
 const LOANOPEN_DESTADDR = 2;
@@ -80,7 +81,7 @@ export class LoanOpenMapper implements Mapper {
             ...liquidityFee,
             from: inputAddress,
             to: 'thorchain',
-            blockchain: inputBlockchain,
+            blockchain: formatBlockchainForOutput(inputBlockchain),
             id: `${idPrefix}.collateral-deposit`,
             description: `1/2 - LoanOpen deposit ${inputCurrency} to borrow ${outputCurrency}; ${txId}`,
         });
@@ -97,7 +98,7 @@ export class LoanOpenMapper implements Mapper {
             ...(!isEmpty(affiliateFee) ? affiliateFee : networkFee),
             from: 'thorchain',
             to: output.address,
-            blockchain: outputBlockchain,
+            blockchain: formatBlockchainForOutput(outputBlockchain),
             id: `${idPrefix}.loan`,
             description: `2/2 - LoanOpen deposit ${inputCurrency} to borrow ${outputCurrency}; ${txId}`,
         });

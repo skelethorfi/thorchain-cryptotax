@@ -23,7 +23,7 @@ describe('ThornameMapper', () => {
             feeAmount: '0.02',
             from: 'thor1-user-wallet-11111',
             to: 'thorchain',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: '2020-12-31T13:00:00.000Z.thorname',
             description: '1/1 - Register/fund Thorname with 50 RUNE; 0000000000000000000000000000000000000000000000000000000000000000',
         });
@@ -49,7 +49,7 @@ describe('ThornameMapper', () => {
             feeAmount: '0.02',
             from: 'thor1-user-wallet-11111',
             to: 'thorchain',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: '2020-12-31T13:00:00.000Z.thorname',
             description: '1/1 - Update Thorname; 0000000000000000000000000000000000000000000000000000000000000000',
         });
@@ -77,7 +77,7 @@ describe('ThornameMapper', () => {
             feeAmount: '0.02',
             from: 'thor1-owner-fallback-22222',
             to: 'thorchain',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: '2020-12-31T13:00:00.000Z.thorname',
             description: '1/1 - Update Thorname; ',
         });

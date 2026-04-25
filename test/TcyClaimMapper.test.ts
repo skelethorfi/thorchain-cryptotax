@@ -21,7 +21,7 @@ describe('TcyClaimMapper', () => {
             baseAmount: '9999.5555',
             from: 'thorchain',
             to: 'thor1-user-wallet-11111',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: '2020-12-31T13:00:00.000Z.tcy_claim',
             description: '1/1 - Claim 9999.5555 TCY for address bc1-user-wallet-11111; 0000000000000000000000000000000000000000000000000000000000000000',
         });

@@ -15,6 +15,7 @@ import {
 import { baseToAssetAmountString } from '../utils/Amount';
 import { Mapper } from './Mapper';
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
+import { formatBlockchainForOutput } from './ThorchainUtils';
 
 export class RefundMapper implements Mapper {
     toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = []): CryptoTaxTransaction[] {
@@ -47,7 +48,7 @@ export class RefundMapper implements Mapper {
             feeCurrency,
             feeAmount,
             from: input.address,
-            blockchain: inputBlockchain,
+            blockchain: formatBlockchainForOutput(inputBlockchain),
             id: `${idPrefix}.refund`,
             description: `refund (${txId}): ${reason}`,
         });

@@ -26,7 +26,7 @@ export class TcyUnstakeMapper implements Mapper {
             baseAmount: amount,
             from: 'thorchain',
             to: output.address,
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: `${idPrefix}.tcy_unstake`,
             description: `1/1 - Unstake ${amount} TCY; ${txId}`,
         });

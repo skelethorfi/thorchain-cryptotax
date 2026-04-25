@@ -21,7 +21,7 @@ describe('RujiraMergeDepositMapper', () => {
             baseAmount: '100',
             from: 'thor1-user-wallet-11111',
             to: 'thorchain',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: '2020-12-31T13:00:00.000Z.rujira-merge-deposit',
             description: '1/1 - wasm-rujira-merge/deposit 100 THOR.KUJI; 0000000000000000000000000000000000000000000000000000000000000000',
         });

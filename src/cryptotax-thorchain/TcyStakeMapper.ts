@@ -26,7 +26,7 @@ export class TcyStakeMapper implements Mapper {
             baseAmount: amount,
             from: input.address,
             to: 'thorchain',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: `${idPrefix}.tcy_stake`,
             description: `1/1 - Stake ${amount} TCY; ${txId}`,
         });

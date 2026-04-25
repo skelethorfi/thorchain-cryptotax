@@ -145,7 +145,7 @@ export class WithdrawMapper implements Mapper {
             baseAmount: liquidityUnits,
             from: action.in[0].address,
             to: 'thorchain',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: `${idPrefix}.return-lp-token`,
             description: `${currentTxNum}/${totalTxs} - Return LP token to ${poolName} (${symmDesc}); ${txId}`,
             ...referencePrice

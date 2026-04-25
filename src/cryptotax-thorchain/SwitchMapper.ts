@@ -10,6 +10,7 @@ import {
 import { baseToAssetAmountString } from '../utils/Amount';
 import { Mapper } from './Mapper';
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
+import { formatBlockchainForOutput } from './ThorchainUtils';
 
 // Switch is used to migrate an asset from one chain to another.
 // e.g. BNB.RUNE to THOR.RUNE, or GAIA.KUJI to THOR.KUJI
@@ -69,7 +70,7 @@ export class SwitchMapper implements Mapper {
             feeAmount,
             from: input.address,
             to: output.address,
-            blockchain: inputBlockchain,
+            blockchain: formatBlockchainForOutput(inputBlockchain),
             id: `${idPrefix}.bridge-out`,
             description: `1/2 - Switch ${inputBlockchain}.${inputCurrency} to ${outputBlockchain}.${outputCurrency} (send ${inputBlockchain}.${inputCurrency}); ${txId}`,
         });
@@ -84,7 +85,7 @@ export class SwitchMapper implements Mapper {
             baseAmount: baseToAssetAmountString(outputCoin.amount),
             from: input.address,
             to: output.address,
-            blockchain: outputBlockchain,
+            blockchain: formatBlockchainForOutput(outputBlockchain),
             id: `${idPrefix}.bridge-in`,
             description: `2/2 - Switch ${inputBlockchain}.${inputCurrency} to ${outputBlockchain}.${outputCurrency} (receive ${outputBlockchain}.${outputCurrency}); ${txId}`,
         });

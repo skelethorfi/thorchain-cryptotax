@@ -4,7 +4,7 @@ import { parseMidgardAsset } from './MidgardUtils';
 import { baseToAssetAmountString } from '../utils/Amount';
 import { TxStatusResponse } from '@xchainjs/xchain-thornode';
 import { BaseMapper } from './BaseMapper';
-import { getDefaultRuneGas } from './ThorchainUtils';
+import { formatBlockchainForOutput, getDefaultRuneGas } from './ThorchainUtils';
 
 // https://dev.thorchain.org/concepts/memos.html#swap
 const SWAP_DESTADDR = 2;
@@ -104,7 +104,7 @@ export class SwapMapper extends BaseMapper {
             feeAmount,
             from: input.address,
             to: 'thorchain',
-            blockchain: inputBlockchain,
+            blockchain: formatBlockchainForOutput(inputBlockchain),
             referencePricePerUnit: inputPriceUSD || undefined,
             referencePriceCurrency: inputPriceUSD ? 'USD' : undefined,
             id: `${this.idPrefix}.thorchain.bridge-trade-out`,
@@ -123,7 +123,7 @@ export class SwapMapper extends BaseMapper {
             baseAmount: outputAmount,
             from: 'thorchain',
             to: output.address,
-            blockchain: outputBlockchain,
+            blockchain: formatBlockchainForOutput(outputBlockchain),
             referencePricePerUnit: outputPriceUSD || undefined,
             referencePriceCurrency: outputPriceUSD ? 'USD' : undefined,
             id: `${this.idPrefix}.thorchain.bridge-trade-in`,

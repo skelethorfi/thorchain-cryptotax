@@ -33,7 +33,7 @@ export class UnbondMapper implements Mapper {
             feeAmount: baseToAssetAmountString(getDefaultRuneGas()),
             from: 'thorchain',
             to: input.address,
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: `${idPrefix}.unbond`,
             description: `1/1 - Unbond ${amount} RUNE from ${nodeAddress}; ${txId}`,
         });

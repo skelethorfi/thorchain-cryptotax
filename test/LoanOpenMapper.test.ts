@@ -36,7 +36,7 @@ describe('LoanOpenMapper', () => {
             feeAmount: '0.02',
             from: 'thorchain',
             to: 'thor1-user-wallet-11111',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: '2020-12-31T13:00:00.000Z.loan',
             description: '2/2 - LoanOpen deposit BTC to borrow RUNE; ' +
                 '0000000000000000000000000000000000000000000000000000000000000000'
@@ -75,7 +75,7 @@ describe('LoanOpenMapper', () => {
             feeAmount: '20',
             from: 'thorchain',
             to: 'thor1-user-wallet-11111',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: '2020-12-31T13:00:00.000Z.loan',
             description: '2/2 - LoanOpen deposit BTC to borrow RUNE; ' +
                 '0000000000000000000000000000000000000000000000000000000000000000'

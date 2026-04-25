@@ -4,6 +4,7 @@ import {CryptoTaxTransaction, CryptoTaxTransactionType} from "../cryptotax";
 import {parseMidgardAsset, parseMidgardDate} from "./MidgardUtils";
 import {baseToAssetAmountString} from "../utils/Amount";
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
+import {formatBlockchainForOutput} from "./ThorchainUtils";
 
 // https://dev.thorchain.org/concepts/memos.html#repay-loan
 const REPAYLOAN_ASSET = 1;
@@ -70,7 +71,7 @@ export class LoanRepaymentMapper implements Mapper {
             ...liquidityFee,
             from: input.address,
             to: 'thorchain',
-            blockchain: inputBlockchain,
+            blockchain: formatBlockchainForOutput(inputBlockchain),
             id: `${idPrefix}.loan-repayment`,
             description: `1/${isClosed ? '2' : '1'} - LoanRepayment deposit ${inputCurrency} to repay ${collateralAsset} loan. ${isClosed ? 'Closed loan' : 'No closure'}; ${txId}`,
         });
@@ -93,7 +94,7 @@ export class LoanRepaymentMapper implements Mapper {
                 ...networkFee,
                 from: 'thorchain',
                 to: output.address,
-                blockchain: outputBlockchain,
+                blockchain: formatBlockchainForOutput(outputBlockchain),
                 id: `${idPrefix}.collateral-withdrawal`,
                 description: `2/2 - LoanRepayment deposit ${inputCurrency} to repay ${collateralAsset} loan. Closed loan; ${txId}`,
             });

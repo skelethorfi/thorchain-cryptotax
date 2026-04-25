@@ -21,7 +21,7 @@ describe('TcyUnstakeMapper', () => {
             baseAmount: '6000',
             from: 'thorchain',
             to: 'thor1-user-wallet-11111',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: '2020-12-31T13:00:00.000Z.tcy_unstake',
             description: '1/1 - Unstake 6000 TCY; 0000000000000000000000000000000000000000000000000000000000000000',
         });

@@ -23,7 +23,7 @@ describe('UnbondMapper', () => {
             feeAmount: '0.02',
             from: 'thorchain',
             to: 'thor1-user-wallet-11111',
-            blockchain: 'THOR',
+            blockchain: 'THORChain',
             id: '2020-12-31T13:00:00.000Z.unbond',
             description: '1/1 - Unbond 5000 RUNE from thor1-node-address; 0000000000000000000000000000000000000000000000000000000000000000',
         });

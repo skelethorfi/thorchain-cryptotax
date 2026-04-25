@@ -54,6 +54,6 @@ describe('SwitchMapper', () => {
         expect(result[1].baseAmount).toBe('1');
         expect(result[1].from).toBe('cosmos1-user-wallet-11111');
         expect(result[1].to).toBe('thor1-user-wallet-11111');
-        expect(result[1].blockchain).toBe('THOR');
+        expect(result[1].blockchain).toBe('THORChain');
     });
 });
