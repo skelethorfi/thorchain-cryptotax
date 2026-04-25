@@ -4,6 +4,7 @@ import { parseMidgardAsset } from './MidgardUtils';
 import { baseToAssetAmountString } from '../utils/Amount';
 import { TxStatusResponse } from '@xchainjs/xchain-thornode';
 import { BaseMapper } from './BaseMapper';
+import { getDefaultRuneGas } from './ThorchainUtils';
 
 // https://dev.thorchain.org/concepts/memos.html#swap
 const SWAP_DESTADDR = 2;
@@ -81,7 +82,11 @@ export class SwapMapper extends BaseMapper {
             throw this.error('Invalid swap - THOR.TOR');
         }
 
-        const { blockchain: feeBlockchain, currency: feeCurrency } = parseMidgardAsset(action.metadata.swap?.networkFees[0].asset ?? '');
+        const { currency: networkFeeCurrency } = parseMidgardAsset(action.metadata.swap?.networkFees[0].asset ?? '');
+        const feeCurrency = inputBlockchain === 'THOR' ? 'RUNE' : networkFeeCurrency;
+        const feeAmount = inputBlockchain === 'THOR'
+            ? baseToAssetAmountString(getDefaultRuneGas())
+            : baseToAssetAmountString(action.metadata.swap?.networkFees[0].amount ?? '');
 
         // Wallet A1 - Send asset A to thorchain --------------------------------------------------
 
@@ -94,7 +99,7 @@ export class SwapMapper extends BaseMapper {
             quoteCurrency: outputCurrency,
             quoteAmount: baseToAssetAmountString(outputCoin.amount),
             feeCurrency,
-            feeAmount: baseToAssetAmountString(action.metadata.swap?.networkFees[0].amount ?? ''),
+            feeAmount,
             from: input.address,
             to: 'thorchain',
             blockchain: inputBlockchain,

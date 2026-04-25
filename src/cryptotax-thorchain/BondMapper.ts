@@ -4,9 +4,7 @@ import {parseMidgardDate,} from './MidgardUtils';
 import {baseToAssetAmountString} from '../utils/Amount';
 import {Mapper} from './Mapper';
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
-
-// 0.02 RUNE
-const DEFAULT_RUNE_GAS = '2000000';
+import {getDefaultRuneGas} from './ThorchainUtils';
 
 export class BondMapper implements Mapper {
     toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = []): CryptoTaxTransaction[] {
@@ -31,7 +29,7 @@ export class BondMapper implements Mapper {
             baseCurrency: 'RUNE',
             baseAmount: amount,
             feeCurrency: 'RUNE',
-            feeAmount: baseToAssetAmountString(DEFAULT_RUNE_GAS),
+            feeAmount: baseToAssetAmountString(getDefaultRuneGas()),
             from: input.address,
             to: 'thorchain',
             blockchain: 'THOR',

@@ -133,6 +133,8 @@ describe('SwapMapper', () => {
         expect(result[1].description).toContain('Synth ETH');
         expect(result[0].blockchain).toBe('THOR');
         expect(result[1].blockchain).toBe('THOR');
+        expect(result[0].feeCurrency).toBe('RUNE');
+        expect(result[0].feeAmount).toBe('0.02');
     });
 
     test('should throw an error for invalid input', () => {

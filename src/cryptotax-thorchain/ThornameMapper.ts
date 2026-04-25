@@ -4,9 +4,7 @@ import {parseMidgardDate} from './MidgardUtils';
 import {baseToAssetAmountString} from '../utils/Amount';
 import {Mapper} from './Mapper';
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
-
-// 0.02 RUNE
-const DEFAULT_RUNE_GAS = '2000000';
+import {getDefaultRuneGas} from './ThorchainUtils';
 
 // Assumes default gas fee. One sample from thornode had no gas, but not sure if that's a data quality issue.
 // Could update this to get the gas from the thornode tx.
@@ -32,7 +30,7 @@ export class ThornameMapper implements Mapper {
                 baseCurrency: '',
                 baseAmount: '',
                 feeCurrency: 'RUNE',
-                feeAmount: baseToAssetAmountString(DEFAULT_RUNE_GAS),
+                feeAmount: baseToAssetAmountString(getDefaultRuneGas()),
                 from: walletAddress,
                 to: 'thorchain',
                 blockchain: 'THOR',
@@ -50,7 +48,7 @@ export class ThornameMapper implements Mapper {
                 baseCurrency: 'RUNE',
                 baseAmount: amount,
                 feeCurrency: 'RUNE',
-                feeAmount: baseToAssetAmountString(DEFAULT_RUNE_GAS),
+                feeAmount: baseToAssetAmountString(getDefaultRuneGas()),
                 from: walletAddress,
                 to: 'thorchain',
                 blockchain: 'THOR',
