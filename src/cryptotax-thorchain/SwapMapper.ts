@@ -44,7 +44,7 @@ export class SwapMapper extends BaseMapper {
 
         const input: Transaction = action.in[0];
         const inputCoin: Coin = input.coins[0];
-        const { blockchain: inputBlockchainParsed, currency: inputCurrency, amountParsed: inputAmount } = this.parseCoin(inputCoin.asset, inputCoin.amount);
+        const { blockchain: inputBlockchainParsed, currency: inputCurrency, displayCurrency: inputDisplayCurrency, amountParsed: inputAmount } = this.parseCoin(inputCoin.asset, inputCoin.amount);
         const inputIsSynth: boolean = isSynth(input);
         const inputBlockchain = getActualBlockchain(input, inputBlockchainParsed);
 
@@ -55,7 +55,7 @@ export class SwapMapper extends BaseMapper {
 
         const output: Transaction = this.getOutput(action, memo);
         const outputCoin: Coin = output.coins[0];
-        const { blockchain: outputBlockchainParsed, currency: outputCurrency, amountParsed: outputAmount } = this.parseCoin(outputCoin.asset, outputCoin.amount);
+        const { blockchain: outputBlockchainParsed, currency: outputCurrency, displayCurrency: outputDisplayCurrency, amountParsed: outputAmount } = this.parseCoin(outputCoin.asset, outputCoin.amount);
         const outputIsSynth: boolean = isSynth(output);
         const outputBlockchain = getActualBlockchain(output, outputBlockchainParsed);
 
@@ -68,9 +68,9 @@ export class SwapMapper extends BaseMapper {
         }
 
         console.log(
-            `${this.timestamp} swap ${inputBlockchain}.${inputCurrency}${
+            `${this.timestamp} swap ${inputBlockchain}.${inputDisplayCurrency}${
                 inputIsSynth ? ' *synth*' : ''
-            } to ${outputBlockchain}.${outputCurrency}${outputIsSynth ? ' *synth*' : ''} - ${input.txID ?? output.txID}`
+            } to ${outputBlockchain}.${outputDisplayCurrency}${outputIsSynth ? ' *synth*' : ''} - ${input.txID ?? output.txID}`
         );
 
         // If synth (eg. BTC/BTC) but address is not thor, then ignore. Likely a savers withdrawal.
@@ -108,9 +108,9 @@ export class SwapMapper extends BaseMapper {
             referencePricePerUnit: inputPriceUSD || undefined,
             referencePriceCurrency: inputPriceUSD ? 'USD' : undefined,
             id: `${this.idPrefix}.thorchain.bridge-trade-out`,
-            description: `1/2 - Swap ${inputAmount} ${inputIsSynth ? 'Synth ' : ''}${inputCurrency} to ${outputAmount} ${
+            description: `1/2 - Swap ${inputAmount} ${inputIsSynth ? 'Synth ' : ''}${inputDisplayCurrency} to ${outputAmount} ${
                 outputIsSynth ? 'Synth ' : ''
-            }${outputCurrency}; ${txId}`,
+            }${outputDisplayCurrency}; ${txId}`,
         });
 
         // Wallet B1 - Receive asset B from thorchain ---------------------------------------------
@@ -127,9 +127,9 @@ export class SwapMapper extends BaseMapper {
             referencePricePerUnit: outputPriceUSD || undefined,
             referencePriceCurrency: outputPriceUSD ? 'USD' : undefined,
             id: `${this.idPrefix}.thorchain.bridge-trade-in`,
-            description: `2/2 - Swap ${inputAmount} ${inputIsSynth ? 'Synth ' : ''}${inputCurrency} to ${outputAmount} ${
+            description: `2/2 - Swap ${inputAmount} ${inputIsSynth ? 'Synth ' : ''}${inputDisplayCurrency} to ${outputAmount} ${
                 outputIsSynth ? 'Synth ' : ''
-            }${outputCurrency}; ${txId}`,
+            }${outputDisplayCurrency}; ${txId}`,
         });
 
         return transactions;

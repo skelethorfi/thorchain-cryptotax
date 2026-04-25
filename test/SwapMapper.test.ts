@@ -152,8 +152,10 @@ describe('SwapMapper', () => {
         const result = swapMapper.toCryptoTax(action, false);
 
         expect(result).toHaveLength(2);
-        expect(result[0].description).toContain('Synth BTC');
-        expect(result[1].description).toContain('Synth ETH');
+        expect(result[0].description).toContain('Synth BTC/BTC');
+        expect(result[1].description).toContain('Synth ETH/ETH');
+        expect(result[0].baseCurrency).toBe('BTC.BTC');
+        expect(result[1].baseCurrency).toBe('ETH.ETH');
         expect(result[0].blockchain).toBe('THORChain');
         expect(result[1].blockchain).toBe('THORChain');
         expect(result[0].feeCurrency).toBe('RUNE');

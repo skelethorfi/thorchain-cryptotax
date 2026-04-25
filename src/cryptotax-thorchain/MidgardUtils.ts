@@ -1,4 +1,4 @@
-import {assetFromStringEx} from "@xchainjs/xchain-util";
+import {assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
 
 export function parseMidgardDate(nanoTimestamp: string): Date {
     return new Date(parseInt(nanoTimestamp) / 1000000);
@@ -20,6 +20,7 @@ function tickerRename(ticker: string) {
 export function parseMidgardAsset(assetStr: string): {
     blockchain: string;
     currency: string;
+    displayCurrency: string;
 } {
     let asset;
 
@@ -31,10 +32,15 @@ export function parseMidgardAsset(assetStr: string): {
 
     // Update ticker if it has been renamed
     const ticker = tickerRename(asset.ticker);
+    const displayCurrency = asset.type === AssetType.SYNTH ? `${asset.chain}/${ticker}` : ticker;
+    // CTC fails to render the ledger view if the currency contains a `/`, so synth
+    // currencies need a display form for descriptions and a CTC-safe form for export.
+    const currency = asset.type === AssetType.SYNTH ? displayCurrency.replace('/', '.') : ticker;
 
     return {
         blockchain: asset?.chain,
-        currency: ticker
+        currency,
+        displayCurrency
     };
 }
 

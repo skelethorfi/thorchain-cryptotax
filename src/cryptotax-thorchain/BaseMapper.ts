@@ -36,10 +36,10 @@ export abstract class BaseMapper implements Mapper {
         };
     }
 
-    protected parseCoin(asset: string, amount: string): { blockchain: string; currency: string; amountParsed: string } {
-        const { blockchain, currency } = parseMidgardAsset(asset);
+    protected parseCoin(asset: string, amount: string): { blockchain: string; currency: string; displayCurrency: string; amountParsed: string } {
+        const { blockchain, currency, displayCurrency } = parseMidgardAsset(asset);
         const amountParsed = baseToAssetAmountString(amount);
-        return { blockchain, currency, amountParsed };
+        return { blockchain, currency, displayCurrency, amountParsed };
     }
 
     protected handleReferencePrices(liquidityUnits: string, quoteCurrency: string, quoteAmount: string) {
