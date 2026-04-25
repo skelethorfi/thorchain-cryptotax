@@ -114,6 +114,29 @@ describe('SwapMapper', () => {
         expect(result[1].baseAmount).toBe('20');
     });
 
+    test('should set USD reference prices when provided by Midgard', () => {
+        const action = createMockAction({
+            inputAsset: 'BTC.BTC',
+            inputAmount: 1,
+            outputAsset: 'ETH.ETH',
+            outputAmount: 20,
+            inputAddress: 'btc1address',
+            outputAddress: 'eth1address',
+            txID: 'tx124',
+        });
+
+        action.metadata.swap!.inPriceUSD = '30000';
+        action.metadata.swap!.outPriceUSD = '1500';
+
+        swapMapper = new SwapMapper(action, false, []);
+        const result = swapMapper.toCryptoTax(action, false);
+
+        expect(result[0].referencePricePerUnit).toBe('30000');
+        expect(result[0].referencePriceCurrency).toBe('USD');
+        expect(result[1].referencePricePerUnit).toBe('1500');
+        expect(result[1].referencePriceCurrency).toBe('USD');
+    });
+
     test('should handle synth swaps', () => {
         const action = createMockAction({
             inputAsset: 'BTC/BTC',

@@ -50,6 +50,8 @@ export class SwapMapper extends BaseMapper {
 
         const txId = action.in[0].txID ?? '';
         const memo = action.metadata.swap?.memo;
+        const inputPriceUSD = action.metadata.swap?.inPriceUSD;
+        const outputPriceUSD = action.metadata.swap?.outPriceUSD;
 
         const output: Transaction = this.getOutput(action, memo);
         const outputCoin: Coin = output.coins[0];
@@ -103,6 +105,8 @@ export class SwapMapper extends BaseMapper {
             from: input.address,
             to: 'thorchain',
             blockchain: inputBlockchain,
+            referencePricePerUnit: inputPriceUSD || undefined,
+            referencePriceCurrency: inputPriceUSD ? 'USD' : undefined,
             id: `${this.idPrefix}.thorchain.bridge-trade-out`,
             description: `1/2 - Swap ${inputAmount} ${inputIsSynth ? 'Synth ' : ''}${inputCurrency} to ${outputAmount} ${
                 outputIsSynth ? 'Synth ' : ''
@@ -120,6 +124,8 @@ export class SwapMapper extends BaseMapper {
             from: 'thorchain',
             to: output.address,
             blockchain: outputBlockchain,
+            referencePricePerUnit: outputPriceUSD || undefined,
+            referencePriceCurrency: outputPriceUSD ? 'USD' : undefined,
             id: `${this.idPrefix}.thorchain.bridge-trade-in`,
             description: `2/2 - Swap ${inputAmount} ${inputIsSynth ? 'Synth ' : ''}${inputCurrency} to ${outputAmount} ${
                 outputIsSynth ? 'Synth ' : ''
