@@ -131,6 +131,8 @@ describe('SwapMapper', () => {
         expect(result).toHaveLength(2);
         expect(result[0].description).toContain('Synth BTC');
         expect(result[1].description).toContain('Synth ETH');
+        expect(result[0].blockchain).toBe('THOR');
+        expect(result[1].blockchain).toBe('THOR');
     });
 
     test('should throw an error for invalid input', () => {

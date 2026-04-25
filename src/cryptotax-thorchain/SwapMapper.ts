@@ -12,6 +12,10 @@ function isSynth(tx: Transaction): boolean {
     return tx.coins[0].asset.includes('/');
 }
 
+function getActualBlockchain(tx: Transaction, parsedBlockchain: string): string {
+    return isSynth(tx) && tx.address.toLowerCase().startsWith('thor1') ? 'THOR' : parsedBlockchain;
+}
+
 // Wallet-A1 CSV
 // * send currency A to thorchain
 
@@ -39,16 +43,18 @@ export class SwapMapper extends BaseMapper {
 
         const input: Transaction = action.in[0];
         const inputCoin: Coin = input.coins[0];
-        const { blockchain: inputBlockchain, currency: inputCurrency, amountParsed: inputAmount } = this.parseCoin(inputCoin.asset, inputCoin.amount);
+        const { blockchain: inputBlockchainParsed, currency: inputCurrency, amountParsed: inputAmount } = this.parseCoin(inputCoin.asset, inputCoin.amount);
         const inputIsSynth: boolean = isSynth(input);
+        const inputBlockchain = getActualBlockchain(input, inputBlockchainParsed);
 
         const txId = action.in[0].txID ?? '';
         const memo = action.metadata.swap?.memo;
 
         const output: Transaction = this.getOutput(action, memo);
         const outputCoin: Coin = output.coins[0];
-        const { blockchain: outputBlockchain, currency: outputCurrency, amountParsed: outputAmount } = this.parseCoin(outputCoin.asset, outputCoin.amount);
+        const { blockchain: outputBlockchainParsed, currency: outputCurrency, amountParsed: outputAmount } = this.parseCoin(outputCoin.asset, outputCoin.amount);
         const outputIsSynth: boolean = isSynth(output);
+        const outputBlockchain = getActualBlockchain(output, outputBlockchainParsed);
 
         if (!inputCurrency) {
             throw this.error('No input currency');
