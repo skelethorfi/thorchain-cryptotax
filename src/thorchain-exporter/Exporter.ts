@@ -17,6 +17,10 @@ import {getActionDate} from "../cryptotax-thorchain/MidgardActionMapper";
 import {TaxConfig} from "./TaxConfig";
 import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
 
+export function shouldFetchThornodeTx(action: Action): boolean {
+    return action.type === ActionTypeEnum.Switch || action.type === ActionTypeEnum.Swap;
+}
+
 export class Exporter {
     config: ITaxConfig;
     viewblock: Viewblock;
@@ -63,12 +67,8 @@ export class Exporter {
         for (const action of actions) {
             const thornodeTxs = [];
 
-            // Get related noOp tx
-            if (action.metadata.swap?.txType === 'noOp') {
-                const tx = await this.thornode.getTxStatus(action.in[0].txID);
-                thornodeTxs.push(tx);
-            } else if (action.type === ActionTypeEnum.Switch) {
-                // For a switch tx, get the thornode tx to determine fees
+            if (shouldFetchThornodeTx(action)) {
+                // For swaps and switches, use the inbound thornode transaction to determine the wallet-paid gas fee.
                 const tx = await this.thornode.getTxStatus(action.in[0].txID);
                 thornodeTxs.push(tx);
             }

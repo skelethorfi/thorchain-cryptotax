@@ -10,7 +10,7 @@ import {
 import { baseToAssetAmountString } from '../utils/Amount';
 import { Mapper } from './Mapper';
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
-import { formatBlockchainForOutput } from './ThorchainUtils';
+import { formatBlockchainForOutput, getInboundFee } from './ThorchainUtils';
 
 // Switch is used to migrate an asset from one chain to another.
 // e.g. BNB.RUNE to THOR.RUNE, or GAIA.KUJI to THOR.KUJI
@@ -47,16 +47,7 @@ export class SwitchMapper implements Mapper {
         const { blockchain: outputBlockchain, currency: outputCurrency } =
             parseMidgardAsset(outputCoin.asset);
 
-        // Find the thornode tx to get the fee
-        const thornodeTx = thornodeTxs.find(tx => tx.tx?.id === txId);
-        let feeCurrency = '';
-        let feeAmount = '';
-        if (thornodeTx && thornodeTx.tx?.gas && thornodeTx.tx.gas.length > 0) {
-            const gasCoin = thornodeTx.tx.gas[0];
-            const { currency } = parseMidgardAsset(gasCoin.asset);
-            feeCurrency = currency;
-            feeAmount = baseToAssetAmountString(gasCoin.amount);
-        }
+        const { feeCurrency, feeAmount } = getInboundFee(txId, thornodeTxs, inputCoin.asset);
 
         // Send input asset
 
