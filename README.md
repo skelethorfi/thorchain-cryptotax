@@ -173,5 +173,5 @@ the related Spam transaction into the market value section for the LP token in C
 - [Crypto Tax Calculator - Advanced CSV Import](https://help.cryptotaxcalculator.io/en/articles/5777675-advanced-custom-csv-import)
 - [THORChain Dev Docs - Asset Notation](https://dev.thorchain.org/concepts/asset-notation.html)
 - [THORChain Dev Docs - Transaction Memos](https://dev.thorchain.org/concepts/memos.html)
-- [Thornode API docs](https://thornode.ninerealms.com/thorchain/doc)
+- [Thornode API docs](https://gateway.liquify.com/chain/thorchain_api/thorchain/doc)
 - [XChainJS docs](https://docs.xchainjs.org)
