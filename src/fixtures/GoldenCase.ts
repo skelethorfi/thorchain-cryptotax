@@ -12,6 +12,7 @@ import {getActionDate} from "../cryptotax-thorchain/MidgardActionMapper";
 import {TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService";
 import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
 import {BaseMapper} from "../thorchain-exporter/BaseMapper";
+import {getProtocol, ProtocolId} from "../protocols/Protocol";
 
 // A golden test case is a folder containing:
 //   input.json    - the raw source data (a GoldenCaseInput)
@@ -24,6 +25,8 @@ export type GoldenCaseSource = 'midgard' | 'viewblock' | 'tcy';
 export interface GoldenCaseInput {
     description: string;
     source: GoldenCaseSource;
+    // Protocol of a midgard case. Default: thorchain
+    protocol?: ProtocolId;
     // The wallet being exported. Required for viewblock and tcy, which map relative to a wallet.
     wallet: string;
     addReferencePrices?: boolean;
@@ -102,7 +105,7 @@ export function runCase(input: GoldenCaseInput, unsupportedActionsPath?: string)
     } as ITaxConfig;
     const wallet = {name: 'test', address: input.wallet, blockchain: '', addReferencePrices: input.addReferencePrices ?? false};
 
-    const event = new TaxEvent(getCaseDate(input), input.source, wallet, config);
+    const event = new TaxEvent(getCaseDate(input), input.source, wallet, config, getProtocol(input.protocol));
     event.input = input.data;
     event.thornodeTxs = input.thornodeTxs ?? [];
     event.convert();

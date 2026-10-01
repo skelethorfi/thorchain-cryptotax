@@ -1,0 +1,29 @@
+walletExchange: bc1qj2c8q8ex4te9ufp5afdfpwr4e7hz64esnddewp
+timestamp: 2026-08-18T17:46:41.880Z
+type: bridge-trade-out
+baseCurrency: BTC
+baseAmount: "0.01553482"
+quoteCurrency: ETH
+quoteAmount: "1.05891769"
+feeCurrency: ""
+feeAmount: ""
+from: bc1qj2c8q8ex4te9ufp5afdfpwr4e7hz64esnddewp
+to: mayachain
+blockchain: BTC
+referencePricePerUnit: "71351.27349148977"
+referencePriceCurrency: USD
+id: 2026-08-18T17:46:41.880Z.maya.bridge-trade-out
+description: 1/2 - Swap 0.01553482 BTC to 1.05891769 ETH (0.01553184 BTC returned unfilled); 0275FE2418BEC28ADF5D9F8635D0BC06359CC6BB835DC2485EB51DAEC4E1CBCB
+---
+walletExchange: "0x6bfb3172717047de7d68cdf7cc2073cc73a9495c"
+timestamp: 2026-08-18T17:46:51.880Z
+type: bridge-trade-in
+baseCurrency: ETH
+baseAmount: "1.05891769"
+from: mayachain
+to: "0x6bfb3172717047de7d68cdf7cc2073cc73a9495c"
+blockchain: ETH
+referencePricePerUnit: "2056.997050126577"
+referencePriceCurrency: USD
+id: 2026-08-18T17:46:41.880Z.maya.bridge-trade-in
+description: 2/2 - Swap 0.01553482 BTC to 1.05891769 ETH; 0275FE2418BEC28ADF5D9F8635D0BC06359CC6BB835DC2485EB51DAEC4E1CBCB

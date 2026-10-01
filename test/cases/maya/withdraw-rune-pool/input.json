@@ -1,0 +1,70 @@
+{
+  "description": "withdraw success: [MAYA.CACAO] -> [MAYA.CACAO, THOR.RUNE]",
+  "source": "midgard",
+  "protocol": "maya",
+  "wallet": "maya136tmapkujkwewjncdx3jck2amp4y0twh2ypzsq",
+  "data": {
+    "date": "1759714441409807150",
+    "height": "13294253",
+    "in": [
+      {
+        "address": "maya136tmapkujkwewjncdx3jck2amp4y0twh2ypzsq",
+        "coins": [
+          {
+            "amount": "1",
+            "asset": "MAYA.CACAO"
+          }
+        ],
+        "txID": "F0090B6558270A00B6D228770C7C13F3B7B4F4A7DAA7F80EBA642D0AA7D67E54"
+      }
+    ],
+    "metadata": {
+      "withdraw": {
+        "asymmetry": "0",
+        "basisPoints": "10000",
+        "impermanentLossProtection": "127534647951",
+        "liquidityUnits": "-6237032912229",
+        "memo": "-:THOR.RUNE:10000",
+        "networkFees": [
+          {
+            "amount": "2027800",
+            "asset": "THOR.RUNE"
+          },
+          {
+            "amount": "2000000000",
+            "asset": "MAYA.CACAO"
+          }
+        ]
+      }
+    },
+    "out": [
+      {
+        "address": "thor136tmapkujkwewjncdx3jck2amp4y0twh2nlwxs",
+        "coins": [
+          {
+            "amount": "7791722919",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "height": "13294258",
+        "txID": "9446B4F8E23DE4C719121998AD9EAA7321E22F814C7D6832C5EEEB2BF4427E52"
+      },
+      {
+        "address": "maya136tmapkujkwewjncdx3jck2amp4y0twh2ypzsq",
+        "coins": [
+          {
+            "amount": "4751200903869",
+            "asset": "MAYA.CACAO"
+          }
+        ],
+        "height": "13294253",
+        "txID": ""
+      }
+    ],
+    "pools": [
+      "THOR.RUNE"
+    ],
+    "status": "success",
+    "type": "withdraw"
+  }
+}

@@ -2,13 +2,13 @@ import fs from "fs-extra";
 import os from "os";
 import path from "path";
 import {Action, Configuration, MidgardApi} from "@xchainjs/xchain-midgard";
-import {API_URLS} from "../config/apiUrls";
 import {ThornodeService} from "../cryptotax-thorchain/ThornodeService";
 import {shouldFetchThornodeTx} from "../thorchain-exporter/Exporter";
 import {Anonymiser} from "./Anonymise";
 import {EXPECTED_FILE, formatRows, GoldenCaseInput, INPUT_FILE, readCaseInput, runCase, writeCaseExpected} from "./GoldenCase";
 import {getPrivateDir, mask, PrivateData} from "./PrivateData";
 import {describeShape, getActionIds, getActionShape, sameShape} from "./Shape";
+import {getProtocol, Protocol, THORCHAIN} from "../protocols/Protocol";
 
 // Workflow for adding a golden test case without leaking private data:
 //
@@ -20,12 +20,14 @@ import {describeShape, getActionIds, getActionShape, sameShape} from "./Shape";
 //   add <txid> <group/name>      fetch a public tx into test/cases (refuses private data)
 //   anonymise <input.json> <group/name>   fallback: anonymised copy of a private tx
 //   show <case-dir> [--write]    print the mapped rows; --write saves expected.yaml after review
+//
+// fetch, similar and add take --protocol maya for Maya Protocol txs (default thorchain).
 
 const CASES_DIR = path.resolve(__dirname, '../../test/cases');
-const midgard = new MidgardApi(new Configuration({basePath: API_URLS.midgard}));
+const midgardFor = (protocol: Protocol) => new MidgardApi(new Configuration({basePath: protocol.midgardUrl}));
 
-async function fetchInput(txid: string, index?: number): Promise<GoldenCaseInput> {
-    const response = await midgard.getActions(undefined, txid);
+async function fetchInput(txid: string, protocol: Protocol, index?: number): Promise<GoldenCaseInput> {
+    const response = await midgardFor(protocol).getActions(undefined, txid);
     const actions = response.data.actions;
 
     if (actions.length === 0) {
@@ -40,7 +42,7 @@ async function fetchInput(txid: string, index?: number): Promise<GoldenCaseInput
     const action = actions[index ?? 0];
     const thornodeTxs = [];
 
-    if (shouldFetchThornodeTx(action)) {
+    if (protocol === THORCHAIN && shouldFetchThornodeTx(action)) {
         const thornode = new ThornodeService(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-thornode-')));
         thornodeTxs.push(await thornode.getTxStatus(action.in[0].txID));
     }
@@ -48,6 +50,7 @@ async function fetchInput(txid: string, index?: number): Promise<GoldenCaseInput
     return {
         description: describeShape(getActionShape(action)),
         source: 'midgard',
+        ...(protocol === THORCHAIN ? {} : {protocol: protocol.id}),
         wallet: action.in[0]?.address ?? '',
         data: action,
         ...(thornodeTxs.length ? {thornodeTxs} : {}),
@@ -55,6 +58,7 @@ async function fetchInput(txid: string, index?: number): Promise<GoldenCaseInput
 }
 
 async function findSimilar(input: GoldenCaseInput, maxPages: number, privateData: PrivateData): Promise<Action[]> {
+    const midgard = midgardFor(getProtocol(input.protocol));
     const target = input.data as Action;
     const shape = getActionShape(target);
     const asset = shape.inAssets[0]?.[0];
@@ -128,6 +132,7 @@ async function main() {
     const [command, ...args] = process.argv.slice(2);
     const positional = args.filter((arg, i) => !arg.startsWith('--') && !(i > 0 && args[i - 1].startsWith('--') && args[i - 1] !== '--write'));
     const index = getFlag(args, '--index');
+    const protocol = getProtocol(getFlag(args, '--protocol'));
     const privateData = PrivateData.load();
 
     if (['add', 'anonymise', 'similar'].includes(command) && !getPrivateDir()) {
@@ -137,7 +142,7 @@ async function main() {
     switch (command) {
         case 'fetch': {
             const [txid] = positional;
-            const input = await fetchInput(txid, index === undefined ? undefined : Number(index));
+            const input = await fetchInput(txid, protocol, index === undefined ? undefined : Number(index));
             const privateDir = getPrivateDir();
             const out = getFlag(args, '--out') ?? (privateDir && path.join(privateDir, 'fixtures', txid, INPUT_FILE));
 
@@ -171,7 +176,7 @@ async function main() {
                 throw new Error('that txid is private; use similar or anonymise');
             }
 
-            const input = await fetchInput(txid, index === undefined ? undefined : Number(index));
+            const input = await fetchInput(txid, protocol, index === undefined ? undefined : Number(index));
             assertNoPrivateData(input, privateData);
             writeCase(name, input);
             break;

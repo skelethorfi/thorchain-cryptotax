@@ -1,0 +1,67 @@
+{
+  "description": "refund success: [BTC.BTC] -> [BTC.BTC, ETH.ETH]",
+  "source": "midgard",
+  "protocol": "maya",
+  "wallet": "bc1qj2c8q8ex4te9ufp5afdfpwr4e7hz64esnddewp",
+  "data": {
+    "date": "1787075219091501349",
+    "height": "17978424",
+    "in": [
+      {
+        "address": "bc1qj2c8q8ex4te9ufp5afdfpwr4e7hz64esnddewp",
+        "coins": [
+          {
+            "amount": "1553334",
+            "asset": "BTC.BTC"
+          }
+        ],
+        "txID": "0275FE2418BEC28ADF5D9F8635D0BC06359CC6BB835DC2485EB51DAEC4E1CBCB"
+      }
+    ],
+    "metadata": {
+      "refund": {
+        "affiliateAddress": "",
+        "affiliateFee": "0",
+        "memo": "=:ETH.ETH:0x6BFb3172717047DE7D68CdF7Cc2073Cc73A9495c:157642132/1/3",
+        "networkFees": [
+          {
+            "amount": "4929",
+            "asset": "ETH.ETH"
+          },
+          {
+            "amount": "150",
+            "asset": "BTC.BTC"
+          }
+        ],
+        "reason": "emit asset 51725750 less than price limit 51745434"
+      }
+    },
+    "out": [
+      {
+        "address": "bc1qj2c8q8ex4te9ufp5afdfpwr4e7hz64esnddewp",
+        "coins": [
+          {
+            "amount": "1553184",
+            "asset": "BTC.BTC"
+          }
+        ],
+        "height": "17978429",
+        "txID": "F12741DA9A6B8AB7CC3A38482C557526176217848E3E922BB8D057B8219F61FE"
+      },
+      {
+        "address": "0x6bfb3172717047de7d68cdf7cc2073cc73a9495c",
+        "coins": [
+          {
+            "amount": "105891769",
+            "asset": "ETH.ETH"
+          }
+        ],
+        "height": "18623131",
+        "txID": "D3D019FEF8CFA4311B18858E32E9ECF647D164A864833796BB53B694F3EFB518"
+      }
+    ],
+    "pools": [],
+    "status": "success",
+    "type": "refund"
+  }
+}

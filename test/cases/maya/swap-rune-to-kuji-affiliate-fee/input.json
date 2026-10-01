@@ -1,0 +1,76 @@
+{
+  "description": "swap success: [THOR.RUNE] -> [KUJI.KUJI, MAYA.CACAO]",
+  "source": "midgard",
+  "protocol": "maya",
+  "wallet": "thor1cl6wx08s76yhf8smvt5pcqnfh2rts42ytqul4e",
+  "data": {
+    "date": "1704394671301096068",
+    "height": "4373239",
+    "in": [
+      {
+        "address": "thor1cl6wx08s76yhf8smvt5pcqnfh2rts42ytqul4e",
+        "coins": [
+          {
+            "amount": "24400000000",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "txID": "7B11F20814EF6BC5D7ACF1A295CCF1746899A478110220C0BCF4CEC95E516806"
+      }
+    ],
+    "metadata": {
+      "swap": {
+        "affiliateAddress": "ELD",
+        "affiliateFee": "75",
+        "inPriceUSD": "5.386507959551423",
+        "isStreamingSwap": true,
+        "liquidityFee": "34866632245",
+        "memo": "=:KUJI.KUJI:kujira13kkml6e2df9fl4tmscqlzqg45va0rzla73f5ed::ELD:75",
+        "networkFees": [
+          {
+            "amount": "600000",
+            "asset": "KUJI.KUJI"
+          },
+          {
+            "amount": "2000000000",
+            "asset": "MAYA.CACAO"
+          }
+        ],
+        "outPriceUSD": "4.821764001830525",
+        "swapSlip": "18",
+        "swapTarget": "0"
+      }
+    },
+    "out": [
+      {
+        "address": "kujira13kkml6e2df9fl4tmscqlzqg45va0rzla73f5ed",
+        "coins": [
+          {
+            "amount": "27052707400",
+            "asset": "KUJI.KUJI"
+          }
+        ],
+        "height": "4373251",
+        "txID": "A3985E660B3F98DA5679EBEBC6DEF9CC4D3878B2B8C64C109D893AB88454FC65"
+      },
+      {
+        "address": "maya1gnehec7mf4uytuw3wj4uwpptvkyvzclgq2lj09",
+        "affiliate": true,
+        "coins": [
+          {
+            "amount": "141411920898",
+            "asset": "MAYA.CACAO"
+          }
+        ],
+        "height": "4373239",
+        "txID": ""
+      }
+    ],
+    "pools": [
+      "THOR.RUNE",
+      "KUJI.KUJI"
+    ],
+    "status": "success",
+    "type": "swap"
+  }
+}
