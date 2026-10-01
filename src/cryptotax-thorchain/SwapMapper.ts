@@ -156,7 +156,8 @@ export class SwapMapper extends BaseMapper {
             throw this.error('No memo');
         }
 
-        const destAddress = this.getDestAddress(memo);
+        // An empty destination means the sender's own address (e.g. ETH.ETH to ARB.ETH)
+        const destAddress = this.getDestAddress(memo) || action.in[0].address;
         const out = action.out.find((out) => out.address.toLowerCase() === destAddress.toLowerCase());
 
         if (!out) {

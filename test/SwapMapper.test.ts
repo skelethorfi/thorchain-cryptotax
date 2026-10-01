@@ -341,4 +341,23 @@ describe('SwapMapper', () => {
             'Invalid swap - THOR.TOR'
         );
     });
+
+    test('should send to the sender when the memo destination is empty', () => {
+        const action = createMockAction({
+            inputAsset: 'ETH.ETH',
+            inputAmount: 1,
+            outputAsset: 'ARB.ETH',
+            outputAmount: 0.99,
+            inputAddress: '0xsameaddress',
+            outputAddress: '0xSameAddress',
+            txID: 'tx-empty-dest',
+        });
+        action.metadata.swap!.memo = '=:ARB.ETH:::wr:0';
+
+        swapMapper = new SwapMapper(action, false, []);
+        const result = swapMapper.toCryptoTax(action, false);
+
+        expect(result[1].to).toBe('0xSameAddress');
+        expect(result[1].baseAmount).toBe('0.99');
+    });
 });

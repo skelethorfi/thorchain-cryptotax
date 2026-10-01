@@ -35,12 +35,8 @@ export class RefundMapper implements Mapper {
         // Prefer the fee charged on the refunded asset; a partially filled swap also lists the
         // fee for the swap's other output
         const networkFee = refundMetadata.networkFees.find(fee => fee.asset === inputCoin.asset) ?? refundMetadata.networkFees[0];
-        const { blockchain: feeBlockchain, currency: feeCurrency } =
-            parseMidgardAsset(networkFee.asset ?? '');
-        const feeAmount = baseToAssetAmountString(
-            networkFee.amount ?? '0',
-            protocol.decimals(networkFee.asset ?? '')
-        );
+        const feeCurrency = networkFee ? parseMidgardAsset(networkFee.asset).currency : '';
+        const feeAmount = networkFee ? baseToAssetAmountString(networkFee.amount, protocol.decimals(networkFee.asset)) : '';
         const txId = input.txID ?? '';
         const reason = (refundMetadata.reason ?? '').replace(/[\n\t]/g, ' ').trim();
 
