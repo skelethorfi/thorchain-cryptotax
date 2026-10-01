@@ -5,7 +5,8 @@
   "type": "commonjs",
   "scripts": {
     "test": "jest",
-    "export": "ts-node src/full-export.ts wallets-config.toml"
+    "export": "ts-node src/full-export.ts wallets-config.toml",
+    "fixture": "ts-node src/fixtures/cli.ts"
   },
   "dependencies": {
     "@types/fs-extra": "^11.0.4",
