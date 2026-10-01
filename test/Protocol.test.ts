@@ -21,6 +21,11 @@ describe('Protocol', () => {
         expect(formatBlockchain('BTC')).toBe('BTC');
     });
 
+    test('Maya counterparty and default CACAO gas', () => {
+        expect(MAYA.counterparty).toBe('mayaprotocol');
+        expect(MAYA.defaultGas).toBe('2000000000');
+    });
+
     test('getProtocol defaults to THORChain and rejects unknown ids', () => {
         expect(getProtocol(undefined)).toBe(THORCHAIN);
         expect(getProtocol('maya')).toBe(MAYA);

@@ -31,11 +31,11 @@ only `maya1` wallets: swaps and liquidity adds are often started from a `thor1`,
 | Native asset | `THOR.RUNE` | `MAYA.CACAO` |
 | Native asset decimals | 8 | **10** |
 | Other asset decimals | 8 | 8, except the MAYA token (`MAYA.MAYA` / `MAYA`), which is **4** |
-| Counterparty in `from` / `to` | `thorchain` | `mayachain` |
+| Counterparty in `from` / `to` | `thorchain` | `mayaprotocol` |
 | Blockchain value for the native chain | `THORChain` | `MayaProtocol` (to be confirmed in Summ; see below) |
 | LP token | `ThorLP.<pool>` | `MayaLP.<pool>` |
 | Native address prefix | `thor1` | `maya1` |
-| Default inbound gas when THORNode data is missing | 0.02 RUNE (see `swap-fees.md`) | 0.02 RUNE for RUNE inputs (sent on THORChain); none for CACAO and other inputs, as Maya node data is not fetched |
+| Default inbound gas when node data is missing | 0.02 RUNE (see `swap-fees.md`) | 0.2 CACAO for CACAO inputs (Mayanode `NativeTransactionFee`, `2000000000` in constants and mimir on 2026-10-01; assumed unchanged historically); 0.02 RUNE for RUNE inputs (sent on THORChain); none for other inputs, as Maya node data is not fetched |
 
 Decimals were checked on 2026-10-01 against live pool depths: Midgard's
 `assetPriceUSD` only matches `cacaoDepth / assetDepth` when CACAO is read as

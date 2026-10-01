@@ -92,7 +92,7 @@ export class SwapMapper extends BaseMapper {
             throw this.error('Invalid swap - THOR.TOR');
         }
 
-        const { feeCurrency, feeAmount } = getInboundFee(txId, thornodeTxs, inputCoin.asset);
+        const { feeCurrency, feeAmount } = getInboundFee(txId, thornodeTxs, inputCoin.asset, this.protocol);
 
         // Wallet A1 - Send asset A to thorchain --------------------------------------------------
 

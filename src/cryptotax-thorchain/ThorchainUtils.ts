@@ -2,7 +2,7 @@ import { TxStatusResponse } from '@xchainjs/xchain-thornode';
 import { parseMidgardAsset } from './MidgardUtils';
 import { baseToAssetAmountString } from '../utils/Amount';
 import { assetFromStringEx, AssetType } from '@xchainjs/xchain-util';
-import { formatBlockchain } from '../protocols/Protocol';
+import { formatBlockchain, Protocol, THORCHAIN } from '../protocols/Protocol';
 
 export function getDefaultRuneGas(): string {
     return '2000000';
@@ -15,7 +15,8 @@ export function formatBlockchainForOutput(blockchain: string): string {
 export function getInboundFee(
     txId: string,
     thornodeTxs: TxStatusResponse[],
-    inputAsset?: string
+    inputAsset?: string,
+    protocol: Protocol = THORCHAIN
 ): { feeCurrency: string; feeAmount: string } {
     const thornodeTx = thornodeTxs.find((tx) => tx.tx?.id === txId);
     const gasCoin = thornodeTx?.tx?.gas?.[0];
@@ -41,6 +42,14 @@ export function getInboundFee(
             return {
                 feeCurrency: 'RUNE',
                 feeAmount: baseToAssetAmountString(getDefaultRuneGas()),
+            };
+        }
+
+        // e.g. CACAO sent to Maya pays Maya's native transaction fee
+        if (inputAsset === protocol.nativeAsset && protocol.defaultGas) {
+            return {
+                feeCurrency: parseMidgardAsset(protocol.nativeAsset).currency,
+                feeAmount: baseToAssetAmountString(protocol.defaultGas, protocol.decimals(protocol.nativeAsset)),
             };
         }
     }

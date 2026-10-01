@@ -43,7 +43,7 @@ const MAYA_DECIMALS: {[asset: string]: number} = {
 
 export const MAYA: Protocol = {
     id: 'maya',
-    counterparty: 'mayachain',
+    counterparty: 'mayaprotocol',
     nativeChain: 'MAYA',
     // Summ ignores blockchain values it does not recognise; to be confirmed with a manual CSV upload
     blockchain: 'MayaProtocol',
@@ -51,6 +51,8 @@ export const MAYA: Protocol = {
     nativeAddressPrefix: 'maya1',
     lpTokenPrefix: 'MayaLP',
     midgardUrl: process.env.MAYA_MIDGARD_API_URL || 'https://midgard.mayachain.info',
+    // NativeTransactionFee from Mayanode constants and mimir (2026-10-01): 0.2 CACAO
+    defaultGas: '2000000000',
     decimals: (asset: string) => MAYA_DECIMALS[asset.toUpperCase()] ?? 8,
 };
 

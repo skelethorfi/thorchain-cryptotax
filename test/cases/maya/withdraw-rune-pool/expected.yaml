@@ -5,7 +5,7 @@ baseCurrency: RUNE
 baseAmount: "77.91722919"
 feeCurrency: ""
 feeAmount: ""
-from: mayachain
+from: mayaprotocol
 to: thor136tmapkujkwewjncdx3jck2amp4y0twh2nlwxs
 blockchain: THOR
 id: 2025-10-06T01:34:01.409Z.remove-liquidity.RUNE
@@ -18,7 +18,7 @@ baseCurrency: CACAO
 baseAmount: "475.1200903869"
 feeCurrency: ""
 feeAmount: ""
-from: mayachain
+from: mayaprotocol
 to: maya136tmapkujkwewjncdx3jck2amp4y0twh2ypzsq
 blockchain: MAYA
 id: 2025-10-06T01:34:01.409Z.remove-liquidity.CACAO
@@ -30,7 +30,7 @@ type: spam
 baseCurrency: CACAO
 baseAmount: "950.2401807738"
 from: maya136tmapkujkwewjncdx3jck2amp4y0twh2ypzsq
-to: mayachain
+to: mayaprotocol
 id: 2025-10-06T01:34:01.409Z.spam
 description: 2/4 - Dummy transaction to get market price to then manually apply to the return LP token transaction MayaLP.THOR.RUNE (symmetric); F0090B6558270A00B6D228770C7C13F3B7B4F4A7DAA7F80EBA642D0AA7D67E54
 ---
@@ -40,7 +40,7 @@ type: return-lp-token
 baseCurrency: MayaLP.THOR.RUNE
 baseAmount: "62370.32912229"
 from: maya136tmapkujkwewjncdx3jck2amp4y0twh2ypzsq
-to: mayachain
+to: mayaprotocol
 blockchain: MayaProtocol
 id: 2025-10-06T01:34:01.409Z.return-lp-token
 description: 1/4 - Return LP token to MayaLP.THOR.RUNE (symmetric); F0090B6558270A00B6D228770C7C13F3B7B4F4A7DAA7F80EBA642D0AA7D67E54

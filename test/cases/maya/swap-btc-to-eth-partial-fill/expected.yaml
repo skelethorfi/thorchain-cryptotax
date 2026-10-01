@@ -8,7 +8,7 @@ quoteAmount: "1.05891769"
 feeCurrency: ""
 feeAmount: ""
 from: bc1qj2c8q8ex4te9ufp5afdfpwr4e7hz64esnddewp
-to: mayachain
+to: mayaprotocol
 blockchain: BTC
 referencePricePerUnit: "71351.27349148977"
 referencePriceCurrency: USD
@@ -20,7 +20,7 @@ timestamp: 2026-08-18T17:46:51.880Z
 type: bridge-trade-in
 baseCurrency: ETH
 baseAmount: "1.05891769"
-from: mayachain
+from: mayaprotocol
 to: "0x6bfb3172717047de7d68cdf7cc2073cc73a9495c"
 blockchain: ETH
 referencePricePerUnit: "2056.997050126577"

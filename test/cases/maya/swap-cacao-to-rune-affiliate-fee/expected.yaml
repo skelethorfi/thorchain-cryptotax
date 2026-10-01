@@ -5,10 +5,10 @@ baseCurrency: CACAO
 baseAmount: "1300"
 quoteCurrency: RUNE
 quoteAmount: "268.53234636"
-feeCurrency: ""
-feeAmount: ""
+feeCurrency: CACAO
+feeAmount: "0.2"
 from: maya1e0f53kfv9fghpxz8vrupl4kgulzg5cyapn4nnc
-to: mayachain
+to: mayaprotocol
 blockchain: MayaProtocol
 referencePricePerUnit: "0.17493195023737712"
 referencePriceCurrency: USD
@@ -20,7 +20,7 @@ timestamp: 2025-10-22T05:31:42.329Z
 type: bridge-trade-in
 baseCurrency: RUNE
 baseAmount: "268.53234636"
-from: mayachain
+from: mayaprotocol
 to: thor1e0f53kfv9fghpxz8vrupl4kgulzg5cyapytl9g
 blockchain: THORChain
 referencePricePerUnit: "0.8425718692950063"
