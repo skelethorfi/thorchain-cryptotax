@@ -67,16 +67,40 @@ transaction. Rows for what comes out have no fee.
 | Send, Arkeo delegation | the send | actual fee from Viewblock |
 | TCY distribution | — | none (nothing sent in) |
 
+### Refunds
+
+A refund is two transactions: the wallet sends the inbound and pays its gas,
+then THORChain sends the outbound back and pays that gas from its vault. The
+wallet is the receiver of the outbound, and a receiver does not pay the
+sender's gas, the same as when anyone else sends to the wallet.
+
+- The `FailedIn` row carries the amount sent in and the **inbound** gas.
+- The outbound's gas is **never** exported as a fee. THORChain recovers it by
+  returning less than was sent in (Midgard `networkFees`), so the wallet
+  already bears it as the lower amount received. Exporting it as a fee as
+  well would count it twice.
+
+Example (`refund/btc-price-limit`): 0.0120779 BTC sent in with 0.0000166 BTC
+gas; 0.01204055 BTC returned. The fee is 0.0000166 BTC. The 0.00003735 BTC
+difference is the outbound fee and is not a fee on any row.
+
 ### Refunds of an affiliate's cut
 
 When a swap has an affiliate, THORChain swaps the affiliate's cut to RUNE as a
 swap of its own, which carries the user's txid and address. If that swap fails,
 Midgard reports a `refund` action whose input is the cut (e.g. secured USDC),
-next to the successful swap with the same txid. The wallet never sent that
-amount, and the cut is already reflected in what the swap paid out, so no row
-is exported. `RefundMapper` detects it by the THORNode inbound transaction
-listing a different asset from the refund's input
-(`refund/affiliate-fee-swap`). Without THORNode data the row is kept.
+next to the successful swap with the same txid.
+
+No row is exported for it:
+
+- the wallet never sent that amount, and
+- no transaction returns it to the wallet. The cut simply stays in the swap's
+  single payout, which is the swap output less the outbound fee only, and the
+  swap's `BridgeTradeIn` row already carries that full amount.
+
+`RefundMapper` detects it by the THORNode inbound transaction listing a
+different asset from the refund's input (`refund/affiliate-fee-swap`). Without
+THORNode data the row is kept.
 
 ### Partially filled swaps
 
