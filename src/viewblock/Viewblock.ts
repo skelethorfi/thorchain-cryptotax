@@ -103,6 +103,7 @@ export class Viewblock {
 
         if (total === 0) {
             console.log(`[WARN] No transactions for ${address}`);
+            this.cache.write(address, []);
             return [];
         }
 
