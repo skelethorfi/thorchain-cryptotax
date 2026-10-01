@@ -156,8 +156,24 @@ export class SwapMapper extends BaseMapper {
             throw this.error('No memo');
         }
 
-        // An empty destination means the sender's own address (e.g. ETH.ETH to ARB.ETH)
-        const destAddress = this.getDestAddress(memo) || action.in[0].address;
+        const destAddress = this.getDestAddress(memo);
+
+        if (!destAddress) {
+            // A swap memo with an empty destination (e.g. =:ARB.ETH:::wr:0). Maya paid such a swap out to
+            // the sender's address (same EVM address on another chain). Only accept an output in a different
+            // asset from the input, so a refund of the input is never read as the swap.
+            // (A send to a vault with no memo at all is refunded, and Midgard reports it as a refund action.)
+            const sender = action.in[0].address.toLowerCase();
+            const inputAsset = action.in[0].coins[0]?.asset;
+            const out = action.out.find((out) => out.address.toLowerCase() === sender && out.coins[0]?.asset !== inputAsset);
+
+            if (!out) {
+                throw this.error('No matching out tx');
+            }
+
+            return out;
+        }
+
         const out = action.out.find((out) => out.address.toLowerCase() === destAddress.toLowerCase());
 
         if (!out) {

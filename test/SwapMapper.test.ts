@@ -360,4 +360,21 @@ describe('SwapMapper', () => {
         expect(result[1].to).toBe('0xSameAddress');
         expect(result[1].baseAmount).toBe('0.99');
     });
+
+    test('should not treat a same-asset return to the sender as the swap output when the destination is empty', () => {
+        const action = createMockAction({
+            inputAsset: 'ETH.ETH',
+            inputAmount: 1,
+            outputAsset: 'ETH.ETH',
+            outputAmount: 0.99,
+            inputAddress: '0xsameaddress',
+            outputAddress: '0xsameaddress',
+            txID: 'tx-empty-dest-refund',
+        });
+        action.metadata.swap!.memo = '=:ARB.ETH:::wr:0';
+
+        swapMapper = new SwapMapper(action, false, []);
+
+        expect(() => swapMapper.toCryptoTax(action, false)).toThrow('No matching out tx');
+    });
 });
