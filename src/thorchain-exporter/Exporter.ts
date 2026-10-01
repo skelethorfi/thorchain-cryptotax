@@ -16,6 +16,7 @@ import {BaseMapper} from "./BaseMapper";
 import {getActionDate} from "../cryptotax-thorchain/MidgardActionMapper";
 import {TaxConfig} from "./TaxConfig";
 import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
+import {CacheOptions} from "../cache/Cache";
 
 export function shouldFetchThornodeTx(action: Action): boolean {
     const hasInboundTxId = !!action.in?.[0]?.txID;
@@ -30,13 +31,13 @@ export class Exporter {
     tcyDistribution: TcyDistributionService;
     report: Reporter;
 
-    constructor(filename: string) {
+    constructor(filename: string, cacheOptions: CacheOptions = {}) {
         this.config = TaxConfig.load(filename);
         const cachePath = this.config.cachePath;
-        this.viewblock = new Viewblock(path.join(cachePath, 'viewblock'));
-        this.midgard = new MidgardService(path.join(cachePath, 'midgard'));
-        this.thornode = new ThornodeService(path.join(cachePath, 'thornode'));
-        this.tcyDistribution = new TcyDistributionService(path.join(cachePath, 'tcy'));
+        this.viewblock = new Viewblock(path.join(cachePath, 'viewblock'), cacheOptions);
+        this.midgard = new MidgardService(path.join(cachePath, 'midgard'), cacheOptions);
+        this.thornode = new ThornodeService(path.join(cachePath, 'thornode'), false, cacheOptions);
+        this.tcyDistribution = new TcyDistributionService(path.join(cachePath, 'tcy'), cacheOptions);
         this.report = new Reporter();
     }
 

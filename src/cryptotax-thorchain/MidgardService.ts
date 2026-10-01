@@ -1,4 +1,4 @@
-import {Cache} from "../cache/Cache";
+import {Cache, CacheOptions} from "../cache/Cache";
 import {Action, Configuration, MidgardApi} from '@xchainjs/xchain-midgard';
 import assert from "assert";
 import axios from "axios";
@@ -20,8 +20,8 @@ export class MidgardService {
     cache: Cache;
     api: MidgardApi;
 
-    constructor(cachePath: string = '_cache') {
-        this.cache = new Cache(cachePath);
+    constructor(cachePath: string = '_cache', cacheOptions: CacheOptions = {}) {
+        this.cache = new Cache(cachePath, cacheOptions);
         const apiConfig = new Configuration({ basePath: API_URLS.midgard });
         this.api = new MidgardApi(apiConfig);
     }
@@ -32,6 +32,8 @@ export class MidgardService {
         if (this.cache.has(address)) {
             return this.cache.read(address);
         }
+
+        this.cache.assertCanFetch(address);
 
         let actions: Action[] = [];
         let count: number = 0;

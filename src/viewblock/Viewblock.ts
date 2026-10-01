@@ -1,6 +1,6 @@
 import {range} from '../utils/Range';
 import {ViewblockTx} from './ViewblockTx';
-import {Cache} from "../cache/Cache";
+import {Cache, CacheOptions} from "../cache/Cache";
 
 export const BASE_URL = 'https://api.viewblock.io';
 export const ORIGIN = 'https://viewblock.io';
@@ -32,8 +32,8 @@ export class Viewblock {
     cache: Cache;
     apiKey?: string;
 
-    constructor(cachePath: string = '_cache') {
-        this.cache = new Cache(cachePath);
+    constructor(cachePath: string = '_cache', cacheOptions: CacheOptions = {}) {
+        this.cache = new Cache(cachePath, cacheOptions);
     }
 
     async query(path: any, { apiKey, query = {}, network }: any) {
@@ -84,6 +84,8 @@ export class Viewblock {
         if (this.cache.has(address)) {
             return this.cache.read(address);
         }
+
+        this.cache.assertCanFetch(address);
 
         let page = await this.getTxs({
             address,
