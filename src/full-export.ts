@@ -9,8 +9,13 @@ async function main() {
 
     console.log(`Current directory: ${process.cwd()}`);
 
-    // Get the last argument as the config filename
-    const configFile = process.argv[process.argv.length - 1];
+    const args = process.argv.slice(2);
+
+    // --offline: only use cached data sources, fail on anything not cached
+    const offline = args.includes('--offline');
+
+    // Get the last non-flag argument as the config filename
+    const configFile = args.filter(arg => !arg.startsWith('--')).pop() ?? '';
 
     if (!configFile.endsWith('.json') && !configFile.endsWith('.toml')) {
         throw new Error('must specify config file');
@@ -19,12 +24,14 @@ async function main() {
     const timestamp = format(new Date(), 'yyyy-MM-dd_HH-mm-ss');
 
     // Read config
-    const exporter = new Exporter(configFile);
+    const exporter = new Exporter(configFile, {offline});
 
     const outputPath = path.join(exporter.config.outputPath, timestamp);
     const cachePath = exporter.config.cachePath;
 
-    if (!exporter.config.cacheDataSources) {
+    if (offline) {
+        console.log(`Offline: reading only from cache: ${cachePath}\n`);
+    } else if (!exporter.config.cacheDataSources) {
         // Delete all cached data sources
         console.log(`Removing cache: ${cachePath}\n`);
         fs.removeSync(cachePath);

@@ -23,3 +23,6 @@ venv/
 .vscode/
 
 .DS_Store
+
+# Local agent guidance (not published)
+CLAUDE.md

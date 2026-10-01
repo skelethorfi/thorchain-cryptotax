@@ -1,0 +1,62 @@
+{
+  "description": "Switch GAIA.KUJI to THOR.KUJI",
+  "source": "midgard",
+  "wallet": "thor1-user-wallet-11111",
+  "data": {
+    "date": "1609419600000000000",
+    "height": "10000000",
+    "in": [
+      {
+        "address": "cosmos1-user-wallet-11111",
+        "coins": [
+          {
+            "amount": "100000000",
+            "asset": "GAIA.KUJI"
+          }
+        ],
+        "txID": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    ],
+    "metadata": {},
+    "out": [
+      {
+        "address": "thor1-user-wallet-11111",
+        "coins": [
+          {
+            "amount": "100000000",
+            "asset": "THOR.KUJI"
+          }
+        ],
+        "txID": ""
+      }
+    ],
+    "pools": [],
+    "status": "success",
+    "type": "switch"
+  },
+  "thornodeTxs": [
+    {
+      "tx": {
+        "id": "0000000000000000000000000000000000000000000000000000000000000000",
+        "chain": "GAIA",
+        "from_address": "cosmos1-user-wallet-11111",
+        "to_address": "cosmos1-thorchain-wallet",
+        "coins": [
+          {
+            "asset": "GAIA.KUJI",
+            "amount": "100000000",
+            "decimals": 6
+          }
+        ],
+        "gas": [
+          {
+            "asset": "GAIA.ATOM",
+            "amount": "69600",
+            "decimals": 6
+          }
+        ],
+        "memo": "switch:thor1-user-wallet-11111"
+      }
+    }
+  ]
+}

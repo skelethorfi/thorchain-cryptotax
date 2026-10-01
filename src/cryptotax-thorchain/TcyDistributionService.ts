@@ -1,4 +1,4 @@
-import { Cache } from '../cache/Cache';
+import { Cache, CacheOptions } from '../cache/Cache';
 import axios from 'axios';
 import axiosThrottle from 'axios-request-throttle';
 import { API_URLS } from '../config/apiUrls';
@@ -47,8 +47,8 @@ export class TcyDistributionService {
     cache: Cache;
     baseUrl: string;
 
-    constructor(cachePath: string = '_cache') {
-        this.cache = new Cache(cachePath);
+    constructor(cachePath: string = '_cache', cacheOptions: CacheOptions = {}) {
+        this.cache = new Cache(cachePath, cacheOptions);
         this.baseUrl = MIDGARD_API_URL;
     }
 
@@ -58,6 +58,8 @@ export class TcyDistributionService {
         if (this.cache.has(cacheKey)) {
             return this.cache.read(cacheKey);
         }
+
+        this.cache.assertCanFetch(cacheKey);
 
         const url = `${this.baseUrl}/v2/tcy/distribution/${address}`;
         const response = await axios.get(url);

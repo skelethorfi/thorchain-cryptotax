@@ -1,0 +1,30 @@
+{
+  "description": "TCY unstake",
+  "source": "midgard",
+  "wallet": "thor1-user-wallet-11111",
+  "data": {
+    "date": "1609419600000000000",
+    "height": "10000000",
+    "in": [],
+    "metadata": {
+      "tcy": {
+        "memo": "TCY-:10000"
+      }
+    },
+    "out": [
+      {
+        "address": "thor1-user-wallet-11111",
+        "coins": [
+          {
+            "amount": "600000000000",
+            "asset": "THOR.TCY"
+          }
+        ],
+        "txID": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    ],
+    "pools": [],
+    "status": "success",
+    "type": "tcy_unstake"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "description": "Thorname register/update",
+  "source": "midgard",
+  "wallet": "thor1-user-wallet-11111",
+  "data": {
+    "date": "1609419600000000000",
+    "height": "10000000",
+    "in": [
+      {
+        "address": "thor1-user-wallet-11111",
+        "coins": [
+          {
+            "amount": "5000000000",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "txID": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    ],
+    "metadata": {
+      "thorname": {
+        "address": "thor1-user-wallet-11111",
+        "chain": "THOR",
+        "expire": "90000000",
+        "fundAmount": "4000000000",
+        "memo": "~:testthorname:THOR:thor1-user-wallet-11111",
+        "owner": "thor1-user-wallet-11111",
+        "registrationFee": "1000000000",
+        "thorname": "testthorname",
+        "txType": "thorname"
+      }
+    },
+    "out": [],
+    "pools": [],
+    "status": "success",
+    "type": "thorname"
+  }
+}

@@ -1,0 +1,122 @@
+import fs from "fs-extra";
+import os from "os";
+import path from "path";
+import YAML from "yaml";
+import {Action} from "@xchainjs/xchain-midgard";
+import {TxStatusResponse} from "@xchainjs/xchain-thornode";
+import {CryptoTaxTransaction} from "../cryptotax";
+import {ViewblockTx} from "../viewblock";
+import {TaxEvent} from "../thorchain-exporter/TaxEvent";
+import {ITaxConfig} from "../thorchain-exporter/ITaxConfig";
+import {getActionDate} from "../cryptotax-thorchain/MidgardActionMapper";
+import {TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService";
+import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
+import {BaseMapper} from "../thorchain-exporter/BaseMapper";
+
+// A golden test case is a folder containing:
+//   input.json    - the raw source data (a GoldenCaseInput)
+//   expected.yaml - the CSV rows the exporter should produce, reviewed by hand;
+//                   one YAML document per row, separated by '---' ('[]' for no rows)
+// Inputs must never contain anyone's own wallets or txids (see docs/specs/fixtures.md).
+
+export type GoldenCaseSource = 'midgard' | 'viewblock' | 'tcy';
+
+export interface GoldenCaseInput {
+    description: string;
+    source: GoldenCaseSource;
+    // The wallet being exported. Required for viewblock and tcy, which map relative to a wallet.
+    wallet: string;
+    addReferencePrices?: boolean;
+    data: Action | ViewblockTx | TcyDistributionItem;
+    // Related THORNode transactions (midgard swaps and switches)
+    thornodeTxs?: TxStatusResponse[];
+}
+
+export const INPUT_FILE = 'input.json';
+export const EXPECTED_FILE = 'expected.yaml';
+
+export function findCaseDirs(root: string): string[] {
+    if (!fs.existsSync(root)) {
+        return [];
+    }
+
+    const dirs: string[] = [];
+
+    for (const entry of fs.readdirSync(root, {withFileTypes: true})) {
+        if (!entry.isDirectory()) {
+            continue;
+        }
+
+        const dir = path.join(root, entry.name);
+
+        if (fs.existsSync(path.join(dir, INPUT_FILE))) {
+            dirs.push(dir);
+        } else {
+            dirs.push(...findCaseDirs(dir));
+        }
+    }
+
+    return dirs.sort();
+}
+
+export function readCaseInput(dir: string): GoldenCaseInput {
+    return fs.readJSONSync(path.join(dir, INPUT_FILE));
+}
+
+export function readCaseExpected(dir: string): CryptoTaxTransaction[] | undefined {
+    const file = path.join(dir, EXPECTED_FILE);
+    return fs.existsSync(file) ? parseRows(fs.readFileSync(file, 'utf8')) : undefined;
+}
+
+export function parseRows(text: string): CryptoTaxTransaction[] {
+    const docs = YAML.parseAllDocuments(text).map(doc => {
+        if (doc.errors.length > 0) {
+            throw doc.errors[0];
+        }
+        return doc.toJS();
+    });
+
+    // A single '[]' document means no rows
+    return docs.length === 1 && Array.isArray(docs[0]) ? docs[0] : docs;
+}
+
+// One document per row. Strings that look like numbers (e.g. amounts) are quoted,
+// so they parse back as strings.
+export function formatRows(rows: CryptoTaxTransaction[]): string {
+    if (rows.length === 0) {
+        return '[]\n';
+    }
+
+    return rows.map(row => YAML.stringify(row, {lineWidth: 0})).join('---\n');
+}
+
+export function writeCaseExpected(dir: string, rows: CryptoTaxTransaction[]) {
+    fs.outputFileSync(path.join(dir, EXPECTED_FILE), formatRows(rows));
+}
+
+// Runs a case through the same TaxEvent path the exporter uses.
+// Unsupported actions are written to a temporary folder rather than the repo.
+export function runCase(input: GoldenCaseInput, unsupportedActionsPath?: string): CryptoTaxTransaction[] {
+    const config = {
+        unsupportedActionsPath: unsupportedActionsPath ?? fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-unsupported-')),
+    } as ITaxConfig;
+    const wallet = {name: 'test', address: input.wallet, blockchain: '', addReferencePrices: input.addReferencePrices ?? false};
+
+    const event = new TaxEvent(getCaseDate(input), input.source, wallet, config);
+    event.input = input.data;
+    event.thornodeTxs = input.thornodeTxs ?? [];
+    event.convert();
+
+    return event.output;
+}
+
+function getCaseDate(input: GoldenCaseInput): Date {
+    switch (input.source) {
+        case 'midgard':
+            return getActionDate(input.data as Action);
+        case 'viewblock':
+            return new BaseMapper(input.data as ViewblockTx, input.wallet).datetime;
+        case 'tcy':
+            return TcyDistributionMapper.parseDate(input.data as TcyDistributionItem);
+    }
+}
