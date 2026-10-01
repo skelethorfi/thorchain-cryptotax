@@ -45,8 +45,8 @@ export const MAYA: Protocol = {
     id: 'maya',
     counterparty: 'mayachain',
     nativeChain: 'MAYA',
-    // To be confirmed in Summ; it ignores blockchain values it does not recognise
-    blockchain: 'MAYAChain',
+    // Summ ignores blockchain values it does not recognise; to be confirmed with a manual CSV upload
+    blockchain: 'MayaProtocol',
     nativeAsset: 'MAYA.CACAO',
     nativeAddressPrefix: 'maya1',
     lpTokenPrefix: 'MayaLP',

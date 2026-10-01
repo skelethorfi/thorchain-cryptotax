@@ -17,7 +17,7 @@ describe('Protocol', () => {
 
     test('native chains get their blockchain name; others are unchanged', () => {
         expect(formatBlockchain('THOR')).toBe('THORChain');
-        expect(formatBlockchain('MAYA')).toBe('MAYAChain');
+        expect(formatBlockchain('MAYA')).toBe('MayaProtocol');
         expect(formatBlockchain('BTC')).toBe('BTC');
     });
 

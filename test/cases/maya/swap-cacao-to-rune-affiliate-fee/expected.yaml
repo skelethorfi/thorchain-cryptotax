@@ -9,7 +9,7 @@ feeCurrency: ""
 feeAmount: ""
 from: maya1e0f53kfv9fghpxz8vrupl4kgulzg5cyapn4nnc
 to: mayachain
-blockchain: MAYAChain
+blockchain: MayaProtocol
 referencePricePerUnit: "0.17493195023737712"
 referencePriceCurrency: USD
 id: 2025-10-22T05:31:32.329Z.maya.bridge-trade-out

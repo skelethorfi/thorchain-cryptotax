@@ -41,6 +41,6 @@ baseCurrency: MayaLP.THOR.RUNE
 baseAmount: "62370.32912229"
 from: maya136tmapkujkwewjncdx3jck2amp4y0twh2ypzsq
 to: mayachain
-blockchain: MAYAChain
+blockchain: MayaProtocol
 id: 2025-10-06T01:34:01.409Z.return-lp-token
 description: 1/4 - Return LP token to MayaLP.THOR.RUNE (symmetric); F0090B6558270A00B6D228770C7C13F3B7B4F4A7DAA7F80EBA642D0AA7D67E54

@@ -32,7 +32,7 @@ only `maya1` wallets: swaps and liquidity adds are often started from a `thor1`,
 | Native asset decimals | 8 | **10** |
 | Other asset decimals | 8 | 8, except the MAYA token (`MAYA.MAYA` / `MAYA`), which is **4** |
 | Counterparty in `from` / `to` | `thorchain` | `mayachain` |
-| Blockchain value for the native chain | `THORChain` | `MAYAChain` (to be confirmed in Summ; see below) |
+| Blockchain value for the native chain | `THORChain` | `MayaProtocol` (to be confirmed in Summ; see below) |
 | LP token | `ThorLP.<pool>` | `MayaLP.<pool>` |
 | Native address prefix | `thor1` | `maya1` |
 | Default inbound gas when THORNode data is missing | 0.02 RUNE (see `swap-fees.md`) | 0.02 RUNE for RUNE inputs (sent on THORChain); none for CACAO and other inputs, as Maya node data is not fetched |
@@ -43,8 +43,9 @@ Decimals were checked on 2026-10-01 against live pool depths: Midgard's
 as 1e4.
 
 The blockchain value: Summ ignores a blockchain it does not recognise, so a
-wrong value is harmless but loses the hint. `MAYAChain` is kept in one place
-(`src/protocols`) so it can be corrected once confirmed.
+wrong value is harmless but loses the hint. `MayaProtocol` is kept in one place
+(`src/protocols`) so it can be corrected once confirmed with a manual CSV
+upload to Summ.
 
 ## Required behaviour
 
@@ -91,7 +92,7 @@ for the swap's other output), otherwise the first network fee. Refunds still
 ### Blockchain values
 
 As on THORChain, swap rows use the protocol's blockchain name for its native
-chain (`MAYAChain`), while liquidity deposit and withdrawal rows use the
+chain (`MayaProtocol`), while liquidity deposit and withdrawal rows use the
 Midgard chain id (`MAYA`, `THOR`, `KUJI`, …).
 
 ## Golden cases

@@ -15,7 +15,7 @@ baseCurrency: MayaLP.KUJI.KUJI
 baseAmount: "9931.43775001"
 from: mayachain
 to: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
-blockchain: MAYAChain
+blockchain: MayaProtocol
 id: 2023-11-09T06:40:04.262Z.receive-lp-token
 description: 3/4 - Receive LP token from MayaLP.KUJI.KUJI (symmetric); 493628E56D76DCB664E14C142C35CB4AA45D5643A0958F250F583A4029D11166
 ---
