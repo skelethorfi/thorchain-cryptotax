@@ -67,6 +67,17 @@ transaction. Rows for what comes out have no fee.
 | Send, Arkeo delegation | the send | actual fee from Viewblock |
 | TCY distribution | — | none (nothing sent in) |
 
+### Refunds of an affiliate's cut
+
+When a swap has an affiliate, THORChain swaps the affiliate's cut to RUNE as a
+swap of its own, which carries the user's txid and address. If that swap fails,
+Midgard reports a `refund` action whose input is the cut (e.g. secured USDC),
+next to the successful swap with the same txid. The wallet never sent that
+amount, and the cut is already reflected in what the swap paid out, so no row
+is exported. `RefundMapper` detects it by the THORNode inbound transaction
+listing a different asset from the refund's input
+(`refund/affiliate-fee-swap`). Without THORNode data the row is kept.
+
 ### Partially filled swaps
 
 A streaming swap can fill only partly and return the unfilled input to the

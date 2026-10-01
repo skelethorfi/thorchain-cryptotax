@@ -32,6 +32,15 @@ export class RefundMapper implements Mapper {
         const inputCoin: Coin = input.coins[0];
         const { blockchain: inputBlockchain, currency: inputCurrency } =
             parseMidgardAsset(inputCoin.asset);
+        // THORChain swaps an affiliate's cut of a swap to RUNE as a swap of its own, carrying the user's
+        // txid and address. When that fails, Midgard reports a refund of the cut, which the wallet never
+        // sent: THORNode shows what the wallet did send, so no row is exported (docs/specs/fees.md).
+        const sentCoins = thornodeTxs.find((tx) => tx.tx?.id === input.txID)?.tx?.coins;
+
+        if (sentCoins && !sentCoins.some((coin) => coin.asset.toUpperCase() === inputCoin.asset.toUpperCase())) {
+            return transactions;
+        }
+
         // The fee is the gas paid to send the refunded tx in (docs/specs/fees.md); the refund's own
         // outbound fee only shows as the lower amount returned
         const { feeCurrency, feeAmount } = getInboundFee(input.txID ?? '', thornodeTxs, inputCoin.asset, protocol);

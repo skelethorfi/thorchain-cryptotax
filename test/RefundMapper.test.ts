@@ -47,4 +47,20 @@ describe('RefundMapper', () => {
         expect(row.feeCurrency).toBe('');
         expect(row.feeAmount).toBe('');
     });
+
+    test('a refunded affiliate-fee swap, which the wallet did not send, has no row', () => {
+        const action = refund([]);
+        action.in[0].coins[0] = {asset: 'ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48', amount: '99900026'};
+        const thornodeTx = {tx: {id: 'tx-refund', coins: [{asset: 'ETH.ETH', amount: '800000'}], gas: [{asset: 'ETH.ETH', amount: '4138'}]}} as any;
+
+        expect(new RefundMapper().toCryptoTax(action, false, [thornodeTx])).toEqual([]);
+    });
+
+    test('a refund of what the wallet sent keeps its row when THORNode lists the same asset in another case', () => {
+        const action = refund([]);
+        action.in[0].coins[0].asset = 'ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48';
+        const thornodeTx = {tx: {id: 'tx-refund', coins: [{asset: 'ETH.USDC-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', amount: '1'}], gas: [{asset: 'ETH.ETH', amount: '4138'}]}} as any;
+
+        expect(new RefundMapper().toCryptoTax(action, false, [thornodeTx])).toHaveLength(1);
+    });
 });
