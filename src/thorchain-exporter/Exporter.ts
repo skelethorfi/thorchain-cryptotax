@@ -35,10 +35,10 @@ export function shouldIncludeAction(action: Action): boolean {
         return true;
     }
 
-    // Some loan opens reported as 'success' at the time are reported as 'pending' since late 2024.
-    // If the loan was paid out, the loan was opened.
+    // Midgard reports loan opens that borrowed RUNE as 'pending' (the RUNE payout has no txid), although
+    // they were paid. Treat them as success; other pending loan opens are skipped. See docs/specs/loans.md.
     if (txType === 'loanOpen') {
-        return action.out.some(out => out.coins.length > 0);
+        return action.out.some(out => out.coins.some(coin => coin.asset === 'THOR.RUNE'));
     }
 
     return false;

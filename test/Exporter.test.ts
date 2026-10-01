@@ -38,9 +38,12 @@ describe('Exporter action status filter', () => {
         expect(shouldIncludeAction(action('pending', 'loanRepayment'))).toBe(true);
     });
 
-    test('includes a pending loan open that paid out the loan', () => {
-        // e.g. a 2024 loan open reported as success at the time, and as pending since late 2024
+    test('includes a pending loan open that borrowed RUNE (docs/specs/loans.md)', () => {
         expect(shouldIncludeAction(action('pending', 'loanOpen', [rune]))).toBe(true);
+    });
+
+    test('excludes a pending loan open that borrowed something other than RUNE', () => {
+        expect(shouldIncludeAction(action('pending', 'loanOpen', [{asset: 'BTC.BTC', amount: '1000'}]))).toBe(false);
     });
 
     test('excludes a pending loan open with no output', () => {
