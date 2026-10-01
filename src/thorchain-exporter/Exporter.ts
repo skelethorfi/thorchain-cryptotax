@@ -23,6 +23,27 @@ export function shouldFetchThornodeTx(action: Action): boolean {
     return hasInboundTxId && (action.type === ActionTypeEnum.Switch || action.type === ActionTypeEnum.Swap);
 }
 
+export function shouldIncludeAction(action: Action): boolean {
+    if (action.status === ActionStatusEnum.Success) {
+        return true;
+    }
+
+    const txType = (action.metadata.swap as any)?.txType;
+
+    // Loan repayments show as 'pending' if the loan is not closed
+    if (txType === 'loanRepayment') {
+        return true;
+    }
+
+    // Some loan opens reported as 'success' at the time are reported as 'pending' since late 2024.
+    // If the loan was paid out, the loan was opened.
+    if (txType === 'loanOpen') {
+        return action.out.some(out => out.coins.length > 0);
+    }
+
+    return false;
+}
+
 export class Exporter {
     config: ITaxConfig;
     viewblock: Viewblock;
@@ -104,12 +125,7 @@ export class Exporter {
     }
 
     excludeNonSuccess(actions: Action[]): Action[] {
-        // loan repayments will show as 'pending' if the loan is not closed
-        return actions.filter(
-            (action: Action) => {
-                return action.status === ActionStatusEnum.Success || (action.metadata.swap as any)?.txType === 'loanRepayment'
-            }
-        );
+        return actions.filter(shouldIncludeAction);
     }
 
     saveToCsv(txs: CryptoTaxTransaction[], outputPath: string) {
