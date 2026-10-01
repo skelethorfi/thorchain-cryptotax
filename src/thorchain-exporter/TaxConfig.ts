@@ -6,7 +6,18 @@ import toml from "js-toml";
 export class TaxConfig {
     static load(filename: string): ITaxConfig {
         const config = this.loadConfigFile(filename);
-        return this.applyDefaults(config);
+        return this.resolvePaths(this.applyDefaults(config), path.dirname(path.resolve(filename)));
+    }
+
+    // Relative paths in the config are relative to the config file's folder, so a config
+    // kept outside the repo also keeps its output and cache outside the repo.
+    static resolvePaths(config: ITaxConfig, baseDir: string): ITaxConfig {
+        return {
+            ...config,
+            outputPath: path.resolve(baseDir, config.outputPath),
+            unsupportedActionsPath: path.resolve(baseDir, config.unsupportedActionsPath),
+            cachePath: path.resolve(baseDir, config.cachePath),
+        };
     }
 
     private static loadConfigFile(filename: string): ITaxConfig {
