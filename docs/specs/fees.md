@@ -26,16 +26,20 @@ From the earlier restructure (fetch-tx), which follows the same rule:
 for an inbound transaction:
 
 1. **THORNode gas**, when the matching THORNode transaction (by inbound txid)
-   has gas: `thornodeTx.tx.gas[0]`, in that gas asset. THORNode is fetched for
-   swaps and switches (including loan opens and repayments, which are swaps).
+   has gas: `thornodeTx.tx.gas[0]`, in that gas asset. THORNode is fetched
+   (`getThornodeTxIds`, `src/thorchain-exporter/Exporter.ts`) for:
+   - swaps and switches (including loan opens and repayments, which are swaps)
+     and refunds: the inbound transaction
+   - add liquidity and withdraw liquidity: each inbound transaction sent on an
+     L1 chain. Ones sent on THORChain use the default below.
 2. **Otherwise, a default for native transactions**:
    - an asset on THORChain (`THOR.*`, e.g. RUNE, TCY, KUJI on THORChain), or a
      synth, trade or secured asset: **0.02 RUNE**, THORChain's native
      transaction fee
    - on Maya, CACAO: **0.2 CACAO** (see `maya.md`)
 3. **Otherwise blank.** Gas for L1 inputs (BTC, ETH, tokens, …) is only known
-   from THORNode. Those rows are reference rows anyway: Summ takes L1 sends from
-   the wallet's own integration, with its real on-chain fee.
+   from THORNode, so an L1 row is blank only when THORNode has no record of the
+   inbound transaction, or on Maya, where THORNode is not queried.
 
 Never use Midgard `networkFees` (outbound), `liquidityFee`, `affiliateFee` or
 affiliate outputs as a fee.
@@ -75,5 +79,7 @@ inbound fee.
 - Unit tests for `getInboundFee` and each mapper's fee, including:
   - THORNode gas is preferred over any default
   - a missing THORNode tx gives the native default, or blank for L1 inputs
+  - L1 refunds and L1 liquidity deposits use the THORNode gas
+    (`refund/btc-price-limit`, `liquidity/add-btc-rune-symmetric`)
   - `networkFees`, `liquidityFee` and affiliate outputs are never used as fees
 - Golden cases in `test/cases/` carry the expected fee in each row.

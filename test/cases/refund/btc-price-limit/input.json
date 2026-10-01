@@ -1,0 +1,132 @@
+{
+  "description": "refund success: [BTC.BTC] -> [BTC.BTC]",
+  "source": "midgard",
+  "wallet": "bc1qkk788zfqyh7pgjke63xpg5zrlf27q359ke3x5p",
+  "data": {
+    "date": "1790872332565977461",
+    "height": "28059451",
+    "in": [
+      {
+        "address": "bc1qkk788zfqyh7pgjke63xpg5zrlf27q359ke3x5p",
+        "coins": [
+          {
+            "amount": "1207790",
+            "asset": "BTC.BTC"
+          }
+        ],
+        "txID": "B8E65083589682E5F08EA61CB7502BB297AA7DE16D9F4FB25879272E873AD793"
+      }
+    ],
+    "metadata": {
+      "refund": {
+        "affiliateAddress": "sto",
+        "affiliateFee": "0",
+        "memo": "=:ETH.WBTC:0xFcffCeAcA8Bdb0Fd8F7b8792ff3Fa57403FDf717:1203965:sto:0",
+        "networkFees": [
+          {
+            "amount": "3735",
+            "asset": "BTC.BTC"
+          }
+        ],
+        "reason": "emit asset 1203549 less than price limit 1203965",
+        "txType": "swap"
+      }
+    },
+    "out": [
+      {
+        "address": "bc1qkk788zfqyh7pgjke63xpg5zrlf27q359ke3x5p",
+        "coins": [
+          {
+            "amount": "1204055",
+            "asset": "BTC.BTC"
+          }
+        ],
+        "height": "28059463",
+        "txID": "9FFC5E65343D05E872C047BB5A381807ED602A8561AE6E23292F9ED97DF78D46"
+      }
+    ],
+    "pools": [],
+    "status": "success",
+    "type": "refund"
+  },
+  "thornodeTxs": [
+    {
+      "tx": {
+        "id": "B8E65083589682E5F08EA61CB7502BB297AA7DE16D9F4FB25879272E873AD793",
+        "chain": "BTC",
+        "from_address": "bc1qkk788zfqyh7pgjke63xpg5zrlf27q359ke3x5p",
+        "to_address": "bc1q0h3h0t48v60rx9cg88fq0gckmhh2mxu5lh6dcs",
+        "coins": [
+          {
+            "asset": "BTC.BTC",
+            "amount": "1207790"
+          }
+        ],
+        "gas": [
+          {
+            "asset": "BTC.BTC",
+            "amount": "1660"
+          }
+        ],
+        "memo": "=:ETH.WBTC:0xFcffCeAcA8Bdb0Fd8F7b8792ff3Fa57403FDf717:1203965:sto:0"
+      },
+      "planned_out_txs": [
+        {
+          "chain": "BTC",
+          "to_address": "bc1qkk788zfqyh7pgjke63xpg5zrlf27q359ke3x5p",
+          "coin": {
+            "asset": "BTC.BTC",
+            "amount": "1204055"
+          },
+          "refund": true
+        }
+      ],
+      "out_txs": [
+        {
+          "id": "9FFC5E65343D05E872C047BB5A381807ED602A8561AE6E23292F9ED97DF78D46",
+          "chain": "BTC",
+          "from_address": "bc1q0h3h0t48v60rx9cg88fq0gckmhh2mxu5lh6dcs",
+          "to_address": "bc1qkk788zfqyh7pgjke63xpg5zrlf27q359ke3x5p",
+          "coins": [
+            {
+              "asset": "BTC.BTC",
+              "amount": "1204055"
+            }
+          ],
+          "gas": [
+            {
+              "asset": "BTC.BTC",
+              "amount": "6310"
+            }
+          ],
+          "memo": "REFUND:B8E65083589682E5F08EA61CB7502BB297AA7DE16D9F4FB25879272E873AD793"
+        }
+      ],
+      "stages": {
+        "inbound_observed": {
+          "final_count": 99,
+          "completed": true
+        },
+        "inbound_confirmation_counted": {
+          "remaining_confirmation_seconds": 0,
+          "completed": true
+        },
+        "inbound_finalised": {
+          "completed": true
+        },
+        "swap_status": {
+          "pending": false
+        },
+        "swap_finalised": {
+          "completed": true
+        },
+        "outbound_delay": {
+          "completed": true
+        },
+        "outbound_signed": {
+          "completed": true
+        }
+      }
+    }
+  ]
+}

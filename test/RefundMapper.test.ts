@@ -29,10 +29,20 @@ describe('RefundMapper', () => {
         expect(row.baseAmount).toBe('1');
     });
 
-    test('an L1 input without THORNode data has no fee', () => {
+    test('an L1 input uses the gas THORNode observed on the inbound tx', () => {
         const action = refund([{asset: 'BTC.BTC', amount: '150'}]);
         action.in[0].coins[0].asset = 'BTC.BTC';
-        const [row] = new RefundMapper().toCryptoTax(action, false);
+        const thornodeTx = {tx: {id: 'tx-refund', gas: [{asset: 'BTC.BTC', amount: '1660'}]}} as any;
+        const [row] = new RefundMapper().toCryptoTax(action, false, [thornodeTx]);
+
+        expect(row.feeCurrency).toBe('BTC');
+        expect(row.feeAmount).toBe('0.0000166');
+    });
+
+    test('an L1 input has no fee when THORNode has no record of the inbound tx', () => {
+        const action = refund([{asset: 'BTC.BTC', amount: '150'}]);
+        action.in[0].coins[0].asset = 'BTC.BTC';
+        const [row] = new RefundMapper().toCryptoTax(action, false, [{} as any]);
 
         expect(row.feeCurrency).toBe('');
         expect(row.feeAmount).toBe('');
