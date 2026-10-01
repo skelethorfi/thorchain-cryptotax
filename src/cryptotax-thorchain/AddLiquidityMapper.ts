@@ -12,9 +12,10 @@ import {
 import { baseToAssetAmountString } from '../utils/Amount';
 import { Mapper } from './Mapper';
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
+import { Protocol, THORCHAIN } from '../protocols/Protocol';
 
 export class AddLiquidityMapper implements Mapper {
-    toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = []): CryptoTaxTransaction[] {
+    toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = [], protocol: Protocol = THORCHAIN): CryptoTaxTransaction[] {
         const numAssetsIn: number = action.in.length;
 
         if (numAssetsIn === 0 || numAssetsIn > 2) {
@@ -25,7 +26,7 @@ export class AddLiquidityMapper implements Mapper {
         const timestamp: string = date.toISOString();
         const idPrefix: string = date.toISOString();
         const pool: string = parseMidgardPool(action.pools[0]);
-        const poolName: string = `ThorLP.${pool}`;
+        const poolName: string = `${protocol.lpTokenPrefix}.${pool}`;
         const liquidityUnits: string = baseToAssetAmountString(
             action.metadata.addLiquidity?.liquidityUnits ?? ''
         );
@@ -35,7 +36,7 @@ export class AddLiquidityMapper implements Mapper {
 
         // For savers the LP units are denominated in the asset used for saving, so we need to ensure it
         // uses a different token name. eg. ThorLP.BTC/BTC
-        const lpToken: string = isSavers ? `ThorLP.${action.pools[0]}` : `ThorLP.${pool}`;
+        const lpToken: string = isSavers ? `${protocol.lpTokenPrefix}.${action.pools[0]}` : `${protocol.lpTokenPrefix}.${pool}`;
 
         const date_plus_10 = new Date(date.getTime() + (10 * 1000));
         const date_plus_20 = new Date(date.getTime() + (20 * 1000));
@@ -68,9 +69,9 @@ export class AddLiquidityMapper implements Mapper {
                 timestamp,
                 type: CryptoTaxTransactionType.AddLiquidity,
                 baseCurrency: currency,
-                baseAmount: baseToAssetAmountString(coin.amount),
+                baseAmount: baseToAssetAmountString(coin.amount, protocol.decimals(coin.asset)),
                 from: from,
-                to: 'thorchain',
+                to: protocol.counterparty,
                 blockchain,
                 id: `${idPrefix}.add-liquidity.${currency}`,
                 description: `${currentTxNum}/${totalTxs} - Add liquidity ${currency} to ${poolName} (${symmDesc}); ${txId}`,
@@ -116,10 +117,10 @@ export class AddLiquidityMapper implements Mapper {
             console.warn('Missing deposit address');
         }
 
-        // Check if RUNE is not the first asset in the deposit
-        if (numAssetsIn === 2 && action.in[0].coins[0].asset !== 'THOR.RUNE') {
-            // TODO: search inputs for RUNE side (if available)
-            throw this.error(`Expected RUNE as first asset in LP deposit`, action);
+        // Check if the native asset (e.g. RUNE) is not the first asset in the deposit
+        if (numAssetsIn === 2 && action.in[0].coins[0].asset !== protocol.nativeAsset) {
+            // TODO: search inputs for the native side (if available)
+            throw this.error(`Expected ${protocol.nativeAsset.split('.')[1]} as first asset in LP deposit`, action);
         }
 
         let lpTokenReceivingAddress = action.in[0].address;
@@ -136,9 +137,9 @@ export class AddLiquidityMapper implements Mapper {
             type: CryptoTaxTransactionType.ReceiveLpToken,
             baseCurrency: lpToken,
             baseAmount: liquidityUnits,
-            from: 'thorchain',
+            from: protocol.counterparty,
             to: lpTokenReceivingAddress,
-            blockchain: 'THORChain',
+            blockchain: protocol.blockchain,
             id: `${idPrefix}.receive-lp-token`,
             description: `${currentTxNum}/${totalTxs} - Receive LP token from ${poolName} (${symmDesc}); ${txId}`,
             ...referencePrice
@@ -152,7 +153,7 @@ export class AddLiquidityMapper implements Mapper {
             type: CryptoTaxTransactionType.Spam,
             baseCurrency: quoteCurrency,
             baseAmount: quoteAmount,
-            from: 'thorchain',
+            from: protocol.counterparty,
             to: lpTokenReceivingAddress,
             id: `${idPrefix}.spam`,
             description:

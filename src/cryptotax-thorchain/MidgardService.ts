@@ -20,9 +20,9 @@ export class MidgardService {
     cache: Cache;
     api: MidgardApi;
 
-    constructor(cachePath: string = '_cache', cacheOptions: CacheOptions = {}) {
+    constructor(cachePath: string = '_cache', cacheOptions: CacheOptions = {}, basePath: string = API_URLS.midgard) {
         this.cache = new Cache(cachePath, cacheOptions);
-        const apiConfig = new Configuration({ basePath: API_URLS.midgard });
+        const apiConfig = new Configuration({ basePath });
         this.api = new MidgardApi(apiConfig);
     }
 

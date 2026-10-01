@@ -17,6 +17,7 @@ import {getActionDate} from "../cryptotax-thorchain/MidgardActionMapper";
 import {TaxConfig} from "./TaxConfig";
 import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
 import {CacheOptions} from "../cache/Cache";
+import {getProtocol, Protocol, THORCHAIN} from "../protocols/Protocol";
 
 export function shouldFetchThornodeTx(action: Action): boolean {
     const hasInboundTxId = !!action.in?.[0]?.txID;
@@ -27,6 +28,8 @@ export class Exporter {
     config: ITaxConfig;
     viewblock: Viewblock;
     midgard: MidgardService;
+    // Midgard of each other protocol enabled in the config (e.g. Maya)
+    otherMidgards: {protocol: Protocol, midgard: MidgardService}[];
     thornode: ThornodeService;
     tcyDistribution: TcyDistributionService;
     report: Reporter;
@@ -38,6 +41,13 @@ export class Exporter {
         this.midgard = new MidgardService(path.join(cachePath, 'midgard'), cacheOptions);
         this.thornode = new ThornodeService(path.join(cachePath, 'thornode'), false, cacheOptions);
         this.tcyDistribution = new TcyDistributionService(path.join(cachePath, 'tcy'), cacheOptions);
+        this.otherMidgards = (this.config.protocols ?? ['thorchain'])
+            .map(id => getProtocol(id))
+            .filter(protocol => protocol !== THORCHAIN)
+            .map(protocol => ({
+                protocol,
+                midgard: new MidgardService(path.join(cachePath, `${protocol.id}-midgard`), cacheOptions, protocol.midgardUrl),
+            }));
         this.report = new Reporter();
     }
 
@@ -81,6 +91,20 @@ export class Exporter {
                 // Log the error, save a copy of failed transaction and keep going
                 console.error(error);
                 this.saveFailure(outputPath, wallet.address, 'midgard', getActionDate(action), action, error);
+            }
+        }
+
+        // Get actions from other protocols' Midgards (e.g. Maya), for every wallet
+        for (const {protocol, midgard} of this.otherMidgards) {
+            const protocolActions = this.excludeNonSuccess(await midgard.getActions(wallet.address));
+
+            for (const action of protocolActions) {
+                try {
+                    events.addMidgard(action, wallet, [], this.config, protocol);
+                } catch (error) {
+                    console.error(error);
+                    this.saveFailure(outputPath, wallet.address, `${protocol.id}-midgard`, getActionDate(action), action, error);
+                }
             }
         }
 

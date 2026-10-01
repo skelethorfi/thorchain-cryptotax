@@ -1,9 +1,9 @@
 import { Action, Coin, Transaction } from '@xchainjs/xchain-midgard';
 import { CryptoTaxTransaction, CryptoTaxTransactionType } from '../cryptotax';
-import { baseToAssetAmountString } from '../utils/Amount';
 import { TxStatusResponse } from '@xchainjs/xchain-thornode';
 import { BaseMapper } from './BaseMapper';
 import { formatBlockchainForOutput, getInboundFee } from './ThorchainUtils';
+import { Protocol } from '../protocols/Protocol';
 
 // https://dev.thorchain.org/concepts/memos.html#swap
 const SWAP_DESTADDR = 2;
@@ -25,10 +25,12 @@ function getActualBlockchain(tx: Transaction, parsedBlockchain: string): string 
 export class SwapMapper extends BaseMapper {
     protected mapperName: string = 'SwapMapper';
 
-    toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = []): CryptoTaxTransaction[] {
+    toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = [], protocol?: Protocol): CryptoTaxTransaction[] {
         super.action = action;
         super.addReferencePrices = addReferencePrices;
         super.thornodeTxs = thornodeTxs;
+        super.protocol = protocol ?? this.protocol;
+        const counterparty = this.protocol.counterparty;
 
         const date_plus_10 = new Date(this.datetime.getTime() + 10 * 1000);
         const timestamp_plus_10: string = date_plus_10.toISOString();
@@ -43,16 +45,23 @@ export class SwapMapper extends BaseMapper {
 
         const input: Transaction = action.in[0];
         const inputCoin: Coin = input.coins[0];
-        const { blockchain: inputBlockchainParsed, currency: inputCurrency, displayCurrency: inputDisplayCurrency, amountParsed: inputAmount } = this.parseCoin(inputCoin.asset, inputCoin.amount);
+        const output: Transaction = this.getOutput(action, action.metadata.swap?.memo);
+
+        // The unfilled part of a streaming swap can be returned to the sender in the input asset.
+        // Net it off, so the row shows what was actually swapped. See docs/specs/maya.md.
+        const returnedAmount = this.getReturnedAmount(action, input, output);
+        const swappedAmount = (BigInt(inputCoin.amount) - returnedAmount).toString();
+        const { blockchain: inputBlockchainParsed, currency: inputCurrency, displayCurrency: inputDisplayCurrency, amountParsed: inputAmount } = this.parseCoin(inputCoin.asset, swappedAmount);
+        const returnedNote = returnedAmount > 0n
+            ? ` (${this.parseCoin(inputCoin.asset, returnedAmount.toString()).amountParsed} ${inputDisplayCurrency} returned unfilled)`
+            : '';
         const inputIsSynth: boolean = isSynth(input);
         const inputBlockchain = getActualBlockchain(input, inputBlockchainParsed);
 
         const txId = action.in[0].txID ?? '';
-        const memo = action.metadata.swap?.memo;
         const inputPriceUSD = action.metadata.swap?.inPriceUSD;
         const outputPriceUSD = action.metadata.swap?.outPriceUSD;
 
-        const output: Transaction = this.getOutput(action, memo);
         const outputCoin: Coin = output.coins[0];
         const { blockchain: outputBlockchainParsed, currency: outputCurrency, displayCurrency: outputDisplayCurrency, amountParsed: outputAmount } = this.parseCoin(outputCoin.asset, outputCoin.amount);
         const outputIsSynth: boolean = isSynth(output);
@@ -94,18 +103,18 @@ export class SwapMapper extends BaseMapper {
             baseCurrency: inputCurrency,
             baseAmount: inputAmount,
             quoteCurrency: outputCurrency,
-            quoteAmount: baseToAssetAmountString(outputCoin.amount),
+            quoteAmount: outputAmount,
             feeCurrency,
             feeAmount,
             from: input.address,
-            to: 'thorchain',
+            to: counterparty,
             blockchain: formatBlockchainForOutput(inputBlockchain),
             referencePricePerUnit: inputPriceUSD || undefined,
             referencePriceCurrency: inputPriceUSD ? 'USD' : undefined,
-            id: `${this.idPrefix}.thorchain.bridge-trade-out`,
+            id: `${this.idPrefix}.${this.protocol.id}.bridge-trade-out`,
             description: `1/2 - Swap ${inputAmount} ${inputIsSynth ? 'Synth ' : ''}${inputDisplayCurrency} to ${outputAmount} ${
                 outputIsSynth ? 'Synth ' : ''
-            }${outputDisplayCurrency}; ${txId}`,
+            }${outputDisplayCurrency}${returnedNote}; ${txId}`,
         });
 
         // Wallet B1 - Receive asset B from thorchain ---------------------------------------------
@@ -116,18 +125,29 @@ export class SwapMapper extends BaseMapper {
             type: CryptoTaxTransactionType.BridgeTradeIn,
             baseCurrency: outputCurrency,
             baseAmount: outputAmount,
-            from: 'thorchain',
+            from: counterparty,
             to: output.address,
             blockchain: formatBlockchainForOutput(outputBlockchain),
             referencePricePerUnit: outputPriceUSD || undefined,
             referencePriceCurrency: outputPriceUSD ? 'USD' : undefined,
-            id: `${this.idPrefix}.thorchain.bridge-trade-in`,
+            id: `${this.idPrefix}.${this.protocol.id}.bridge-trade-in`,
             description: `2/2 - Swap ${inputAmount} ${inputIsSynth ? 'Synth ' : ''}${inputDisplayCurrency} to ${outputAmount} ${
                 outputIsSynth ? 'Synth ' : ''
             }${outputDisplayCurrency}; ${txId}`,
         });
 
         return transactions;
+    }
+
+    // Sum of outputs, other than the swap output, returned to the sender in the input asset
+    getReturnedAmount(action: Action, input: Transaction, output: Transaction): bigint {
+        const inputAsset = input.coins[0].asset;
+
+        return action.out
+            .filter(out => out !== output && out.address.toLowerCase() === input.address.toLowerCase())
+            .flatMap(out => out.coins)
+            .filter(coin => coin.asset === inputAsset)
+            .reduce((sum, coin) => sum + BigInt(coin.amount), 0n);
     }
 
     // Find which output is for the user. As there may also be an output for an affiliate.

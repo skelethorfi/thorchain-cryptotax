@@ -2,13 +2,14 @@ import { TxStatusResponse } from '@xchainjs/xchain-thornode';
 import { parseMidgardAsset } from './MidgardUtils';
 import { baseToAssetAmountString } from '../utils/Amount';
 import { assetFromStringEx, AssetType } from '@xchainjs/xchain-util';
+import { formatBlockchain } from '../protocols/Protocol';
 
 export function getDefaultRuneGas(): string {
     return '2000000';
 }
 
 export function formatBlockchainForOutput(blockchain: string): string {
-    return blockchain === 'THOR' ? 'THORChain' : blockchain;
+    return formatBlockchain(blockchain);
 }
 
 export function getInboundFee(

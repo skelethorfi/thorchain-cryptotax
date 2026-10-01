@@ -10,6 +10,7 @@ import {TxStatusResponse} from "@xchainjs/xchain-thornode";
 import {DelegateArkeoMapper} from "./DelegateArkeoMapper";
 import {TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService";
 import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
+import {Protocol, THORCHAIN} from "../protocols/Protocol";
 
 type TaxEventSource = 'viewblock' | 'midgard' | 'tcy';
 
@@ -23,13 +24,16 @@ export class TaxEvent {
     wallet: IWallet;
     addReferencePrices: boolean;
     config: ITaxConfig;
+    // Protocol of a midgard event
+    protocol: Protocol;
 
-    constructor(datetime: Date, source: TaxEventSource, wallet: IWallet, config: ITaxConfig) {
+    constructor(datetime: Date, source: TaxEventSource, wallet: IWallet, config: ITaxConfig, protocol: Protocol = THORCHAIN) {
         this.datetime = datetime;
         this.source = source;
         this.wallet = wallet;
         this.addReferencePrices = wallet.addReferencePrices ?? false;
         this.config = config;
+        this.protocol = protocol;
     }
 
     convert() {
@@ -75,7 +79,7 @@ export class TaxEvent {
     }
 
     convertMidgardAction(addReferencePrices: boolean) {
-        this.output = actionToCryptoTax(this.input as Action, this.thornodeTxs, addReferencePrices, this.config.unsupportedActionsPath);
+        this.output = actionToCryptoTax(this.input as Action, this.thornodeTxs, addReferencePrices, this.config.unsupportedActionsPath, this.protocol);
     }
 
     convertTcy() {
