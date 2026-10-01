@@ -8,12 +8,19 @@ or `loanRepayment`. The exporter normally skips actions that are not
 
 - **Loan repayments** that are `pending`: Midgard keeps a repayment pending
   until the loan is closed, but the repayment itself happened.
-- **Loan opens that borrowed RUNE** and are `pending`: Midgard reports almost
-  all of them as pending, although they were paid out (see below).
+- **Loan opens with an output** that are `pending`: an output means the loan
+  was paid out. In practice these are loans that borrowed RUNE, which Midgard
+  reports as pending although they were paid (see below).
 
-Other pending loan opens are skipped.
+Pending loan opens with no output are skipped.
 
-## Why a pending RUNE loan open counts as success
+## Why a pending loan open with an output counts as success
+
+Midgard adds an output when it records the payout. For loans paid out on
+another chain, that is also when the action becomes `success`, so no such loan
+is pending with an output. RUNE payouts are recorded without a txid, and those
+actions stay `pending` although the output (the payout) is there. The rule is
+therefore "an output means it was paid", not "RUNE is special"; the evidence:
 
 Checked on 2026-10-01 against 3,000 public loan opens from Midgard (via
 Liquify), January to September 2024, while lending was operating normally:
@@ -27,7 +34,8 @@ Liquify), January to September 2024, while lending was operating normally:
 
 - `pending` tracks **RUNE payouts**, not failed loans. RUNE is paid out natively
   on THORChain, and Midgard records that payout without a txid, so it never
-  marks those loan opens complete. Loans of any other asset are never pending.
+  marks those loan opens complete. Loans of any other asset are never pending,
+  so every pending loan open with an output borrowed RUNE.
 - **The loans were paid.** THORNode has pruned these transactions (even the
   successful ones), so payouts were checked with Midgard's borrower records
   (`/v2/borrower/<address>`): all 26 pending RUNE loan opens whose borrower has
