@@ -28,10 +28,12 @@ for an inbound transaction:
 1. **THORNode gas**, when the matching THORNode transaction (by inbound txid)
    has gas: `thornodeTx.tx.gas[0]`, in that gas asset. THORNode is fetched
    (`getThornodeTxIds`, `src/thorchain-exporter/Exporter.ts`) for:
-   - swaps and switches (including loan opens and repayments, which are swaps)
-     and refunds: the inbound transaction
+   - swaps and switches (including loan opens and repayments, which are swaps):
+     the inbound transaction
    - add liquidity and withdraw liquidity: each inbound transaction sent on an
      L1 chain. Ones sent on THORChain use the default below.
+   - refunds: the inbound transaction, only to see what the wallet sent (see
+     Refunds of an affiliate's cut). A refund's fee does not use it.
 2. **Otherwise, a default for native transactions**:
    - an asset on THORChain (`THOR.*`, e.g. RUNE, TCY, KUJI on THORChain), or a
      synth, trade or secured asset: **0.02 RUNE**, THORChain's native
@@ -42,7 +44,7 @@ for an inbound transaction:
    inbound transaction, or on Maya, where THORNode is not queried.
 
 Never use Midgard `networkFees` (outbound), `liquidityFee`, `affiliateFee` or
-affiliate outputs as a fee.
+affiliate outputs as a fee. The one exception is refunds (see Refunds).
 
 The fee goes on the row for the wallet that paid it: the row for the inbound
 transaction. Rows for what comes out have no fee.
@@ -55,7 +57,7 @@ transaction. Rows for what comes out have no fee.
 | Switch | `BridgeOut` | inbound fee |
 | Loan open | `CollateralDeposit` | inbound fee; the `Loan` row has none |
 | Loan repayment | `LoanRepayment` | inbound fee; the `CollateralWithdrawal` row has none |
-| Refund | `FailedIn` | inbound fee; the refund's outbound fee shows only as the lower amount returned |
+| Refund | `FailedIn` | **exception:** the outbound network fee, not the inbound fee (see Refunds; open question) |
 | Add liquidity | each `AddLiquidity` row | inbound fee of that deposit |
 | Withdraw liquidity | `ReturnLpToken` | inbound fee of the withdrawal request (e.g. 0.02 RUNE or 0.2 CACAO); `RemoveLiquidity` rows have none |
 | RUNEPool deposit | `AddLiquidity` | 0.02 RUNE |
@@ -70,19 +72,31 @@ transaction. Rows for what comes out have no fee.
 ### Refunds
 
 A refund is two transactions: the wallet sends the inbound and pays its gas,
-then THORChain sends the outbound back and pays that gas from its vault. The
-wallet is the receiver of the outbound, and a receiver does not pay the
-sender's gas, the same as when anyone else sends to the wallet.
+then THORChain sends the outbound back and pays that gas from its vault.
+THORChain recovers the outbound's cost by returning less than was sent in
+(Midgard `networkFees`).
 
-- The `FailedIn` row carries the amount sent in and the **inbound** gas.
-- The outbound's gas is **never** exported as a fee. THORChain recovers it by
-  returning less than was sent in (Midgard `networkFees`), so the wallet
-  already bears it as the lower amount received. Exporting it as a fee as
-  well would count it twice.
+**Current behaviour** (unchanged from before the one fee rule): the `FailedIn`
+row carries the amount sent in, and its fee is the **outbound network fee** in
+the refunded asset when Midgard lists one (a partial fill also lists the fee
+for the swap's other output), otherwise the first network fee, otherwise
+blank. The inbound gas is not exported.
 
 Example (`refund/btc-price-limit`): 0.0120779 BTC sent in with 0.0000166 BTC
-gas; 0.01204055 BTC returned. The fee is 0.0000166 BTC. The 0.00003735 BTC
-difference is the outbound fee and is not a fee on any row.
+gas; 0.01204055 BTC returned. The row's fee is 0.00003735 BTC, the outbound
+fee.
+
+**Open question: is that the right fee?** By the one rule it would be the
+inbound gas (0.0000166 BTC here), because:
+
+- the wallet paid the inbound gas, and
+- the wallet is the receiver of the outbound. A receiver does not pay the
+  sender's gas, the same as when anyone else sends to the wallet, and the
+  outbound fee already shows as the lower amount received.
+
+It is left as it is until a real refund has been checked in Summ: how a
+`FailedIn` row and its fee are treated, and what the L1 wallet's own import
+shows for the same two transactions.
 
 ### Refunds of an affiliate's cut
 
@@ -114,7 +128,10 @@ inbound fee.
 - Unit tests for `getInboundFee` and each mapper's fee, including:
   - THORNode gas is preferred over any default
   - a missing THORNode tx gives the native default, or blank for L1 inputs
-  - L1 refunds and L1 liquidity deposits use the THORNode gas
-    (`refund/btc-price-limit`, `liquidity/add-btc-rune-symmetric`)
-  - `networkFees`, `liquidityFee` and affiliate outputs are never used as fees
+  - L1 liquidity deposits use the THORNode gas
+    (`liquidity/add-btc-rune-symmetric`)
+  - a refund uses the outbound network fee (`refund/btc-price-limit`), and a
+    refund of an affiliate's cut has no row (`refund/affiliate-fee-swap`)
+  - `networkFees` (except for refunds), `liquidityFee` and affiliate outputs are
+    never used as fees
 - Golden cases in `test/cases/` carry the expected fee in each row.

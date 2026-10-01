@@ -4,7 +4,7 @@ type: failed-in
 baseCurrency: BTC
 baseAmount: "0.0120779"
 feeCurrency: BTC
-feeAmount: "0.0000166"
+feeAmount: "0.00003735"
 from: bc1qkk788zfqyh7pgjke63xpg5zrlf27q359ke3x5p
 blockchain: BTC
 id: 2026-10-01T16:32:12.565Z.refund

@@ -3,8 +3,8 @@ timestamp: 2026-08-18T17:46:59.091Z
 type: failed-in
 baseCurrency: BTC
 baseAmount: "0.01553334"
-feeCurrency: ""
-feeAmount: ""
+feeCurrency: BTC
+feeAmount: "0.0000015"
 from: bc1qj2c8q8ex4te9ufp5afdfpwr4e7hz64esnddewp
 blockchain: BTC
 id: 2026-08-18T17:46:59.091Z.refund

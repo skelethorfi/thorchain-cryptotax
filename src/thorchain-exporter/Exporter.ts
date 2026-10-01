@@ -21,7 +21,7 @@ import {getProtocol, Protocol, THORCHAIN} from "../protocols/Protocol";
 import {assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
 
 // The inbound txids to look up on THORNode, which is the only source of the gas the wallet paid on an
-// L1 chain (docs/specs/fees.md).
+// L1 chain (docs/specs/fees.md). A refund's is looked up to see what the wallet sent, not for its gas.
 export function getThornodeTxIds(action: Action): string[] {
     const inbounds = action.in ?? [];
     let txIds: (string | undefined)[] = [];
