@@ -1,0 +1,12 @@
+walletExchange: thor1-user-wallet-11111
+type: send
+timestamp: 2020-12-31T13:00:00.000Z
+baseAmount: "0.00000001"
+baseCurrency: RUNE
+feeCurrency: RUNE
+feeAmount: "0.02"
+from: thor1-user-wallet-11111
+to: thor1-user-wallet-11111
+blockchain: THOR
+id: 2020-12-31T13:00:00.000Z.send
+description: 1/1 - DelegateArkeoWallet; 0000000000000000000000000000000000000000000000000000000000000000

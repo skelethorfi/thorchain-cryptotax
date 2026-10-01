@@ -1,0 +1,23 @@
+walletExchange: cosmos1-user-wallet-11111
+timestamp: 2020-12-31T13:00:00.000Z
+type: bridge-out
+baseCurrency: KUJI
+baseAmount: "1"
+feeCurrency: ATOM
+feeAmount: "0.000696"
+from: cosmos1-user-wallet-11111
+to: thor1-user-wallet-11111
+blockchain: GAIA
+id: 2020-12-31T13:00:00.000Z.bridge-out
+description: 1/2 - Switch GAIA.KUJI to THOR.KUJI (send GAIA.KUJI); 0000000000000000000000000000000000000000000000000000000000000000
+---
+walletExchange: thor1-user-wallet-11111
+timestamp: 2020-12-31T13:00:10.000Z
+type: bridge-in
+baseCurrency: KUJI
+baseAmount: "1"
+from: cosmos1-user-wallet-11111
+to: thor1-user-wallet-11111
+blockchain: THORChain
+id: 2020-12-31T13:00:00.000Z.bridge-in
+description: 2/2 - Switch GAIA.KUJI to THOR.KUJI (receive THOR.KUJI); 0000000000000000000000000000000000000000000000000000000000000000

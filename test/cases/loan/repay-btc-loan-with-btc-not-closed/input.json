@@ -1,0 +1,41 @@
+{
+  "description": "Loan repayment: deposit BTC to repay a BTC loan, loan not closed",
+  "source": "midgard",
+  "wallet": "thor1-user-wallet-11111",
+  "data": {
+    "date": "1609419600000000000",
+    "height": "10000000",
+    "in": [
+      {
+        "address": "bc1-user-wallet-aaaaa",
+        "coins": [
+          {
+            "amount": "5000000",
+            "asset": "BTC.BTC"
+          }
+        ],
+        "txID": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    ],
+    "metadata": {
+      "swap": {
+        "affiliateAddress": "",
+        "affiliateFee": "0",
+        "isStreamingSwap": false,
+        "liquidityFee": "11111111",
+        "memo": "loan-:BTC.BTC:bc1-user-wallet-aaaaa:0",
+        "networkFees": [],
+        "swapSlip": "2",
+        "swapTarget": "0",
+        "txType": "loanRepayment"
+      }
+    },
+    "out": [],
+    "pools": [
+      "BTC.BTC",
+      "THOR.TOR"
+    ],
+    "status": "pending",
+    "type": "swap"
+  }
+}
