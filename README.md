@@ -45,6 +45,13 @@ There are 2 ways to run this tool.
 If you are familiar with Git and NodeJS.<br>
 Follow the [NodeJS Instructions](docs/nodejs-instructions.md).
 
+API endpoint defaults are committed in `src/config/apiUrls.ts`.
+You can override them by setting environment variables before running the app:
+
+- `THORNODE_API_URL`
+- `THORNODE_API_ARCHIVE_URL`
+- `MIDGARD_API_URL`
+
 ### Run using Replit
 Allows you to run in the browser.<br>
 Follow the [Replit Instructions](docs/replit-instructions.md).

@@ -18,7 +18,8 @@ import {TaxConfig} from "./TaxConfig";
 import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
 
 export function shouldFetchThornodeTx(action: Action): boolean {
-    return action.type === ActionTypeEnum.Switch || action.type === ActionTypeEnum.Swap;
+    const hasInboundTxId = !!action.in?.[0]?.txID;
+    return hasInboundTxId && (action.type === ActionTypeEnum.Switch || action.type === ActionTypeEnum.Swap);
 }
 
 export class Exporter {
