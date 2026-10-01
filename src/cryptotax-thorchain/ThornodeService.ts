@@ -1,7 +1,7 @@
 import {Configuration, TransactionsApi, TxStatusResponse} from "@xchainjs/xchain-thornode";
 import axios from "axios";
 import axiosThrottle from 'axios-request-throttle';
-import {Cache} from "../cache/Cache";
+import {Cache, CacheOptions} from "../cache/Cache";
 import {API_URLS} from "../config/apiUrls";
 
 // Seems like not all transactions may be on the latest API URL
@@ -18,19 +18,19 @@ export class ThornodeService {
     // If this instance is using the current API URL then this will refer to the instance using the archive URL
     archive?: ThornodeService;
 
-    constructor(cachePath: string = '_cache', isArchive: boolean = false) {
+    constructor(cachePath: string = '_cache', isArchive: boolean = false, cacheOptions: CacheOptions = {}) {
         this.isArchive = isArchive;
 
         // Current API and archive API both use the same cache path.
         // The response will not be cached if it's missing the transaction data.
-        this.cache = new Cache(cachePath);
+        this.cache = new Cache(cachePath, cacheOptions);
 
         const apiUrl = isArchive ? API_URLS.thornodeArchive : API_URLS.thornode;
         const apiConfig = new Configuration({basePath: apiUrl});
         this.api = new TransactionsApi(apiConfig);
 
         if (!isArchive) {
-            this.archive = new ThornodeService(cachePath, true);
+            this.archive = new ThornodeService(cachePath, true, cacheOptions);
         }
     }
 
@@ -42,6 +42,8 @@ export class ThornodeService {
         if (this.cache.has(hash)) {
             return this.cache.read(hash);
         }
+
+        this.cache.assertCanFetch(hash);
 
         const response = await this.api.txStatus(hash);
         let tx: TxStatusResponse = response.data;

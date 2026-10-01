@@ -1,0 +1,10 @@
+{
+  "description": "RUNE received from TCY staking (distribution)",
+  "source": "tcy",
+  "wallet": "thor1-user-wallet-11111",
+  "data": {
+    "amount": "123456000",
+    "date": "1609419600",
+    "price": "123456789"
+  }
+}

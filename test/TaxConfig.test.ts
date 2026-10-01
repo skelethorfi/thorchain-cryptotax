@@ -1,5 +1,8 @@
 import {describe, expect, test} from "@jest/globals";
 import {TaxConfig} from "../src/thorchain-exporter/TaxConfig";
+import fs from "fs-extra";
+import os from "os";
+import path from "path";
 
 describe('TaxConfig', () => {
     test('applyDefaults with empty config', () => {
@@ -37,5 +40,32 @@ describe('TaxConfig', () => {
             cachePath: 'custom-cache',
             wallets: []
         });
+    });
+});
+
+describe('TaxConfig paths', () => {
+    test('resolves relative paths against the config file folder', () => {
+        const config = TaxConfig.resolvePaths(TaxConfig.applyDefaults({cachePath: 'FY/cache'}), '/private/tax');
+
+        expect(config.outputPath).toBe(path.resolve('/private/tax/output'));
+        expect(config.unsupportedActionsPath).toBe(path.resolve('/private/tax/unsupported-actions'));
+        expect(config.cachePath).toBe(path.resolve('/private/tax/FY/cache'));
+    });
+
+    test('keeps absolute paths', () => {
+        const config = TaxConfig.resolvePaths(TaxConfig.applyDefaults({outputPath: '/elsewhere/output'}), '/private/tax');
+
+        expect(config.outputPath).toBe(path.resolve('/elsewhere/output'));
+    });
+
+    test('load resolves paths relative to the config file, not the working directory', () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-config-'));
+        const file = path.join(dir, 'config.toml');
+        fs.writeFileSync(file, 'fromDate = "2024-07-01"\ncachePath = "FY/cache"\n');
+
+        const config = TaxConfig.load(file);
+
+        expect(config.cachePath).toBe(path.join(dir, 'FY/cache'));
+        expect(config.outputPath).toBe(path.join(dir, 'output'));
     });
 });

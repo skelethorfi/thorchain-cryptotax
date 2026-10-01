@@ -1,0 +1,30 @@
+{
+  "description": "TCY stake",
+  "source": "midgard",
+  "wallet": "thor1-user-wallet-11111",
+  "data": {
+    "date": "1609419600000000000",
+    "height": "10000000",
+    "in": [
+      {
+        "address": "thor1-user-wallet-11111",
+        "coins": [
+          {
+            "amount": "999955550000",
+            "asset": "THOR.TCY"
+          }
+        ],
+        "txID": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    ],
+    "metadata": {
+      "tcy": {
+        "memo": "tcy+"
+      }
+    },
+    "out": [],
+    "pools": [],
+    "status": "success",
+    "type": "tcy_stake"
+  }
+}

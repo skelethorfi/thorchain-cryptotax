@@ -1,0 +1,34 @@
+{
+  "description": "RUNEPool withdraw",
+  "source": "midgard",
+  "wallet": "thor1-user-wallet-11111",
+  "data": {
+    "date": "1609419600000000000",
+    "height": "10000000",
+    "in": [],
+    "metadata": {
+      "runePoolWithdraw": {
+        "affiliateAddress": "",
+        "affiliateAmount": "20000000",
+        "affiliateBasisPoint": "0",
+        "basisPoints": "10000",
+        "units": "19000000000"
+      }
+    },
+    "out": [
+      {
+        "address": "thor1-user-wallet-11111",
+        "coins": [
+          {
+            "amount": "22000000000",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "txID": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    ],
+    "pools": [],
+    "status": "success",
+    "type": "runePoolWithdraw"
+  }
+}
