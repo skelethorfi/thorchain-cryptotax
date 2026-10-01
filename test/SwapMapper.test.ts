@@ -3,6 +3,7 @@ import { Action, Transaction, Coin } from '@xchainjs/xchain-midgard';
 import { describe, expect, test, beforeEach } from '@jest/globals';
 import { CryptoTaxTransactionType } from '../src/cryptotax';
 import { toMidgardNanoTimestamp } from '../src/cryptotax-thorchain/MidgardUtils';
+import { MAYA } from '../src/protocols/Protocol';
 
 describe('SwapMapper', () => {
     let swapMapper: SwapMapper;
@@ -340,5 +341,76 @@ describe('SwapMapper', () => {
         expect(() => swapMapper.toCryptoTax(action, false)).toThrow(
             'Invalid swap - THOR.TOR'
         );
+    });
+
+    test('should send to the sender when the memo destination is empty', () => {
+        const action = createMockAction({
+            inputAsset: 'ETH.ETH',
+            inputAmount: 1,
+            outputAsset: 'ARB.ETH',
+            outputAmount: 0.99,
+            inputAddress: '0xsameaddress',
+            outputAddress: '0xSameAddress',
+            txID: 'tx-empty-dest',
+        });
+        action.metadata.swap!.memo = '=:ARB.ETH:::wr:0';
+
+        swapMapper = new SwapMapper(action, false, []);
+        const result = swapMapper.toCryptoTax(action, false);
+
+        expect(result[1].to).toBe('0xSameAddress');
+        expect(result[1].baseAmount).toBe('0.99');
+    });
+
+    test('should not treat a same-asset return to the sender as the swap output when the destination is empty', () => {
+        const action = createMockAction({
+            inputAsset: 'ETH.ETH',
+            inputAmount: 1,
+            outputAsset: 'ETH.ETH',
+            outputAmount: 0.99,
+            inputAddress: '0xsameaddress',
+            outputAddress: '0xsameaddress',
+            txID: 'tx-empty-dest-refund',
+        });
+        action.metadata.swap!.memo = '=:ARB.ETH:::wr:0';
+
+        swapMapper = new SwapMapper(action, false, []);
+
+        expect(() => swapMapper.toCryptoTax(action, false)).toThrow('No matching out tx');
+    });
+
+    test('Maya: a CACAO input without node data falls back to the 0.2 CACAO native fee', () => {
+        const action = createMockAction({
+            inputAsset: 'MAYA.CACAO',
+            inputAmount: 1,
+            outputAsset: 'THOR.RUNE',
+            outputAmount: 1,
+            inputAddress: 'maya1-user',
+            outputAddress: 'thor1-user',
+            txID: 'tx-cacao',
+        });
+
+        const result = new SwapMapper(action, false, [], MAYA).toCryptoTax(action, false, [], MAYA);
+
+        expect(result[0].feeCurrency).toBe('CACAO');
+        expect(result[0].feeAmount).toBe('0.2');
+        expect(result[0].to).toBe('mayaprotocol');
+    });
+
+    test('Maya: a RUNE input still pays THORChain gas', () => {
+        const action = createMockAction({
+            inputAsset: 'THOR.RUNE',
+            inputAmount: 1,
+            outputAsset: 'KUJI.KUJI',
+            outputAmount: 1,
+            inputAddress: 'thor1-user',
+            outputAddress: 'kujira1-user',
+            txID: 'tx-rune',
+        });
+
+        const result = new SwapMapper(action, false, [], MAYA).toCryptoTax(action, false, [], MAYA);
+
+        expect(result[0].feeCurrency).toBe('RUNE');
+        expect(result[0].feeAmount).toBe('0.02');
     });
 });

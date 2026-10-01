@@ -10,6 +10,10 @@ toDate = "2024-12-31"
 # none    - single file
 frequency = "yearly"
 
+# Optional: protocols to export, queried for every wallet. Default: ["thorchain"]
+# Add "maya" to include swaps and liquidity on Maya Protocol (see docs/specs/maya.md)
+# protocols = ["thorchain", "maya"]
+
 # Store the downloaded source files to be able to re-run without downloading again
 cacheDataSources = false
 

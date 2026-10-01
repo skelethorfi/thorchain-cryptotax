@@ -1,0 +1,29 @@
+walletExchange: maya1s7naj6kzxpudy64zka8h5w7uffnzmhzlue4w3p
+timestamp: 2025-10-03T02:11:13.439Z
+type: bridge-trade-out
+baseCurrency: CACAO
+baseAmount: "20000"
+quoteCurrency: USDC
+quoteAmount: "3798.840908"
+feeCurrency: CACAO
+feeAmount: "0.2"
+from: maya1s7naj6kzxpudy64zka8h5w7uffnzmhzlue4w3p
+to: mayaprotocol
+blockchain: MayaProtocol
+referencePricePerUnit: "0.19053173093158599"
+referencePriceCurrency: USD
+id: 2025-10-03T02:11:13.439Z.maya.bridge-trade-out
+description: 1/2 - Swap 20000 CACAO to 3798.840908 USDC; 6A923F07C97C6EE09AE2DDEFF8D9329AFC61F38925CF4965BDB0D7D1FD88F279
+---
+walletExchange: "0x36944b474580f5da31b864fbae80dd53c9814d49"
+timestamp: 2025-10-03T02:11:23.439Z
+type: bridge-trade-in
+baseCurrency: USDC
+baseAmount: "3798.840908"
+from: mayaprotocol
+to: "0x36944b474580f5da31b864fbae80dd53c9814d49"
+blockchain: ETH
+referencePricePerUnit: "0.998580942216526"
+referencePriceCurrency: USD
+id: 2025-10-03T02:11:13.439Z.maya.bridge-trade-in
+description: 2/2 - Swap 20000 CACAO to 3798.840908 USDC; 6A923F07C97C6EE09AE2DDEFF8D9329AFC61F38925CF4965BDB0D7D1FD88F279

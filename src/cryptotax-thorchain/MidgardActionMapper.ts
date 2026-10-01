@@ -21,6 +21,7 @@ import {RunePoolWithdrawMapper} from "./RunePoolWithdrawMapper";
 import {ThornameMapper} from "./ThornameMapper";
 import {RujiraMergeDepositMapper} from "./RujiraMergeDepositMapper";
 import {TcyUnstakeMapper} from "./TcyUnstakeMapper";
+import {Protocol, THORCHAIN} from "../protocols/Protocol";
 
 type ActionMappers = {
     [index in ActionType | string]: Mapper | null | any;
@@ -51,16 +52,20 @@ export function getActionDate(action: Action): Date {
     return parseMidgardDate(action.date);
 }
 
-export function actionToCryptoTax(action: Action, thornodeTxs: TxStatusResponse[], addReferencePrices: boolean = false, unsupportedActionsPath: string): CryptoTaxTransaction[] {
+// Action types mapped on protocols other than THORChain (see docs/specs/maya.md)
+const NON_THORCHAIN_ACTION_TYPES: string[] = [ActionType.Swap, ActionType.AddLiquidity, ActionType.Withdraw, ActionType.Refund];
+
+export function actionToCryptoTax(action: Action, thornodeTxs: TxStatusResponse[], addReferencePrices: boolean = false, unsupportedActionsPath: string,
+                                  protocol: Protocol = THORCHAIN): CryptoTaxTransaction[] {
     const date: string = getActionDate(action).toISOString();
-    let mapper = getMapper(action);
+    let mapper = protocol === THORCHAIN || NON_THORCHAIN_ACTION_TYPES.includes(action.type) ? getMapper(action) : null;
 
     try {
         if (typeof mapper === 'function') {
-            mapper = new (mapper as any)(action, addReferencePrices, thornodeTxs);
+            mapper = new (mapper as any)(action, addReferencePrices, thornodeTxs, protocol);
         }
 
-        const transactions: CryptoTaxTransaction[] = mapper?.toCryptoTax(action, addReferencePrices, thornodeTxs) ?? [];
+        const transactions: CryptoTaxTransaction[] = mapper?.toCryptoTax(action, addReferencePrices, thornodeTxs, protocol) ?? [];
 
         if (mapper) {
             console.log(`${date} ${action.type}: ${transactions.length}`);
@@ -71,7 +76,8 @@ export function actionToCryptoTax(action: Action, thornodeTxs: TxStatusResponse[
                 // Write unsupported action to JSON
                 const txId = action.in?.[0]?.txID;
                 const filename = (txId ? txId : date) + '.json';
-                const filePath = path.join(unsupportedActionsPath, action.type, filename);
+                const protocolDir = protocol === THORCHAIN ? '' : protocol.id;
+                const filePath = path.join(unsupportedActionsPath, protocolDir, action.type, filename);
                 mkdirSync(path.dirname(filePath), {recursive: true});
                 writeFileSync(filePath, JSON.stringify(action, null, 4));
             }
@@ -81,7 +87,7 @@ export function actionToCryptoTax(action: Action, thornodeTxs: TxStatusResponse[
 
     } catch (e: any) {
         const txId = action.in?.[0]?.txID || 'unknown';
-        throw new Error(`[Midgard] ${e.message || 'unknown error'}. type: ${action.type}, txid: ${txId}`);
+        throw new Error(`[${protocol === THORCHAIN ? 'Midgard' : protocol.id + ' Midgard'}] ${e.message || 'unknown error'}. type: ${action.type}, txid: ${txId}`);
     }
 }
 

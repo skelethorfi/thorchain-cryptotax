@@ -11,6 +11,9 @@ export interface ActionShape {
     outAssets: string[][];
     // Denoms sent to a contract (contract actions carry their amounts here, not in coins)
     funds?: string[];
+    // The memo's action, e.g. '=' or 'swap' for a user swap, or 'MAYA-PREFERRED-ASSET-…' for a
+    // protocol-initiated swap of affiliate fees
+    memoAction?: string;
 }
 
 export function getActionShape(action: Action): ActionShape {
@@ -23,7 +26,14 @@ export function getActionShape(action: Action): ActionShape {
         inAssets: action.in.map(tx => tx.coins.map(coin => coin.asset).sort()),
         outAssets: action.out.map(tx => tx.coins.map(coin => coin.asset).sort()).sort(),
         ...(metadata?.contract ? {funds: parseFundsDenoms(metadata.contract.funds)} : {}),
+        ...(metadata?.swap?.memo !== undefined ? {memoAction: getMemoAction(metadata.swap.memo)} : {}),
     };
+}
+
+// Swap memos start with '=', 's' or 'swap' (case-insensitive) for a user swap
+export function getMemoAction(memo: string): string {
+    const action = memo.split(':')[0].toLowerCase();
+    return ['=', 's', 'swap'].includes(action) ? 'swap' : action.replace(/-[^-]*$/, '');
 }
 
 // Contract funds are "<amount><denom>" entries separated by commas, e.g. "11127297300x/ruji"

@@ -1,0 +1,46 @@
+{
+  "description": "addLiquidity success: [MAYA.CACAO, KUJI.KUJI] -> []",
+  "source": "midgard",
+  "protocol": "maya",
+  "wallet": "maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q",
+  "data": {
+    "date": "1699512004262300621",
+    "height": "3618622",
+    "in": [
+      {
+        "address": "maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q",
+        "coins": [
+          {
+            "amount": "3550554656240",
+            "asset": "MAYA.CACAO"
+          }
+        ],
+        "txID": "493628E56D76DCB664E14C142C35CB4AA45D5643A0958F250F583A4029D11166"
+      },
+      {
+        "address": "kujira1wml3m2tkkdv5z6rdj3l4mp229c2493kaayukp6",
+        "coins": [
+          {
+            "amount": "1759938896",
+            "asset": "KUJI.KUJI"
+          }
+        ],
+        "txID": "A93E940CECD931784A998010462F25FFF482A4C0A33A415632295AAABC1E7AE3"
+      }
+    ],
+    "metadata": {
+      "addLiquidity": {
+        "affiliateAddress": "wr",
+        "affiliateFee": "30",
+        "liquidityUnits": "993143775001",
+        "memo": "+:KUJI.KUJI:maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q:wr:30"
+      }
+    },
+    "out": [],
+    "pools": [
+      "KUJI.KUJI"
+    ],
+    "status": "success",
+    "type": "addLiquidity"
+  }
+}

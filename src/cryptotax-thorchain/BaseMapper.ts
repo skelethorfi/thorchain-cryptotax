@@ -5,6 +5,7 @@ import { baseToAssetAmountString } from '../utils/Amount';
 import { TxStatusResponse } from '@xchainjs/xchain-thornode';
 import { Mapper } from './Mapper';
 import { getPrice } from '../cmc-scraper';
+import { Protocol, THORCHAIN } from '../protocols/Protocol';
 
 export abstract class BaseMapper implements Mapper {
     protected mapperName: string = 'BaseMapper';
@@ -13,13 +14,14 @@ export abstract class BaseMapper implements Mapper {
     protected datetime: Date;
     protected transactions: CryptoTaxTransaction[] = [];
 
-    constructor(protected action: Action, protected addReferencePrices: boolean, protected thornodeTxs: TxStatusResponse[] = []) {
+    constructor(protected action: Action, protected addReferencePrices: boolean, protected thornodeTxs: TxStatusResponse[] = [],
+                protected protocol: Protocol = THORCHAIN) {
         this.datetime = parseMidgardDate(action.date);
         this.timestamp = this.datetime.toISOString();
         this.idPrefix = this.datetime.toISOString();
     }
 
-    abstract toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[]): CryptoTaxTransaction[];
+    abstract toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[], protocol?: Protocol): CryptoTaxTransaction[];
 
     protected createTransaction(overrides: Partial<CryptoTaxTransaction>): CryptoTaxTransaction {
         return {
@@ -38,7 +40,7 @@ export abstract class BaseMapper implements Mapper {
 
     protected parseCoin(asset: string, amount: string): { blockchain: string; currency: string; displayCurrency: string; amountParsed: string } {
         const { blockchain, currency, displayCurrency } = parseMidgardAsset(asset);
-        const amountParsed = baseToAssetAmountString(amount);
+        const amountParsed = baseToAssetAmountString(amount, this.protocol.decimals(asset));
         return { blockchain, currency, displayCurrency, amountParsed };
     }
 

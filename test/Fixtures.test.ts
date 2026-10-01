@@ -59,6 +59,15 @@ describe('Shape', () => {
         expect(sameShape(getActionShape(bond('100x/ruji') as any), getActionShape(bond('5rune') as any))).toBe(false);
     });
 
+    test('a protocol-initiated swap is a different shape from a user swap', () => {
+        const preferred = swap({metadata: {swap: {txType: 'swap', memo: 'MAYA-PREFERRED-ASSET-dx'}}});
+        const shortForm = swap({metadata: {swap: {txType: 'swap', memo: `s:THOR.RUNE:${THOR}`}}});
+
+        expect(getActionShape(preferred as any).memoAction).toBe('maya-preferred-asset');
+        expect(sameShape(getActionShape(swap() as any), getActionShape(preferred as any))).toBe(false);
+        expect(sameShape(getActionShape(swap() as any), getActionShape(shortForm as any))).toBe(true);
+    });
+
     test('different assets or subtype are a different shape', () => {
         const eth = swap({in: [{address: '0x1', txID: 'X', coins: [{asset: 'ETH.ETH', amount: '1'}]}]});
         const loan = swap({metadata: {swap: {txType: 'loanOpen'}}});

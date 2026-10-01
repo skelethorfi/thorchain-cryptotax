@@ -1,0 +1,94 @@
+{
+  "description": "swap success: [MAYA.CACAO] -> [MAYA.CACAO, THOR.RUNE]",
+  "source": "midgard",
+  "protocol": "maya",
+  "wallet": "maya1e0f53kfv9fghpxz8vrupl4kgulzg5cyapn4nnc",
+  "data": {
+    "date": "1761111092329547221",
+    "height": "13518244",
+    "in": [
+      {
+        "address": "maya1e0f53kfv9fghpxz8vrupl4kgulzg5cyapn4nnc",
+        "coins": [
+          {
+            "amount": "13000000000000",
+            "asset": "MAYA.CACAO"
+          }
+        ],
+        "txID": "2A97C214BB0AA5F9052E632B0966080148F1ABFF8089A66428D0C2E286C67DAD"
+      }
+    ],
+    "metadata": {
+      "swap": {
+        "affiliateAddress": "leo",
+        "affiliateFee": "45",
+        "inPriceUSD": "0.17493195023737712",
+        "isStreamingSwap": true,
+        "liquidityFee": "2410887945",
+        "memo": "=:THOR.RUNE:thor1e0f53kfv9fghpxz8vrupl4kgulzg5cyapytl9g:0/3/0:leo:45",
+        "networkFees": [
+          {
+            "amount": "2000000000",
+            "asset": "MAYA.CACAO"
+          },
+          {
+            "amount": "2032800",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "outPriceUSD": "0.8425718692950063",
+        "streamingSwapMeta": {
+          "count": "1",
+          "depositedCoin": {
+            "amount": "13000000000000",
+            "asset": "MAYA.CACAO"
+          },
+          "inCoin": {
+            "amount": "13000000000000",
+            "asset": "MAYA.CACAO"
+          },
+          "interval": "3",
+          "lastHeight": "13518244",
+          "outCoin": {
+            "amount": "26976662417",
+            "asset": "THOR.RUNE"
+          },
+          "outEstimation": "58470636875",
+          "quantity": "1"
+        },
+        "swapSlip": "7",
+        "swapTarget": "0"
+      }
+    },
+    "out": [
+      {
+        "address": "thor1e0f53kfv9fghpxz8vrupl4kgulzg5cyapytl9g",
+        "coins": [
+          {
+            "amount": "26853234636",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "height": "13518256",
+        "txID": "BF9E99F21BABCBCA9A8EC5F0A8995005D7D227009795939DA89F12F88D632818"
+      },
+      {
+        "address": "maya190g83sh5hwvl7cdqej4ryry520apxey8x0v4sn",
+        "affiliate": true,
+        "coins": [
+          {
+            "amount": "56470636875",
+            "asset": "MAYA.CACAO"
+          }
+        ],
+        "height": "13518245",
+        "txID": ""
+      }
+    ],
+    "pools": [
+      "THOR.RUNE"
+    ],
+    "status": "success",
+    "type": "swap"
+  }
+}

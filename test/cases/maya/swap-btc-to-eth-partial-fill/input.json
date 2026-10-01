@@ -1,0 +1,100 @@
+{
+  "description": "swap success: [BTC.BTC] -> [BTC.BTC, ETH.ETH]",
+  "source": "midgard",
+  "protocol": "maya",
+  "wallet": "bc1qj2c8q8ex4te9ufp5afdfpwr4e7hz64esnddewp",
+  "data": {
+    "date": "1787075201880794489",
+    "height": "17978421",
+    "in": [
+      {
+        "address": "bc1qj2c8q8ex4te9ufp5afdfpwr4e7hz64esnddewp",
+        "coins": [
+          {
+            "amount": "3106666",
+            "asset": "BTC.BTC"
+          }
+        ],
+        "txID": "0275FE2418BEC28ADF5D9F8635D0BC06359CC6BB835DC2485EB51DAEC4E1CBCB"
+      }
+    ],
+    "metadata": {
+      "swap": {
+        "affiliateAddress": "",
+        "affiliateFee": "0",
+        "inPriceUSD": "71351.27349148977",
+        "isStreamingSwap": true,
+        "liquidityFee": "2943227219351",
+        "memo": "=:ETH.ETH:0x6BFb3172717047DE7D68CdF7Cc2073Cc73A9495c:157642132/1/3",
+        "networkFees": [
+          {
+            "amount": "4929",
+            "asset": "ETH.ETH"
+          },
+          {
+            "amount": "150",
+            "asset": "BTC.BTC"
+          }
+        ],
+        "outPriceUSD": "2056.997050126577",
+        "streamingSwapMeta": {
+          "count": "3",
+          "depositedCoin": {
+            "amount": "4660000",
+            "asset": "BTC.BTC"
+          },
+          "failedSwapReasons": [
+            "emit asset 51725750 less than price limit 51745434"
+          ],
+          "failedSwaps": [
+            "3"
+          ],
+          "inCoin": {
+            "amount": "3106666",
+            "asset": "BTC.BTC"
+          },
+          "interval": "1",
+          "lastHeight": "17978424",
+          "outCoin": {
+            "amount": "105896698",
+            "asset": "ETH.ETH"
+          },
+          "outEstimation": "156436434",
+          "quantity": "3"
+        },
+        "swapSlip": "59",
+        "swapTarget": "52547366"
+      }
+    },
+    "out": [
+      {
+        "address": "bc1qj2c8q8ex4te9ufp5afdfpwr4e7hz64esnddewp",
+        "coins": [
+          {
+            "amount": "1553184",
+            "asset": "BTC.BTC"
+          }
+        ],
+        "height": "17978429",
+        "txID": "F12741DA9A6B8AB7CC3A38482C557526176217848E3E922BB8D057B8219F61FE"
+      },
+      {
+        "address": "0x6bfb3172717047de7d68cdf7cc2073cc73a9495c",
+        "coins": [
+          {
+            "amount": "105891769",
+            "asset": "ETH.ETH"
+          }
+        ],
+        "height": "18623131",
+        "txID": "D3D019FEF8CFA4311B18858E32E9ECF647D164A864833796BB53B694F3EFB518"
+      }
+    ],
+    "pools": [
+      "BTC.BTC",
+      "ETH.ETH"
+    ],
+    "status": "success",
+    "type": "swap"
+  }
+}
