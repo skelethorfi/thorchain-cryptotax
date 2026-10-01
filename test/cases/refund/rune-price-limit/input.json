@@ -1,0 +1,116 @@
+{
+  "description": "refund success: [THOR.RUNE] -> [THOR.RUNE]",
+  "source": "midgard",
+  "wallet": "thor17hwqt302e5f2xm4h95ma8wuggqkvfzgvsnh5z9",
+  "data": {
+    "date": "1790891653796471632",
+    "height": "28062543",
+    "in": [
+      {
+        "address": "thor17hwqt302e5f2xm4h95ma8wuggqkvfzgvsnh5z9",
+        "coins": [
+          {
+            "amount": "184058501519",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "txID": "0000000201A175A71801B21A5D4A71EFB3B1AC5FE4E1AD724F128E438ECE0B77"
+      }
+    ],
+    "metadata": {
+      "refund": {
+        "affiliateAddress": "",
+        "affiliateFee": "0",
+        "memo": "=:BTC~BTC:thor17hwqt302e5f2xm4h95ma8wuggqkvfzgvsnh5z9:1679463/1/1",
+        "networkFees": [],
+        "reason": "emit asset 1679319 less than price limit 1679463",
+        "txType": "swap"
+      }
+    },
+    "out": [
+      {
+        "address": "thor17hwqt302e5f2xm4h95ma8wuggqkvfzgvsnh5z9",
+        "coins": [
+          {
+            "amount": "184058501519",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "height": "28062543",
+        "txID": ""
+      }
+    ],
+    "pools": [],
+    "status": "success",
+    "type": "refund"
+  },
+  "thornodeTxs": [
+    {
+      "tx": {
+        "id": "0000000201A175A71801B21A5D4A71EFB3B1AC5FE4E1AD724F128E438ECE0B77",
+        "chain": "THOR",
+        "from_address": "thor17hwqt302e5f2xm4h95ma8wuggqkvfzgvsnh5z9",
+        "to_address": "thor1g98cy3n9mmjrpn0sxmn63lztelera37n8n67c0",
+        "coins": [
+          {
+            "asset": "THOR.RUNE",
+            "amount": "184058501519"
+          }
+        ],
+        "gas": null,
+        "memo": "=:BTC~BTC:thor17hwqt302e5f2xm4h95ma8wuggqkvfzgvsnh5z9:1679463/1/1"
+      },
+      "planned_out_txs": [
+        {
+          "chain": "THOR",
+          "to_address": "thor17hwqt302e5f2xm4h95ma8wuggqkvfzgvsnh5z9",
+          "coin": {
+            "asset": "THOR.RUNE",
+            "amount": "184058501519"
+          },
+          "refund": true
+        }
+      ],
+      "out_txs": [
+        {
+          "id": "0000000000000000000000000000000000000000000000000000000000000000",
+          "chain": "THOR",
+          "from_address": "thor1g98cy3n9mmjrpn0sxmn63lztelera37n8n67c0",
+          "to_address": "thor17hwqt302e5f2xm4h95ma8wuggqkvfzgvsnh5z9",
+          "coins": [
+            {
+              "asset": "THOR.RUNE",
+              "amount": "184058501519"
+            }
+          ],
+          "gas": [
+            {
+              "asset": "THOR.RUNE",
+              "amount": "2000000"
+            }
+          ],
+          "memo": "REFUND:0000000201A175A71801B21A5D4A71EFB3B1AC5FE4E1AD724F128E438ECE0B77"
+        }
+      ],
+      "stages": {
+        "inbound_observed": {
+          "final_count": 0,
+          "completed": true
+        },
+        "inbound_confirmation_counted": {
+          "remaining_confirmation_seconds": 0,
+          "completed": true
+        },
+        "inbound_finalised": {
+          "completed": true
+        },
+        "swap_status": {
+          "pending": false
+        },
+        "swap_finalised": {
+          "completed": true
+        }
+      }
+    }
+  ]
+}

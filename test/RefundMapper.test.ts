@@ -29,6 +29,16 @@ describe('RefundMapper', () => {
         expect(row.baseAmount).toBe('1');
     });
 
+    // Midgard returns both the inbound and the outbound; the mapper collapses them into one row.
+    // Whether the outbound should be its own row is an open question (docs/specs/fees.md).
+    test('the outbound that returns the funds is not exported: one failed-in row for the amount sent in', () => {
+        const rows = new RefundMapper().toCryptoTax(refund([{asset: 'THOR.RUNE', amount: '2000000'}]), false);
+
+        expect(rows).toHaveLength(1);
+        expect(rows[0].type).toBe('failed-in');
+        expect(rows[0].baseAmount).toBe('1');
+    });
+
     test('an L1 refund uses the outbound network fee, not the inbound gas THORNode observed', () => {
         const action = refund([{asset: 'BTC.BTC', amount: '3735'}]);
         action.in[0].coins[0].asset = 'BTC.BTC';

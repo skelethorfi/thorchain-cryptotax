@@ -71,32 +71,58 @@ transaction. Rows for what comes out have no fee.
 
 ### Refunds
 
-A refund is two transactions: the wallet sends the inbound and pays its gas,
-then THORChain sends the outbound back and pays that gas from its vault.
-THORChain recovers the outbound's cost by returning less than was sent in
-(Midgard `networkFees`).
+**What the sources return.** A refund is two transactions, and both Midgard
+and THORNode return both:
 
-**Current behaviour** (unchanged from before the one fee rule): the `FailedIn`
-row carries the amount sent in, and its fee is the **outbound network fee** in
+| | Midgard `refund` action | THORNode tx status |
+| --- | --- | --- |
+| Inbound: the wallet sends in | `in[0]` (amount, txid) | `tx` (amount, and `gas` the wallet paid on an L1) |
+| Outbound: THORChain returns it | `out[0]` (amount; on an L1, its own txid on the original chain) | `out_txs` (amount, and the gas the vault paid) |
+| What THORChain kept | `metadata.refund.networkFees` | — |
+
+On an L1 the outbound is a real transaction on the original chain back to the
+wallet, so the wallet's own import in Summ will also show it, as a receive.
+On THORChain the outbound has no txid of its own.
+
+**What is exported.** The exporter collapses the two into **one** `FailedIn`
+row and does not export the outbound. This is the exporter's choice, not the
+shape of the source data. The type's description
+(`CryptoTaxTransactionType.FailedIn`) says a failed transaction is ignored for
+tax and balance calculations, with only its fee accounted for. If Summ does
+that, the row's amount is informational and its fee is the only part that
+counts; this has not been checked in Summ.
+
+**Current behaviour** (unchanged from before the one fee rule): the row
+carries the amount sent in, and its fee is the **outbound network fee** in
 the refunded asset when Midgard lists one (a partial fill also lists the fee
 for the swap's other output), otherwise the first network fee, otherwise
 blank. The inbound gas is not exported.
 
-Example (`refund/btc-price-limit`): 0.0120779 BTC sent in with 0.0000166 BTC
-gas; 0.01204055 BTC returned. The row's fee is 0.00003735 BTC, the outbound
-fee.
+| Case | Sent in | Inbound gas | Returned | Row's fee today |
+| --- | --- | --- | --- | --- |
+| L1, `refund/btc-price-limit` | 0.0120779 BTC | 0.0000166 BTC | 0.01204055 BTC | 0.00003735 BTC (outbound fee) |
+| THORChain, `refund/rune-price-limit` | 1840.58501519 RUNE | 0.02 RUNE (native fee; THORNode lists no gas) | 1840.58501519 RUNE | blank (Midgard lists no network fee) |
 
-**Open question: is that the right fee?** By the one rule it would be the
-inbound gas (0.0000166 BTC here), because:
+**Open question: how should a refund be classified in Summ, and with which
+fee?** Leaning towards the **inbound gas** as the `FailedIn` fee: the row
+represents the transaction the wallet sent in, and that gas is what the
+wallet paid to send it. To settle with a real refund in Summ:
 
-- the wallet paid the inbound gas, and
-- the wallet is the receiver of the outbound. A receiver does not pay the
-  sender's gas, the same as when anyone else sends to the wallet, and the
-  outbound fee already shows as the lower amount received.
+- **THORChain refund.** This CSV is the only source for a `thor` wallet. Today
+  the 0.02 RUNE paid to send the inbound is exported nowhere (the RUNE case
+  above has no fee at all), so the wallet's balance would be out by it.
+- **L1 refund.** The wallet's own import shows the send (with its gas) and the
+  smaller receive on the original chain. Does the `FailedIn` row's fee then
+  count the outbound fee, or the inbound gas, a second time? Should the row be
+  on the L1 wallet at all?
+- **The outbound.** Should it be its own row (e.g. a `FailedIn` for the send
+  and a receive for the return), instead of being collapsed? The outbound fee
+  is not gas the wallet paid: the wallet is the receiver, and the fee shows as
+  the lower amount returned.
+- **Old L1 refunds.** THORNode has no inbound gas for some 2022–2023 refunds,
+  so the inbound-gas rule would leave those blank.
 
-It is left as it is until a real refund has been checked in Summ: how a
-`FailedIn` row and its fee are treated, and what the L1 wallet's own import
-shows for the same two transactions.
+The behaviour is left as it is until that check is done.
 
 ### Refunds of an affiliate's cut
 
@@ -130,8 +156,10 @@ inbound fee.
   - a missing THORNode tx gives the native default, or blank for L1 inputs
   - L1 liquidity deposits use the THORNode gas
     (`liquidity/add-btc-rune-symmetric`)
-  - a refund uses the outbound network fee (`refund/btc-price-limit`), and a
-    refund of an affiliate's cut has no row (`refund/affiliate-fee-swap`)
+  - a refund is one `FailedIn` row with the outbound network fee
+    (`refund/btc-price-limit`), or no fee when Midgard lists none
+    (`refund/rune-price-limit`); the outbound is not exported
+  - a refund of an affiliate's cut has no row (`refund/affiliate-fee-swap`)
   - `networkFees` (except for refunds), `liquidityFee` and affiliate outputs are
     never used as fees
 - Golden cases in `test/cases/` carry the expected fee in each row.
