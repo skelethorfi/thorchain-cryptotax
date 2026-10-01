@@ -52,6 +52,11 @@ You can override them by setting environment variables before running the app:
 - `THORNODE_API_ARCHIVE_URL`
 - `MIDGARD_API_URL`
 
+### Contributing a new transaction type
+See [Adding a transaction type](docs/specs/fixtures.md): test cases are built from public
+transactions with the fixture tool (`npm run fixture`), which can refuse to write your own
+wallet addresses and txids into a test case.
+
 ### Run using Replit
 Allows you to run in the browser.<br>
 Follow the [Replit Instructions](docs/replit-instructions.md).
