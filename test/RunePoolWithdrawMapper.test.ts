@@ -19,6 +19,8 @@ describe('RunePoolWithdrawMapper', () => {
             type: CryptoTaxTransactionType.ReturnLpToken,
             baseCurrency: 'ThorLP.THOR.RUNE',
             baseAmount: '190',
+            feeCurrency: 'RUNE',
+            feeAmount: '0.02',
             from: 'thor1-user-wallet-11111',
             to: 'thorchain',
             blockchain: 'THORChain',

@@ -13,6 +13,7 @@ import { baseToAssetAmountString } from '../utils/Amount';
 import { Mapper } from './Mapper';
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
 import { Protocol, THORCHAIN } from '../protocols/Protocol';
+import { getInboundFee } from './ThorchainUtils';
 
 export class AddLiquidityMapper implements Mapper {
     toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = [], protocol: Protocol = THORCHAIN): CryptoTaxTransaction[] {
@@ -70,6 +71,7 @@ export class AddLiquidityMapper implements Mapper {
                 type: CryptoTaxTransactionType.AddLiquidity,
                 baseCurrency: currency,
                 baseAmount: baseToAssetAmountString(coin.amount, protocol.decimals(coin.asset)),
+                ...getInboundFee(deposit.txID ?? '', thornodeTxs, coin.asset, protocol),
                 from: from,
                 to: protocol.counterparty,
                 blockchain,

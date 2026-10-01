@@ -15,7 +15,7 @@ import {
 import { baseToAssetAmountString } from '../utils/Amount';
 import { Mapper } from './Mapper';
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
-import { formatBlockchainForOutput } from './ThorchainUtils';
+import { formatBlockchainForOutput, getInboundFee } from './ThorchainUtils';
 import { Protocol, THORCHAIN } from '../protocols/Protocol';
 
 export class RefundMapper implements Mapper {
@@ -32,11 +32,9 @@ export class RefundMapper implements Mapper {
         const inputCoin: Coin = input.coins[0];
         const { blockchain: inputBlockchain, currency: inputCurrency } =
             parseMidgardAsset(inputCoin.asset);
-        // Prefer the fee charged on the refunded asset; a partially filled swap also lists the
-        // fee for the swap's other output
-        const networkFee = refundMetadata.networkFees.find(fee => fee.asset === inputCoin.asset) ?? refundMetadata.networkFees[0];
-        const feeCurrency = networkFee ? parseMidgardAsset(networkFee.asset).currency : '';
-        const feeAmount = networkFee ? baseToAssetAmountString(networkFee.amount, protocol.decimals(networkFee.asset)) : '';
+        // The fee is the gas paid to send the refunded tx in (docs/specs/fees.md); the refund's own
+        // outbound fee only shows as the lower amount returned
+        const { feeCurrency, feeAmount } = getInboundFee(input.txID ?? '', thornodeTxs, inputCoin.asset, protocol);
         const txId = input.txID ?? '';
         const reason = (refundMetadata.reason ?? '').replace(/[\n\t]/g, ' ').trim();
 

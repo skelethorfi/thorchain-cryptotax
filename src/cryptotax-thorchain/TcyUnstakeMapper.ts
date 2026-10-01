@@ -1,4 +1,5 @@
 import {Action, Coin, Transaction} from '@xchainjs/xchain-midgard';
+import {getNativeRuneFee} from './ThorchainUtils';
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from '../cryptotax';
 import {parseMidgardDate} from './MidgardUtils';
 import {baseToAssetAmountString} from '../utils/Amount';
@@ -24,6 +25,7 @@ export class TcyUnstakeMapper implements Mapper {
             type: CryptoTaxTransactionType.StakingWithdrawal,
             baseCurrency: 'TCY',
             baseAmount: amount,
+            ...getNativeRuneFee(),
             from: 'thorchain',
             to: output.address,
             blockchain: 'THORChain',

@@ -1,4 +1,5 @@
 import {Action, Coin, Transaction} from '@xchainjs/xchain-midgard';
+import {getNativeRuneFee} from './ThorchainUtils';
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from '../cryptotax';
 import {parseMidgardDate} from './MidgardUtils';
 import {baseToAssetAmountString} from '../utils/Amount';
@@ -35,6 +36,7 @@ export class RunePoolDepositMapper implements Mapper {
             type: CryptoTaxTransactionType.AddLiquidity,
             baseCurrency: 'RUNE',
             baseAmount: amount,
+            ...getNativeRuneFee(),
             from: input.address,
             to: 'thorchain',
             blockchain: 'THORChain',

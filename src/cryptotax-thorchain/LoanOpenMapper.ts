@@ -3,13 +3,11 @@ import {Action, Coin, Transaction} from "@xchainjs/xchain-midgard";
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from "../cryptotax";
 import {parseMidgardAsset, parseMidgardDate} from "./MidgardUtils";
 import {baseToAssetAmountString} from "../utils/Amount";
-import {isEmpty} from "lodash";
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
-import {formatBlockchainForOutput} from "./ThorchainUtils";
+import {formatBlockchainForOutput, getInboundFee} from "./ThorchainUtils";
 
 // https://dev.thorchain.org/concepts/memos.html#open-loan
 const LOANOPEN_DESTADDR = 2;
-const AFFILIATE = 4;
 
 // Wallet-A1 CSV
 // * [collateral-deposit] send currency A to thorchain
@@ -39,6 +37,7 @@ export class LoanOpenMapper implements Mapper {
             inputBlockchain,
             inputCurrency,
             inputAmount,
+            inputAsset,
             memo,
             txId
         } = this.getInput(action, thornodeTxs);
@@ -57,18 +56,9 @@ export class LoanOpenMapper implements Mapper {
             throw this.error('No input amount', action);
         }
 
-        // TODO: could probably add liquidity/affiliate/network fees together and put it all on the 'loan' tx, as the
-        // 'collateral' tx won't be imported anyway since it will come from the BTC/ETH wallet.
-        // assumes the loan tx is to rune though
-
-        const liquidityFee = {
-            feeCurrency: 'RUNE',
-            feeAmount: baseToAssetAmountString(action.metadata.swap?.liquidityFee ?? '')
-        };
-        const affiliateFee = this.getAffiliateFee(action);
-
-        // TODO: if there is an affiliate there will be 2 outs, and 2 network fees
-        const networkFee = this.getNetworkFee(action);
+        // The fee is the gas paid to send the collateral in (docs/specs/fees.md). Liquidity, affiliate
+        // and outbound fees are already reflected in the loan amount.
+        const inboundFee = getInboundFee(txId ?? '', thornodeTxs, inputAsset);
 
         // Wallet A1 - [collateral-deposit] send currency A to thorchain -----------------------------------------------
 
@@ -78,7 +68,7 @@ export class LoanOpenMapper implements Mapper {
             type: CryptoTaxTransactionType.CollateralDeposit,
             baseCurrency: inputCurrency,
             baseAmount: inputAmount,
-            ...liquidityFee,
+            ...inboundFee,
             from: inputAddress,
             to: 'thorchain',
             blockchain: formatBlockchainForOutput(inputBlockchain),
@@ -94,8 +84,6 @@ export class LoanOpenMapper implements Mapper {
             type: CryptoTaxTransactionType.Loan,
             baseCurrency: outputCurrency,
             baseAmount: outputAmount,
-            // Just taking affiliateFee if it's there instead of adding them together in case they are different assets
-            ...(!isEmpty(affiliateFee) ? affiliateFee : networkFee),
             from: 'thorchain',
             to: output.address,
             blockchain: formatBlockchainForOutput(outputBlockchain),
@@ -125,7 +113,7 @@ export class LoanOpenMapper implements Mapper {
             const memo = input?.memo;
             const inputAddress = input?.from_address;
 
-            return {input, inputAddress, inputBlockchain, inputCurrency, inputAmount, memo, txId};
+            return {input, inputAddress, inputBlockchain, inputCurrency, inputAmount, inputAsset: inputCoin.asset, memo, txId};
         }
 
         const input: Transaction = action.in[0];
@@ -137,7 +125,7 @@ export class LoanOpenMapper implements Mapper {
         const memo = action.metadata.swap?.memo;
         const inputAddress = input.address;
 
-        return {input, inputAddress, inputBlockchain, inputCurrency, inputAmount, memo, txId};
+        return {input, inputAddress, inputBlockchain, inputCurrency, inputAmount, inputAsset: inputCoin.asset, memo, txId};
     }
 
     // Find which output is for the user
@@ -160,44 +148,8 @@ export class LoanOpenMapper implements Mapper {
         return memo.split(':')[LOANOPEN_DESTADDR];
     }
 
-    getAffiliateAddress(memo: string): string {
-        return memo.split(':')[AFFILIATE];
-    }
 
-    getNetworkFee(action: Action) {
-        const {currency: feeCurrency} =
-            parseMidgardAsset(action.metadata.swap?.networkFees[0].asset ?? '');
 
-        const feeAmount= baseToAssetAmountString(action.metadata.swap?.networkFees[0].amount ?? '');
-
-        return {
-            feeCurrency,
-            feeAmount
-        };
-    }
-
-    getAffiliateFee(action: Action) {
-        const memo = action.metadata.swap?.memo;
-
-        if (!memo) {
-            throw this.error('No memo', action);
-        }
-
-        const affiliateAddress = this.getAffiliateAddress(memo);
-        const out = action.out.find(out => out.address == affiliateAddress);
-
-        if (!out) {
-            return {};
-        }
-
-        const {currency: feeCurrency} = parseMidgardAsset(out.coins[0].asset)
-        const feeAmount = baseToAssetAmountString(out.coins[0].amount)
-
-        return {
-            feeCurrency,
-            feeAmount
-        };
-    }
 
     error(message: string, action: Action) {
         console.log('action:', JSON.stringify(action, null, 4));

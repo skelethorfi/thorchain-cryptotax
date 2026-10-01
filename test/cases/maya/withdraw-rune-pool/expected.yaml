@@ -39,6 +39,8 @@ timestamp: 2025-10-06T01:34:01.409Z
 type: return-lp-token
 baseCurrency: MayaLP.THOR.RUNE
 baseAmount: "62370.32912229"
+feeCurrency: CACAO
+feeAmount: "0.2"
 from: maya136tmapkujkwewjncdx3jck2amp4y0twh2ypzsq
 to: mayaprotocol
 blockchain: MayaProtocol

@@ -19,6 +19,8 @@ describe('TcyUnstakeMapper', () => {
             type: CryptoTaxTransactionType.StakingWithdrawal,
             baseCurrency: 'TCY',
             baseAmount: '6000',
+            feeCurrency: 'RUNE',
+            feeAmount: '0.02',
             from: 'thorchain',
             to: 'thor1-user-wallet-11111',
             blockchain: 'THORChain',

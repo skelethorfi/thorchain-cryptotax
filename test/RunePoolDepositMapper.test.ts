@@ -19,6 +19,8 @@ describe('RunePoolDepositMapper', () => {
             type: CryptoTaxTransactionType.AddLiquidity,
             baseCurrency: 'RUNE',
             baseAmount: '200',
+            feeCurrency: 'RUNE',
+            feeAmount: '0.02',
             from: 'thor1-user-wallet-11111',
             to: 'thorchain',
             blockchain: 'THORChain',
