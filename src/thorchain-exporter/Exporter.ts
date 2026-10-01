@@ -24,6 +24,27 @@ export function shouldFetchThornodeTx(action: Action): boolean {
     return hasInboundTxId && (action.type === ActionTypeEnum.Switch || action.type === ActionTypeEnum.Swap);
 }
 
+export function shouldIncludeAction(action: Action): boolean {
+    if (action.status === ActionStatusEnum.Success) {
+        return true;
+    }
+
+    const txType = (action.metadata.swap as any)?.txType;
+
+    // Loan repayments show as 'pending' if the loan is not closed
+    if (txType === 'loanRepayment') {
+        return true;
+    }
+
+    // A loan open with an output was paid out, whatever its status. Midgard reports loan opens that
+    // borrowed RUNE as 'pending' (the RUNE payout has no txid). See docs/specs/loans.md.
+    if (txType === 'loanOpen') {
+        return action.out.some(out => out.coins.length > 0);
+    }
+
+    return false;
+}
+
 export class Exporter {
     config: ITaxConfig;
     viewblock: Viewblock;
@@ -128,12 +149,7 @@ export class Exporter {
     }
 
     excludeNonSuccess(actions: Action[]): Action[] {
-        // loan repayments will show as 'pending' if the loan is not closed
-        return actions.filter(
-            (action: Action) => {
-                return action.status === ActionStatusEnum.Success || (action.metadata.swap as any)?.txType === 'loanRepayment'
-            }
-        );
+        return actions.filter(shouldIncludeAction);
     }
 
     saveToCsv(txs: CryptoTaxTransaction[], outputPath: string) {
