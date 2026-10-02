@@ -20,6 +20,35 @@ From the earlier restructure (fetch-tx), which follows the same rule:
 > inbound amount and you get what is left after the fees are applied in the
 > output. Therefore, we don't need to export these fees.
 
+## Inbound and outbound: THORChain's words against Summ's
+
+The two systems name directions from opposite sides, so the same transaction
+is "inbound" in one and "out" in the other.
+
+- **THORChain and Maya** (Midgard, THORNode, and these specs) speak from the
+  **protocol's** side.
+- **Summ** (its categories and the CSV types) speaks from the **wallet's**
+  side.
+
+| The transaction | THORChain calls it | Summ sees it as | CSV types | Who pays its gas |
+| --- | --- | --- | --- | --- |
+| The wallet sends funds to the protocol | **inbound** (Midgard `in`, THORNode `tx`) | an **outgoing** leg of the wallet | the `…Out` types: `BridgeTradeOut`, `BridgeOut`, `FailedOut`, a send | **The wallet.** This is the *inbound fee*, and the only thing in the fee column |
+| The protocol pays funds to a wallet | **outbound** (Midgard `out`, THORNode `out_txs`) | an **incoming** leg of the wallet | the `…In` types: `BridgeTradeIn`, `BridgeIn`, a receive | **The protocol's vault.** The wallet pays no gas here |
+
+So in these specs:
+
+- **Inbound fee** (or inbound gas) means the gas the wallet paid on the
+  transaction it sent. From the wallet's side, and in Summ, it is the fee on
+  an outgoing transaction.
+- **Outbound fee** (Midgard `networkFees`) means what the protocol charges to
+  cover its vault's gas on the payout. The wallet never pays it as gas: the
+  protocol deducts it before paying out, so it appears only as a smaller
+  amount received. It is never put in the fee column.
+
+One more trap: Summ's `FailedIn` and `FailedOut` follow Summ's direction, not
+THORChain's. A refunded THORChain *inbound* is a `FailedOut`, because the
+wallet sent it.
+
 ## The inbound fee
 
 `getInboundFee` (`src/cryptotax-thorchain/ThorchainUtils.ts`) gives the fee
