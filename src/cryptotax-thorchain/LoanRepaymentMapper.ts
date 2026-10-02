@@ -4,7 +4,7 @@ import {CryptoTaxTransaction, CryptoTaxTransactionType} from "../cryptotax";
 import {parseMidgardAsset, parseMidgardDate} from "./MidgardUtils";
 import {baseToAssetAmountString} from "../utils/Amount";
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
-import {formatBlockchainForOutput} from "./ThorchainUtils";
+import {formatBlockchainForOutput, getInboundFee} from "./ThorchainUtils";
 
 // https://dev.thorchain.org/concepts/memos.html#repay-loan
 const REPAYLOAN_ASSET = 1;
@@ -49,12 +49,8 @@ export class LoanRepaymentMapper implements Mapper {
             throw this.error('No input amount', action);
         }
 
-        const liquidityFee = {
-            feeCurrency: 'RUNE',
-            feeAmount: baseToAssetAmountString(action.metadata.swap?.liquidityFee ?? '')
-        };
-
-        const networkFee = this.getNetworkFee(action);
+        // The fee is the gas paid to send the repayment in (docs/specs/fees.md)
+        const inboundFee = getInboundFee(txId ?? '', thornodeTxs, inputCoin.asset);
 
         const {currency: collateralAsset} = parseMidgardAsset(this.getRepayAsset(this.getMemo(action)));
 
@@ -68,7 +64,7 @@ export class LoanRepaymentMapper implements Mapper {
             type: CryptoTaxTransactionType.LoanRepayment,
             baseCurrency: inputCurrency,
             baseAmount: inputAmount,
-            ...liquidityFee,
+            ...inboundFee,
             from: input.address,
             to: 'thorchain',
             blockchain: formatBlockchainForOutput(inputBlockchain),
@@ -91,7 +87,6 @@ export class LoanRepaymentMapper implements Mapper {
                 type: CryptoTaxTransactionType.CollateralWithdrawal,
                 baseCurrency: outputCurrency,
                 baseAmount: outputAmount,
-                ...networkFee,
                 from: 'thorchain',
                 to: output.address,
                 blockchain: formatBlockchainForOutput(outputBlockchain),
@@ -134,21 +129,6 @@ export class LoanRepaymentMapper implements Mapper {
         return memo.split(':')[REPAYLOAN_ASSET];
     }
 
-    getNetworkFee(action: Action) {
-        if (action.metadata.swap?.networkFees.length === 0) {
-            return {};
-        }
-
-        const {currency: feeCurrency} =
-            parseMidgardAsset(action.metadata.swap?.networkFees[0].asset ?? '');
-
-        const feeAmount= baseToAssetAmountString(action.metadata.swap?.networkFees[0].amount ?? '');
-
-        return {
-            feeCurrency,
-            feeAmount
-        };
-    }
 
     error(message: string, action: Action) {
         console.log('action:', JSON.stringify(action, null, 4));

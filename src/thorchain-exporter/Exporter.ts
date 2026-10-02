@@ -18,10 +18,32 @@ import {TaxConfig} from "./TaxConfig";
 import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
 import {CacheOptions} from "../cache/Cache";
 import {getProtocol, Protocol, THORCHAIN} from "../protocols/Protocol";
+import {assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
 
-export function shouldFetchThornodeTx(action: Action): boolean {
-    const hasInboundTxId = !!action.in?.[0]?.txID;
-    return hasInboundTxId && (action.type === ActionTypeEnum.Switch || action.type === ActionTypeEnum.Swap);
+// The inbound txids to look up on THORNode, which is the only source of the gas the wallet paid on an
+// L1 chain (docs/specs/fees.md). A refund's is looked up to see what the wallet sent, not for its gas.
+export function getThornodeTxIds(action: Action): string[] {
+    const inbounds = action.in ?? [];
+    let txIds: (string | undefined)[] = [];
+
+    if (action.type === ActionTypeEnum.Swap || action.type === ActionTypeEnum.Switch || action.type === ActionTypeEnum.Refund) {
+        txIds = [inbounds[0]?.txID];
+    } else if (action.type === ActionTypeEnum.AddLiquidity || action.type === ActionTypeEnum.Withdraw) {
+        // Deposits and withdrawal requests sent on THORChain pay the native fee, so only L1 ones are looked up
+        txIds = inbounds.filter(inbound => isL1Asset(inbound.coins[0]?.asset)).map(inbound => inbound.txID);
+    }
+
+    return [...new Set(txIds.filter((txId): txId is string => !!txId))];
+}
+
+function isL1Asset(asset?: string): boolean {
+    if (!asset) {
+        return false;
+    }
+
+    const {chain, type} = assetFromStringEx(asset);
+
+    return chain !== 'THOR' && type === AssetType.NATIVE;
 }
 
 export function shouldIncludeAction(action: Action): boolean {
@@ -100,10 +122,9 @@ export class Exporter {
         for (const action of actions) {
             const thornodeTxs = [];
 
-            if (shouldFetchThornodeTx(action)) {
-                // For swaps and switches, use the inbound thornode transaction to determine the wallet-paid gas fee.
-                const tx = await this.thornode.getTxStatus(action.in[0].txID);
-                thornodeTxs.push(tx);
+            // The inbound THORNode transactions give the gas the wallet paid
+            for (const txId of getThornodeTxIds(action)) {
+                thornodeTxs.push(await this.thornode.getTxStatus(txId));
             }
 
             try {

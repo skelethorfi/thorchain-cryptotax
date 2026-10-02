@@ -3,7 +3,7 @@ import os from "os";
 import path from "path";
 import {Action, Configuration, MidgardApi} from "@xchainjs/xchain-midgard";
 import {ThornodeService} from "../cryptotax-thorchain/ThornodeService";
-import {shouldFetchThornodeTx} from "../thorchain-exporter/Exporter";
+import {getThornodeTxIds} from "../thorchain-exporter/Exporter";
 import {Anonymiser} from "./Anonymise";
 import {EXPECTED_FILE, formatRows, GoldenCaseInput, INPUT_FILE, readCaseInput, runCase, writeCaseExpected} from "./GoldenCase";
 import {getPrivateDir, mask, PrivateData} from "./PrivateData";
@@ -42,9 +42,14 @@ async function fetchInput(txid: string, protocol: Protocol, index?: number): Pro
     const action = actions[index ?? 0];
     const thornodeTxs = [];
 
-    if (protocol === THORCHAIN && shouldFetchThornodeTx(action)) {
+    const thornodeTxIds = protocol === THORCHAIN ? getThornodeTxIds(action) : [];
+
+    if (thornodeTxIds.length) {
         const thornode = new ThornodeService(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-thornode-')));
-        thornodeTxs.push(await thornode.getTxStatus(action.in[0].txID));
+
+        for (const txId of thornodeTxIds) {
+            thornodeTxs.push(await thornode.getTxStatus(txId));
+        }
     }
 
     return {

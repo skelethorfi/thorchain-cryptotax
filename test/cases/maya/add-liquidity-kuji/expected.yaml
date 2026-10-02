@@ -24,6 +24,8 @@ timestamp: 2023-11-09T06:40:04.262Z
 type: add-liquidity
 baseCurrency: KUJI
 baseAmount: "17.59938896"
+feeCurrency: ""
+feeAmount: ""
 from: kujira1wml3m2tkkdv5z6rdj3l4mp229c2493kaayukp6
 to: mayaprotocol
 blockchain: KUJI
@@ -35,6 +37,8 @@ timestamp: 2023-11-09T06:40:04.262Z
 type: add-liquidity
 baseCurrency: CACAO
 baseAmount: "355.055465624"
+feeCurrency: CACAO
+feeAmount: "0.2"
 from: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
 to: mayaprotocol
 blockchain: MAYA

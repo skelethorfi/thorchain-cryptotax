@@ -1,4 +1,5 @@
 import {Action, Coin, Transaction} from '@xchainjs/xchain-midgard';
+import {getNativeRuneFee} from './ThorchainUtils';
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from '../cryptotax';
 import {parseMidgardDate} from './MidgardUtils';
 import {baseToAssetAmountString} from '../utils/Amount';
@@ -27,6 +28,8 @@ export class TcyClaimMapper implements Mapper {
             type: CryptoTaxTransactionType.Receive,
             baseCurrency: 'TCY',
             baseAmount: amount,
+            // Fee only when the claim was sent from this THORChain wallet; otherwise it was paid on another chain
+            ...(input.address === output.address ? getNativeRuneFee() : {}),
             from: 'thorchain',
             to: output.address,
             blockchain: 'THORChain',

@@ -1,0 +1,138 @@
+{
+  "description": "refund success: [ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48] -> [ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48, ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48]",
+  "source": "midgard",
+  "wallet": "0x160c0103a1ff7ace7c9127148f74c2be3c4cedc9",
+  "data": {
+    "date": "1750985277728764381",
+    "height": "21704774",
+    "in": [
+      {
+        "address": "0x160c0103a1ff7ace7c9127148f74c2be3c4cedc9",
+        "coins": [
+          {
+            "amount": "99900026",
+            "asset": "ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48"
+          }
+        ],
+        "txID": "A3A377765454D8FD19902A8297363BD95BF7D56E2F1E94B72F2331C6C20D74CD"
+      }
+    ],
+    "metadata": {
+      "refund": {
+        "affiliateAddress": "rj",
+        "affiliateFee": "0",
+        "memo": "=:THOR.RUNE:thor1mcy9jtp4kzl8q2lvdgfgsl8jvqrf504uphkf0pz2p9wud8tsntesjvccew:0:rj:0",
+        "networkFees": [
+          {
+            "amount": "2607200",
+            "asset": "ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48"
+          }
+        ],
+        "reason": "fail to parse from address: 2 errors occurred:\n\t* internal error\n\t* decoding bech32 failed: invalid character not part of charset: 98\n\n",
+        "txType": "swap"
+      }
+    },
+    "out": [
+      {
+        "address": "thor1c3mxxtjksx8l7c3sjuzjelsdw34qsfj5vnzcp9",
+        "coins": [
+          {
+            "amount": "19977398100",
+            "asset": "ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48"
+          }
+        ],
+        "height": "21704773",
+        "txID": ""
+      },
+      {
+        "address": "thor1c3mxxtjksx8l7c3sjuzjelsdw34qsfj5vnzcp9",
+        "coins": [
+          {
+            "amount": "19977398100",
+            "asset": "ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48"
+          }
+        ],
+        "txID": "A3A377765454D8FD19902A8297363BD95BF7D56E2F1E94B72F2331C6C20D74CD"
+      }
+    ],
+    "pools": [],
+    "status": "success",
+    "type": "refund"
+  },
+  "thornodeTxs": [
+    {
+      "tx": {
+        "id": "A3A377765454D8FD19902A8297363BD95BF7D56E2F1E94B72F2331C6C20D74CD",
+        "chain": "ETH",
+        "from_address": "0x160c0103a1ff7ace7c9127148f74c2be3c4cedc9",
+        "to_address": "0x10d5a566dCe98BF8fe315766d66E37D341b7B6ed",
+        "coins": [
+          {
+            "asset": "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
+            "amount": "20000000000",
+            "decimals": 6
+          }
+        ],
+        "gas": [
+          {
+            "asset": "ETH.ETH",
+            "amount": "4870"
+          }
+        ],
+        "memo": "=:ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48:thor1c3mxxtjksx8l7c3sjuzjelsdw34qsfj5vnzcp9:19678726063/1/0:rj:50"
+      },
+      "planned_out_txs": [
+        {
+          "chain": "THOR",
+          "to_address": "thor1c3mxxtjksx8l7c3sjuzjelsdw34qsfj5vnzcp9",
+          "coin": {
+            "asset": "ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
+            "amount": "19977398100"
+          },
+          "refund": false
+        }
+      ],
+      "out_txs": [
+        {
+          "id": "0000000000000000000000000000000000000000000000000000000000000000",
+          "chain": "THOR",
+          "from_address": "thor1g98cy3n9mmjrpn0sxmn63lztelera37n8n67c0",
+          "to_address": "thor1c3mxxtjksx8l7c3sjuzjelsdw34qsfj5vnzcp9",
+          "coins": [
+            {
+              "asset": "ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
+              "amount": "19977398100"
+            }
+          ],
+          "gas": [
+            {
+              "asset": "THOR.RUNE",
+              "amount": "2000000"
+            }
+          ],
+          "memo": "OUT:A3A377765454D8FD19902A8297363BD95BF7D56E2F1E94B72F2331C6C20D74CD"
+        }
+      ],
+      "stages": {
+        "inbound_observed": {
+          "pre_confirmation_count": 119,
+          "final_count": 119,
+          "completed": true
+        },
+        "inbound_confirmation_counted": {
+          "remaining_confirmation_seconds": 0,
+          "completed": true
+        },
+        "inbound_finalised": {
+          "completed": true
+        },
+        "swap_status": {
+          "pending": false
+        },
+        "swap_finalised": {
+          "completed": true
+        }
+      }
+    }
+  ]
+}

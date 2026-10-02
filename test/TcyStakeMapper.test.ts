@@ -19,6 +19,8 @@ describe('TcyStakeMapper', () => {
             type: CryptoTaxTransactionType.StakingDeposit,
             baseCurrency: 'TCY',
             baseAmount: '9999.5555',
+            feeCurrency: 'RUNE',
+            feeAmount: '0.02',
             from: 'thor1-user-wallet-11111',
             to: 'thorchain',
             blockchain: 'THORChain',

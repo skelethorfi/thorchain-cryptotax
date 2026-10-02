@@ -13,6 +13,7 @@ import {
 import { Mapper } from './Mapper';
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
 import { Protocol, THORCHAIN } from '../protocols/Protocol';
+import { getInboundFee } from './ThorchainUtils';
 
 export class WithdrawMapper implements Mapper {
     toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = [], protocol: Protocol = THORCHAIN): CryptoTaxTransaction[] {
@@ -136,7 +137,10 @@ export class WithdrawMapper implements Mapper {
 
         currentTxNum--;
 
-        // Return liquidity units
+        // Return liquidity units. The fee is the gas paid for the withdrawal request (docs/specs/fees.md).
+        const request = action.in[0];
+        const requestAsset = request.coins[0]?.asset
+            ?? (request.address.startsWith(protocol.nativeChain.toLowerCase()) ? protocol.nativeAsset : undefined);
 
         transactions.unshift({
             walletExchange: action.in[0].address,
@@ -144,6 +148,7 @@ export class WithdrawMapper implements Mapper {
             type: CryptoTaxTransactionType.ReturnLpToken,
             baseCurrency: lpToken,
             baseAmount: liquidityUnits,
+            ...getInboundFee(request.txID ?? '', thornodeTxs, requestAsset, protocol),
             from: action.in[0].address,
             to: protocol.counterparty,
             blockchain: protocol.blockchain,

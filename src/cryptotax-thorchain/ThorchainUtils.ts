@@ -8,6 +8,15 @@ export function getDefaultRuneGas(): string {
     return '2000000';
 }
 
+// THORChain's native transaction fee, paid on any transaction sent from a THORChain wallet
+// (MsgDeposit/MsgSend). See docs/specs/fees.md.
+export function getNativeRuneFee(): { feeCurrency: string; feeAmount: string } {
+    return {
+        feeCurrency: 'RUNE',
+        feeAmount: baseToAssetAmountString(getDefaultRuneGas()),
+    };
+}
+
 export function formatBlockchainForOutput(blockchain: string): string {
     return formatBlockchain(blockchain);
 }
@@ -32,11 +41,10 @@ export function getInboundFee(
 
     if (inputAsset) {
         const asset = assetFromStringEx(inputAsset);
+        // Any transaction on THORChain (RUNE, TCY, KUJI, …) pays THORChain's native fee
         const shouldUseDefaultRuneGasFallback =
-            inputAsset === 'THOR.RUNE' ||
-            asset.type === AssetType.SYNTH ||
-            asset.type === AssetType.TRADE ||
-            asset.type === AssetType.SECURED;
+            asset.chain === 'THOR' ||
+            (protocol === THORCHAIN && [AssetType.SYNTH, AssetType.TRADE, AssetType.SECURED].includes(asset.type));
 
         if (shouldUseDefaultRuneGasFallback) {
             return {

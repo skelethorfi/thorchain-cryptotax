@@ -1,4 +1,5 @@
 import {Action, Coin, Transaction} from '@xchainjs/xchain-midgard';
+import {getNativeRuneFee} from './ThorchainUtils';
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from '../cryptotax';
 import {parseMidgardDate, parseMidgardAsset} from './MidgardUtils';
 import {baseToAssetAmountString} from '../utils/Amount';
@@ -36,6 +37,7 @@ export class RujiraMergeDepositMapper implements Mapper {
             type: CryptoTaxTransactionType.StakingDeposit,
             baseCurrency: asset,
             baseAmount: amount,
+            ...getNativeRuneFee(),
             from: input.address,
             to: 'thorchain',
             blockchain: 'THORChain',

@@ -57,5 +57,7 @@ be attributed to one loan when the borrower has several.
 
 | Action | Rows |
 | --- | --- |
-| Loan open | `CollateralDeposit` (collateral sent in) and `Loan` (amount borrowed) |
-| Loan repayment | `LoanRepayment` (amount sent in) and, when the loan closes, `CollateralWithdrawal` |
+| Loan open | `CollateralDeposit` (collateral sent in, with the inbound fee) and `Loan` (amount borrowed, no fee) |
+| Loan repayment | `LoanRepayment` (amount sent in, with the inbound fee) and, when the loan closes, `CollateralWithdrawal` (no fee) |
+
+Fees follow `fees.md`.

@@ -19,6 +19,8 @@ describe('RujiraMergeDepositMapper', () => {
             type: CryptoTaxTransactionType.StakingDeposit,
             baseCurrency: 'THOR.KUJI',
             baseAmount: '100',
+            feeCurrency: 'RUNE',
+            feeAmount: '0.02',
             from: 'thor1-user-wallet-11111',
             to: 'thorchain',
             blockchain: 'THORChain',

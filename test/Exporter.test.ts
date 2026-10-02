@@ -1,23 +1,35 @@
 import { describe, expect, test } from '@jest/globals';
 import { ActionTypeEnum } from '@xchainjs/xchain-midgard';
-import { shouldFetchThornodeTx, shouldIncludeAction } from '../src/thorchain-exporter/Exporter';
+import { getThornodeTxIds, shouldIncludeAction } from '../src/thorchain-exporter/Exporter';
 
 describe('Exporter thornode fetch wiring', () => {
-    test('should fetch thornode transactions for swaps', () => {
-        expect(shouldFetchThornodeTx({ type: ActionTypeEnum.Swap, in: [{ txID: 'tx1' }] } as any)).toBe(true);
+    const inbound = (txID: string, asset?: string) => ({ txID, coins: asset ? [{ asset, amount: '1' }] : [] });
+    const ids = (type: string, ins: any[]) => getThornodeTxIds({ type, in: ins } as any);
+
+    test('fetches the inbound thornode transaction for swaps, switches and refunds', () => {
+        expect(ids(ActionTypeEnum.Swap, [inbound('tx1', 'THOR.RUNE')])).toEqual(['tx1']);
+        expect(ids(ActionTypeEnum.Switch, [inbound('tx1', 'GAIA.KUJI')])).toEqual(['tx1']);
+        expect(ids(ActionTypeEnum.Refund, [inbound('tx1', 'BTC.BTC')])).toEqual(['tx1']);
     });
 
-    test('should keep fetching thornode transactions for switches', () => {
-        expect(shouldFetchThornodeTx({ type: ActionTypeEnum.Switch, in: [{ txID: 'tx1' }] } as any)).toBe(true);
+    test('fetches only the L1 deposits of an add liquidity', () => {
+        expect(ids(ActionTypeEnum.AddLiquidity, [inbound('tx-rune', 'THOR.RUNE'), inbound('tx-btc', 'BTC.BTC')])).toEqual(['tx-btc']);
+        expect(ids(ActionTypeEnum.AddLiquidity, [inbound('tx-rune', 'THOR.RUNE')])).toEqual([]);
     });
 
-    test('should not fetch thornode transactions for unrelated action types', () => {
-        expect(shouldFetchThornodeTx({ type: ActionTypeEnum.Withdraw, in: [{ txID: 'tx1' }] } as any)).toBe(false);
+    test('fetches a withdrawal request only when it was sent on an L1', () => {
+        expect(ids(ActionTypeEnum.Withdraw, [inbound('tx-btc', 'BTC.BTC')])).toEqual(['tx-btc']);
+        expect(ids(ActionTypeEnum.Withdraw, [inbound('tx-rune')])).toEqual([]);
+        expect(ids(ActionTypeEnum.Withdraw, [inbound('tx-rune', 'THOR.RUNE')])).toEqual([]);
     });
 
-    test('should not fetch thornode transactions when the inbound tx has no id', () => {
+    test('does not fetch thornode transactions for unrelated action types', () => {
+        expect(ids(ActionTypeEnum.Donate, [inbound('tx1', 'BTC.BTC')])).toEqual([]);
+    });
+
+    test('does not fetch thornode transactions when the inbound tx has no id', () => {
         // e.g. 2021 BNB.RUNE switches returned by Midgard with an empty txID
-        expect(shouldFetchThornodeTx({ type: ActionTypeEnum.Switch, in: [{ txID: '' }] } as any)).toBe(false);
+        expect(ids(ActionTypeEnum.Switch, [inbound('', 'BNB.RUNE-B1A')])).toEqual([]);
     });
 });
 
