@@ -15,7 +15,7 @@ import {
 import { baseToAssetAmountString } from '../utils/Amount';
 import { Mapper } from './Mapper';
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
-import { formatBlockchainForOutput } from './ThorchainUtils';
+import { formatBlockchainForOutput, getInboundFee } from './ThorchainUtils';
 import { Protocol, THORCHAIN } from '../protocols/Protocol';
 
 export class RefundMapper implements Mapper {
@@ -41,29 +41,60 @@ export class RefundMapper implements Mapper {
             return transactions;
         }
 
-        // The fee is the outbound fee THORChain deducts from the refund, not the inbound gas. Whether that
-        // is right is an open question (docs/specs/fees.md).
-        // Prefer the fee charged on the refunded asset; a partially filled swap also lists the
-        // fee for the swap's other output
-        const networkFee = refundMetadata.networkFees.find(fee => fee.asset === inputCoin.asset) ?? refundMetadata.networkFees[0];
-        const feeCurrency = networkFee ? parseMidgardAsset(networkFee.asset).currency : '';
-        const feeAmount = networkFee ? baseToAssetAmountString(networkFee.amount, protocol.decimals(networkFee.asset)) : '';
+        // A partially filled swap: Midgard also reports a refund for the unfilled part, whose outputs
+        // include the swap's output. The swap action with the same txid already accounts for everything
+        // (its trade-out is what was sent less what was returned), so no row is exported here.
+        const returned = action.out.flatMap((out) => out.coins);
+
+        if (returned.some((coin) => coin.asset !== inputCoin.asset)) {
+            return transactions;
+        }
+
+        const decimals = protocol.decimals(inputCoin.asset);
         const txId = input.txID ?? '';
         const reason = (refundMetadata.reason ?? '').replace(/[\n\t]/g, ' ').trim();
+        const blockchain = formatBlockchainForOutput(inputBlockchain);
+        const sentAmount = baseToAssetAmountString(inputCoin.amount, decimals);
 
+        // Summ ignores the amount of a failed transaction and counts only its fee, so the fee is the gas
+        // the wallet paid to send it, like every other row (docs/specs/fees.md).
         transactions.push({
             walletExchange: input.address,
             timestamp,
-            type: CryptoTaxTransactionType.FailedIn,
+            type: CryptoTaxTransactionType.FailedOut,
             baseCurrency: inputCurrency,
-            baseAmount: baseToAssetAmountString(inputCoin.amount, protocol.decimals(inputCoin.asset)),
-            feeCurrency,
-            feeAmount,
+            baseAmount: sentAmount,
+            ...getInboundFee(txId, thornodeTxs, inputCoin.asset, protocol),
             from: input.address,
-            blockchain: formatBlockchainForOutput(inputBlockchain),
+            to: protocol.counterparty,
+            blockchain,
             id: `${idPrefix}.refund`,
             description: `refund (${txId}): ${reason}`,
         });
+
+        // What came back can be less than what was sent: the protocol keeps its outbound fee. That part is
+        // gone, and nothing else records it. Use the amounts, not Midgard's networkFees, which can differ.
+        const returnedAmount = returned.reduce((sum, coin) => sum + BigInt(coin.amount), 0n);
+        const keptAmount = BigInt(inputCoin.amount) - returnedAmount;
+
+        if (keptAmount > 0n) {
+            const returnTxId = action.out.find((out) => out.txID)?.txID;
+            const returnedNote = `${baseToAssetAmountString(returnedAmount.toString(), decimals)} ${inputCurrency} returned`
+                + (returnTxId ? ` in ${returnTxId}` : '');
+
+            transactions.push({
+                walletExchange: input.address,
+                timestamp,
+                type: CryptoTaxTransactionType.Fee,
+                baseCurrency: inputCurrency,
+                baseAmount: baseToAssetAmountString(keptAmount.toString(), decimals),
+                from: input.address,
+                to: protocol.counterparty,
+                blockchain,
+                id: `${idPrefix}.refund-fee`,
+                description: `refund (${txId}): kept by ${protocol.counterparty}, ${sentAmount} ${inputCurrency} sent, ${returnedNote}`,
+            });
+        }
 
         return transactions;
     }

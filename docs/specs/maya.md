@@ -67,7 +67,8 @@ sender, in the input asset), and a `refund` for that part.
 That output is netted off the `BridgeTradeOut` amount: the row shows what was
 actually swapped, and its description notes the amount returned. For example,
 1000 CACAO in, 25 CACAO returned and 200 RUNE out becomes a trade-out of
-975 CACAO for 200 RUNE. The `refund` action is mapped as any refund.
+975 CACAO for 200 RUNE. The `refund` action has no rows: the swap's rows
+already account for what was sent and returned (`fees.md`).
 
 ### Add liquidity
 
@@ -84,10 +85,10 @@ as on THORChain.
 
 ### Refunds
 
-As THORChain (`FailedIn`), with Maya decimals. The fee is the network fee in
-the refunded asset when Midgard lists one (a partial fill also lists the fee
-for the swap's other output), otherwise the first network fee. Refunds still
-`pending` are skipped, as on THORChain.
+As THORChain (`fees.md` → Refunds), with Maya decimals and `mayaprotocol` as
+the counterparty: a `FailedOut` row with the inbound fee, and a `Fee` row for
+what Maya kept when less came back than was sent. Refunds still `pending` are
+skipped, as on THORChain.
 
 ### Blockchain values
 
@@ -99,7 +100,7 @@ Midgard chain id (`MAYA`, `THOR`, `KUJI`, …).
 
 Public Maya transactions in `test/cases/maya/`: CACAO → ETH.USDC swap, CACAO →
 RUNE and RUNE → KUJI swaps with affiliate outputs, a partially filled BTC →
-ETH swap and its refund, a symmetric KUJI add and a symmetric RUNE-pool
+ETH swap and its refund (which has no rows), a symmetric KUJI add and a symmetric RUNE-pool
 withdrawal.
 
 ## Not covered yet
