@@ -12,10 +12,10 @@ async function main() {
 
     // --offline: only use what is stored, fail on anything not stored
     const offline = args.includes('--offline');
-    // --fetch-latest: fetch every wallet's list again (new activity, changed records) and records still
-    // pending. --refetch-all: fetch every record again too, e.g. to see what was revised or pruned before
-    // filing. Earlier copies are always kept (docs/specs/snapshots.md).
-    const fetch = args.includes('--refetch-all') ? 'all' : args.includes('--fetch-latest') ? 'latest' : undefined;
+    // By default a run fetches every wallet's history again (new activity, changed records) and records still
+    // pending; anything stored before is kept (docs/specs/snapshots.md). --refetch-all also fetches every
+    // finalised record again, e.g. to see what was revised or pruned before filing.
+    const fetch = args.includes('--refetch-all') ? 'all' : undefined;
     // --replay <run folder>: read exactly the snapshots that run used
     const replayIndex = args.indexOf('--replay');
     const replay = replayIndex >= 0 ? args[replayIndex + 1] : undefined;
@@ -43,8 +43,8 @@ async function main() {
         console.log(`Replay: reading the records of ${replay} from ${storePath}\n`);
     } else if (offline) {
         console.log(`Offline: reading only from the store: ${storePath}\n`);
-    } else if (fetch) {
-        console.log(`Fetching ${fetch === 'all' ? 'every record' : 'the latest data'} again; earlier copies in ${storePath} are kept\n`);
+    } else {
+        console.log(`Fetching ${fetch === 'all' ? 'every record' : 'the latest data'}; earlier copies in ${storePath} are kept\n`);
     }
 
     const wallets = exporter.config.wallets;

@@ -77,20 +77,20 @@ corrections. A filed year is not affected, because it replays its own manifest.
 
 | Run | Fetches | Uses |
 | --- | --- | --- |
-| default | only lists and records not stored yet | the chosen copy of each record |
-| `--fetch-latest` | also every wallet list again (new activity, changed or missing records) and every record still pending | the chosen copy, with this run's fetches included |
-| `--refetch-all` | every list and every record again, THORNode and Cosmos txs included | the same |
+| default | every wallet list again (new activity, changed or missing records), every record still pending, and anything not stored yet | the chosen copy of each record, with this run's fetches included |
+| `--refetch-all` | also every finalised record again, THORNode and Cosmos txs included | the same |
 | `--offline` | nothing; anything not stored is an error | the chosen copy |
 | `--replay <run>` | nothing | exactly the copies in that run's `snapshots.json`, checked against their hashes |
 
 A finalised record (a THORNode tx, a Cosmos tx) can only come back revised or
-pruned, and the store keeps the earlier copy either way, so `--fetch-latest`
+pruned, and the store keeps the earlier copy either way, so a default run
 leaves it alone. `--refetch-all` checks every record, e.g. before filing a
-year, to see what the sources have changed since.
+year, to see what the sources have changed since. A pending one (a stage not
+completed) is fetched again on every run, until a finalised copy is stored.
 
 A wallet list is the wallet's whole history, because the sources page from
-the first action, so `--fetch-latest` sees new activity and changes to old
-actions in one pass. A record shared by several wallets is fetched once per
+the first action, so a run sees new activity and changes to old actions in
+one pass. A record shared by several wallets is fetched once per
 run.
 
 Each fetch is retried after a transient error (HTTP 5xx or 429, a connection
@@ -102,10 +102,10 @@ still fails keeps what it stored so far, and can be run again.
 
 - `storePath` (default `store/` next to the config) was `cachePath`. The old
   name still works, with a warning.
-- `cacheDataSources` is deprecated. `true` was the default behaviour. `false`
-  used to delete the whole cache before each run; it now means
-  `--fetch-latest` on every run, with a warning, so no fetched data is
-  destroyed.
+- `cacheDataSources` is no longer used, and a run warns if it is set. `true`
+  used to reuse the cache, and `false` deleted it before each run; now every
+  run fetches the latest data and keeps what was stored. Use `--offline` (or
+  `--replay`) to fetch nothing, e.g. to re-run a filed year.
 
 ## The manifest (snapshot)
 
@@ -120,7 +120,8 @@ Each run writes `snapshots.json` to its output folder:
 
 The run prints a summary: records fetched (new, changed, unchanged), and
 records finalised, revised, kept over a pruned copy, or missing. It lists the
-notable ones. A manifest is the snapshot: it points only at copies that never
+records this run found changed, and those the sources no longer return; the
+choices made on earlier runs are in the manifest. A manifest is the snapshot: it points only at copies that never
 change, so `--replay` reproduces the run exactly.
 
 ## Filing a year (separate work)

@@ -85,8 +85,9 @@ export class SnapshotManifest {
             `Using: ${count(e => e.choice === 'finalised')} finalised, ${count(e => e.choice === 'revised')} revised, ` +
             `${count(e => e.choice === 'kept-over-pruned')} kept over a pruned copy, ${count(e => !!e.missing)} missing from the source`);
 
-        const notable = records.filter(e => e.choice === 'revised' || e.choice === 'kept-over-pruned' || e.missing);
-        notable.slice(0, 20).forEach(entry => console.log(`  ${entry.missing ? 'missing' : entry.choice}: ${entry.source} ${entry.key}`));
+        // Changes this run found, and records the sources no longer return; earlier choices are in the manifest
+        const notable = records.filter(e => e.fetched === 'changed' || e.missing);
+        notable.slice(0, 20).forEach(entry => console.log(`  ${entry.missing ? 'missing' : `changed (${entry.choice})`}: ${entry.source} ${entry.key}`));
 
         if (notable.length > 20) {
             console.log(`  … and ${notable.length - 20} more (${MANIFEST_FILE})`);

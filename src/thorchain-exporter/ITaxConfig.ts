@@ -5,7 +5,7 @@ export interface ITaxConfig {
     fromDate: string;
     toDate: string;
     frequency: 'monthly' | 'yearly' | 'none',
-    // Deprecated: false fetches the latest data on every run, like --fetch-latest
+    // No longer used (every run fetches the latest data); a warning is shown if set
     cacheDataSources?: boolean;
     outputPath: string;
     unsupportedActionsPath: string;

@@ -65,7 +65,7 @@ describe('RecordStore records', () => {
         const root = makeDir();
         await new RecordStore(root).record('thornode', 'a', fetching({id: 'a', status: 'pending'}), RULES);
 
-        const used = await new RecordStore(root, {fetch: 'latest'}).record('thornode', 'a', fetching({id: 'a', status: 'done'}), RULES);
+        const used = await new RecordStore(root, {}).record('thornode', 'a', fetching({id: 'a', status: 'done'}), RULES);
 
         expect(used).toEqual({id: 'a', status: 'done'});
         expect(new RecordStore(root).copies<Tx>('thornode', 'a').map(c => c.data.status)).toEqual(['pending', 'done']);
@@ -73,29 +73,37 @@ describe('RecordStore records', () => {
 });
 
 describe('fetch modes', () => {
-    test("'latest' fetches a pending record again but not a finalised one; 'missing' fetches neither", async () => {
+    test('by default a pending record is fetched again and a finalised one is not; --refetch-all fetches both', async () => {
         const root = makeDir();
         await new RecordStore(root).record('thornode', 'pending', fetching<Tx>({id: 'pending', status: 'pending'}), RULES);
         await new RecordStore(root).record('thornode', 'final', fetching<Tx>({id: 'final', gas: '1'}), RULES);
 
         const pending = fetching<Tx>({id: 'pending', status: 'done'});
         const final = fetching<Tx>({id: 'final', gas: '2'});
-        await new RecordStore(root).record('thornode', 'pending', pending, RULES);
-        await new RecordStore(root, {fetch: 'latest'}).record('thornode', 'final', final, RULES);
-        expect(pending).not.toHaveBeenCalled();
+        expect(await new RecordStore(root).record('thornode', 'pending', pending, RULES)).toEqual({id: 'pending', status: 'done'});
+        expect(await new RecordStore(root).record('thornode', 'final', final, RULES)).toEqual({id: 'final', gas: '1'});
         expect(final).not.toHaveBeenCalled();
 
-        expect(await new RecordStore(root, {fetch: 'latest'}).record('thornode', 'pending', pending, RULES)).toEqual({id: 'pending', status: 'done'});
         expect(await new RecordStore(root, {fetch: 'all'}).record('thornode', 'final', final, RULES)).toEqual({id: 'final', gas: '2'});
     });
 
-    test("wallet lists are fetched again with 'latest', not by default", async () => {
+    test('wallet lists are fetched again on every run, except offline', async () => {
         const root = makeDir();
         await new RecordStore(root).list('midgard', 'w', fetching([{id: 'a'}]), LIST);
         const again = fetching([{id: 'a'}, {id: 'b'}]);
 
-        expect(await new RecordStore(root).list('midgard', 'w', again, LIST)).toEqual([{id: 'a'}]);
-        expect(await new RecordStore(root, {fetch: 'latest'}).list('midgard', 'w', again, LIST)).toEqual([{id: 'a'}, {id: 'b'}]);
+        expect(await new RecordStore(root, {offline: true}).list('midgard', 'w', again, LIST)).toEqual([{id: 'a'}]);
+        expect(again).not.toHaveBeenCalled();
+        expect(await new RecordStore(root).list('midgard', 'w', again, LIST)).toEqual([{id: 'a'}, {id: 'b'}]);
+    });
+
+    test('offline, a pending record is not fetched again', async () => {
+        const root = makeDir();
+        await new RecordStore(root).record('thornode', 'p', fetching<Tx>({id: 'p', status: 'pending'}), RULES);
+        const fetch = fetching<Tx>({id: 'p', status: 'done'});
+
+        expect(await new RecordStore(root, {offline: true}).record('thornode', 'p', fetch, RULES)).toEqual({id: 'p', status: 'pending'});
+        expect(fetch).not.toHaveBeenCalled();
     });
 });
 
@@ -130,7 +138,7 @@ describe('RecordStore lists', () => {
         await new RecordStore(root).list('midgard', 'w', fetching([{id: 'old'}, {id: 'gone'}, {id: 'p', status: 'pending'}]), LIST);
 
         const manifest = new SnapshotManifest();
-        const items = await new RecordStore(root, {fetch: 'latest', manifest})
+        const items = await new RecordStore(root, {manifest})
             .list('midgard', 'w', fetching([{id: 'new'}, {id: 'old'}, {id: 'p', status: 'success'}]), LIST);
 
         expect(items).toEqual([{id: 'new'}, {id: 'old'}, {id: 'p', status: 'success'}, {id: 'gone'}]);
@@ -145,7 +153,7 @@ describe('RecordStore lists', () => {
         const root = makeDir();
         const options = {keyOf: (tx: Tx & {now?: string}) => tx.id, rules: {normalise: ({now, ...tx}: Tx & {now?: string}) => tx}};
         await new RecordStore(root).list('viewblock', 'w', fetching([{id: 'a', now: '1'}]), options);
-        await new RecordStore(root, {fetch: 'latest'}).list('viewblock', 'w', fetching([{id: 'a', now: '2'}]), options);
+        await new RecordStore(root, {}).list('viewblock', 'w', fetching([{id: 'a', now: '2'}]), options);
 
         expect(new RecordStore(root).copies('viewblock', 'a').map(c => c.data)).toEqual([{id: 'a'}]);
     });
@@ -179,7 +187,7 @@ describe('Replay', () => {
         await new RecordStore(root, {manifest: run1}).list('midgard', 'w', fetching([{id: 'a', gas: '1'}]), LIST);
         run1.write(path.join(root, 'run1'));
 
-        await new RecordStore(root, {fetch: 'latest'}).list('midgard', 'w', fetching([{id: 'a', gas: '2'}, {id: 'b'}]), LIST);
+        await new RecordStore(root, {}).list('midgard', 'w', fetching([{id: 'a', gas: '2'}, {id: 'b'}]), LIST);
 
         const replay = new RecordStore(root, {replay: SnapshotManifest.load(path.join(root, 'run1'))});
         const fetch = fetching([] as Tx[]);
@@ -235,7 +243,7 @@ describe('RecordStore within one run', () => {
         await new RecordStore(root).list('midgard', 'w1', fetching([{id: 'a'}]), LIST);
 
         const manifest = new SnapshotManifest();
-        const store = new RecordStore(root, {fetch: 'latest', manifest});
+        const store = new RecordStore(root, {manifest});
         await store.list('midgard', 'w1', fetching([{id: 'a', gas: '1'}]), LIST);
         await store.list('midgard', 'w2', fetching([{id: 'a', gas: '1'}]), LIST);
 

@@ -73,7 +73,7 @@ export function shouldIncludeAction(action: Action): boolean {
 export interface ExportOptions {
     // Only read cached snapshots; fail on anything not cached
     offline?: boolean;
-    // What to fetch beyond what is not stored yet: 'latest' (wallet lists and pending records) or 'all'
+    // 'latest' (default: wallet lists and pending records) or 'all' (every record again)
     fetch?: FetchMode;
     // A run folder (or its snapshots.json) whose exact records to read
     replay?: string;
@@ -98,14 +98,13 @@ export class Exporter {
         const storePath = this.config.storePath;
         this.snapshots = new SnapshotManifest();
         // One store for every source (docs/specs/snapshots.md)
-        if (this.config.cacheDataSources === false) {
-            console.warn('Config: cacheDataSources is deprecated; false now fetches the latest data, like --fetch-latest');
+        if (this.config.cacheDataSources !== undefined) {
+            console.warn('Config: cacheDataSources is no longer used: every run fetches the latest data and keeps what was stored; use --offline to fetch nothing');
         }
 
         const store = new RecordStore(storePath, {
             offline: options.offline,
-            // cacheDataSources = false used to delete the cache; it now fetches the latest data and keeps the old
-            fetch: options.fetch ?? (this.config.cacheDataSources === false ? 'latest' : 'missing'),
+            fetch: options.fetch,
             replay: options.replay ? SnapshotManifest.load(options.replay) : undefined,
             manifest: this.snapshots,
         });

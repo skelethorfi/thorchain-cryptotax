@@ -57,11 +57,10 @@ record that comes back different later is kept as a new copy next to the old one
 finalised one over a pending one, and the earlier full copy over one THORNode has
 since pruned. It lists what it used in `snapshots.json` in its output folder.
 
-- Default: download only what isn't stored yet.
+- Default: download each wallet's history again (new activity, changed actions),
+  anything still pending, and anything not stored yet. Changed records are kept as
+  new copies, and the run lists what changed.
 - `--offline`: no network requests. Anything not stored is an error.
-- `--fetch-latest`: download each wallet's history again (new activity, changed
-  actions) and anything still pending. Changed records are kept as new copies, and
-  the run lists what changed.
 - `--refetch-all`: download every action and tx again, e.g. before filing a year,
   to see what the sources have revised or pruned since.
 - `--replay <run folder>`: use exactly the records that an earlier run used, e.g.
