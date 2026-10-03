@@ -19,13 +19,13 @@ function tickerRename(ticker: string) {
 }
 
 // Assets that live on THORChain (or Maya) but represent another chain's asset, by Midgard notation.
-// A synth is pool-backed exposure, a different holding: it gets its own name. Trade and secured assets
-// are the same asset held 1:1 on THORChain, so they keep the L1 asset's name for now (backlog: export
-// moves into and out of them as bridges).
-const ASSET_KINDS: {[type: number]: {separator: string; name?: string}} = {
-    [AssetType.SYNTH]: {separator: '/', name: 'Synth'},
-    [AssetType.TRADE]: {separator: '~'},
-    [AssetType.SECURED]: {separator: '-'},
+// A synth is pool-backed exposure, a different holding: it always gets its own name. Trade and secured
+// assets are the same asset held 1:1 on THORChain, so by default they keep the L1 asset's name; the
+// config can prefix them instead (docs/specs/assets.md).
+const ASSET_KINDS: {[type: number]: {separator: string; name: string; prefixed: (protocol: Protocol) => boolean}} = {
+    [AssetType.SYNTH]: {separator: '/', name: 'Synth', prefixed: () => true},
+    [AssetType.TRADE]: {separator: '~', name: 'Trade', prefixed: (protocol) => protocol.prefixTradeAssets ?? false},
+    [AssetType.SECURED]: {separator: '-', name: 'Secured', prefixed: (protocol) => protocol.prefixSecuredAssets ?? false},
 };
 
 // Cosmos denoms on THORChain such as x/ruji parse as a synth of chain X, but are native tokens
@@ -63,7 +63,7 @@ export function parseMidgardAsset(assetStr: string, protocol: Protocol = THORCHA
     // without a slash, which breaks Summ's ledger view
     return {
         blockchain: protocol.nativeChain,
-        currency: kind.name ? `${protocol.assetNamePrefix}${kind.name}.${asset.chain}.${ticker}` : ticker,
+        currency: kind.prefixed(protocol) ? `${protocol.assetNamePrefix}${kind.name}.${asset.chain}.${ticker}` : ticker,
         displayCurrency: `${asset.chain}${kind.separator}${ticker}`,
     };
 }

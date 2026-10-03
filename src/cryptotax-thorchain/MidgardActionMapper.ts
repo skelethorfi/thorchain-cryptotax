@@ -58,7 +58,7 @@ const NON_THORCHAIN_ACTION_TYPES: string[] = [ActionType.Swap, ActionType.AddLiq
 export function actionToCryptoTax(action: Action, thornodeTxs: TxStatusResponse[], addReferencePrices: boolean = false, unsupportedActionsPath: string,
                                   protocol: Protocol = THORCHAIN): CryptoTaxTransaction[] {
     const date: string = getActionDate(action).toISOString();
-    let mapper = protocol === THORCHAIN || NON_THORCHAIN_ACTION_TYPES.includes(action.type) ? getMapper(action) : null;
+    let mapper = protocol.id === THORCHAIN.id || NON_THORCHAIN_ACTION_TYPES.includes(action.type) ? getMapper(action) : null;
 
     try {
         if (typeof mapper === 'function') {
@@ -76,7 +76,7 @@ export function actionToCryptoTax(action: Action, thornodeTxs: TxStatusResponse[
                 // Write unsupported action to JSON
                 const txId = action.in?.[0]?.txID;
                 const filename = (txId ? txId : date) + '.json';
-                const protocolDir = protocol === THORCHAIN ? '' : protocol.id;
+                const protocolDir = protocol.id === THORCHAIN.id ? '' : protocol.id;
                 const filePath = path.join(unsupportedActionsPath, protocolDir, action.type, filename);
                 mkdirSync(path.dirname(filePath), {recursive: true});
                 writeFileSync(filePath, JSON.stringify(action, null, 4));
@@ -87,7 +87,7 @@ export function actionToCryptoTax(action: Action, thornodeTxs: TxStatusResponse[
 
     } catch (e: any) {
         const txId = action.in?.[0]?.txID || 'unknown';
-        throw new Error(`[${protocol === THORCHAIN ? 'Midgard' : protocol.id + ' Midgard'}] ${e.message || 'unknown error'}. type: ${action.type}, txid: ${txId}`);
+        throw new Error(`[${protocol.id === THORCHAIN.id ? 'Midgard' : protocol.id + ' Midgard'}] ${e.message || 'unknown error'}. type: ${action.type}, txid: ${txId}`);
     }
 }
 

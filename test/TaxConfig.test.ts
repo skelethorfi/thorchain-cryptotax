@@ -68,4 +68,21 @@ describe('TaxConfig paths', () => {
         expect(config.cachePath).toBe(path.join(dir, 'FY/cache'));
         expect(config.outputPath).toBe(path.join(dir, 'output'));
     });
+
+    test('loads the optional [assets] table from TOML', () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tct-config-'));
+        const file = path.join(dir, 'config.toml');
+        fs.writeFileSync(file, [
+            'fromDate = "2025-07-01"',
+            'toDate = "2026-06-30"',
+            'frequency = "yearly"',
+            'cacheDataSources = true',
+            'wallets = []',
+            '',
+            '[assets]',
+            'prefixSecuredAssets = true',
+        ].join('\n'));
+
+        expect(TaxConfig.load(file).assets).toEqual({prefixSecuredAssets: true});
+    });
 });

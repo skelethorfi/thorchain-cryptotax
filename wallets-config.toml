@@ -14,6 +14,12 @@ frequency = "yearly"
 # Add "maya" to include swaps and liquidity on Maya Protocol (see docs/specs/maya.md)
 # protocols = ["thorchain", "maya"]
 
+# Optional: name secured and trade assets with a prefix instead of the L1 asset's name
+# (see docs/specs/assets.md). Default: false for both, e.g. secured ETH-USDC exports as USDC
+# [assets]
+# prefixSecuredAssets = true   # ThorSecured.ETH.USDC
+# prefixTradeAssets = true     # ThorTrade.BTC.BTC
+
 # Store the downloaded source files to be able to re-run without downloading again
 cacheDataSources = false
 

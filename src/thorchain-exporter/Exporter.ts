@@ -17,7 +17,7 @@ import {getActionDate} from "../cryptotax-thorchain/MidgardActionMapper";
 import {TaxConfig} from "./TaxConfig";
 import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
 import {CacheOptions} from "../cache/Cache";
-import {getProtocol, Protocol, THORCHAIN} from "../protocols/Protocol";
+import {getProtocol, Protocol, THORCHAIN, withAssetNames} from "../protocols/Protocol";
 import {assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
 
 // The inbound txids to look up on THORNode, which is the only source of the gas the wallet paid on an
@@ -72,6 +72,7 @@ export class Exporter {
     viewblock: Viewblock;
     midgard: MidgardService;
     // Midgard of each other protocol enabled in the config (e.g. Maya)
+    thorchain: Protocol;
     otherMidgards: {protocol: Protocol, midgard: MidgardService}[];
     thornode: ThornodeService;
     tcyDistribution: TcyDistributionService;
@@ -84,9 +85,10 @@ export class Exporter {
         this.midgard = new MidgardService(path.join(cachePath, 'midgard'), cacheOptions);
         this.thornode = new ThornodeService(path.join(cachePath, 'thornode'), false, cacheOptions);
         this.tcyDistribution = new TcyDistributionService(path.join(cachePath, 'tcy'), cacheOptions);
+        this.thorchain = withAssetNames(THORCHAIN, this.config.assets);
         this.otherMidgards = (this.config.protocols ?? ['thorchain'])
-            .map(id => getProtocol(id))
-            .filter(protocol => protocol !== THORCHAIN)
+            .map(id => withAssetNames(getProtocol(id), this.config.assets))
+            .filter(protocol => protocol.id !== THORCHAIN.id)
             .map(protocol => ({
                 protocol,
                 midgard: new MidgardService(path.join(cachePath, `${protocol.id}-midgard`), cacheOptions, protocol.midgardUrl),
@@ -128,7 +130,7 @@ export class Exporter {
             }
 
             try {
-                events.addMidgard(action, wallet, thornodeTxs, this.config);
+                events.addMidgard(action, wallet, thornodeTxs, this.config, this.thorchain);
             } catch (error) {
                 // Log the error, save a copy of failed transaction and keep going
                 console.error(error);

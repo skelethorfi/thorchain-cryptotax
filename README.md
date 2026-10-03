@@ -174,7 +174,15 @@ If you found this useful, and it saved you a lot of manual effort, feel free to 
 
 - Synths are exported as `ThorSynth.BTC.BTC` (`MayaSynth…` on Maya), so Summ keeps them
   apart from L1 BTC. Trade and secured assets keep the L1 asset's name with THORChain as the
-  blockchain. See [docs/specs/assets.md](docs/specs/assets.md)
+  blockchain, unless the config prefixes them:
+
+  ```toml
+  [assets]
+  prefixSecuredAssets = true   # ThorSecured.ETH.USDC
+  prefixTradeAssets = true     # ThorTrade.BTC.BTC
+  ```
+
+  See [docs/specs/assets.md](docs/specs/assets.md)
 
 ### Sends/Receives
 

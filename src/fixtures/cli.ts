@@ -42,7 +42,7 @@ async function fetchInput(txid: string, protocol: Protocol, index?: number): Pro
     const action = actions[index ?? 0];
     const thornodeTxs = [];
 
-    const thornodeTxIds = protocol === THORCHAIN ? getThornodeTxIds(action) : [];
+    const thornodeTxIds = protocol.id === THORCHAIN.id ? getThornodeTxIds(action) : [];
 
     if (thornodeTxIds.length) {
         const thornode = new ThornodeService(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-thornode-')));
@@ -55,7 +55,7 @@ async function fetchInput(txid: string, protocol: Protocol, index?: number): Pro
     return {
         description: describeShape(getActionShape(action)),
         source: 'midgard',
-        ...(protocol === THORCHAIN ? {} : {protocol: protocol.id}),
+        ...(protocol.id === THORCHAIN.id ? {} : {protocol: protocol.id}),
         wallet: action.in[0]?.address ?? '',
         data: action,
         ...(thornodeTxs.length ? {thornodeTxs} : {}),
