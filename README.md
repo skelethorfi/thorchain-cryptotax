@@ -170,6 +170,12 @@ If you found this useful, and it saved you a lot of manual effort, feel free to 
 - A deposit sent from an L1 wallet is exported in the L1 asset (BTC), although Midgard
   reports it as the synth. See [docs/specs/savers.md](docs/specs/savers.md)
 
+### Synths, trade and secured assets
+
+- Synths are exported as `ThorSynth.BTC.BTC` (`MayaSynth…` on Maya), so Summ keeps them
+  apart from L1 BTC. Trade and secured assets keep the L1 asset's name with THORChain as the
+  blockchain. See [docs/specs/assets.md](docs/specs/assets.md)
+
 ### Sends/Receives
 
 Sends and receives are fetched using the viewblock.io API.

@@ -31,7 +31,7 @@ export function getInboundFee(
     const gasCoin = thornodeTx?.tx?.gas?.[0];
 
     if (gasCoin?.asset) {
-        const { currency } = parseMidgardAsset(gasCoin.asset);
+        const { currency } = parseMidgardAsset(gasCoin.asset, protocol);
 
         return {
             feeCurrency: currency,

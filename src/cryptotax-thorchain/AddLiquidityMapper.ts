@@ -61,10 +61,10 @@ export class AddLiquidityMapper implements Mapper {
             }
 
             // Midgard reports a savers deposit's coin as the synth (BTC/BTC), but a wallet on the asset's own
-            // chain sent the L1 asset (BTC, not BTC.BTC) and paid that chain's gas, not the protocol's native fee
+            // chain sent the L1 asset (BTC, not ThorSynth.BTC.BTC) and paid that chain's gas, not the protocol's native fee
             const sentOnL1 = isSavers && !from.toLowerCase().startsWith(protocol.nativeAddressPrefix);
             const sentAsset = sentOnL1 ? coin.asset.replace('/', '.') : coin.asset;
-            const { blockchain, currency } = parseMidgardAsset(sentAsset);
+            const { blockchain, currency } = parseMidgardAsset(sentAsset, protocol);
 
             transactions.push({
                 walletExchange: from,

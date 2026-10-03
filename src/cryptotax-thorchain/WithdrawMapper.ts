@@ -71,7 +71,7 @@ export class WithdrawMapper implements Mapper {
         for (let i = 0; i < numAssetsOut; i++) {
             const withdraw: Transaction = withdrawals[i];
             const coin: Coin = withdraw.coins[0];
-            const { blockchain, currency } = parseMidgardAsset(coin.asset);
+            const { blockchain, currency } = parseMidgardAsset(coin.asset, protocol);
 
             // NOTE: sometimes there is only 1 item in networkFees even though 2 assets are withdrawn
             // const {feeCurrency, feeAmount} = this.getFee(action.metadata.withdraw?.networkFees[i]);
