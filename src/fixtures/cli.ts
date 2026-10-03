@@ -3,6 +3,7 @@ import os from "os";
 import path from "path";
 import {Action, Configuration, MidgardApi} from "@xchainjs/xchain-midgard";
 import {ThornodeService} from "../cryptotax-thorchain/ThornodeService";
+import {CosmosTxService, getCosmosTxIds} from "../cryptotax-thorchain/CosmosTxService";
 import {getThornodeTxIds} from "../thorchain-exporter/Exporter";
 import {Anonymiser} from "./Anonymise";
 import {EXPECTED_FILE, formatRows, GoldenCaseInput, INPUT_FILE, readCaseInput, runCase, writeCaseExpected} from "./GoldenCase";
@@ -52,6 +53,17 @@ async function fetchInput(txid: string, protocol: Protocol, index?: number): Pro
         }
     }
 
+    const cosmosTxs = [];
+    const cosmosTxIds = protocol.id === THORCHAIN.id ? getCosmosTxIds(action) : [];
+
+    if (cosmosTxIds.length) {
+        const cosmos = new CosmosTxService(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-cosmos-')));
+
+        for (const txId of cosmosTxIds) {
+            cosmosTxs.push(await cosmos.getTx(txId));
+        }
+    }
+
     return {
         description: describeShape(getActionShape(action)),
         source: 'midgard',
@@ -59,6 +71,7 @@ async function fetchInput(txid: string, protocol: Protocol, index?: number): Pro
         wallet: action.in[0]?.address ?? '',
         data: action,
         ...(thornodeTxs.length ? {thornodeTxs} : {}),
+        ...(cosmosTxs.length ? {cosmosTxs} : {}),
     };
 }
 

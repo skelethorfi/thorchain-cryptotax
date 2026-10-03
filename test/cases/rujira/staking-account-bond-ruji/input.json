@@ -1,0 +1,161 @@
+{
+  "description": "contract/wasm-rujira-staking/account.bond success: [] -> [] funds [x/ruji]",
+  "source": "midgard",
+  "wallet": "thor15exarm29qcnh82el44xn68r3whs4gp7u2qmz7g",
+  "data": {
+    "date": "1755853470168611706",
+    "height": "22507628",
+    "in": [
+      {
+        "address": "thor15exarm29qcnh82el44xn68r3whs4gp7u2qmz7g",
+        "coins": [],
+        "txID": "877690166C2333DDCCE8B168BBC9DB899073A9E0721404A365A90E83CE720699"
+      }
+    ],
+    "metadata": {
+      "contract": {
+        "attributes": {
+          "amount": "150000000",
+          "owner": "thor15exarm29qcnh82el44xn68r3whs4gp7u2qmz7g"
+        },
+        "contractType": "wasm-rujira-staking/account.bond",
+        "funds": "150000000x/ruji",
+        "msg": {
+          "account": {
+            "bond": {}
+          }
+        }
+      }
+    },
+    "out": [
+      {
+        "address": "thor13g83nn5ef4qzqeafp0508dnvkvm0zqr3sj7eefcn5umu65gqluusrml5cr",
+        "coins": [],
+        "txID": "877690166C2333DDCCE8B168BBC9DB899073A9E0721404A365A90E83CE720699"
+      }
+    ],
+    "pools": [],
+    "status": "success",
+    "type": "contract"
+  },
+  "cosmosTxs": [
+    {
+      "txhash": "877690166C2333DDCCE8B168BBC9DB899073A9E0721404A365A90E83CE720699",
+      "height": "22507628",
+      "code": 0,
+      "fee": [],
+      "events": [
+        {
+          "type": "message",
+          "attributes": [
+            {
+              "key": "action",
+              "value": "/cosmwasm.wasm.v1.MsgExecuteContract"
+            },
+            {
+              "key": "sender",
+              "value": "thor15exarm29qcnh82el44xn68r3whs4gp7u2qmz7g"
+            },
+            {
+              "key": "module",
+              "value": "wasm"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_spent",
+          "attributes": [
+            {
+              "key": "spender",
+              "value": "thor15exarm29qcnh82el44xn68r3whs4gp7u2qmz7g"
+            },
+            {
+              "key": "amount",
+              "value": "150000000x/ruji"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "receiver",
+              "value": "thor13g83nn5ef4qzqeafp0508dnvkvm0zqr3sj7eefcn5umu65gqluusrml5cr"
+            },
+            {
+              "key": "amount",
+              "value": "150000000x/ruji"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "transfer",
+          "attributes": [
+            {
+              "key": "recipient",
+              "value": "thor13g83nn5ef4qzqeafp0508dnvkvm0zqr3sj7eefcn5umu65gqluusrml5cr"
+            },
+            {
+              "key": "sender",
+              "value": "thor15exarm29qcnh82el44xn68r3whs4gp7u2qmz7g"
+            },
+            {
+              "key": "amount",
+              "value": "150000000x/ruji"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "execute",
+          "attributes": [
+            {
+              "key": "_contract_address",
+              "value": "thor13g83nn5ef4qzqeafp0508dnvkvm0zqr3sj7eefcn5umu65gqluusrml5cr"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "wasm-rujira-staking/account.bond",
+          "attributes": [
+            {
+              "key": "_contract_address",
+              "value": "thor13g83nn5ef4qzqeafp0508dnvkvm0zqr3sj7eefcn5umu65gqluusrml5cr"
+            },
+            {
+              "key": "owner",
+              "value": "thor15exarm29qcnh82el44xn68r3whs4gp7u2qmz7g"
+            },
+            {
+              "key": "amount",
+              "value": "150000000"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

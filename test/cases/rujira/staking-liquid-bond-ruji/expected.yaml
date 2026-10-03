@@ -1,0 +1,12 @@
+walletExchange: thor1d9j83ll3e0jh5w8kycjcmzcm2wdy0mr3wr9mtq
+timestamp: 2025-07-23T22:26:38.775Z
+type: staking-deposit
+baseCurrency: RUJI
+baseAmount: "2269.0107783"
+feeCurrency: RUNE
+feeAmount: "0.00003255"
+from: thor1d9j83ll3e0jh5w8kycjcmzcm2wdy0mr3wr9mtq
+to: thorchain
+blockchain: THORChain
+id: 2025-07-23T22:26:38.775Z.rujira-liquid-bond
+description: 1/1 - Rujira Liquid bond 2269.0107783 RUJI for 2252.15635519 shares; C74C2BD4E65A2F8EDF6630552429FD148D90DD07AE4877DFCAF54F0EF6E06D8B

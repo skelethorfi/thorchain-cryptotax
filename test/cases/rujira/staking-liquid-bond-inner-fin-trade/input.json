@@ -1,0 +1,1051 @@
+{
+  "description": "contract/wasm-rujira-fin/trade success: [] -> [] funds [x/brune]",
+  "source": "midgard",
+  "wallet": "thor1rqjhlm4vny43qhupcfvdvl0t3pau6hjf08jm7y",
+  "data": {
+    "date": "1778287700227888094",
+    "height": "26095358",
+    "in": [
+      {
+        "address": "thor1rqjhlm4vny43qhupcfvdvl0t3pau6hjf08jm7y",
+        "coins": [],
+        "txID": "28C244C67F83582B7F464F8E71172C8DF8EF7C2E1625CFA0BEEAA007DCF2C25F"
+      }
+    ],
+    "metadata": {
+      "contract": {
+        "attributes": {
+          "bid": "2737668112",
+          "offer": "2737668112",
+          "price": "thor1enhmz57mpn4umspa8hqgqwwqpe02q4hpqmqr0k2zftxr8fu3nxmqjy3tqx:1",
+          "rate": "1",
+          "side": "base"
+        },
+        "contractType": "wasm-rujira-fin/trade",
+        "funds": "4992500000x/brune",
+        "msg": {
+          "liquid": {
+            "bond": {}
+          }
+        }
+      }
+    },
+    "out": [
+      {
+        "address": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec",
+        "coins": [],
+        "txID": "28C244C67F83582B7F464F8E71172C8DF8EF7C2E1625CFA0BEEAA007DCF2C25F"
+      }
+    ],
+    "pools": [],
+    "status": "success",
+    "type": "contract"
+  },
+  "cosmosTxs": [
+    {
+      "txhash": "28C244C67F83582B7F464F8E71172C8DF8EF7C2E1625CFA0BEEAA007DCF2C25F",
+      "height": "26095358",
+      "code": 0,
+      "fee": [
+        {
+          "denom": "rune",
+          "amount": "24492334"
+        }
+      ],
+      "events": [
+        {
+          "type": "coin_spent",
+          "attributes": [
+            {
+              "key": "spender",
+              "value": "thor1rqjhlm4vny43qhupcfvdvl0t3pau6hjf08jm7y"
+            },
+            {
+              "key": "amount",
+              "value": "24492334rune"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "receiver",
+              "value": "thor17xpfvakm2amg962yls6f84z3kell8c5lk76m7z"
+            },
+            {
+              "key": "amount",
+              "value": "24492334rune"
+            }
+          ]
+        },
+        {
+          "type": "transfer",
+          "attributes": [
+            {
+              "key": "recipient",
+              "value": "thor17xpfvakm2amg962yls6f84z3kell8c5lk76m7z"
+            },
+            {
+              "key": "sender",
+              "value": "thor1rqjhlm4vny43qhupcfvdvl0t3pau6hjf08jm7y"
+            },
+            {
+              "key": "amount",
+              "value": "24492334rune"
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "attributes": [
+            {
+              "key": "sender",
+              "value": "thor1rqjhlm4vny43qhupcfvdvl0t3pau6hjf08jm7y"
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "attributes": [
+            {
+              "key": "action",
+              "value": "/cosmwasm.wasm.v1.MsgExecuteContract"
+            },
+            {
+              "key": "sender",
+              "value": "thor1rqjhlm4vny43qhupcfvdvl0t3pau6hjf08jm7y"
+            },
+            {
+              "key": "module",
+              "value": "wasm"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_spent",
+          "attributes": [
+            {
+              "key": "spender",
+              "value": "thor1rqjhlm4vny43qhupcfvdvl0t3pau6hjf08jm7y"
+            },
+            {
+              "key": "amount",
+              "value": "4992500000x/brune"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "receiver",
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
+            },
+            {
+              "key": "amount",
+              "value": "4992500000x/brune"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "transfer",
+          "attributes": [
+            {
+              "key": "recipient",
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
+            },
+            {
+              "key": "sender",
+              "value": "thor1rqjhlm4vny43qhupcfvdvl0t3pau6hjf08jm7y"
+            },
+            {
+              "key": "amount",
+              "value": "4992500000x/brune"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "execute",
+          "attributes": [
+            {
+              "key": "_contract_address",
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "wasm-rujira-staking/liquid.bond",
+          "attributes": [
+            {
+              "key": "_contract_address",
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
+            },
+            {
+              "key": "owner",
+              "value": "thor1rqjhlm4vny43qhupcfvdvl0t3pau6hjf08jm7y"
+            },
+            {
+              "key": "amount",
+              "value": "4992500000"
+            },
+            {
+              "key": "shares",
+              "value": "4923509202"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "receiver",
+              "value": "thor18afpdapfxxlvxcf95a3rd6p0fsw37mnf5tmtf6"
+            },
+            {
+              "key": "amount",
+              "value": "4923509202x/staking-x/brune"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coinbase",
+          "attributes": [
+            {
+              "key": "minter",
+              "value": "thor18afpdapfxxlvxcf95a3rd6p0fsw37mnf5tmtf6"
+            },
+            {
+              "key": "amount",
+              "value": "4923509202x/staking-x/brune"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_spent",
+          "attributes": [
+            {
+              "key": "spender",
+              "value": "thor18afpdapfxxlvxcf95a3rd6p0fsw37mnf5tmtf6"
+            },
+            {
+              "key": "amount",
+              "value": "4923509202x/staking-x/brune"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "receiver",
+              "value": "thor1rqjhlm4vny43qhupcfvdvl0t3pau6hjf08jm7y"
+            },
+            {
+              "key": "amount",
+              "value": "4923509202x/staking-x/brune"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "transfer",
+          "attributes": [
+            {
+              "key": "recipient",
+              "value": "thor1rqjhlm4vny43qhupcfvdvl0t3pau6hjf08jm7y"
+            },
+            {
+              "key": "sender",
+              "value": "thor18afpdapfxxlvxcf95a3rd6p0fsw37mnf5tmtf6"
+            },
+            {
+              "key": "amount",
+              "value": "4923509202x/staking-x/brune"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "mint",
+          "attributes": [
+            {
+              "key": "mint_to_address",
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
+            },
+            {
+              "key": "amount",
+              "value": "4923509202x/staking-x/brune"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_spent",
+          "attributes": [
+            {
+              "key": "spender",
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
+            },
+            {
+              "key": "amount",
+              "value": "494532191rune"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "receiver",
+              "value": "thor1mcy9jtp4kzl8q2lvdgfgsl8jvqrf504uphkf0pz2p9wud8tsntesjvccew"
+            },
+            {
+              "key": "amount",
+              "value": "494532191rune"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "transfer",
+          "attributes": [
+            {
+              "key": "recipient",
+              "value": "thor1mcy9jtp4kzl8q2lvdgfgsl8jvqrf504uphkf0pz2p9wud8tsntesjvccew"
+            },
+            {
+              "key": "sender",
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
+            },
+            {
+              "key": "amount",
+              "value": "494532191rune"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_spent",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2737668112rune"
+            },
+            {
+              "key": "spender",
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2737668112rune"
+            },
+            {
+              "key": "receiver",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "transfer",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2737668112rune"
+            },
+            {
+              "key": "recipient",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "sender",
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "execute",
+          "attributes": [
+            {
+              "key": "_contract_address",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_spent",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2737668112rune"
+            },
+            {
+              "key": "spender",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2737668112rune"
+            },
+            {
+              "key": "receiver",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "transfer",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2737668112rune"
+            },
+            {
+              "key": "recipient",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "sender",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "execute",
+          "attributes": [
+            {
+              "key": "_contract_address",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_spent",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2737668112rune"
+            },
+            {
+              "key": "spender",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2737668112rune"
+            },
+            {
+              "key": "receiver",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "transfer",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2737668112rune"
+            },
+            {
+              "key": "recipient",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "sender",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "execute",
+          "attributes": [
+            {
+              "key": "_contract_address",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "wasm-rujira-fin/trade",
+          "attributes": [
+            {
+              "key": "_contract_address",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "bid",
+              "value": "2737668112"
+            },
+            {
+              "key": "offer",
+              "value": "2737668112"
+            },
+            {
+              "key": "price",
+              "value": "thor1enhmz57mpn4umspa8hqgqwwqpe02q4hpqmqr0k2zftxr8fu3nxmqjy3tqx:1"
+            },
+            {
+              "key": "rate",
+              "value": "1"
+            },
+            {
+              "key": "side",
+              "value": "base"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_spent",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2737668112rune"
+            },
+            {
+              "key": "spender",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2737668112rune"
+            },
+            {
+              "key": "receiver",
+              "value": "thor1enhmz57mpn4umspa8hqgqwwqpe02q4hpqmqr0k2zftxr8fu3nxmqjy3tqx"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "transfer",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2737668112rune"
+            },
+            {
+              "key": "recipient",
+              "value": "thor1enhmz57mpn4umspa8hqgqwwqpe02q4hpqmqr0k2zftxr8fu3nxmqjy3tqx"
+            },
+            {
+              "key": "sender",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "execute",
+          "attributes": [
+            {
+              "key": "_contract_address",
+              "value": "thor1enhmz57mpn4umspa8hqgqwwqpe02q4hpqmqr0k2zftxr8fu3nxmqjy3tqx"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "wasm-rujira-brune/mint",
+          "attributes": [
+            {
+              "key": "_contract_address",
+              "value": "thor1enhmz57mpn4umspa8hqgqwwqpe02q4hpqmqr0k2zftxr8fu3nxmqjy3tqx"
+            },
+            {
+              "key": "amount",
+              "value": "2737668112"
+            },
+            {
+              "key": "denom",
+              "value": "x/brune"
+            },
+            {
+              "key": "recipient",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "wasm-rujira-brune/fee.allocate",
+          "attributes": [
+            {
+              "key": "_contract_address",
+              "value": "thor1enhmz57mpn4umspa8hqgqwwqpe02q4hpqmqr0k2zftxr8fu3nxmqjy3tqx"
+            },
+            {
+              "key": "amount",
+              "value": "0"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "wasm-rujira-brune/fee.distribute",
+          "attributes": [
+            {
+              "key": "_contract_address",
+              "value": "thor1enhmz57mpn4umspa8hqgqwwqpe02q4hpqmqr0k2zftxr8fu3nxmqjy3tqx"
+            },
+            {
+              "key": "amount",
+              "value": "175411191"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2737668112x/brune"
+            },
+            {
+              "key": "receiver",
+              "value": "thor18afpdapfxxlvxcf95a3rd6p0fsw37mnf5tmtf6"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coinbase",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2737668112x/brune"
+            },
+            {
+              "key": "minter",
+              "value": "thor18afpdapfxxlvxcf95a3rd6p0fsw37mnf5tmtf6"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_spent",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2737668112x/brune"
+            },
+            {
+              "key": "spender",
+              "value": "thor18afpdapfxxlvxcf95a3rd6p0fsw37mnf5tmtf6"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2737668112x/brune"
+            },
+            {
+              "key": "receiver",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "transfer",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2737668112x/brune"
+            },
+            {
+              "key": "recipient",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "sender",
+              "value": "thor18afpdapfxxlvxcf95a3rd6p0fsw37mnf5tmtf6"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "mint",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2737668112x/brune"
+            },
+            {
+              "key": "mint_to_address",
+              "value": "thor1enhmz57mpn4umspa8hqgqwwqpe02q4hpqmqr0k2zftxr8fu3nxmqjy3tqx"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_spent",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "175411191rune"
+            },
+            {
+              "key": "spender",
+              "value": "thor1enhmz57mpn4umspa8hqgqwwqpe02q4hpqmqr0k2zftxr8fu3nxmqjy3tqx"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "175411191rune"
+            },
+            {
+              "key": "receiver",
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "transfer",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "175411191rune"
+            },
+            {
+              "key": "recipient",
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
+            },
+            {
+              "key": "sender",
+              "value": "thor1enhmz57mpn4umspa8hqgqwwqpe02q4hpqmqr0k2zftxr8fu3nxmqjy3tqx"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_spent",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2733561609x/brune"
+            },
+            {
+              "key": "spender",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2733561609x/brune"
+            },
+            {
+              "key": "receiver",
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "transfer",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "2733561609x/brune"
+            },
+            {
+              "key": "recipient",
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
+            },
+            {
+              "key": "sender",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_spent",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "4106503x/brune"
+            },
+            {
+              "key": "spender",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "4106503x/brune"
+            },
+            {
+              "key": "receiver",
+              "value": "thor1gm8q2gr25nzzsxzdp2mpja4hyvyhjlr4s6krcsgv2y953uu0js3qhwpus7"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "transfer",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "4106503x/brune"
+            },
+            {
+              "key": "recipient",
+              "value": "thor1gm8q2gr25nzzsxzdp2mpja4hyvyhjlr4s6krcsgv2y953uu0js3qhwpus7"
+            },
+            {
+              "key": "sender",
+              "value": "thor1vk6trmz42cjrh4zcxczeaacnsv3snv4f22x8ccu203dqde7vtaxsyevlec"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "execute",
+          "attributes": [
+            {
+              "key": "_contract_address",
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "wasm-rujira-staking/settle",
+          "attributes": [
+            {
+              "key": "_contract_address",
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
+            },
+            {
+              "key": "returned",
+              "value": "175411191"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

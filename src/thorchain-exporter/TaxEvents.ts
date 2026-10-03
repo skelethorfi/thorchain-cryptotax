@@ -11,6 +11,7 @@ import {TxStatusResponse} from "@xchainjs/xchain-thornode";
 import {TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService";
 import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
 import {Protocol, THORCHAIN} from "../protocols/Protocol";
+import {CosmosTx} from "../cryptotax-thorchain/CosmosTxService";
 
 export class TaxEvents {
 
@@ -26,10 +27,12 @@ export class TaxEvents {
         this.events.push(event);
     }
 
-    addMidgard(action: Action, wallet: IWallet, thornodeTxs: TxStatusResponse[] = [], config: ITaxConfig, protocol: Protocol = THORCHAIN) {
+    addMidgard(action: Action, wallet: IWallet, thornodeTxs: TxStatusResponse[] = [], config: ITaxConfig, protocol: Protocol = THORCHAIN,
+               cosmosTxs: CosmosTx[] = []) {
         const event = new TaxEvent(getActionDate(action), 'midgard', wallet, config, protocol);
         event.input = action;
         event.thornodeTxs = thornodeTxs;
+        event.cosmosTxs = cosmosTxs;
         event.convert();
 
         this.events.push(event);
