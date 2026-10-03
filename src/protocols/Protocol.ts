@@ -16,8 +16,8 @@ export interface Protocol {
     lpTokenPrefix: string;
     // Savers positions are not pool LP units, so they get their own token name (docs/specs/savers.md)
     saversTokenPrefix: string;
-    // Names assets that live on this chain but represent another chain's asset: <prefix>Synth.BTC.BTC,
-    // <prefix>Trade.BTC.BTC, <prefix>Secured.BTC.BTC (docs/specs/assets.md)
+    // Names synths, which live on this chain but give exposure to another chain's asset:
+    // <prefix>Synth.BTC.BTC (docs/specs/assets.md)
     assetNamePrefix: string;
     midgardUrl: string;
     // Fallback inbound gas (base units of the native asset) when THORNode data is missing
