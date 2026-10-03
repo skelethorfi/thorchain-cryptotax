@@ -53,7 +53,7 @@ export class ThornodeService {
             tx = await this.archive?.getTxStatus(hash);
         }
 
-        this.cache.write(hash, tx);
+        this.cache.write(hash, tx, `${this.isArchive ? API_URLS.thornodeArchive : API_URLS.thornode}/thorchain/tx/status/${hash}`);
 
         return tx;
     }
@@ -62,7 +62,6 @@ export class ThornodeService {
 async function test() {
     const hash = '';
     const thornode = new ThornodeService();
-    // thornode.cache.clear(hash);
     const tx = await thornode.getTxStatus(hash);
     console.log(tx);
 }

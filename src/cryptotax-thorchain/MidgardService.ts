@@ -19,9 +19,12 @@ axiosThrottle.use(axios, { requestsPerSecond: 1 });
 export class MidgardService {
     cache: Cache;
     api: MidgardApi;
+    basePath: string;
 
     constructor(cachePath: string = '_cache', cacheOptions: CacheOptions = {}, basePath: string = API_URLS.midgard) {
-        this.cache = new Cache(cachePath, cacheOptions);
+        // A wallet's actions grow with new activity, and Midgard revisions can change old ones
+        this.cache = new Cache(cachePath, cacheOptions, {refreshable: true});
+        this.basePath = basePath;
         const apiConfig = new Configuration({ basePath });
         this.api = new MidgardApi(apiConfig);
     }
@@ -61,7 +64,7 @@ export class MidgardService {
 
         assert.equal(actions.length, count);
 
-        this.cache.write(address, actions);
+        this.cache.write(address, actions, `${this.basePath}/v2/actions?address=${address}`);
 
         return actions;
     }
@@ -70,7 +73,6 @@ export class MidgardService {
 async function test() {
     const address = '';
     const midgard = new MidgardService();
-    // midgard.cache.clear(address);
     const actions: Action[] = await midgard.getActions(address);
     console.log(actions.length);
 }

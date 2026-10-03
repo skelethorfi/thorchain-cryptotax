@@ -59,10 +59,11 @@ export class CosmosTxService {
 
         this.cache.assertCanFetch(hash);
 
-        const response = await axios.get(`${API_URLS.thornode}/cosmos/tx/v1beta1/txs/${hash}`);
+        const url = `${API_URLS.thornode}/cosmos/tx/v1beta1/txs/${hash}`;
+        const response = await axios.get(url);
         const tx = toCosmosTx(response.data);
 
-        this.cache.write(hash, tx);
+        this.cache.write(hash, tx, url);
 
         return tx;
     }

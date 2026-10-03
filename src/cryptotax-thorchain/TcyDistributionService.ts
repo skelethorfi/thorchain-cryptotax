@@ -28,7 +28,8 @@ export interface TcyDistribution {
     /**
      * Float, annual percentage rate of the TCY distribution.
      */
-    apr: string;
+    // Today's rate; dropped before saving
+    apr?: string;
     /**
      * Int64(e8), total amount of RUNE distributed to the TCY holder.
      */
@@ -48,7 +49,8 @@ export class TcyDistributionService {
     baseUrl: string;
 
     constructor(cachePath: string = '_cache', cacheOptions: CacheOptions = {}) {
-        this.cache = new Cache(cachePath, cacheOptions);
+        // A wallet's distributions grow over time
+        this.cache = new Cache(cachePath, cacheOptions, {refreshable: true});
         this.baseUrl = MIDGARD_API_URL;
     }
 
@@ -63,9 +65,11 @@ export class TcyDistributionService {
 
         const url = `${this.baseUrl}/v2/tcy/distribution/${address}`;
         const response = await axios.get(url);
-        const data: TcyDistribution = response.data;
+        // apr is today's rate, which changes on every fetch and would make every refresh look like a
+        // change in the source data (docs/specs/snapshots.md); it is not used
+        const {apr, ...data}: TcyDistribution = response.data;
 
-        this.cache.write(cacheKey, data);
+        this.cache.write(cacheKey, data, url);
 
         return data;
     }
@@ -74,7 +78,6 @@ export class TcyDistributionService {
 async function test() {
     const address = ''; // Example address
     const service = new TcyDistributionService();
-    // service.cache.clear(`tcy_distribution_${address}`);
     const distribution = await service.getTcyDistribution(address);
     console.log(distribution);
 }

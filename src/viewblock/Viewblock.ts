@@ -33,7 +33,8 @@ export class Viewblock {
     apiKey?: string;
 
     constructor(cachePath: string = '_cache', cacheOptions: CacheOptions = {}) {
-        this.cache = new Cache(cachePath, cacheOptions);
+        // A wallet's txs grow with new activity
+        this.cache = new Cache(cachePath, cacheOptions, {refreshable: true});
     }
 
     async query(path: any, { apiKey, query = {}, network }: any) {
@@ -103,7 +104,7 @@ export class Viewblock {
 
         if (total === 0) {
             console.log(`[WARN] No transactions for ${address}`);
-            this.cache.write(address, []);
+            this.cache.write(address, [], `viewblock:${network}:${address}`);
             return [];
         }
 
@@ -126,8 +127,26 @@ export class Viewblock {
             );
         }
 
-        this.cache.write(address, results);
+        const txs = withoutCurrentValues(results);
+        this.cache.write(address, txs, `viewblock:${network}:${address}`);
 
-        return results;
+        return txs;
     }
+}
+
+// Viewblock adds each amount's value at today's price (usdNew), which changes on every fetch and would make
+// every refresh look like a change in the source data (docs/specs/snapshots.md). The value at the time of
+// the tx (usd) is kept.
+export function withoutCurrentValues<T>(value: T): T {
+    if (Array.isArray(value)) {
+        return value.map(withoutCurrentValues) as T;
+    }
+
+    if (value !== null && typeof value === 'object') {
+        return Object.fromEntries(Object.entries(value)
+            .filter(([key]) => key !== 'usdNew')
+            .map(([key, item]) => [key, withoutCurrentValues(item)])) as T;
+    }
+
+    return value;
 }

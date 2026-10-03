@@ -18,6 +18,7 @@ import {getActionDate} from "../cryptotax-thorchain/MidgardActionMapper";
 import {TaxConfig} from "./TaxConfig";
 import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
 import {CacheOptions} from "../cache/Cache";
+import {SnapshotManifest} from "../cache/SnapshotManifest";
 import {getProtocol, Protocol, THORCHAIN, withAssetNames} from "../protocols/Protocol";
 import {assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
 
@@ -69,8 +70,19 @@ export function shouldIncludeAction(action: Action): boolean {
     return false;
 }
 
+export interface ExportOptions {
+    // Only read cached snapshots; fail on anything not cached
+    offline?: boolean;
+    // Fetch wallet-level data again (Midgard, Viewblock, TCY), keeping the old snapshots
+    refresh?: boolean;
+    // A run folder (or its snapshots.json) whose exact snapshots to read
+    replay?: string;
+}
+
 export class Exporter {
     config: ITaxConfig;
+    // The snapshots this run used
+    snapshots: SnapshotManifest;
     viewblock: Viewblock;
     midgard: MidgardService;
     // Midgard of each other protocol enabled in the config (e.g. Maya)
@@ -81,9 +93,17 @@ export class Exporter {
     tcyDistribution: TcyDistributionService;
     report: Reporter;
 
-    constructor(filename: string, cacheOptions: CacheOptions = {}) {
+    constructor(filename: string, options: ExportOptions = {}) {
         this.config = TaxConfig.load(filename);
         const cachePath = this.config.cachePath;
+        this.snapshots = new SnapshotManifest(cachePath);
+        const cacheOptions: CacheOptions = {
+            offline: options.offline,
+            // cacheDataSources = false used to delete the cache; it now fetches again and keeps the old snapshots
+            refresh: options.refresh || !this.config.cacheDataSources,
+            replay: options.replay ? SnapshotManifest.load(options.replay, cachePath) : undefined,
+            manifest: this.snapshots,
+        };
         this.viewblock = new Viewblock(path.join(cachePath, 'viewblock'), cacheOptions);
         this.midgard = new MidgardService(path.join(cachePath, 'midgard'), cacheOptions);
         this.thornode = new ThornodeService(path.join(cachePath, 'thornode'), false, cacheOptions);
