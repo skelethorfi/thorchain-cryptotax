@@ -72,3 +72,22 @@ describe('midgardActionKey', () => {
         expect(keys[1]).toBe('addLiquidity.genesisTx.BNB.BUSD.-+bnb1a');
     });
 });
+
+describe('store import from the folder-per-record layout', () => {
+    test("re-keys records with today's keys, and translates the lists", async () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-v1-'));
+        const v1 = path.join(dir, 'old-store');
+        const swap = {...action('A'), type: 'swap', metadata: {swap: {txType: 'swap'}}, date: String(Date.UTC(2025, 6, 15) * 1e6)};
+        fs.outputJsonSync(path.join(v1, 'records', 'midgard', 'swap.A.swap', '0000-imported-0000.json'), {fetchedAt: null, importedFrom: 'FY/cache/midgard/w.json', sha256: 'x', data: swap});
+        fs.outputJsonSync(path.join(v1, 'lists', 'midgard', 'w', '0000-imported-0000.json'), {fetchedAt: null, keys: ['swap.A.swap']});
+
+        const store = new RecordStore(path.join(dir, 'store'));
+        importCache(store, v1);
+
+        expect(fs.readdirSync(path.join(dir, 'store', 'records', 'midgard', '2025', '07'))).toEqual(['swap.A-000.json']);
+        expect(store.copies('midgard', 'swap.A')[0].importedFrom).toBe('FY/cache/midgard/w.json');
+        jest.spyOn(console, 'log').mockImplementation(() => {});
+        const offline = new RecordStore(path.join(dir, 'store'), {offline: true});
+        expect((await new MidgardService(offline).getActions('w')).map(a => a.type)).toEqual(['swap']);
+    });
+});

@@ -7,6 +7,9 @@ import * as path from "path";
 
 export const MANIFEST_FILE = 'snapshots.json';
 
+// The store layout the manifest's paths are in: 2 is records/<source>/[<yyyy>/<mm>/]<key>-NNN.json
+const LAYOUT = 2;
+
 const FETCHED_RANK: (RecordEntry['fetched'])[] = [undefined, 'unchanged', 'new', 'changed'];
 
 export interface RecordEntry {
@@ -51,7 +54,12 @@ export class SnapshotManifest {
     // A run folder or its snapshots.json
     static load(runOrFile: string): SnapshotManifest {
         const file = fs.existsSync(runOrFile) && fs.statSync(runOrFile).isDirectory() ? path.join(runOrFile, MANIFEST_FILE) : runOrFile;
-        const {records, lists} = fs.readJSONSync(file);
+        const {layout, records, lists} = fs.readJSONSync(file);
+
+        if (layout !== LAYOUT) {
+            throw new Error(`${file} was written for an older store layout (${layout ?? 1}); its paths no longer exist, so it can't be replayed`);
+        }
+
         return new SnapshotManifest(records, lists);
     }
 
@@ -77,7 +85,7 @@ export class SnapshotManifest {
     write(outputPath: string) {
         const records = [...this.records.values()].sort((a, b) => this.id(a.source, a.key).localeCompare(this.id(b.source, b.key)));
         const lists = [...this.lists.values()].sort((a, b) => this.id(a.source, a.wallet).localeCompare(this.id(b.source, b.wallet)));
-        fs.outputJsonSync(path.join(outputPath, MANIFEST_FILE), {records, lists}, {spaces: 2});
+        fs.outputJsonSync(path.join(outputPath, MANIFEST_FILE), {layout: LAYOUT, records, lists}, {spaces: 2});
 
         const count = (filter: (entry: RecordEntry) => boolean) => records.filter(filter).length;
         console.log(`Snapshot: ${records.length} records from ${lists.length} wallet lists. ` +

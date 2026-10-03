@@ -9,10 +9,11 @@ import {withRetry} from "../utils/Retry";
 // copy over a pruned one, a finalised copy over a pending one) and lists the copies it used in its
 // manifest, so it can be replayed exactly. See docs/specs/snapshots.md.
 //
-//   <storePath>/records/<source>/<key>/<fetchedAt>.json   one copy of a record
-//   <storePath>/lists/<source>/<wallet>/<fetchedAt>.json  the record keys one fetch of a wallet returned
+//   <storePath>/records/<source>/[<yyyy>/<mm>/]<key>-000.json   a record's first copy; -001 the next, ...
+//   <storePath>/lists/<source>/<wallet>-000.json                the record keys one fetch of a wallet returned
 //
-// Caches from before (<storePath>/<source>/<key>.json holding a whole response) are imported on first use.
+// The key is in the file name (encoded), so one scan of the names finds every copy. Copies are ordered by
+// fetchedAt (unknown, for copies imported from old caches, sorts first), then by number.
 
 export type FetchMode = 'latest' | 'all';
 
@@ -33,25 +34,22 @@ export interface Fetched<T> {
     url?: string;
 }
 
-// How a source's records compare, for choosing between copies
+// How a source's records are filed and compared
 export interface RecordRules<T = any> {
     // Not final yet, e.g. a Midgard action with status 'pending'
     isPending?: (data: T) => boolean;
     // More is better; a copy with less (e.g. a THORNode tx pruned of its gas) is not used
     completeness?: (data: T) => number;
     // Drops what changes on every fetch but is not source data (e.g. a value at today's price), before
-    // a copy is compared and stored; also applied to imported caches
+    // a copy is compared and stored
     normalise?: (data: T) => T;
+    // The folder of a new record, e.g. its month 'yyyy/mm'; none for records with no date of their own
+    folderOf?: (data: T) => string;
 }
 
-// How a list is found in a cache from before records
 export interface ListOptions<T> {
     keyOf: (item: T) => string;
     rules?: RecordRules<T>;
-    // The old cache key, if not the wallet
-    legacyKey?: string;
-    // The items in an old cached response, if it was not the list itself
-    legacyItems?: (data: any) => T[];
 }
 
 // What a fetch did: the record's first copy, a new copy, or the same as the latest copy
@@ -62,14 +60,24 @@ interface Stored<T> {
     status: FetchStatus;
 }
 
-export interface Copy<T = any> {
-    file: string;
+export interface Origin {
     fetchedAt: string | null;
     url?: string;
     // Where an imported copy came from (an old cache file)
     importedFrom?: string;
+}
+
+export interface Copy<T = any> extends Origin {
+    file: string;
+    n: number;
     sha256: string;
     data: T;
+}
+
+interface List extends Origin {
+    file: string;
+    n: number;
+    keys: string[];
 }
 
 // Why a copy is used
@@ -86,10 +94,17 @@ export function sha256(data: any): string {
     return crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex');
 }
 
-// Record keys become folder names
-export function safeKey(key: string): string {
-    return key.replace(/[^A-Za-z0-9._-]/g, '_');
+// A key as a file name: letters, digits and . _ + - are kept, anything else is %XX (UTF-8), so the name
+// decodes back to the key and is safe on every file system
+export function encodeName(key: string): string {
+    return key.replace(/[^A-Za-z0-9._+-]/g, char => [...Buffer.from(char)].map(byte => '%' + byte.toString(16).toUpperCase().padStart(2, '0')).join(''));
 }
+
+export function decodeName(name: string): string {
+    return decodeURIComponent(name);
+}
+
+const COPY_FILE = /^(.+)-(\d{3,})\.json$/;
 
 // Picks the copy to use: copies oldest first, each later one replaces the choice unless it has less in it.
 // Copies that differ only in what the source's normalise drops (stored before it was added) count as the same.
@@ -119,6 +134,11 @@ export function chooseCopy<T>(copies: Copy<T>[], rules: RecordRules<T> = {}): {c
     return {copy, choice, ignored};
 }
 
+// Oldest first: by fetch time (unknown first), then by number
+function byAge(a: Origin & {n: number}, b: Origin & {n: number}): number {
+    return (a.fetchedAt ?? '').localeCompare(b.fetchedAt ?? '') || a.n - b.n;
+}
+
 export class RecordStore {
     readonly offline: boolean;
     private readonly fetchMode: FetchMode;
@@ -126,6 +146,8 @@ export class RecordStore {
     private readonly manifest?: SnapshotManifest;
     // Records and lists fetched in this run: one shared by several wallets is fetched once
     private readonly fetchedThisRun = new Set<string>();
+    // File names under records/<source> or lists/<source>, by key; built on first use
+    private readonly index = new Map<string, Map<string, string[]>>();
 
     constructor(readonly root: string, options: StoreOptions = {}) {
         this.replay = options.replay;
@@ -140,14 +162,12 @@ export class RecordStore {
             return this.replayRecord(source, key);
         }
 
-        this.importLegacyRecord(source, key, rules);
-
         let fetchedNow: Stored<T> | undefined;
 
         if (this.shouldFetchRecord(source, key, rules)) {
             this.assertCanFetch(`${source} ${key}`);
             const fetched = await withRetry(fetch, `${source} ${key}`);
-            fetchedNow = this.store(source, key, fetched.data, rules, fetched.url);
+            fetchedNow = this.store(source, key, fetched.data, rules, {fetchedAt: new Date().toISOString(), url: fetched.url});
         }
 
         return this.use(source, key, rules, fetchedNow);
@@ -156,7 +176,7 @@ export class RecordStore {
     // A wallet's records, e.g. its Midgard actions. Records that an earlier fetch returned and a later one
     // didn't are kept, and flagged as missing from the source.
     async list<T>(source: string, wallet: string, fetch: () => Promise<Fetched<T[]>>, options: ListOptions<T>): Promise<T[]> {
-        const {keyOf, rules = {}} = options;
+        const rules = options.rules ?? {};
 
         if (this.replay) {
             const list = this.replay.findList(source, wallet);
@@ -170,14 +190,12 @@ export class RecordStore {
             return list.keys.map(key => this.replayRecord(source, key));
         }
 
-        this.importLegacyList(source, wallet, options);
-
         let fetchedNow = new Map<string, Stored<T>>();
 
         if (this.shouldFetchList(source, wallet)) {
             this.assertCanFetch(`${source} list ${wallet}`);
             const fetched = await withRetry(fetch, `${source} list ${wallet}`);
-            fetchedNow = this.storeList(source, wallet, fetched.data, options, fetched.url);
+            fetchedNow = this.storeList(source, wallet, fetched.data, options, {fetchedAt: new Date().toISOString(), url: fetched.url});
         }
 
         const lists = this.lists(source, wallet);
@@ -193,11 +211,12 @@ export class RecordStore {
     // A record not stored yet is always fetched, and one still pending is fetched again, as it may since be
     // finalised. A finalised one can only come back revised or pruned, which 'all' looks for.
     private shouldFetchRecord<T>(source: string, key: string, rules: RecordRules<T>): boolean {
+        const copies = this.copies<T>(source, key);
+
         if (this.offline) {
-            return this.copies<T>(source, key).length === 0;
+            return copies.length === 0;
         }
 
-        const copies = this.copies<T>(source, key);
         const wanted = copies.length === 0
             || this.fetchMode === 'all'
             || !!rules.isPending?.(chooseCopy(copies, rules).copy.data);
@@ -223,9 +242,8 @@ export class RecordStore {
         return true;
     }
 
-    // Adds a copy from an old cache, unless the same copy (after normalising) is already stored. With no
-    // fetchedAt, it sorts before every fetched copy, after earlier imports.
-    importCopy<T>(source: string, key: string, data: T, rules: RecordRules<T>, origin: {fetchedAt: string | null, url?: string, importedFrom: string}): boolean {
+    // Adds a copy from an old cache or store, unless the same copy (after normalising) is already stored
+    importCopy<T>(source: string, key: string, data: T, rules: RecordRules<T>, origin: Origin): boolean {
         const normalised = rules.normalise ? rules.normalise(data) : data;
         const hash = sha256(normalised);
         const same = (copy: Copy<T>) => (rules.normalise ? sha256(rules.normalise(copy.data)) : copy.sha256) === hash;
@@ -234,21 +252,17 @@ export class RecordStore {
             return false;
         }
 
-        const file = this.newFile(path.join(this.root, 'records', source, safeKey(key)), origin.fetchedAt);
-        fs.outputJsonSync(file, {fetchedAt: origin.fetchedAt, ...(origin.url ? {url: origin.url} : {}), importedFrom: origin.importedFrom, sha256: hash, data: normalised}, {spaces: 2});
-
+        this.writeCopy(source, key, normalised, hash, rules, origin);
         return true;
     }
 
     // Adds what one old fetch of a wallet returned, unless a stored list has the same keys
-    importList(source: string, wallet: string, keys: string[], origin: {fetchedAt: string | null, url?: string, importedFrom: string}): boolean {
+    importList(source: string, wallet: string, keys: string[], origin: Origin): boolean {
         if (this.lists(source, wallet).some(list => JSON.stringify(list.keys) === JSON.stringify(keys))) {
             return false;
         }
 
-        const file = this.newFile(path.join(this.root, 'lists', source, safeKey(wallet)), origin.fetchedAt);
-        fs.outputJsonSync(file, {fetchedAt: origin.fetchedAt, ...(origin.url ? {url: origin.url} : {}), importedFrom: origin.importedFrom, keys}, {spaces: 2});
-
+        this.writeList(source, wallet, keys, origin);
         return true;
     }
 
@@ -260,14 +274,15 @@ export class RecordStore {
 
     // All stored copies of a record, oldest first
     copies<T>(source: string, key: string): Copy<T>[] {
-        const dir = path.join(this.root, 'records', source, safeKey(key));
+        return (this.files('records', source).get(key) ?? [])
+            .map(file => ({...fs.readJSONSync(file), file, n: copyNumber(file)}))
+            .sort(byAge);
+    }
 
-        if (!fs.existsSync(dir)) {
-            return [];
-        }
-
-        return fs.readdirSync(dir).filter(name => name.endsWith('.json')).sort()
-            .map(name => ({file: path.join(dir, name), ...fs.readJSONSync(path.join(dir, name))}));
+    private lists(source: string, wallet: string): List[] {
+        return (this.files('lists', source).get(wallet) ?? [])
+            .map(file => ({...fs.readJSONSync(file), file, n: copyNumber(file)}))
+            .sort(byAge);
     }
 
     private use<T>(source: string, key: string, rules: RecordRules<T>, fetchedNow?: Stored<T>, missing = false): T {
@@ -312,7 +327,7 @@ export class RecordStore {
     }
 
     // Stores a copy unless it is the same as the latest stored copy
-    private store<T>(source: string, key: string, fetchedData: T, rules: RecordRules<T>, url?: string, fetchedAt?: string | null): Stored<T> {
+    private store<T>(source: string, key: string, fetchedData: T, rules: RecordRules<T>, origin: Origin): Stored<T> {
         const data = rules.normalise ? rules.normalise(fetchedData) : fetchedData;
         const hash = sha256(data);
         const copies = this.copies<T>(source, key);
@@ -322,16 +337,10 @@ export class RecordStore {
             return {copy: latest, status: 'unchanged'};
         }
 
-        const at = fetchedAt === undefined ? new Date().toISOString() : fetchedAt;
-        const file = this.newFile(path.join(this.root, 'records', source, safeKey(key)), at);
-        const copy = {fetchedAt: at, ...(url ? {url} : {}), sha256: hash, data};
-        fs.outputJsonSync(file, copy, {spaces: 2});
-
-        return {copy: {file, ...copy}, status: latest ? 'changed' : 'new'};
+        return {copy: this.writeCopy(source, key, data, hash, rules, origin), status: latest ? 'changed' : 'new'};
     }
 
-    private storeList<T>(source: string, wallet: string, items: T[], {keyOf, rules = {}}: ListOptions<T>, url?: string,
-                         fetchedAt?: string | null): Map<string, Stored<T>> {
+    private storeList<T>(source: string, wallet: string, items: T[], {keyOf, rules = {}}: ListOptions<T>, origin: Origin): Map<string, Stored<T>> {
         const stored = new Map<string, Stored<T>>();
 
         for (const item of items) {
@@ -341,93 +350,113 @@ export class RecordStore {
                 throw new Error(`${source} ${wallet}: two records with the key ${key}`);
             }
 
-            stored.set(key, this.store(source, key, item, rules, url, fetchedAt));
+            stored.set(key, this.store(source, key, item, rules, origin));
         }
 
         const keys = [...stored.keys()];
         const lists = this.lists(source, wallet);
 
         if (JSON.stringify(lists[lists.length - 1]?.keys) !== JSON.stringify(keys)) {
-            const at = fetchedAt === undefined ? new Date().toISOString() : fetchedAt;
-            const file = this.newFile(path.join(this.root, 'lists', source, safeKey(wallet)), at);
-            fs.outputJsonSync(file, {fetchedAt: at, ...(url ? {url} : {}), keys}, {spaces: 2});
+            this.writeList(source, wallet, keys, origin);
         }
 
         return stored;
     }
 
-    private lists(source: string, wallet: string): {file: string, keys: string[]}[] {
-        const dir = path.join(this.root, 'lists', source, safeKey(wallet));
+    // A new copy goes next to the record's first copy (so a revision that changes its date doesn't move it),
+    // or for a new record in the folder its rules give, numbered one after the highest stored
+    private writeCopy<T>(source: string, key: string, data: T, hash: string, rules: RecordRules<T>, origin: Origin): Copy<T> {
+        const files = this.files('records', source).get(key) ?? [];
+        const first = [...files].sort((a, b) => copyNumber(a) - copyNumber(b))[0];
+        const dir = first ? path.dirname(first) : path.join(this.root, 'records', source, rules.folderOf?.(data) ?? '');
+        const content = {source, key, ...originFields(origin), sha256: hash, data};
+        const {file, n} = this.writeNew('records', source, key, dir, files, content);
 
-        if (!fs.existsSync(dir)) {
-            return [];
-        }
-
-        return fs.readdirSync(dir).filter(name => name.endsWith('.json')).sort()
-            .map(name => ({file: path.join(dir, name), keys: fs.readJSONSync(path.join(dir, name)).keys}));
+        return {...content, file, n} as Copy<T>;
     }
 
-    // File names sort by fetch time; an import of unknown time sorts first. Two in one millisecond get the next.
-    private newFile(dir: string, fetchedAt: string | null): string {
-        if (fetchedAt === null) {
-            const fileFor = (n: number) => path.join(dir, `0000-imported-${String(n).padStart(4, '0')}.json`);
-            let n = 0;
-            while (fs.existsSync(fileFor(n))) n++;
-            return fileFor(n);
-        }
-
-        let time = new Date(fetchedAt).getTime();
-        const fileAt = (t: number) => path.join(dir, `${new Date(t).toISOString().replace(/:/g, '-')}.json`);
-
-        while (fs.existsSync(fileAt(time))) {
-            time++;
-        }
-
-        return fileAt(time);
+    private writeList(source: string, wallet: string, keys: string[], origin: Origin) {
+        const files = this.files('lists', source).get(wallet) ?? [];
+        this.writeNew('lists', source, wallet, path.join(this.root, 'lists', source), files, {source, wallet, ...originFields(origin), keys});
     }
 
-    // A cache from before: <source>/<key>.json (data only), and <source>/<key>/<time>.json ({snapshot, data})
-    private legacyFiles(source: string, key: string): {fetchedAt: string | null, url?: string, data: any}[] {
-        const files: {fetchedAt: string | null, url?: string, data: any}[] = [];
-        const single = path.join(this.root, source, `${key}.json`);
-        const dir = path.join(this.root, source, key);
+    // Creates <key>-NNN.json with the next free number; never overwrites a file, even one another run is writing
+    private writeNew(kind: string, source: string, key: string, dir: string, files: string[], content: any): {file: string, n: number} {
+        fs.mkdirpSync(dir);
+        let n = files.reduce((max, file) => Math.max(max, copyNumber(file) + 1), 0);
 
-        if (fs.existsSync(single)) {
-            files.push({fetchedAt: null, data: fs.readJSONSync(single)});
-        }
+        for (; ; n++) {
+            const file = path.join(dir, `${encodeName(key)}-${String(n).padStart(3, '0')}.json`);
+            let fd: number;
 
-        if (fs.existsSync(dir) && fs.statSync(dir).isDirectory()) {
-            for (const name of fs.readdirSync(dir).filter(name => name.endsWith('.json')).sort()) {
-                const content = fs.readJSONSync(path.join(dir, name));
-                files.push({fetchedAt: content.snapshot.fetchedAt, url: content.snapshot.url, data: content.data});
+            try {
+                fd = fs.openSync(file, 'wx');
+            } catch (error: any) {
+                if (error.code === 'EEXIST') {
+                    continue;
+                }
+                throw error;
             }
-        }
 
-        return files;
-    }
+            fs.writeSync(fd, JSON.stringify(content, null, 2) + '\n');
+            fs.closeSync(fd);
+            this.files(kind, source).set(key, [...files, file]);
 
-    private importLegacyRecord<T>(source: string, key: string, rules: RecordRules<T>) {
-        if (this.copies(source, key).length > 0) {
-            return;
-        }
-
-        for (const legacy of this.legacyFiles(source, key)) {
-            this.store(source, key, legacy.data, rules, legacy.url, legacy.fetchedAt);
+            return {file, n};
         }
     }
 
-    private importLegacyList<T>(source: string, wallet: string, options: ListOptions<T>) {
-        if (this.lists(source, wallet).length > 0) {
-            return;
+    // Every copy file under records/<source> (or lists/<source>), by the key in its name
+    private files(kind: string, source: string): Map<string, string[]> {
+        const id = `${kind}/${source}`;
+        let byKey = this.index.get(id);
+
+        if (!byKey) {
+            byKey = new Map();
+            const lowerCase = new Map<string, string>();
+
+            for (const file of walk(path.join(this.root, kind, source))) {
+                const match = path.basename(file).match(COPY_FILE);
+
+                if (!match) {
+                    continue;
+                }
+
+                const key = decodeName(match[1]);
+                const clash = lowerCase.get(key.toLowerCase());
+
+                if (clash !== undefined && clash !== key) {
+                    throw new Error(`${id}: the keys ${clash} and ${key} differ only in case, which some file systems can't tell apart`);
+                }
+
+                lowerCase.set(key.toLowerCase(), key);
+                byKey.set(key, [...(byKey.get(key) ?? []), file]);
+            }
+
+            this.index.set(id, byKey);
         }
 
-        for (const legacy of this.legacyFiles(source, options.legacyKey ?? wallet)) {
-            const items = options.legacyItems ? options.legacyItems(legacy.data) : legacy.data;
-            this.storeList(source, wallet, items, options, legacy.url, legacy.fetchedAt);
-        }
+        return byKey;
     }
 
     private relative(file?: string): string {
         return file ? path.relative(this.root, file) : '';
     }
+}
+
+function copyNumber(file: string): number {
+    return Number(path.basename(file).match(COPY_FILE)?.[2] ?? -1);
+}
+
+function originFields(origin: Origin): Origin {
+    return {fetchedAt: origin.fetchedAt, ...(origin.url ? {url: origin.url} : {}), ...(origin.importedFrom ? {importedFrom: origin.importedFrom} : {})};
+}
+
+function walk(dir: string): string[] {
+    if (!fs.existsSync(dir)) {
+        return [];
+    }
+
+    return fs.readdirSync(dir, {withFileTypes: true}).flatMap(entry =>
+        entry.isDirectory() ? walk(path.join(dir, entry.name)) : [path.join(dir, entry.name)]);
 }

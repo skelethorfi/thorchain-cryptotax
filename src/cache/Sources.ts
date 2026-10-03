@@ -5,27 +5,33 @@ import {ViewblockTx} from "../viewblock/ViewblockTx";
 import {TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService";
 import {CosmosTx} from "../cryptotax-thorchain/CosmosTxService";
 
-// How each source's records are keyed and compared in the store (docs/specs/snapshots.md). The services
-// and the importer of old caches both use these.
+// How each source's records are keyed, filed and compared in the store (docs/specs/snapshots.md). The
+// services and the importer of old caches both use these.
 
-// A Midgard action has no id. Its type, first txid and sub-type are unique among a wallet's actions; the
-// few with no txid (e.g. some refunds) fall back to their date. Old Midgard's genesisTx placeholders all
-// share one txid, so they are told apart by pool and depositing addresses.
+// 'yyyy/mm' (UTC): the folder of a record with a date of its own
+export function monthFolder(date: Date): string {
+    return date.toISOString().slice(0, 7).replace('-', '/');
+}
+
+// A Midgard action has no id. Its type and first txid are unique among a wallet's actions, except for
+// contract actions: one wasm call gives an action per event, so they add the event. The few with no txid
+// (e.g. some refunds) fall back to their date. Old Midgard's genesisTx placeholders all share one txid, so
+// they are told apart by pool and depositing addresses.
 export function midgardActionKey(action: Action): string {
     const txId = action.in.find(tx => tx.txID)?.txID || action.out.find(tx => tx.txID)?.txID;
-    const metadata = action.metadata as any;
-    const subType = metadata.contract?.contractType ?? metadata.swap?.txType ?? '';
+    const contractType = (action.metadata as any).contract?.contractType;
 
     if (isGenesisPlaceholder(action)) {
         return [action.type, 'genesisTx', ...action.pools, action.in.map(tx => tx.address || '-').join('+')].join('.');
     }
 
-    return [action.type, txId || `date-${action.date}`, subType].filter(Boolean).join('.');
+    return [action.type, txId || `date-${action.date}`, contractType].filter(Boolean).join('.');
 }
 
 // A pending action (e.g. an unfinished loan repayment or refund) can later be finalised
 export const MIDGARD_RULES: RecordRules<Action> = {
     isPending: action => action.status !== 'success',
+    folderOf: action => monthFolder(new Date(Number(action.date) / 1e6)),
 };
 
 // THORNode prunes old txs: a later fetch can lose the tx and its gas, so the copy with more is used.
@@ -71,13 +77,15 @@ export function withoutCurrentValues<T>(value: T): T {
 
 export const MIDGARD_LIST: ListOptions<Action> = {keyOf: midgardActionKey, rules: MIDGARD_RULES};
 
-export const VIEWBLOCK_LIST: ListOptions<ViewblockTx> = {keyOf: tx => tx.hash, rules: {normalise: withoutCurrentValues}};
+export const VIEWBLOCK_LIST: ListOptions<ViewblockTx> = {
+    keyOf: tx => tx.hash,
+    rules: {normalise: withoutCurrentValues, folderOf: tx => monthFolder(new Date(Number((tx as any).timestamp)))},
+};
 
 // Each TCY distribution is a record, keyed by its wallet and date (one a day): unlike an action or a tx,
-// a distribution belongs to one wallet, and several wallets are paid on the same day. Old caches held the
-// whole response under tcy_distribution_<wallet>.
+// a distribution belongs to one wallet, and several wallets are paid on the same day
 export function tcyList(wallet: string): ListOptions<TcyDistributionItem> {
-    return {keyOf: item => `${wallet}.${item.date}`, legacyKey: `tcy_distribution_${wallet}`, legacyItems: data => data.distributions ?? []};
+    return {keyOf: item => `${wallet}.${item.date}`, rules: {folderOf: item => monthFolder(new Date(Number(item.date) * 1000))}};
 }
 
 // Old Midgard (before its 2022-03-22 store migration) reports LP positions that existed then as adds with
@@ -87,13 +95,27 @@ export function isGenesisPlaceholder(action: Action): boolean {
     return action.in.some(tx => tx.txID === 'genesisTx');
 }
 
-// The sources in a store: wallet lists, and records looked up one at a time
-export const SOURCES: {[source: string]: {kind: 'list', options: (wallet: string) => ListOptions<any>, skip?: (item: any) => boolean}
-    | {kind: 'record', rules: RecordRules<any>}} = {
+export interface ListSource {
+    kind: 'list';
+    options: (wallet: string) => ListOptions<any>;
+    // Left out when importing old caches
+    skip?: (item: any) => boolean;
+    // An old cache's file name for a wallet, and the items in it, if not the wallet and the list itself
+    legacyWallet?: (name: string) => string;
+    legacyItems?: (data: any) => any[];
+}
+
+// The sources in a store: wallet lists, and records looked up one at a time (THORNode and Cosmos txs have
+// no date of their own, so they are not in month folders)
+export const SOURCES: {[source: string]: ListSource | {kind: 'record', rules: RecordRules<any>}} = {
     'midgard': {kind: 'list', options: () => MIDGARD_LIST, skip: isGenesisPlaceholder},
     'maya-midgard': {kind: 'list', options: () => MIDGARD_LIST, skip: isGenesisPlaceholder},
     'viewblock': {kind: 'list', options: () => VIEWBLOCK_LIST},
-    'tcy': {kind: 'list', options: tcyList},
+    'tcy': {
+        kind: 'list', options: tcyList,
+        legacyWallet: name => name.replace(/^tcy_distribution_/, ''),
+        legacyItems: data => data.distributions ?? [],
+    },
     'thornode': {kind: 'record', rules: THORNODE_RULES},
     'thornode-cosmos': {kind: 'record', rules: COSMOS_TX_RULES},
 };

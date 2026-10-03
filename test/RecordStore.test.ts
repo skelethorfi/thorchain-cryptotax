@@ -108,7 +108,7 @@ describe('fetch modes', () => {
 });
 
 describe('chooseCopy', () => {
-    const copy = (data: Tx, n: number): Copy<Tx> => ({file: `${n}`, fetchedAt: `${n}`, sha256: sha256(data), data});
+    const copy = (data: Tx, n: number): Copy<Tx> => ({file: `${n}`, n, fetchedAt: `${n}`, sha256: sha256(data), data});
 
     test('says why a copy is used', () => {
         expect(chooseCopy([copy({id: 'a'}, 1)], RULES).choice).toBe('only');
@@ -129,7 +129,7 @@ describe('RecordStore lists', () => {
         await store.list('midgard', 'w1', fetching([{id: 'a'}, {id: 'b'}]), LIST);
         await store.list('midgard', 'w2', fetching([{id: 'b'}]), LIST);
 
-        expect(fs.readdirSync(path.join(root, 'records', 'midgard')).sort()).toEqual(['a', 'b']);
+        expect(fs.readdirSync(path.join(root, 'records', 'midgard')).sort()).toEqual(['a-000.json', 'b-000.json']);
         expect(store.copies('midgard', 'b')).toHaveLength(1);
     });
 
@@ -165,18 +165,66 @@ describe('RecordStore lists', () => {
         expect(await new RecordStore(root, {offline: true}).list('viewblock', 'w', fetching([{id: 'x'}]), LIST)).toEqual([]);
     });
 
-    test('imports a cache from before records: a whole response per wallet, and per-fetch snapshots', async () => {
+});
+
+describe('Layout', () => {
+    const DATED = {keyOf: (tx: Tx & {month?: string}) => tx.id, rules: {folderOf: (tx: Tx & {month?: string}) => tx.month ?? ''}};
+
+    test('a record is <key>-NNN.json in the folder its rules give; a later copy stays next to the first', async () => {
         const root = makeDir();
-        fs.outputJsonSync(path.join(root, 'tcy', 'tcy_distribution_w.json'), {distributions: [{id: 'a'}]});
-        fs.outputJsonSync(path.join(root, 'tcy', 'tcy_distribution_w', '2026-10-03T00-00-00.000Z.json'),
-            {snapshot: {fetchedAt: '2026-10-03T00:00:00.000Z', sha256: 'x'}, data: {distributions: [{id: 'a'}, {id: 'b'}]}});
-        const options = {...LIST, legacyKey: 'tcy_distribution_w', legacyItems: (data: any) => data.distributions};
+        await new RecordStore(root).list('midgard', 'w', fetching([{id: 'swap.ABC', month: '2025/07'}]), DATED);
+        // A revision whose date moved to another month
+        await new RecordStore(root).list('midgard', 'w', fetching([{id: 'swap.ABC', month: '2025/08'}]), DATED);
 
-        const items = await new RecordStore(root, {offline: true}).list('tcy', 'w', fetching([] as Tx[]), options);
+        expect(fs.readdirSync(path.join(root, 'records', 'midgard', '2025', '07')).sort()).toEqual(['swap.ABC-000.json', 'swap.ABC-001.json']);
+        expect(fs.readdirSync(path.join(root, 'lists', 'midgard'))).toEqual(['w-000.json']);
+        expect(fs.readJSONSync(path.join(root, 'records', 'midgard', '2025', '07', 'swap.ABC-000.json'))).toEqual(expect.objectContaining({source: 'midgard', key: 'swap.ABC'}));
+    });
 
-        expect(items).toEqual([{id: 'a'}, {id: 'b'}]);
-        expect(new RecordStore(root).copies('tcy', 'a')[0].fetchedAt).toBeNull();
-        expect(new RecordStore(root).copies('tcy', 'b')[0].fetchedAt).toBe('2026-10-03T00:00:00.000Z');
+    test('names decode back to keys, and are safe as file names', async () => {
+        const {encodeName, decodeName} = await import('../src/cache/RecordStore');
+        const key = 'contract.CFB6.wasm-rujira-fin/trade';
+
+        expect(encodeName(key)).toBe('contract.CFB6.wasm-rujira-fin%2Ftrade');
+        expect(decodeName(encodeName(key))).toBe(key);
+        expect(encodeName('a%b:c')).toBe('a%25b%3Ac');
+
+        const root = makeDir();
+        await new RecordStore(root).record('midgard', key, fetching({id: key}));
+        expect(await new RecordStore(root, {offline: true}).record('midgard', key, fetching({id: 'x'}))).toEqual({id: key});
+    });
+
+    test('copies sort by fetch time: an old copy imported after a newer fetch still counts as older', async () => {
+        const root = makeDir();
+        const store = new RecordStore(root);
+        await store.record('thornode', 'A', fetching<Tx>({id: 'A', gas: '2'}), RULES);
+        store.importCopy('thornode', 'A', {id: 'A', gas: '1'}, RULES, {fetchedAt: null, importedFrom: 'old/A.json'});
+
+        const copies = new RecordStore(root).copies<Tx>('thornode', 'A');
+        expect(copies.map(c => [c.n, c.data.gas])).toEqual([[1, '1'], [0, '2']]);
+        expect(await new RecordStore(root, {offline: true}).record('thornode', 'A', fetching<Tx>({id: 'A'}), RULES)).toEqual({id: 'A', gas: '2'});
+    });
+
+    test('a new copy never overwrites a file, even one written by another run', async () => {
+        const root = makeDir();
+        const first = new RecordStore(root);
+        const second = new RecordStore(root);
+        // second scans the store before first writes
+        second.copies('thornode', 'B');
+        await first.record('thornode', 'A', fetching<Tx>({id: 'A', gas: '1'}));
+        await second.record('thornode', 'A', fetching<Tx>({id: 'A', gas: '2'}));
+
+        expect(fs.readdirSync(path.join(root, 'records', 'thornode')).sort()).toEqual(['A-000.json', 'A-001.json']);
+    });
+
+    test('keys that differ only in case are refused', async () => {
+        const root = makeDir();
+        fs.outputJsonSync(path.join(root, 'records', 'viewblock', 'abc-000.json'), {});
+        fs.outputJsonSync(path.join(root, 'records', 'viewblock', 'ABC-000.json'), {});
+
+        if (fs.readdirSync(path.join(root, 'records', 'viewblock')).length === 2) {
+            expect(() => new RecordStore(root).copies('viewblock', 'abc')).toThrow(/differ only in case/);
+        }
     });
 });
 
@@ -252,7 +300,7 @@ describe('RecordStore within one run', () => {
 
     test('copies that differ only in what normalise drops are not a revision', () => {
         const rules = {normalise: ({gas, ...tx}: Tx) => tx};
-        const copies = [{id: 'a', gas: '1'}, {id: 'a', gas: '2'}].map((data, n) => ({file: `${n}`, fetchedAt: `${n}`, sha256: sha256(data), data}));
+        const copies = [{id: 'a', gas: '1'}, {id: 'a', gas: '2'}].map((data, n) => ({file: `${n}`, n, fetchedAt: `${n}`, sha256: sha256(data), data}));
 
         expect(chooseCopy(copies, rules).choice).toBe('only');
     });

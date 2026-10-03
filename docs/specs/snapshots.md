@@ -20,16 +20,34 @@ next to the config, ignored by git in this repo). Several configs, e.g. one
 per tax year, can share one store, because copies are only ever added:
 
 ```
-records/<source>/<key>/<fetchedAt>.json    one copy of one record
-lists/<source>/<wallet>/<fetchedAt>.json   the record keys one fetch of a wallet returned
+records/midgard/2025/07/swap.192D…296D-000.json     an action's first copy, in its month (UTC)
+records/midgard/2025/07/swap.192D…296D-001.json     a later copy that differs
+records/viewblock/2025/07/192D…296D-000.json         a Viewblock tx, in its month
+records/tcy/2025/05/<wallet>.1746566872-000.json     a TCY distribution, in its month
+records/thornode/192D…296D-000.json                  THORNode and Cosmos txs: no date of their own
+records/thornode-cosmos/E703…6721-000.json
+lists/midgard/<wallet>-000.json                      the record keys one fetch of a wallet returned
 ```
 
-A copy is `{fetchedAt, url, sha256, data}`. The file name is `fetchedAt`
-with `-` for `:`, so names sort by time.
+- The file name is the record's key, then `-NNN` (000, 001, …) for each copy.
+  Letters, digits and `. _ + -` are kept; anything else is `%XX`, so the name
+  decodes back to the key (a contract's `/` is `%2F`).
+- A copy is `{source, key, fetchedAt, url, importedFrom, sha256, data}`; a list
+  is `{source, wallet, fetchedAt, url, importedFrom, keys}`.
+- A record's later copies stay in its first copy's folder, even if a revision
+  changes its date, so a path never moves once a manifest points at it.
+- A run finds every copy with one scan of the file names, so it doesn't need a
+  record's date to find it. The scan refuses two keys that differ only in case,
+  which macOS and Windows can't keep apart.
+- Copies are ordered by `fetchedAt` (unknown, for copies imported from old
+  caches, first, in import order), then by number. The number is only unique:
+  an old copy imported after a newer fetch still counts as older.
+- A new copy takes the next free number with an exclusive create, so two runs
+  sharing a store never overwrite each other.
 
 | Source | Record | Key |
 | --- | --- | --- |
-| `midgard`, `maya-midgard` | an action | `<type>.<first txid>[.<contract type or swap txType>]`, or `<type>.date-<date>` with no txid |
+| `midgard`, `maya-midgard` | an action | `<type>.<first txid>`; a contract action adds its event (one wasm call gives several); `<type>.date-<date>` with no txid |
 | `thornode` | a tx status | txid |
 | `thornode-cosmos` | a Cosmos tx (contract calls) | txid |
 | `viewblock` | a tx | its hash |
@@ -37,8 +55,10 @@ with `-` for `:`, so names sort by time.
 
 An action or tx is shared: a swap between two of my wallets is stored once, and
 both wallets' lists point at it. A TCY distribution belongs to one wallet, so
-its key includes the wallet. On the FY26 data, these keys are unique among
-every wallet's actions.
+its key includes the wallet. On the FY26 data, 12 txids have more than one
+action (e.g. a send and a swap); type and txid tell them apart, and only
+contract actions need their event. If two records of one wallet fetch ever
+share a key, the run stops rather than merge them.
 
 - A fetched record is stored only if it differs from its latest copy. Nothing
   is overwritten or deleted.
@@ -46,16 +66,16 @@ every wallet's actions.
   but are not source data: Viewblock's `usdNew` (value at today's price; `usd`,
   the value at the time of the tx, is kept), TCY's `apr` and `total`, and
   THORNode's `blocks_since_scheduled` for an outbound never signed (a switch).
-- A cache from before records (`<source>/<key>.json` with the whole response)
-  in the store's folder is imported on first use as copies with
-  `fetchedAt: null`. The old files are left in place.
-- `npm run store -- import <store> <old cache>...` copies every version from
-  old caches into a store, oldest first (an old copy has no fetch time, so the
-  import order is the order of its copies). Each imported copy has
-  `importedFrom`, the old file it came from. Identical copies are skipped. Old
-  Midgard's `genesisTx` placeholder adds (positions that existed at its
-  2022-03-22 store migration) are left out: Midgard's archive has the real
-  adds, and keeping both would count those positions twice.
+- `npm run store -- import <store> <old cache or store>...` copies every version
+  into a store, oldest first (a copy from an old cache has no fetch time, so
+  the import order is the order of its copies). It reads old caches
+  (`<source>/<key>.json` with a whole response), stores in the earlier
+  folder-per-record layout (re-keyed), and stores in this layout. Each copy
+  from an old cache has `importedFrom`, the file it came from. Identical
+  copies are skipped. Old Midgard's `genesisTx` placeholder adds (positions
+  that existed at its 2022-03-22 store migration) are left out: Midgard's
+  archive has the real adds, and keeping both would count those positions
+  twice. An old cache is not read unless imported.
 
 ## Which copy a run uses
 
@@ -109,7 +129,8 @@ still fails keeps what it stored so far, and can be run again.
 
 ## The manifest (snapshot)
 
-Each run writes `snapshots.json` to its output folder:
+Each run writes `snapshots.json` to its output folder, with `layout: 2` (a
+manifest from an earlier layout is refused, as its paths no longer exist):
 
 - `records`: for each record used, the source, key, copy file (relative to
   `storePath`), `fetchedAt`, `url`, `sha256`, `choice`, the number of copies
