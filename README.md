@@ -27,11 +27,12 @@ Currently supported transactions
 - TCY distributions (i.e. RUNE received from staking TCY)
 - RUNEPool deposit/withdrawal
 - Thorname register/update
-- rujira-merge/deposit
+- Rujira: liquid and account staking (bond), FIN market swaps, merge deposit/withdraw (see `docs/specs/rujira.md`)
 
 Not currently supported
 
-- Rujira contracts
+- Rujira unbonding, staking revenue claims, BOW, GHOST and other Rujira contracts
+- Levana perps (discontinued; enter positions by hand)
 - Maya Protocol
 - aggregated swaps (i.e. where the swap is routed through more than just THORChain)
 

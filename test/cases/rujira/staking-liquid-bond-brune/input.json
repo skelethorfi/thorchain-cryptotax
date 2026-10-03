@@ -1,26 +1,26 @@
 {
-  "description": "contract/wasm-rujira-staking/liquid.bond success: [] -> [] funds [x/ruji]",
+  "description": "contract/wasm-rujira-staking/liquid.bond success: [] -> [] funds [x/brune]",
   "source": "midgard",
-  "wallet": "thor1d9j83ll3e0jh5w8kycjcmzcm2wdy0mr3wr9mtq",
+  "wallet": "thor183cdad9tju0943nffu00ctnf2zrxmep5tzrq7p",
   "data": {
-    "date": "1753309598775956522",
-    "height": "22086530",
+    "date": "1778288467819049908",
+    "height": "26095479",
     "in": [
       {
-        "address": "thor1d9j83ll3e0jh5w8kycjcmzcm2wdy0mr3wr9mtq",
+        "address": "thor183cdad9tju0943nffu00ctnf2zrxmep5tzrq7p",
         "coins": [],
-        "txID": "C74C2BD4E65A2F8EDF6630552429FD148D90DD07AE4877DFCAF54F0EF6E06D8B"
+        "txID": "BA3C3725CEB6628B037D3F5BC98C915EF5BF5CDF6BDAB2E050168B835CA66ACC"
       }
     ],
     "metadata": {
       "contract": {
         "attributes": {
-          "amount": "226901077830",
-          "owner": "thor1d9j83ll3e0jh5w8kycjcmzcm2wdy0mr3wr9mtq",
-          "shares": "225215635519"
+          "amount": "2120049376",
+          "owner": "thor183cdad9tju0943nffu00ctnf2zrxmep5tzrq7p",
+          "shares": "2090723337"
         },
         "contractType": "wasm-rujira-staking/liquid.bond",
-        "funds": "226901077830x/ruji",
+        "funds": "2120049376x/brune",
         "msg": {
           "liquid": {
             "bond": {}
@@ -30,9 +30,9 @@
     },
     "out": [
       {
-        "address": "thor13g83nn5ef4qzqeafp0508dnvkvm0zqr3sj7eefcn5umu65gqluusrml5cr",
+        "address": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g",
         "coins": [],
-        "txID": "C74C2BD4E65A2F8EDF6630552429FD148D90DD07AE4877DFCAF54F0EF6E06D8B"
+        "txID": "BA3C3725CEB6628B037D3F5BC98C915EF5BF5CDF6BDAB2E050168B835CA66ACC"
       }
     ],
     "pools": [],
@@ -41,68 +41,16 @@
   },
   "cosmosTxs": [
     {
-      "txhash": "C74C2BD4E65A2F8EDF6630552429FD148D90DD07AE4877DFCAF54F0EF6E06D8B",
-      "height": "22086530",
+      "txhash": "BA3C3725CEB6628B037D3F5BC98C915EF5BF5CDF6BDAB2E050168B835CA66ACC",
+      "height": "26095479",
       "code": 0,
       "fee": [
         {
           "denom": "rune",
-          "amount": "3255"
+          "amount": "0"
         }
       ],
       "events": [
-        {
-          "type": "coin_spent",
-          "attributes": [
-            {
-              "key": "spender",
-              "value": "thor1d9j83ll3e0jh5w8kycjcmzcm2wdy0mr3wr9mtq"
-            },
-            {
-              "key": "amount",
-              "value": "3255rune"
-            }
-          ]
-        },
-        {
-          "type": "coin_received",
-          "attributes": [
-            {
-              "key": "receiver",
-              "value": "thor17xpfvakm2amg962yls6f84z3kell8c5lk76m7z"
-            },
-            {
-              "key": "amount",
-              "value": "3255rune"
-            }
-          ]
-        },
-        {
-          "type": "transfer",
-          "attributes": [
-            {
-              "key": "recipient",
-              "value": "thor17xpfvakm2amg962yls6f84z3kell8c5lk76m7z"
-            },
-            {
-              "key": "sender",
-              "value": "thor1d9j83ll3e0jh5w8kycjcmzcm2wdy0mr3wr9mtq"
-            },
-            {
-              "key": "amount",
-              "value": "3255rune"
-            }
-          ]
-        },
-        {
-          "type": "message",
-          "attributes": [
-            {
-              "key": "sender",
-              "value": "thor1d9j83ll3e0jh5w8kycjcmzcm2wdy0mr3wr9mtq"
-            }
-          ]
-        },
         {
           "type": "message",
           "attributes": [
@@ -112,7 +60,7 @@
             },
             {
               "key": "sender",
-              "value": "thor1d9j83ll3e0jh5w8kycjcmzcm2wdy0mr3wr9mtq"
+              "value": "thor183cdad9tju0943nffu00ctnf2zrxmep5tzrq7p"
             },
             {
               "key": "module",
@@ -129,11 +77,11 @@
           "attributes": [
             {
               "key": "spender",
-              "value": "thor1d9j83ll3e0jh5w8kycjcmzcm2wdy0mr3wr9mtq"
+              "value": "thor183cdad9tju0943nffu00ctnf2zrxmep5tzrq7p"
             },
             {
               "key": "amount",
-              "value": "226901077830x/ruji"
+              "value": "2120049376x/brune"
             },
             {
               "key": "msg_index",
@@ -146,11 +94,11 @@
           "attributes": [
             {
               "key": "receiver",
-              "value": "thor13g83nn5ef4qzqeafp0508dnvkvm0zqr3sj7eefcn5umu65gqluusrml5cr"
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
             },
             {
               "key": "amount",
-              "value": "226901077830x/ruji"
+              "value": "2120049376x/brune"
             },
             {
               "key": "msg_index",
@@ -163,15 +111,15 @@
           "attributes": [
             {
               "key": "recipient",
-              "value": "thor13g83nn5ef4qzqeafp0508dnvkvm0zqr3sj7eefcn5umu65gqluusrml5cr"
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
             },
             {
               "key": "sender",
-              "value": "thor1d9j83ll3e0jh5w8kycjcmzcm2wdy0mr3wr9mtq"
+              "value": "thor183cdad9tju0943nffu00ctnf2zrxmep5tzrq7p"
             },
             {
               "key": "amount",
-              "value": "226901077830x/ruji"
+              "value": "2120049376x/brune"
             },
             {
               "key": "msg_index",
@@ -184,7 +132,7 @@
           "attributes": [
             {
               "key": "_contract_address",
-              "value": "thor13g83nn5ef4qzqeafp0508dnvkvm0zqr3sj7eefcn5umu65gqluusrml5cr"
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
             },
             {
               "key": "msg_index",
@@ -197,19 +145,19 @@
           "attributes": [
             {
               "key": "_contract_address",
-              "value": "thor13g83nn5ef4qzqeafp0508dnvkvm0zqr3sj7eefcn5umu65gqluusrml5cr"
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
             },
             {
               "key": "owner",
-              "value": "thor1d9j83ll3e0jh5w8kycjcmzcm2wdy0mr3wr9mtq"
+              "value": "thor183cdad9tju0943nffu00ctnf2zrxmep5tzrq7p"
             },
             {
               "key": "amount",
-              "value": "226901077830"
+              "value": "2120049376"
             },
             {
               "key": "shares",
-              "value": "225215635519"
+              "value": "2090723337"
             },
             {
               "key": "msg_index",
@@ -226,7 +174,7 @@
             },
             {
               "key": "amount",
-              "value": "225215635519x/staking-x/ruji"
+              "value": "2090723337x/staking-x/brune"
             },
             {
               "key": "msg_index",
@@ -243,7 +191,7 @@
             },
             {
               "key": "amount",
-              "value": "225215635519x/staking-x/ruji"
+              "value": "2090723337x/staking-x/brune"
             },
             {
               "key": "msg_index",
@@ -260,7 +208,7 @@
             },
             {
               "key": "amount",
-              "value": "225215635519x/staking-x/ruji"
+              "value": "2090723337x/staking-x/brune"
             },
             {
               "key": "msg_index",
@@ -273,11 +221,11 @@
           "attributes": [
             {
               "key": "receiver",
-              "value": "thor1d9j83ll3e0jh5w8kycjcmzcm2wdy0mr3wr9mtq"
+              "value": "thor183cdad9tju0943nffu00ctnf2zrxmep5tzrq7p"
             },
             {
               "key": "amount",
-              "value": "225215635519x/staking-x/ruji"
+              "value": "2090723337x/staking-x/brune"
             },
             {
               "key": "msg_index",
@@ -290,7 +238,7 @@
           "attributes": [
             {
               "key": "recipient",
-              "value": "thor1d9j83ll3e0jh5w8kycjcmzcm2wdy0mr3wr9mtq"
+              "value": "thor183cdad9tju0943nffu00ctnf2zrxmep5tzrq7p"
             },
             {
               "key": "sender",
@@ -298,7 +246,7 @@
             },
             {
               "key": "amount",
-              "value": "225215635519x/staking-x/ruji"
+              "value": "2090723337x/staking-x/brune"
             },
             {
               "key": "msg_index",
@@ -311,11 +259,66 @@
           "attributes": [
             {
               "key": "mint_to_address",
-              "value": "thor13g83nn5ef4qzqeafp0508dnvkvm0zqr3sj7eefcn5umu65gqluusrml5cr"
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
             },
             {
               "key": "amount",
-              "value": "225215635519x/staking-x/ruji"
+              "value": "2090723337x/staking-x/brune"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_spent",
+          "attributes": [
+            {
+              "key": "spender",
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
+            },
+            {
+              "key": "amount",
+              "value": "1rune"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "receiver",
+              "value": "thor1mcy9jtp4kzl8q2lvdgfgsl8jvqrf504uphkf0pz2p9wud8tsntesjvccew"
+            },
+            {
+              "key": "amount",
+              "value": "1rune"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "transfer",
+          "attributes": [
+            {
+              "key": "recipient",
+              "value": "thor1mcy9jtp4kzl8q2lvdgfgsl8jvqrf504uphkf0pz2p9wud8tsntesjvccew"
+            },
+            {
+              "key": "sender",
+              "value": "thor179fex2rxd45caedmz4hxsnu42sw20lu0djyh4yukyh965sq8muuqptru2g"
+            },
+            {
+              "key": "amount",
+              "value": "1rune"
             },
             {
               "key": "msg_index",

@@ -1,0 +1,221 @@
+{
+  "description": "contract/wasm-rujira-merge/deposit success: [] -> [] funds [thor.kuji]",
+  "source": "midgard",
+  "wallet": "thor12e7ryh3z4034zd398lwudmyvkm7hngy5uzu9kr",
+  "data": {
+    "date": "1744279147551405635",
+    "height": "20640116",
+    "in": [
+      {
+        "address": "thor12e7ryh3z4034zd398lwudmyvkm7hngy5uzu9kr",
+        "coins": [],
+        "txID": "83BFCC90762BF2BB93C692E977F080CC8D34A22174BF232E7F857EEA92713A9F"
+      }
+    ],
+    "metadata": {
+      "contract": {
+        "attributes": {
+          "account": "thor12e7ryh3z4034zd398lwudmyvkm7hngy5uzu9kr",
+          "amount": "300000000000",
+          "shares": "111738565764"
+        },
+        "contractType": "wasm-rujira-merge/deposit",
+        "funds": "300000000000thor.kuji",
+        "msg": {
+          "deposit": {}
+        }
+      }
+    },
+    "out": [
+      {
+        "address": "thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy",
+        "coins": [],
+        "txID": "83BFCC90762BF2BB93C692E977F080CC8D34A22174BF232E7F857EEA92713A9F"
+      }
+    ],
+    "pools": [],
+    "status": "success",
+    "type": "contract"
+  },
+  "cosmosTxs": [
+    {
+      "txhash": "83BFCC90762BF2BB93C692E977F080CC8D34A22174BF232E7F857EEA92713A9F",
+      "height": "20640116",
+      "code": 0,
+      "fee": [
+        {
+          "denom": "rune",
+          "amount": "2258"
+        }
+      ],
+      "events": [
+        {
+          "type": "coin_spent",
+          "attributes": [
+            {
+              "key": "spender",
+              "value": "thor12e7ryh3z4034zd398lwudmyvkm7hngy5uzu9kr"
+            },
+            {
+              "key": "amount",
+              "value": "2258rune"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "receiver",
+              "value": "thor17xpfvakm2amg962yls6f84z3kell8c5lk76m7z"
+            },
+            {
+              "key": "amount",
+              "value": "2258rune"
+            }
+          ]
+        },
+        {
+          "type": "transfer",
+          "attributes": [
+            {
+              "key": "recipient",
+              "value": "thor17xpfvakm2amg962yls6f84z3kell8c5lk76m7z"
+            },
+            {
+              "key": "sender",
+              "value": "thor12e7ryh3z4034zd398lwudmyvkm7hngy5uzu9kr"
+            },
+            {
+              "key": "amount",
+              "value": "2258rune"
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "attributes": [
+            {
+              "key": "sender",
+              "value": "thor12e7ryh3z4034zd398lwudmyvkm7hngy5uzu9kr"
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "attributes": [
+            {
+              "key": "action",
+              "value": "/cosmwasm.wasm.v1.MsgExecuteContract"
+            },
+            {
+              "key": "sender",
+              "value": "thor12e7ryh3z4034zd398lwudmyvkm7hngy5uzu9kr"
+            },
+            {
+              "key": "module",
+              "value": "wasm"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_spent",
+          "attributes": [
+            {
+              "key": "spender",
+              "value": "thor12e7ryh3z4034zd398lwudmyvkm7hngy5uzu9kr"
+            },
+            {
+              "key": "amount",
+              "value": "300000000000thor.kuji"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "receiver",
+              "value": "thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy"
+            },
+            {
+              "key": "amount",
+              "value": "300000000000thor.kuji"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "transfer",
+          "attributes": [
+            {
+              "key": "recipient",
+              "value": "thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy"
+            },
+            {
+              "key": "sender",
+              "value": "thor12e7ryh3z4034zd398lwudmyvkm7hngy5uzu9kr"
+            },
+            {
+              "key": "amount",
+              "value": "300000000000thor.kuji"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "execute",
+          "attributes": [
+            {
+              "key": "_contract_address",
+              "value": "thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "wasm-rujira-merge/deposit",
+          "attributes": [
+            {
+              "key": "_contract_address",
+              "value": "thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy"
+            },
+            {
+              "key": "account",
+              "value": "thor12e7ryh3z4034zd398lwudmyvkm7hngy5uzu9kr"
+            },
+            {
+              "key": "amount",
+              "value": "300000000000"
+            },
+            {
+              "key": "shares",
+              "value": "111738565764"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

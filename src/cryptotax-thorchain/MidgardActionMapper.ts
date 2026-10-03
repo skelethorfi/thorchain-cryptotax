@@ -19,7 +19,8 @@ import {TcyStakeMapper} from "./TcyStakeMapper";
 import {RunePoolDepositMapper} from "./RunePoolDepositMapper";
 import {RunePoolWithdrawMapper} from "./RunePoolWithdrawMapper";
 import {ThornameMapper} from "./ThornameMapper";
-import {RujiraMergeDepositMapper} from "./RujiraMergeDepositMapper";
+import {RUJIRA_CONTRACT_TYPES, RujiraMapper} from "./RujiraMapper";
+import {CosmosTx} from "./CosmosTxService";
 import {TcyUnstakeMapper} from "./TcyUnstakeMapper";
 import {Protocol, THORCHAIN} from "../protocols/Protocol";
 
@@ -56,7 +57,7 @@ export function getActionDate(action: Action): Date {
 const NON_THORCHAIN_ACTION_TYPES: string[] = [ActionType.Swap, ActionType.AddLiquidity, ActionType.Withdraw, ActionType.Refund];
 
 export function actionToCryptoTax(action: Action, thornodeTxs: TxStatusResponse[], addReferencePrices: boolean = false, unsupportedActionsPath: string,
-                                  protocol: Protocol = THORCHAIN): CryptoTaxTransaction[] {
+                                  protocol: Protocol = THORCHAIN, cosmosTxs: CosmosTx[] = []): CryptoTaxTransaction[] {
     const date: string = getActionDate(action).toISOString();
     let mapper = protocol.id === THORCHAIN.id || NON_THORCHAIN_ACTION_TYPES.includes(action.type) ? getMapper(action) : null;
 
@@ -65,7 +66,7 @@ export function actionToCryptoTax(action: Action, thornodeTxs: TxStatusResponse[
             mapper = new (mapper as any)(action, addReferencePrices, thornodeTxs, protocol);
         }
 
-        const transactions: CryptoTaxTransaction[] = mapper?.toCryptoTax(action, addReferencePrices, thornodeTxs, protocol) ?? [];
+        const transactions: CryptoTaxTransaction[] = mapper?.toCryptoTax(action, addReferencePrices, thornodeTxs, protocol, cosmosTxs) ?? [];
 
         if (mapper) {
             console.log(`${date} ${action.type}: ${transactions.length}`);
@@ -111,8 +112,8 @@ function getMapper(action: Action): Mapper | null {
     } else if (actionType === 'contract') {
         const contractType = (action.metadata as any).contract?.contractType;
 
-        if (contractType === 'wasm-rujira-merge/deposit') {
-            mapper = new RujiraMergeDepositMapper();
+        if (RUJIRA_CONTRACT_TYPES.includes(contractType)) {
+            mapper = new RujiraMapper();
         }
     }
 

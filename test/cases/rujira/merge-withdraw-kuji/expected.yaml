@@ -1,0 +1,25 @@
+walletExchange: thor168f3hdmg5duafwqsrqfx0n4q5meq98mlv2tyd3
+timestamp: 2026-04-25T17:12:18.203Z
+type: bridge-trade-out
+baseCurrency: RujiraMerge.THOR.KUJI
+baseAmount: "42.51523793"
+quoteCurrency: RUJI
+quoteAmount: "56.92373804"
+feeCurrency: RUNE
+feeAmount: "0.00002448"
+from: thor168f3hdmg5duafwqsrqfx0n4q5meq98mlv2tyd3
+to: thorchain
+blockchain: THORChain
+id: 2026-04-25T17:12:18.203Z.rujira-merge-withdraw.bridge-trade-out
+description: 1/2 - Rujira Merge withdraw 42.51523793 KUJI merge shares to 56.92373804 RUJI; B23EBFA300BD403F35E37662A057DBE783D488F73655DD601B61B3913065D2B0
+---
+walletExchange: thor168f3hdmg5duafwqsrqfx0n4q5meq98mlv2tyd3
+timestamp: 2026-04-25T17:12:28.203Z
+type: bridge-trade-in
+baseCurrency: RUJI
+baseAmount: "56.92373804"
+from: thorchain
+to: thor168f3hdmg5duafwqsrqfx0n4q5meq98mlv2tyd3
+blockchain: THORChain
+id: 2026-04-25T17:12:18.203Z.rujira-merge-withdraw.bridge-trade-in
+description: 2/2 - Rujira Merge withdraw 42.51523793 KUJI merge shares to 56.92373804 RUJI; B23EBFA300BD403F35E37662A057DBE783D488F73655DD601B61B3913065D2B0

@@ -1,0 +1,292 @@
+{
+  "description": "contract/wasm-crank-fee success: [] -> [] funds [eth-usdc-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48]",
+  "source": "midgard",
+  "wallet": "thor1l44675q8cfhe549uz0lvrhx68qs5an9h5k9ru4",
+  "data": {
+    "date": "1751623914763080981",
+    "height": "21809500",
+    "in": [
+      {
+        "address": "thor1l44675q8cfhe549uz0lvrhx68qs5an9h5k9ru4",
+        "coins": [],
+        "txID": "1BFC5A9D579F07D6DA5FF79499CE1E3A15DC5056AAEFCCE2D55C97668D9339D6"
+      }
+    ],
+    "metadata": {
+      "contract": {
+        "attributes": {
+          "amount": "0.02",
+          "amount-usd": "0.02",
+          "contract_name": "levana.finance:market",
+          "contract_version": "0.1.2",
+          "deferred-id": "140",
+          "levana_protocol": "perps",
+          "new-balance": "0.026",
+          "old-balance": "0.006"
+        },
+        "contractType": "wasm-crank-fee",
+        "funds": "500000000eth-usdc-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        "msg": {
+          "open_position": {
+            "direction": "long",
+            "leverage": "3",
+            "slippage_assert": {
+              "price": "109108.294335642511622719",
+              "tolerance": "0.005"
+            },
+            "stop_loss_override": "88000",
+            "take_profit": "109800"
+          }
+        }
+      }
+    },
+    "out": [
+      {
+        "address": "thor1cyd63pk2wuvjkqmhlvp9884z4h89rqtn8w8xgz9m28hjd2kzj2cqwugjkp",
+        "coins": [],
+        "txID": "1BFC5A9D579F07D6DA5FF79499CE1E3A15DC5056AAEFCCE2D55C97668D9339D6"
+      }
+    ],
+    "pools": [],
+    "status": "success",
+    "type": "contract"
+  },
+  "cosmosTxs": [
+    {
+      "txhash": "1BFC5A9D579F07D6DA5FF79499CE1E3A15DC5056AAEFCCE2D55C97668D9339D6",
+      "height": "21809500",
+      "code": 0,
+      "fee": [
+        {
+          "denom": "rune",
+          "amount": "3672"
+        }
+      ],
+      "events": [
+        {
+          "type": "coin_spent",
+          "attributes": [
+            {
+              "key": "spender",
+              "value": "thor1l44675q8cfhe549uz0lvrhx68qs5an9h5k9ru4"
+            },
+            {
+              "key": "amount",
+              "value": "3672rune"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "receiver",
+              "value": "thor17xpfvakm2amg962yls6f84z3kell8c5lk76m7z"
+            },
+            {
+              "key": "amount",
+              "value": "3672rune"
+            }
+          ]
+        },
+        {
+          "type": "transfer",
+          "attributes": [
+            {
+              "key": "recipient",
+              "value": "thor17xpfvakm2amg962yls6f84z3kell8c5lk76m7z"
+            },
+            {
+              "key": "sender",
+              "value": "thor1l44675q8cfhe549uz0lvrhx68qs5an9h5k9ru4"
+            },
+            {
+              "key": "amount",
+              "value": "3672rune"
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "attributes": [
+            {
+              "key": "sender",
+              "value": "thor1l44675q8cfhe549uz0lvrhx68qs5an9h5k9ru4"
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "attributes": [
+            {
+              "key": "action",
+              "value": "/cosmwasm.wasm.v1.MsgExecuteContract"
+            },
+            {
+              "key": "sender",
+              "value": "thor1l44675q8cfhe549uz0lvrhx68qs5an9h5k9ru4"
+            },
+            {
+              "key": "module",
+              "value": "wasm"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_spent",
+          "attributes": [
+            {
+              "key": "spender",
+              "value": "thor1l44675q8cfhe549uz0lvrhx68qs5an9h5k9ru4"
+            },
+            {
+              "key": "amount",
+              "value": "500000000eth-usdc-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "receiver",
+              "value": "thor1cyd63pk2wuvjkqmhlvp9884z4h89rqtn8w8xgz9m28hjd2kzj2cqwugjkp"
+            },
+            {
+              "key": "amount",
+              "value": "500000000eth-usdc-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "transfer",
+          "attributes": [
+            {
+              "key": "recipient",
+              "value": "thor1cyd63pk2wuvjkqmhlvp9884z4h89rqtn8w8xgz9m28hjd2kzj2cqwugjkp"
+            },
+            {
+              "key": "sender",
+              "value": "thor1l44675q8cfhe549uz0lvrhx68qs5an9h5k9ru4"
+            },
+            {
+              "key": "amount",
+              "value": "500000000eth-usdc-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "execute",
+          "attributes": [
+            {
+              "key": "_contract_address",
+              "value": "thor1cyd63pk2wuvjkqmhlvp9884z4h89rqtn8w8xgz9m28hjd2kzj2cqwugjkp"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "wasm-crank-fee",
+          "attributes": [
+            {
+              "key": "_contract_address",
+              "value": "thor1cyd63pk2wuvjkqmhlvp9884z4h89rqtn8w8xgz9m28hjd2kzj2cqwugjkp"
+            },
+            {
+              "key": "deferred-id",
+              "value": "140"
+            },
+            {
+              "key": "amount",
+              "value": "0.02"
+            },
+            {
+              "key": "amount-usd",
+              "value": "0.02"
+            },
+            {
+              "key": "old-balance",
+              "value": "0.006"
+            },
+            {
+              "key": "new-balance",
+              "value": "0.026"
+            },
+            {
+              "key": "levana_protocol",
+              "value": "perps"
+            },
+            {
+              "key": "contract_version",
+              "value": "0.1.2"
+            },
+            {
+              "key": "contract_name",
+              "value": "levana.finance:market"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        },
+        {
+          "type": "wasm-deferred-exec-queued",
+          "attributes": [
+            {
+              "key": "_contract_address",
+              "value": "thor1cyd63pk2wuvjkqmhlvp9884z4h89rqtn8w8xgz9m28hjd2kzj2cqwugjkp"
+            },
+            {
+              "key": "deferred-exec-id",
+              "value": "140"
+            },
+            {
+              "key": "deferred-exec-owner",
+              "value": "thor1l44675q8cfhe549uz0lvrhx68qs5an9h5k9ru4"
+            },
+            {
+              "key": "deferred-exec-target",
+              "value": "does-not-exist"
+            },
+            {
+              "key": "levana_protocol",
+              "value": "perps"
+            },
+            {
+              "key": "contract_version",
+              "value": "0.1.2"
+            },
+            {
+              "key": "contract_name",
+              "value": "levana.finance:market"
+            },
+            {
+              "key": "msg_index",
+              "value": "0"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

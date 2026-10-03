@@ -11,6 +11,7 @@ import {DelegateArkeoMapper} from "./DelegateArkeoMapper";
 import {TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService";
 import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
 import {Protocol, THORCHAIN} from "../protocols/Protocol";
+import {CosmosTx} from "../cryptotax-thorchain/CosmosTxService";
 
 type TaxEventSource = 'viewblock' | 'midgard' | 'tcy';
 
@@ -20,6 +21,7 @@ export class TaxEvent {
     source: TaxEventSource;
     input?: ViewblockTx | Action | TcyDistributionItem;
     thornodeTxs: TxStatusResponse[] = [];  // Related txs from THORNode API
+    cosmosTxs: CosmosTx[] = [];  // The Cosmos tx of a contract action, from THORNode
     output: CryptoTaxTransaction[] = [];
     wallet: IWallet;
     addReferencePrices: boolean;
@@ -79,7 +81,7 @@ export class TaxEvent {
     }
 
     convertMidgardAction(addReferencePrices: boolean) {
-        this.output = actionToCryptoTax(this.input as Action, this.thornodeTxs, addReferencePrices, this.config.unsupportedActionsPath, this.protocol);
+        this.output = actionToCryptoTax(this.input as Action, this.thornodeTxs, addReferencePrices, this.config.unsupportedActionsPath, this.protocol, this.cosmosTxs);
     }
 
     convertTcy() {

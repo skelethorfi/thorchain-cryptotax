@@ -4,6 +4,7 @@ import {format} from 'date-fns-tz';
 import {CryptoTaxTransaction, writeCsv} from "../cryptotax";
 import {MidgardService} from "../cryptotax-thorchain/MidgardService";
 import {ThornodeService} from "../cryptotax-thorchain/ThornodeService";
+import {CosmosTxService, getCosmosTxIds} from "../cryptotax-thorchain/CosmosTxService";
 import {TcyDistributionService} from "../cryptotax-thorchain/TcyDistributionService";
 import {Action, ActionStatusEnum, ActionTypeEnum} from "@xchainjs/xchain-midgard";
 import {ITaxConfig} from "./ITaxConfig";
@@ -75,6 +76,7 @@ export class Exporter {
     thorchain: Protocol;
     otherMidgards: {protocol: Protocol, midgard: MidgardService}[];
     thornode: ThornodeService;
+    cosmosTxs: CosmosTxService;
     tcyDistribution: TcyDistributionService;
     report: Reporter;
 
@@ -84,6 +86,7 @@ export class Exporter {
         this.viewblock = new Viewblock(path.join(cachePath, 'viewblock'), cacheOptions);
         this.midgard = new MidgardService(path.join(cachePath, 'midgard'), cacheOptions);
         this.thornode = new ThornodeService(path.join(cachePath, 'thornode'), false, cacheOptions);
+        this.cosmosTxs = new CosmosTxService(path.join(cachePath, 'thornode-cosmos'), cacheOptions);
         this.tcyDistribution = new TcyDistributionService(path.join(cachePath, 'tcy'), cacheOptions);
         this.thorchain = withAssetNames(THORCHAIN, this.config.assets);
         this.otherMidgards = (this.config.protocols ?? ['thorchain'])
@@ -129,8 +132,15 @@ export class Exporter {
                 thornodeTxs.push(await this.thornode.getTxStatus(txId));
             }
 
+            // A contract action's results are only in its Cosmos tx
+            const cosmosTxs = [];
+
+            for (const txId of getCosmosTxIds(action)) {
+                cosmosTxs.push(await this.cosmosTxs.getTx(txId));
+            }
+
             try {
-                events.addMidgard(action, wallet, thornodeTxs, this.config, this.thorchain);
+                events.addMidgard(action, wallet, thornodeTxs, this.config, this.thorchain, cosmosTxs);
             } catch (error) {
                 // Log the error, save a copy of failed transaction and keep going
                 console.error(error);

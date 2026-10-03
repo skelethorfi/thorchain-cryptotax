@@ -113,6 +113,20 @@ describe('Anonymiser', () => {
         expect(contract).toEqual({funds: '50x/ruji,10rune', attributes: {amount: '50', shares: '40', owner: 'thor1-anon-wallet-1'}});
     });
 
+    test('scales Cosmos event amounts and keeps contract addresses', () => {
+        const contract = 'thor13g83nn5ef4qzqeafp0508dnvkvm0zqr3sj7eefcn5umu65gqluusrml5cr';
+        const event = new Anonymiser({amountFactor: 0.5, dateShiftDays: 0}).anonymise({
+            type: 'transfer',
+            attributes: [{key: 'recipient', value: contract}, {key: 'sender', value: THOR}, {key: 'amount', value: '100x/ruji'}],
+        });
+
+        expect(event.attributes).toEqual([
+            {key: 'recipient', value: contract},
+            {key: 'sender', value: 'thor1-anon-wallet-1'},
+            {key: 'amount', value: '50x/ruji'},
+        ]);
+    });
+
     test('keeps the all-zero placeholder txid', () => {
         expect(new Anonymiser().anonymise({txID: '0'.repeat(64)}).txID).toBe('0'.repeat(64));
     });

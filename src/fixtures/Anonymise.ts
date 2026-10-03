@@ -18,6 +18,10 @@ const TXID_PATTERN = /\b(?:0x)?[0-9A-Fa-f]{64}\b/g;
 
 const AMOUNT_KEYS = new Set(['amount', 'liquidityUnits', 'liquidityFee', 'affiliateFee', 'swapTarget', 'impermanentLossProtection', 'emitAssetE8', 'emitRuneE8', 'collateral', 'debt', 'units', 'networkFee', 'shares']);
 const DATE_KEYS = new Set(['date']);
+const COIN_KEYS = new Set(['funds', 'amount']);
+const COINS_PATTERN = /^\d+[a-z][^,]*(,\d+[a-z][^,]*)*$/i;
+// CosmWasm contracts have 32-byte addresses (wallets have 20); they are public, and mappers look them up
+const CONTRACT_ADDRESS_PATTERN = /^(thor|maya)1[02-9ac-hj-np-z]{58}$/i;
 
 export class Anonymiser {
     private addresses = new Map<string, string>();
@@ -33,6 +37,12 @@ export class Anonymiser {
     private walk(value: any, key: string | undefined): any {
         if (Array.isArray(value)) {
             return value.map(item => this.walk(item, key));
+        }
+
+        // A Cosmos event attribute: its own key says what the value is
+        if (value !== null && typeof value === 'object' && typeof value.key === 'string' && typeof value.value === 'string'
+            && Object.keys(value).length === 2) {
+            return {key: value.key, value: this.anonymiseString(value.value, value.key)};
         }
 
         if (value !== null && typeof value === 'object') {
@@ -51,7 +61,8 @@ export class Anonymiser {
             return this.scale(value);
         }
 
-        if (key === 'funds') {
+        // Coins such as '100x/ruji,20rune' (contract funds, Cosmos transfer amounts)
+        if (key && COIN_KEYS.has(key) && COINS_PATTERN.test(value)) {
             return value.replace(/(^|,)(\d+)/g, (_match, sep, amount) => sep + this.scale(amount));
         }
 
@@ -84,6 +95,10 @@ export class Anonymiser {
     }
 
     private replaceAddress(address: string): string {
+        if (CONTRACT_ADDRESS_PATTERN.test(address)) {
+            return address;
+        }
+
         const key = address.toLowerCase();
 
         if (!this.addresses.has(key)) {

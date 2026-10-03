@@ -93,7 +93,7 @@ transaction. Rows for what comes out have no fee.
 | RUNEPool withdraw | `ReturnLpToken` | 0.02 RUNE |
 | TCY stake / unstake | the single row | 0.02 RUNE |
 | TCY claim | `Receive` | 0.02 RUNE when the claim was sent from the receiving THORChain wallet; otherwise none (it was paid on another chain) |
-| Rujira merge deposit | `StakingDeposit` | 0.02 RUNE |
+| Rujira contract calls (staking, FIN, merge) | the `StakingDeposit` or `BridgeTradeOut` row | the Cosmos tx's gas in RUNE (`auth_info.fee`), blank when none; not the 0.02 RUNE native fee (`rujira.md`) |
 | Bond, unbond, Thorname | the single row | 0.02 RUNE |
 | Send, Arkeo delegation | the send | actual fee from Viewblock |
 | TCY distribution | — | none (nothing sent in) |

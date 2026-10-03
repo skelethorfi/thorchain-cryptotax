@@ -13,6 +13,7 @@ import {TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService
 import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
 import {BaseMapper} from "../thorchain-exporter/BaseMapper";
 import {getProtocol, ProtocolId} from "../protocols/Protocol";
+import {CosmosTx} from "../cryptotax-thorchain/CosmosTxService";
 
 // A golden test case is a folder containing:
 //   input.json    - the raw source data (a GoldenCaseInput)
@@ -33,6 +34,8 @@ export interface GoldenCaseInput {
     data: Action | ViewblockTx | TcyDistributionItem;
     // Related THORNode transactions (midgard swaps and switches)
     thornodeTxs?: TxStatusResponse[];
+    // The Cosmos tx of a contract action
+    cosmosTxs?: CosmosTx[];
 }
 
 export const INPUT_FILE = 'input.json';
@@ -108,6 +111,7 @@ export function runCase(input: GoldenCaseInput, unsupportedActionsPath?: string)
     const event = new TaxEvent(getCaseDate(input), input.source, wallet, config, getProtocol(input.protocol));
     event.input = input.data;
     event.thornodeTxs = input.thornodeTxs ?? [];
+    event.cosmosTxs = input.cosmosTxs ?? [];
     event.convert();
 
     return event.output;
