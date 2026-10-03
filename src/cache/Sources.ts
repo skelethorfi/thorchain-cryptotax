@@ -9,11 +9,16 @@ import {CosmosTx} from "../cryptotax-thorchain/CosmosTxService";
 // and the importer of old caches both use these.
 
 // A Midgard action has no id. Its type, first txid and sub-type are unique among a wallet's actions; the
-// few with no txid (e.g. some refunds) fall back to their date.
+// few with no txid (e.g. some refunds) fall back to their date. Old Midgard's genesisTx placeholders all
+// share one txid, so they are told apart by pool and depositing addresses.
 export function midgardActionKey(action: Action): string {
     const txId = action.in.find(tx => tx.txID)?.txID || action.out.find(tx => tx.txID)?.txID;
     const metadata = action.metadata as any;
     const subType = metadata.contract?.contractType ?? metadata.swap?.txType ?? '';
+
+    if (isGenesisPlaceholder(action)) {
+        return [action.type, 'genesisTx', ...action.pools, action.in.map(tx => tx.address || '-').join('+')].join('.');
+    }
 
     return [action.type, txId || `date-${action.date}`, subType].filter(Boolean).join('.');
 }
@@ -48,7 +53,7 @@ export const COSMOS_TX_RULES: RecordRules<CosmosTx> = {
 };
 
 // Viewblock adds each amount's value at today's price (usdNew), which changes on every fetch and would make
-// every refresh look like a change in the source data. It is dropped before a tx is stored; the value at
+// every fetch look like a change in the source data. It is dropped before a tx is stored; the value at
 // the time of the tx (usd) is kept.
 export function withoutCurrentValues<T>(value: T): T {
     if (Array.isArray(value)) {

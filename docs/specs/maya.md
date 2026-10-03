@@ -22,7 +22,7 @@ protocols = ["thorchain", "maya"]
 
 When enabled, every wallet in the config is also queried on Maya's Midgard, not
 only `maya1` wallets: swaps and liquidity adds are often started from a `thor1`,
-`0x` or other address. Maya responses are cached in `<cachePath>/maya-midgard/`.
+`0x` or other address. Maya responses are cached in `<storePath>/records/maya-midgard/`.
 
 ## Protocol differences
 

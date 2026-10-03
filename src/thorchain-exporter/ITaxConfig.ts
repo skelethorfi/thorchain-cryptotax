@@ -5,10 +5,14 @@ export interface ITaxConfig {
     fromDate: string;
     toDate: string;
     frequency: 'monthly' | 'yearly' | 'none',
-    cacheDataSources: boolean;
+    // Deprecated: false fetches the latest data on every run, like --fetch-latest
+    cacheDataSources?: boolean;
     outputPath: string;
     unsupportedActionsPath: string;
-    cachePath: string;
+    // The record store (docs/specs/snapshots.md). Default: store/ next to the config
+    storePath: string;
+    // Deprecated name of storePath
+    cachePath?: string;
     wallets: IWallet[];
     // Protocols whose Midgard is queried for every wallet. Default: ["thorchain"]
     protocols?: ProtocolId[];

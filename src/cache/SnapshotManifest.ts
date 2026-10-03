@@ -3,7 +3,7 @@ import * as path from "path";
 
 // A run's snapshot: the copy of each record it used and the record keys of each wallet list, written to
 // its output folder as snapshots.json, so the run can be replayed exactly (--replay). Paths are relative to
-// the store root (the config's cachePath). See docs/specs/snapshots.md.
+// the store root (the config's storePath). See docs/specs/snapshots.md.
 
 export const MANIFEST_FILE = 'snapshots.json';
 

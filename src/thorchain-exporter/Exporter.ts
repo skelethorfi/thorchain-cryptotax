@@ -17,7 +17,7 @@ import {BaseMapper} from "./BaseMapper";
 import {getActionDate} from "../cryptotax-thorchain/MidgardActionMapper";
 import {TaxConfig} from "./TaxConfig";
 import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
-import {RecordStore} from "../cache/RecordStore";
+import {FetchMode, RecordStore} from "../cache/RecordStore";
 import {SnapshotManifest} from "../cache/SnapshotManifest";
 import {getProtocol, Protocol, THORCHAIN, withAssetNames} from "../protocols/Protocol";
 import {assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
@@ -73,8 +73,8 @@ export function shouldIncludeAction(action: Action): boolean {
 export interface ExportOptions {
     // Only read cached snapshots; fail on anything not cached
     offline?: boolean;
-    // Fetch everything again, keeping the copies stored before
-    refresh?: boolean;
+    // What to fetch beyond what is not stored yet: 'latest' (wallet lists and pending records) or 'all'
+    fetch?: FetchMode;
     // A run folder (or its snapshots.json) whose exact records to read
     replay?: string;
 }
@@ -95,13 +95,17 @@ export class Exporter {
 
     constructor(filename: string, options: ExportOptions = {}) {
         this.config = TaxConfig.load(filename);
-        const cachePath = this.config.cachePath;
+        const storePath = this.config.storePath;
         this.snapshots = new SnapshotManifest();
         // One store for every source (docs/specs/snapshots.md)
-        const store = new RecordStore(cachePath, {
+        if (this.config.cacheDataSources === false) {
+            console.warn('Config: cacheDataSources is deprecated; false now fetches the latest data, like --fetch-latest');
+        }
+
+        const store = new RecordStore(storePath, {
             offline: options.offline,
-            // cacheDataSources = false used to delete the cache; it now fetches again and keeps the old copies
-            refresh: options.refresh || !this.config.cacheDataSources,
+            // cacheDataSources = false used to delete the cache; it now fetches the latest data and keeps the old
+            fetch: options.fetch ?? (this.config.cacheDataSources === false ? 'latest' : 'missing'),
             replay: options.replay ? SnapshotManifest.load(options.replay) : undefined,
             manifest: this.snapshots,
         });

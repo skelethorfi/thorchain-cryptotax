@@ -20,9 +20,6 @@ frequency = "yearly"
 # prefixSecuredAssets = true   # ThorSecured.ETH.USDC
 # prefixTradeAssets = true     # ThorTrade.BTC.BTC
 
-# Store the downloaded source files to be able to re-run without downloading again
-cacheDataSources = false
-
 # Optional: path to output/ directory
 # outputPath = "/some/path/output"
 
@@ -31,7 +28,7 @@ cacheDataSources = false
 
 # Optional: path to the store of downloaded data (default: store/ next to this config).
 # Several configs (e.g. one per tax year) can share one store.
-# cachePath = "/some/path/store"
+# storePath = "/some/path/store"
 
 # List of wallets
 # add a new [[wallets]] entry for each wallet

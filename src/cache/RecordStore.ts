@@ -9,16 +9,20 @@ import {withRetry} from "../utils/Retry";
 // copy over a pruned one, a finalised copy over a pending one) and lists the copies it used in its
 // manifest, so it can be replayed exactly. See docs/specs/snapshots.md.
 //
-//   <cachePath>/records/<source>/<key>/<fetchedAt>.json   one copy of a record
-//   <cachePath>/lists/<source>/<wallet>/<fetchedAt>.json  the record keys one fetch of a wallet returned
+//   <storePath>/records/<source>/<key>/<fetchedAt>.json   one copy of a record
+//   <storePath>/lists/<source>/<wallet>/<fetchedAt>.json  the record keys one fetch of a wallet returned
 //
-// Caches from before (<cachePath>/<source>/<key>.json holding a whole response) are imported on first use.
+// Caches from before (<storePath>/<source>/<key>.json holding a whole response) are imported on first use.
+
+export type FetchMode = 'missing' | 'latest' | 'all';
 
 export interface StoreOptions {
     // Only read stored records. Anything not stored is an error instead of a fetch.
     offline?: boolean;
-    // Fetch every list and record again, storing what changed
-    refresh?: boolean;
+    // What to fetch beyond what is not stored yet (docs/specs/snapshots.md):
+    // missing (default): nothing more; latest: every wallet list again, and records still pending;
+    // all: every list and record again
+    fetch?: FetchMode;
     // Read exactly the copies an earlier run used (its snapshots.json). Implies offline.
     replay?: SnapshotManifest;
     // Records every copy this run uses
@@ -118,16 +122,16 @@ export function chooseCopy<T>(copies: Copy<T>[], rules: RecordRules<T> = {}): {c
 
 export class RecordStore {
     readonly offline: boolean;
-    private readonly refresh: boolean;
+    private readonly fetchMode: FetchMode;
     private readonly replay?: SnapshotManifest;
     private readonly manifest?: SnapshotManifest;
-    // Records and lists fetched in this run: a record shared by several wallets is fetched once
+    // Records and lists fetched in this run: one shared by several wallets is fetched once
     private readonly fetchedThisRun = new Set<string>();
 
     constructor(readonly root: string, options: StoreOptions = {}) {
         this.replay = options.replay;
         this.offline = (options.offline ?? false) || !!options.replay;
-        this.refresh = !this.offline && (options.refresh ?? false);
+        this.fetchMode = this.offline ? 'missing' : options.fetch ?? 'missing';
         this.manifest = options.manifest;
     }
 
@@ -141,7 +145,7 @@ export class RecordStore {
 
         let fetchedNow: Stored<T> | undefined;
 
-        if (this.shouldFetch(`${source}/${key}`, this.copies(source, key).length)) {
+        if (this.shouldFetchRecord(source, key, rules)) {
             this.assertCanFetch(`${source} ${key}`);
             const fetched = await withRetry(fetch, `${source} ${key}`);
             fetchedNow = this.store(source, key, fetched.data, rules, fetched.url);
@@ -171,7 +175,7 @@ export class RecordStore {
 
         let fetchedNow = new Map<string, Stored<T>>();
 
-        if (this.shouldFetch(`lists/${source}/${wallet}`, this.lists(source, wallet).length)) {
+        if (this.shouldFetchList(source, wallet)) {
             this.assertCanFetch(`${source} list ${wallet}`);
             const fetched = await withRetry(fetch, `${source} list ${wallet}`);
             fetchedNow = this.storeList(source, wallet, fetched.data, options, fetched.url);
@@ -187,8 +191,25 @@ export class RecordStore {
         return keys.map(key => this.use(source, key, rules, fetchedNow.get(key), earlier.includes(key)));
     }
 
-    private shouldFetch(id: string, stored: number): boolean {
-        if (this.fetchedThisRun.has(id) || (!this.refresh && stored > 0)) {
+    // A record not stored yet is always fetched. With fetch 'latest' a pending one is fetched again, as it
+    // may since be finalised; a finalised one can only come back revised or pruned, which 'all' looks for.
+    private shouldFetchRecord<T>(source: string, key: string, rules: RecordRules<T>): boolean {
+        const copies = this.copies<T>(source, key);
+        const wanted = copies.length === 0
+            || this.fetchMode === 'all'
+            || (this.fetchMode === 'latest' && !!rules.isPending?.(chooseCopy(copies, rules).copy.data));
+
+        return wanted && this.firstFetchThisRun(`records/${source}/${key}`);
+    }
+
+    // A wallet's list is fetched again with 'latest' or 'all', for new activity and changed records
+    private shouldFetchList(source: string, wallet: string): boolean {
+        const wanted = this.lists(source, wallet).length === 0 || this.fetchMode !== 'missing';
+        return wanted && this.firstFetchThisRun(`lists/${source}/${wallet}`);
+    }
+
+    private firstFetchThisRun(id: string): boolean {
+        if (this.fetchedThisRun.has(id)) {
             return false;
         }
 

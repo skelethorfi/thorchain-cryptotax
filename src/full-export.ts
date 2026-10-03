@@ -10,10 +10,12 @@ async function main() {
 
     const args = process.argv.slice(2);
 
-    // --offline: only use cached data sources, fail on anything not cached
+    // --offline: only use what is stored, fail on anything not stored
     const offline = args.includes('--offline');
-    // --refresh: fetch each wallet's data again; changes are saved as new snapshots (docs/specs/snapshots.md)
-    const refresh = args.includes('--refresh');
+    // --fetch-latest: fetch every wallet's list again (new activity, changed records) and records still
+    // pending. --refetch-all: fetch every record again too, e.g. to see what was revised or pruned before
+    // filing. Earlier copies are always kept (docs/specs/snapshots.md).
+    const fetch = args.includes('--refetch-all') ? 'all' : args.includes('--fetch-latest') ? 'latest' : undefined;
     // --replay <run folder>: read exactly the snapshots that run used
     const replayIndex = args.indexOf('--replay');
     const replay = replayIndex >= 0 ? args[replayIndex + 1] : undefined;
@@ -32,17 +34,17 @@ async function main() {
     const timestamp = format(new Date(), 'yyyy-MM-dd_HH-mm-ss');
 
     // Read config
-    const exporter = new Exporter(configFile, {offline, refresh, replay});
+    const exporter = new Exporter(configFile, {offline, fetch, replay});
 
     const outputPath = path.join(exporter.config.outputPath, timestamp);
-    const cachePath = exporter.config.cachePath;
+    const storePath = exporter.config.storePath;
 
     if (replay) {
-        console.log(`Replay: reading the snapshots of ${replay} from ${cachePath}\n`);
+        console.log(`Replay: reading the records of ${replay} from ${storePath}\n`);
     } else if (offline) {
-        console.log(`Offline: reading only from cache: ${cachePath}\n`);
-    } else if (refresh || !exporter.config.cacheDataSources) {
-        console.log(`Refresh: fetching each wallet's data again; earlier snapshots in ${cachePath} are kept\n`);
+        console.log(`Offline: reading only from the store: ${storePath}\n`);
+    } else if (fetch) {
+        console.log(`Fetching ${fetch === 'all' ? 'every record' : 'the latest data'} again; earlier copies in ${storePath} are kept\n`);
     }
 
     const wallets = exporter.config.wallets;

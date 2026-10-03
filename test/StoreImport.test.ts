@@ -60,3 +60,15 @@ describe('TCY records', () => {
         expect((await tcy.getTcyDistribution('w2')).distributions).toEqual([{date: '1', amount: '99', price: '1'}]);
     });
 });
+
+describe('midgardActionKey', () => {
+    test('tells genesisTx placeholders apart by pool and depositing addresses', async () => {
+        const {midgardActionKey} = await import('../src/cache/Sources');
+        const genesis = (pool: string, addresses: string[]) => ({...action('genesisTx'), pools: [pool], in: addresses.map(address => ({address, txID: 'genesisTx', coins: []}))}) as any;
+
+        const keys = [genesis('BNB.BUSD', ['thor1a', 'bnb1a']), genesis('BNB.BUSD', ['', 'bnb1a']), genesis('BTC.BTC', ['thor1a', 'bc1a'])].map(midgardActionKey);
+
+        expect(new Set(keys).size).toBe(3);
+        expect(keys[1]).toBe('addLiquidity.genesisTx.BNB.BUSD.-+bnb1a');
+    });
+});

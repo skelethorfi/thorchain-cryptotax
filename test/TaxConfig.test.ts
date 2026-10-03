@@ -1,4 +1,4 @@
-import {describe, expect, test} from "@jest/globals";
+import {describe, expect, jest, test} from "@jest/globals";
 import {TaxConfig} from "../src/thorchain-exporter/TaxConfig";
 import fs from "fs-extra";
 import os from "os";
@@ -11,7 +11,7 @@ describe('TaxConfig', () => {
         expect(result).toEqual({
             outputPath: 'output',
             unsupportedActionsPath: 'unsupported-actions',
-            cachePath: 'store',
+            storePath: 'store',
             toDate: new Date().toISOString().substring(0, 10)
         });
     });
@@ -24,7 +24,7 @@ describe('TaxConfig', () => {
             cacheDataSources: true,
             outputPath: 'custom-output',
             unsupportedActionsPath: 'custom-unsupported-actions',
-            cachePath: 'custom-cache',
+            storePath: 'custom-store',
             wallets: []
         };
 
@@ -37,7 +37,7 @@ describe('TaxConfig', () => {
             cacheDataSources: true,
             outputPath: 'custom-output',
             unsupportedActionsPath: 'custom-unsupported-actions',
-            cachePath: 'custom-cache',
+            storePath: 'custom-store',
             wallets: []
         });
     });
@@ -45,11 +45,11 @@ describe('TaxConfig', () => {
 
 describe('TaxConfig paths', () => {
     test('resolves relative paths against the config file folder', () => {
-        const config = TaxConfig.resolvePaths(TaxConfig.applyDefaults({cachePath: 'FY/cache'}), '/private/tax');
+        const config = TaxConfig.resolvePaths(TaxConfig.applyDefaults({storePath: 'FY/store'}), '/private/tax');
 
         expect(config.outputPath).toBe(path.resolve('/private/tax/output'));
         expect(config.unsupportedActionsPath).toBe(path.resolve('/private/tax/unsupported-actions'));
-        expect(config.cachePath).toBe(path.resolve('/private/tax/FY/cache'));
+        expect(config.storePath).toBe(path.resolve('/private/tax/FY/store'));
     });
 
     test('keeps absolute paths', () => {
@@ -65,8 +65,15 @@ describe('TaxConfig paths', () => {
 
         const config = TaxConfig.load(file);
 
-        expect(config.cachePath).toBe(path.join(dir, 'FY/cache'));
+        expect(config.storePath).toBe(path.join(dir, 'FY/cache'));
         expect(config.outputPath).toBe(path.join(dir, 'output'));
+    });
+
+    test('an old config with cachePath still works, as storePath', () => {
+        jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+        expect(TaxConfig.renameDeprecated({cachePath: 'FY/cache'})).toEqual({storePath: 'FY/cache'});
+        expect(() => TaxConfig.renameDeprecated({cachePath: 'a', storePath: 'b'})).toThrow(/both storePath and/);
     });
 
     test('loads the optional [assets] table from TOML', () => {

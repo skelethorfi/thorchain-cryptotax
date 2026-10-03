@@ -15,7 +15,7 @@ picks the right version of each record, and lists what it used.
 
 ## The store
 
-`src/cache/RecordStore.ts`, under the config's `cachePath` (default `store/`
+`src/cache/RecordStore.ts`, under the config's `storePath` (default `store/`
 next to the config, ignored by git in this repo). Several configs, e.g. one
 per tax year, can share one store, because copies are only ever added:
 
@@ -77,29 +77,42 @@ corrections. A filed year is not affected, because it replays its own manifest.
 
 | Run | Fetches | Uses |
 | --- | --- | --- |
-| default | only lists and records never fetched | the chosen copy of each record |
+| default | only lists and records not stored yet | the chosen copy of each record |
+| `--fetch-latest` | also every wallet list again (new activity, changed or missing records) and every record still pending | the chosen copy, with this run's fetches included |
+| `--refetch-all` | every list and every record again, THORNode and Cosmos txs included | the same |
 | `--offline` | nothing; anything not stored is an error | the chosen copy |
-| `--refresh` (or `cacheDataSources = false`) | every list and every record again | the chosen copy, with this run's fetches included |
 | `--replay <run>` | nothing | exactly the copies in that run's `snapshots.json`, checked against their hashes |
 
-`cacheDataSources = false` used to delete the whole cache. It now means
-refresh, so no fetched data is destroyed.
+A finalised record (a THORNode tx, a Cosmos tx) can only come back revised or
+pruned, and the store keeps the earlier copy either way, so `--fetch-latest`
+leaves it alone. `--refetch-all` checks every record, e.g. before filing a
+year, to see what the sources have changed since.
 
-A refresh refetches each wallet's whole history, because the sources page
-from the first action. New activity, finalised records, revisions and pruned
-copies all show up in one pass.
+A wallet list is the wallet's whole history, because the sources page from
+the first action, so `--fetch-latest` sees new activity and changes to old
+actions in one pass. A record shared by several wallets is fetched once per
+run.
 
 Each fetch is retried after a transient error (HTTP 5xx or 429, a connection
-reset, a timeout), waiting 5 s, 20 s and then 60 s (`src/utils/Retry.ts`), and
-a request that hangs fails after 60 s. A run that still fails keeps what it
-stored so far, and can be run again.
+reset, a timeout, a DNS failure), waiting 5 s, 20 s and then 60 s
+(`src/utils/Retry.ts`), and a request that hangs fails after 60 s. A run that
+still fails keeps what it stored so far, and can be run again.
+
+### Config names
+
+- `storePath` (default `store/` next to the config) was `cachePath`. The old
+  name still works, with a warning.
+- `cacheDataSources` is deprecated. `true` was the default behaviour. `false`
+  used to delete the whole cache before each run; it now means
+  `--fetch-latest` on every run, with a warning, so no fetched data is
+  destroyed.
 
 ## The manifest (snapshot)
 
 Each run writes `snapshots.json` to its output folder:
 
 - `records`: for each record used, the source, key, copy file (relative to
-  `cachePath`), `fetchedAt`, `url`, `sha256`, `choice`, the number of copies
+  `storePath`), `fetchedAt`, `url`, `sha256`, `choice`, the number of copies
   stored, `missing` if it was kept from an earlier fetch, and `fetched` if
   this run fetched it (`new`, `changed`, `unchanged`).
 - `lists`: for each wallet and source, the record keys used, in order, and
