@@ -1,4 +1,5 @@
 import {assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
+import { Protocol, THORCHAIN } from "../protocols/Protocol";
 
 export function parseMidgardDate(nanoTimestamp: string): Date {
     return new Date(parseInt(nanoTimestamp) / 1000000);
@@ -17,7 +18,19 @@ function tickerRename(ticker: string) {
     return renames[ticker] ?? ticker;
 }
 
-export function parseMidgardAsset(assetStr: string): {
+// Assets that live on THORChain (or Maya) but represent another chain's asset, by Midgard notation
+const ASSET_KINDS: {[type: number]: {name: string; separator: string}} = {
+    [AssetType.SYNTH]: {name: 'Synth', separator: '/'},
+    [AssetType.TRADE]: {name: 'Trade', separator: '~'},
+    [AssetType.SECURED]: {name: 'Secured', separator: '-'},
+};
+
+// Cosmos denoms on THORChain such as x/ruji parse as a synth of chain X, but are native tokens
+const NATIVE_DENOM_CHAIN = 'X';
+
+// currency is what the CSV exports; displayCurrency is for descriptions, in Midgard's notation.
+// See docs/specs/assets.md.
+export function parseMidgardAsset(assetStr: string, protocol: Protocol = THORCHAIN): {
     blockchain: string;
     currency: string;
     displayCurrency: string;
@@ -32,15 +45,23 @@ export function parseMidgardAsset(assetStr: string): {
 
     // Update ticker if it has been renamed
     const ticker = tickerRename(asset.ticker);
-    const displayCurrency = asset.type === AssetType.SYNTH ? `${asset.chain}/${ticker}` : ticker;
-    // CTC fails to render the ledger view if the currency contains a `/`, so synth
-    // currencies need a display form for descriptions and a CTC-safe form for export.
-    const currency = asset.type === AssetType.SYNTH ? displayCurrency.replace('/', '.') : ticker;
 
+    if (asset.type === AssetType.SYNTH && asset.chain.toUpperCase() === NATIVE_DENOM_CHAIN) {
+        return { blockchain: protocol.nativeChain, currency: ticker, displayCurrency: ticker };
+    }
+
+    const kind = ASSET_KINDS[asset.type];
+
+    if (!kind) {
+        return { blockchain: asset.chain, currency: ticker, displayCurrency: ticker };
+    }
+
+    // e.g. synth BTC/BTC lives on THORChain: ThorSynth.BTC.BTC, so Summ never mixes it with L1 BTC, and
+    // without a slash, which breaks Summ's ledger view
     return {
-        blockchain: asset?.chain,
-        currency,
-        displayCurrency
+        blockchain: protocol.nativeChain,
+        currency: `${protocol.assetNamePrefix}${kind.name}.${asset.chain}.${ticker}`,
+        displayCurrency: `${asset.chain}${kind.separator}${ticker}`,
     };
 }
 

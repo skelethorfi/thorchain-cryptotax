@@ -16,6 +16,9 @@ export interface Protocol {
     lpTokenPrefix: string;
     // Savers positions are not pool LP units, so they get their own token name (docs/specs/savers.md)
     saversTokenPrefix: string;
+    // Names assets that live on this chain but represent another chain's asset: <prefix>Synth.BTC.BTC,
+    // <prefix>Trade.BTC.BTC, <prefix>Secured.BTC.BTC (docs/specs/assets.md)
+    assetNamePrefix: string;
     midgardUrl: string;
     // Fallback inbound gas (base units of the native asset) when THORNode data is missing
     defaultGas?: string;
@@ -32,6 +35,7 @@ export const THORCHAIN: Protocol = {
     nativeAddressPrefix: 'thor1',
     lpTokenPrefix: 'ThorLP',
     saversTokenPrefix: 'ThorSavers',
+    assetNamePrefix: 'Thor',
     midgardUrl: API_URLS.midgard,
     defaultGas: '2000000',
     decimals: () => 8,
@@ -54,6 +58,7 @@ export const MAYA: Protocol = {
     nativeAddressPrefix: 'maya1',
     lpTokenPrefix: 'MayaLP',
     saversTokenPrefix: 'MayaSavers',
+    assetNamePrefix: 'Maya',
     midgardUrl: process.env.MAYA_MIDGARD_API_URL || 'https://midgard.mayachain.info',
     // NativeTransactionFee from Mayanode constants and mimir (2026-10-01): 0.2 CACAO
     defaultGas: '2000000000',

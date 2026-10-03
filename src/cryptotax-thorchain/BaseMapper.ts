@@ -39,7 +39,7 @@ export abstract class BaseMapper implements Mapper {
     }
 
     protected parseCoin(asset: string, amount: string): { blockchain: string; currency: string; displayCurrency: string; amountParsed: string } {
-        const { blockchain, currency, displayCurrency } = parseMidgardAsset(asset);
+        const { blockchain, currency, displayCurrency } = parseMidgardAsset(asset, this.protocol);
         const amountParsed = baseToAssetAmountString(amount, this.protocol.decimals(asset));
         return { blockchain, currency, displayCurrency, amountParsed };
     }
