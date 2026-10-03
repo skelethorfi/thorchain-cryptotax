@@ -1,4 +1,4 @@
-import {Cache, CacheOptions} from "../cache/Cache";
+import {RecordRules, RecordStore} from "../cache/RecordStore";
 import {Action, Configuration, MidgardApi} from '@xchainjs/xchain-midgard';
 import assert from "assert";
 import axios from "axios";
@@ -16,28 +16,39 @@ axiosThrottle.use(axios, { requestsPerSecond: 1 });
 // MIDGARD_URL_A: "https://midgard.thorchain.info/v2/actions?limit=50&address={WALLETS}&offset={OFFSET}"
 // MIDGARD_URL_B: "https://midgard.thorswap.net/v2/actions?limit=50&address={WALLETS}&offset={OFFSET}"
 
-export class MidgardService {
-    cache: Cache;
-    api: MidgardApi;
-    basePath: string;
+// A Midgard action has no id. Its type, first txid and sub-type are unique among a wallet's actions; the
+// few with no txid (e.g. some refunds) fall back to their date.
+export function midgardActionKey(action: Action): string {
+    const txId = action.in.find(tx => tx.txID)?.txID || action.out.find(tx => tx.txID)?.txID;
+    const metadata = action.metadata as any;
+    const subType = metadata.contract?.contractType ?? metadata.swap?.txType ?? '';
 
-    constructor(cachePath: string = '_cache', cacheOptions: CacheOptions = {}, basePath: string = API_URLS.midgard) {
-        // A wallet's actions grow with new activity, and Midgard revisions can change old ones
-        this.cache = new Cache(cachePath, cacheOptions, {refreshable: true});
-        this.basePath = basePath;
-        const apiConfig = new Configuration({ basePath });
-        this.api = new MidgardApi(apiConfig);
+    return [action.type, txId || `date-${action.date}`, subType].filter(Boolean).join('.');
+}
+
+// A pending action (e.g. an unfinished loan repayment or refund) can later be finalised
+export const MIDGARD_RULES: RecordRules<Action> = {
+    isPending: action => action.status !== 'success',
+};
+
+export class MidgardService {
+    api: MidgardApi;
+
+    // source: the store folder, e.g. 'midgard' or 'maya-midgard'
+    constructor(private store: RecordStore = new RecordStore('_cache'), private source: string = 'midgard',
+                private basePath: string = API_URLS.midgard) {
+        this.api = new MidgardApi(new Configuration({basePath}));
     }
 
-    async getActions(address: string) {
+    async getActions(address: string): Promise<Action[]> {
         console.log(`[Midgard] getActions('${address}')`);
 
-        if (this.cache.has(address)) {
-            return this.cache.read(address);
-        }
+        return this.store.list(this.source, address,
+            async () => ({data: await this.fetchActions(address), url: `${this.basePath}/v2/actions?address=${address}`}),
+            {keyOf: midgardActionKey, rules: MIDGARD_RULES});
+    }
 
-        this.cache.assertCanFetch(address);
-
+    private async fetchActions(address: string): Promise<Action[]> {
         let actions: Action[] = [];
         let count: number = 0;
 
@@ -63,8 +74,6 @@ export class MidgardService {
         }
 
         assert.equal(actions.length, count);
-
-        this.cache.write(address, actions, `${this.basePath}/v2/actions?address=${address}`);
 
         return actions;
     }

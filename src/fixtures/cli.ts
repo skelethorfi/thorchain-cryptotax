@@ -3,6 +3,7 @@ import os from "os";
 import path from "path";
 import {Action, Configuration, MidgardApi} from "@xchainjs/xchain-midgard";
 import {ThornodeService} from "../cryptotax-thorchain/ThornodeService";
+import {RecordStore} from "../cache/RecordStore";
 import {CosmosTxService, getCosmosTxIds} from "../cryptotax-thorchain/CosmosTxService";
 import {getThornodeTxIds} from "../thorchain-exporter/Exporter";
 import {Anonymiser} from "./Anonymise";
@@ -46,7 +47,7 @@ async function fetchInput(txid: string, protocol: Protocol, index?: number): Pro
     const thornodeTxIds = protocol.id === THORCHAIN.id ? getThornodeTxIds(action) : [];
 
     if (thornodeTxIds.length) {
-        const thornode = new ThornodeService(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-thornode-')));
+        const thornode = new ThornodeService(new RecordStore(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-thornode-'))));
 
         for (const txId of thornodeTxIds) {
             thornodeTxs.push(await thornode.getTxStatus(txId));
@@ -57,7 +58,7 @@ async function fetchInput(txid: string, protocol: Protocol, index?: number): Pro
     const cosmosTxIds = protocol.id === THORCHAIN.id ? getCosmosTxIds(action) : [];
 
     if (cosmosTxIds.length) {
-        const cosmos = new CosmosTxService(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-cosmos-')));
+        const cosmos = new CosmosTxService(new RecordStore(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-cosmos-'))));
 
         for (const txId of cosmosTxIds) {
             cosmosTxs.push(await cosmos.getTx(txId));

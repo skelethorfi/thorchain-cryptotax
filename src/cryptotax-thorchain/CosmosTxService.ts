@@ -1,6 +1,6 @@
 import axios from "axios";
 import {Action} from "@xchainjs/xchain-midgard";
-import {Cache, CacheOptions} from "../cache/Cache";
+import {RecordRules, RecordStore} from "../cache/RecordStore";
 import {API_URLS} from "../config/apiUrls";
 
 // A THORChain Cosmos tx from THORNode's /cosmos/tx/v1beta1/txs/{hash}, trimmed to what the mappers use.
@@ -45,26 +45,20 @@ export function toCosmosTx(response: any): CosmosTx {
     };
 }
 
-export class CosmosTxService {
-    cache: Cache;
+// A copy without events (pruned) is not used over one with them
+export const COSMOS_TX_RULES: RecordRules<CosmosTx> = {
+    completeness: tx => tx.events.length > 0 ? 1 : 0,
+};
 
-    constructor(cachePath: string = '_cache', cacheOptions: CacheOptions = {}) {
-        this.cache = new Cache(cachePath, cacheOptions);
+export class CosmosTxService {
+    constructor(private store: RecordStore = new RecordStore('_cache'), private source: string = 'thornode-cosmos') {
     }
 
     async getTx(hash: string): Promise<CosmosTx> {
-        if (this.cache.has(hash)) {
-            return this.cache.read(hash);
-        }
-
-        this.cache.assertCanFetch(hash);
-
-        const url = `${API_URLS.thornode}/cosmos/tx/v1beta1/txs/${hash}`;
-        const response = await axios.get(url);
-        const tx = toCosmosTx(response.data);
-
-        this.cache.write(hash, tx, url);
-
-        return tx;
+        return this.store.record(this.source, hash, async () => {
+            const url = `${API_URLS.thornode}/cosmos/tx/v1beta1/txs/${hash}`;
+            const response = await axios.get(url);
+            return {data: toCosmosTx(response.data), url};
+        }, COSMOS_TX_RULES);
     }
 }

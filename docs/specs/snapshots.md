@@ -3,82 +3,111 @@
 A tax return rests on what Midgard, THORNode, Viewblock and the TCY endpoint
 returned when the data was fetched. That changes after the fact:
 
-- THORNode prunes old txs, so a later fetch can come back without the gas.
-- Midgard instances and revisions disagree, and history gets archived (the
-  2022-03-22 `genesisTx` migration, the loan-open amount fix).
+- THORNode prunes old txs, so a later fetch can come back without the tx or
+  its gas.
+- Pending actions and txs (an unfinished loan repayment, a refund, an
+  outbound not yet sent) are later finalised.
+- Midgard instances and revisions change old actions (the loan-open amount
+  fix), and history gets archived (the 2022-03-22 `genesisTx` migration).
 
-So a fetch is evidence that may not be obtainable again. It is kept, never
-replaced, and every run records which data it used.
+So the tool keeps every version of every record it has fetched. Each run
+picks the right version of each record, and lists what it used.
 
-## Layout
+## The store
 
-`src/cache/Cache.ts`. One folder per source under the config's `cachePath`
-(`midgard`, `maya-midgard`, `thornode`, `thornode-cosmos`, `viewblock`, `tcy`),
-then one folder per key (a wallet or a txid), then one file per fetch:
+`src/cache/RecordStore.ts`, under the config's `cachePath`:
 
 ```
-<cachePath>/<source>/<key>/<fetchedAt>.json
-{"snapshot": {"fetchedAt": "...", "url": "...", "sha256": "..."}, "data": ...}
+records/<source>/<key>/<fetchedAt>.json    one copy of one record
+lists/<source>/<wallet>/<fetchedAt>.json   the record keys one fetch of a wallet returned
 ```
 
-- `fetchedAt` is the fetch time in UTC; the file name is the same time with `-`
-  for `:`, so names sort by time.
-- `sha256` is the hash of `JSON.stringify(data)`.
-- A fetch is saved only if its hash differs from the latest snapshot of the key.
-  A file is never overwritten or deleted by the tool.
-- A cache from before snapshots, `<source>/<key>.json` holding only the data,
-  is read as the oldest snapshot of that key, with `fetchedAt: null`. Old
-  caches need no migration.
+A copy is `{fetchedAt, url, sha256, data}`. The file name is `fetchedAt`
+with `-` for `:`, so names sort by time.
 
-## Which snapshot a run reads
-
-| Run | Reads | Fetches |
+| Source | Record | Key |
 | --- | --- | --- |
-| default | the latest snapshot of each key | only keys with no snapshot |
-| `--offline` | the latest snapshot | nothing; a missing key is an error |
-| `--refresh` (or `cacheDataSources = false`) | a new fetch for wallet-level keys, the latest snapshot otherwise | wallet-level keys, and keys with no snapshot |
-| `--replay <run>` | exactly the snapshots in that run's `snapshots.json`, checked against their hashes | nothing |
+| `midgard`, `maya-midgard` | an action | `<type>.<first txid>[.<contract type or swap txType>]`, or `<type>.date-<date>` with no txid |
+| `thornode` | a tx status | txid |
+| `thornode-cosmos` | a Cosmos tx (contract calls) | txid |
+| `viewblock` | a tx | its hash |
+| `tcy` | a distribution | its date (one a day) |
 
-Only wallet-level data is refreshed: Midgard actions, Viewblock txs and TCY
-distributions grow with new activity, and revisions can change them. A single
-tx's record (THORNode tx status, Cosmos tx) cannot gain anything from a
-refetch, only lose detail to pruning, so it is fetched once.
+A record is shared: a swap between two of my wallets is stored once, and both
+wallets' lists point at it. On the FY26 data, these keys are unique among
+every wallet's actions.
 
-`cacheDataSources = false` used to delete the whole cache before a run. It now
-means refresh, so no evidence is destroyed.
+- A fetched record is stored only if it differs from its latest copy. Nothing
+  is overwritten or deleted.
+- Before the comparison, each source drops fields that change on every fetch
+  but are not source data: Viewblock's `usdNew` (value at today's price; `usd`,
+  the value at the time of the tx, is kept), TCY's `apr` and `total`, and
+  THORNode's `blocks_since_scheduled` for an outbound never signed (a switch).
+- A cache from before records (`<source>/<key>.json` with the whole response)
+  is imported on first use as copies with `fetchedAt: null`. Old caches need
+  no migration, and the old files are left in place.
 
-Fields that change on every fetch but are not source data are dropped before
-saving, so that a refresh reports only real changes:
+## Which copy a run uses
 
-- Viewblock's `usdNew`, an amount's value at today's price (`usd`, the value
-  at the time of the tx, is kept);
-- TCY's `apr`, today's rate.
+Copies are compared oldest first. Each later copy becomes the one used, unless
+it has less in it:
 
-The first refresh after this change reports each such key as changed once.
+| Case | Stored | Used | Manifest `choice` |
+| --- | --- | --- | --- |
+| One copy | – | it | `only` |
+| Pending, then finalised | new copy | the finalised copy | `finalised` |
+| Pruned (THORNode lost the tx or its gas; a Cosmos tx lost its events) | new copy, as evidence | **the earlier, fuller copy** | `kept-over-pruned` |
+| Changed otherwise (a revision) | new copy | the new copy, and the run lists it | `revised` |
+| In an earlier fetch of the wallet, but not the latest | – | the earlier copy, and the run lists it | `missing: true` |
 
-## The manifest
+Revisions use the new copy (decided 2026-10-03): those seen so far are
+corrections. A filed year is not affected, because it replays its own manifest.
 
-Each run writes `snapshots.json` to its output folder: one entry per key it
-read or fetched, with the source, the key, the snapshot file (relative to
-`cachePath`), `fetchedAt`, `url`, `sha256` and a status:
+## Run modes
 
-- `cached`: read from an earlier fetch;
-- `fetched`: the first fetch of the key;
-- `unchanged`: fetched again, the same as the latest snapshot;
-- `changed`: fetched again and different, so saved as a new snapshot.
+| Run | Fetches | Uses |
+| --- | --- | --- |
+| default | only lists and records never fetched | the chosen copy of each record |
+| `--offline` | nothing; anything not stored is an error | the chosen copy |
+| `--refresh` (or `cacheDataSources = false`) | every list and every record again | the chosen copy, with this run's fetches included |
+| `--replay <run>` | nothing | exactly the copies in that run's `snapshots.json`, checked against their hashes |
 
-The run prints how many keys changed, and lists them.
+`cacheDataSources = false` used to delete the whole cache. It now means
+refresh, so no fetched data is destroyed.
 
-## Filing a year
+A refresh refetches each wallet's whole history, because the sources page
+from the first action. New activity, finalised records, revisions and pruned
+copies all show up in one pass.
 
-Commit the year's output (with its `snapshots.json`) and its cache. Then
-`--replay <run>` reproduces the filed output exactly. A later `--refresh`
-shows whether the sources have changed since, without touching the snapshots
-the filed run used.
+Each fetch is retried after a transient error (HTTP 5xx or 429, a connection
+reset, a timeout), waiting 5 s, 20 s and then 60 s (`src/utils/Retry.ts`), and
+a request that hangs fails after 60 s. A run that still fails keeps what it
+stored so far, and can be run again.
+
+## The manifest (snapshot)
+
+Each run writes `snapshots.json` to its output folder:
+
+- `records`: for each record used, the source, key, copy file (relative to
+  `cachePath`), `fetchedAt`, `url`, `sha256`, `choice`, the number of copies
+  stored, `missing` if it was kept from an earlier fetch, and `fetched` if
+  this run fetched it (`new`, `changed`, `unchanged`).
+- `lists`: for each wallet and source, the record keys used, in order, and
+  which of them were missing from the latest fetch.
+
+The run prints a summary: records fetched (new, changed, unchanged), and
+records finalised, revised, kept over a pruned copy, or missing. It lists the
+notable ones. A manifest is the snapshot: it points only at copies that never
+change, so `--replay` reproduces the run exactly.
+
+## Filing a year (separate work)
+
+To be designed on top of this: when a year is filed, keep its manifest as the
+year's record (e.g. `filed.json`) and commit it with the store, so the filed
+output can always be replayed. Several years' configs may share one store,
+because copies are only ever added.
 
 ## Not done
 
-- A row-level diff between two runs, and which source change explains each
-  differing row (backlog: whole-run diff).
-- Retries for transient network errors: a refresh that fails part-way leaves
-  the snapshots fetched so far, and writes no manifest.
+- A row-level diff between two runs, showing which record change explains
+  each differing row.

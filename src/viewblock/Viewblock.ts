@@ -1,6 +1,6 @@
 import {range} from '../utils/Range';
 import {ViewblockTx} from './ViewblockTx';
-import {Cache, CacheOptions} from "../cache/Cache";
+import {RecordStore} from "../cache/RecordStore";
 
 export const BASE_URL = 'https://api.viewblock.io';
 export const ORIGIN = 'https://viewblock.io';
@@ -29,12 +29,9 @@ interface PaginatedQueryTxs {
 
 export class Viewblock {
 
-    cache: Cache;
     apiKey?: string;
 
-    constructor(cachePath: string = '_cache', cacheOptions: CacheOptions = {}) {
-        // A wallet's txs grow with new activity
-        this.cache = new Cache(cachePath, cacheOptions, {refreshable: true});
+    constructor(private store: RecordStore = new RecordStore('_cache'), private source: string = 'viewblock') {
     }
 
     async query(path: any, { apiKey, query = {}, network }: any) {
@@ -81,13 +78,12 @@ export class Viewblock {
         network: string;
         type?: string;
     }): Promise<ViewblockTx[]> {
+        return this.store.list(this.source, address,
+            async () => ({data: await this.fetchAllTxs({address, network, type}), url: `viewblock:${network}:${address}`}),
+            {keyOf: tx => tx.hash, rules: {normalise: withoutCurrentValues}});
+    }
 
-        if (this.cache.has(address)) {
-            return this.cache.read(address);
-        }
-
-        this.cache.assertCanFetch(address);
-
+    private async fetchAllTxs({address, network, type}: {address: string; network: string; type?: string}): Promise<ViewblockTx[]> {
         let page = await this.getTxs({
             address,
             network,
@@ -104,7 +100,6 @@ export class Viewblock {
 
         if (total === 0) {
             console.log(`[WARN] No transactions for ${address}`);
-            this.cache.write(address, [], `viewblock:${network}:${address}`);
             return [];
         }
 
@@ -127,16 +122,13 @@ export class Viewblock {
             );
         }
 
-        const txs = withoutCurrentValues(results);
-        this.cache.write(address, txs, `viewblock:${network}:${address}`);
-
-        return txs;
+        return results;
     }
 }
 
 // Viewblock adds each amount's value at today's price (usdNew), which changes on every fetch and would make
-// every refresh look like a change in the source data (docs/specs/snapshots.md). The value at the time of
-// the tx (usd) is kept.
+// every refresh look like a change in the source data (docs/specs/snapshots.md). It is dropped before a tx
+// is stored; the value at the time of the tx (usd) is kept.
 export function withoutCurrentValues<T>(value: T): T {
     if (Array.isArray(value)) {
         return value.map(withoutCurrentValues) as T;

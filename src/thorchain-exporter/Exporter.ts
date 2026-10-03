@@ -17,7 +17,7 @@ import {BaseMapper} from "./BaseMapper";
 import {getActionDate} from "../cryptotax-thorchain/MidgardActionMapper";
 import {TaxConfig} from "./TaxConfig";
 import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
-import {CacheOptions} from "../cache/Cache";
+import {RecordStore} from "../cache/RecordStore";
 import {SnapshotManifest} from "../cache/SnapshotManifest";
 import {getProtocol, Protocol, THORCHAIN, withAssetNames} from "../protocols/Protocol";
 import {assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
@@ -73,9 +73,9 @@ export function shouldIncludeAction(action: Action): boolean {
 export interface ExportOptions {
     // Only read cached snapshots; fail on anything not cached
     offline?: boolean;
-    // Fetch wallet-level data again (Midgard, Viewblock, TCY), keeping the old snapshots
+    // Fetch everything again, keeping the copies stored before
     refresh?: boolean;
-    // A run folder (or its snapshots.json) whose exact snapshots to read
+    // A run folder (or its snapshots.json) whose exact records to read
     replay?: string;
 }
 
@@ -96,26 +96,27 @@ export class Exporter {
     constructor(filename: string, options: ExportOptions = {}) {
         this.config = TaxConfig.load(filename);
         const cachePath = this.config.cachePath;
-        this.snapshots = new SnapshotManifest(cachePath);
-        const cacheOptions: CacheOptions = {
+        this.snapshots = new SnapshotManifest();
+        // One store for every source (docs/specs/snapshots.md)
+        const store = new RecordStore(cachePath, {
             offline: options.offline,
-            // cacheDataSources = false used to delete the cache; it now fetches again and keeps the old snapshots
+            // cacheDataSources = false used to delete the cache; it now fetches again and keeps the old copies
             refresh: options.refresh || !this.config.cacheDataSources,
-            replay: options.replay ? SnapshotManifest.load(options.replay, cachePath) : undefined,
+            replay: options.replay ? SnapshotManifest.load(options.replay) : undefined,
             manifest: this.snapshots,
-        };
-        this.viewblock = new Viewblock(path.join(cachePath, 'viewblock'), cacheOptions);
-        this.midgard = new MidgardService(path.join(cachePath, 'midgard'), cacheOptions);
-        this.thornode = new ThornodeService(path.join(cachePath, 'thornode'), false, cacheOptions);
-        this.cosmosTxs = new CosmosTxService(path.join(cachePath, 'thornode-cosmos'), cacheOptions);
-        this.tcyDistribution = new TcyDistributionService(path.join(cachePath, 'tcy'), cacheOptions);
+        });
+        this.viewblock = new Viewblock(store);
+        this.midgard = new MidgardService(store);
+        this.thornode = new ThornodeService(store);
+        this.cosmosTxs = new CosmosTxService(store);
+        this.tcyDistribution = new TcyDistributionService(store);
         this.thorchain = withAssetNames(THORCHAIN, this.config.assets);
         this.otherMidgards = (this.config.protocols ?? ['thorchain'])
             .map(id => withAssetNames(getProtocol(id), this.config.assets))
             .filter(protocol => protocol.id !== THORCHAIN.id)
             .map(protocol => ({
                 protocol,
-                midgard: new MidgardService(path.join(cachePath, `${protocol.id}-midgard`), cacheOptions, protocol.midgardUrl),
+                midgard: new MidgardService(store, `${protocol.id}-midgard`, protocol.midgardUrl),
             }));
         this.report = new Reporter();
     }

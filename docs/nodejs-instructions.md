@@ -50,18 +50,18 @@ your config, not into the repo.
 
 ### Re-running from the cache
 
-Downloaded API responses are kept in the cache folder as dated snapshots, and never
-overwritten (`docs/specs/snapshots.md`). Midgard and THORNode responses can change
-over time, so keep the cache from the run you used for your tax return.
+Downloaded data is kept in the cache folder, one file per action or tx, and a
+record that comes back different later is kept as a new copy next to the old one
+(`docs/specs/snapshots.md`). Each run picks the right copy of each record, e.g. a
+finalised one over a pending one, and the earlier full copy over one THORNode has
+since pruned. It lists what it used in `snapshots.json` in its output folder.
 
-A normal run reads the latest snapshot of anything already downloaded. Other options:
-
-- `--offline`: no network requests. Anything not in the cache is an error rather
-  than a new download.
-- `--refresh`: download each wallet's data again (Midgard, Viewblock, TCY). A change
-  is saved as a new snapshot next to the old one, and the run lists what changed.
+- Default: download only what isn't stored yet.
+- `--offline`: no network requests. Anything not stored is an error.
+- `--refresh`: download everything again. New activity is added, and changed
+  records are kept as new copies; the run lists what changed.
   `cacheDataSources = false` does the same (it used to delete the cache).
-- `--replay <run folder>`: read exactly the snapshots that an earlier run used. Each
-  run lists them in its `snapshots.json`.
+- `--replay <run folder>`: use exactly the records that an earlier run used, e.g.
+  the run you filed.
 
 `npx ts-node src/full-export.ts --replay ../my-tax/FY2026/2026-10-03_15-33-50 ../my-tax/wallets-config.toml`
