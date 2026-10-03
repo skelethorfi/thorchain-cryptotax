@@ -7,13 +7,12 @@ import { getPrice } from "../cmc-scraper";
 import {
     parseMidgardAsset,
     parseMidgardDate,
-    parseMidgardPool,
 } from './MidgardUtils';
 import { baseToAssetAmountString } from '../utils/Amount';
 import { Mapper } from './Mapper';
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
 import { Protocol, THORCHAIN } from '../protocols/Protocol';
-import { getInboundFee } from './ThorchainUtils';
+import { getInboundFee, getLpTokenName } from './ThorchainUtils';
 
 export class AddLiquidityMapper implements Mapper {
     toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = [], protocol: Protocol = THORCHAIN): CryptoTaxTransaction[] {
@@ -26,8 +25,6 @@ export class AddLiquidityMapper implements Mapper {
         const date: Date = parseMidgardDate(action.date);
         const timestamp: string = date.toISOString();
         const idPrefix: string = date.toISOString();
-        const pool: string = parseMidgardPool(action.pools[0]);
-        const poolName: string = `${protocol.lpTokenPrefix}.${pool}`;
         const liquidityUnits: string = baseToAssetAmountString(
             action.metadata.addLiquidity?.liquidityUnits ?? ''
         );
@@ -35,9 +32,9 @@ export class AddLiquidityMapper implements Mapper {
         const symmDesc = isSavers ? 'savers' : (numAssetsIn === 2 ? 'symmetric' : 'asymmetric');
         const txId = action.in[0].txID ?? '';
 
-        // For savers the LP units are denominated in the asset used for saving, so we need to ensure it
-        // uses a different token name. eg. ThorLP.BTC/BTC
-        const lpToken: string = isSavers ? `${protocol.lpTokenPrefix}.${action.pools[0]}` : `${protocol.lpTokenPrefix}.${pool}`;
+        // Savers units are denominated in the asset saved, not pool LP units, so a savers position has its own
+        // token (e.g. ThorSavers.BTC.BTC; docs/specs/savers.md)
+        const lpToken: string = getLpTokenName(action.pools[0], protocol);
 
         const date_plus_10 = new Date(date.getTime() + (10 * 1000));
         const date_plus_20 = new Date(date.getTime() + (20 * 1000));
@@ -55,8 +52,6 @@ export class AddLiquidityMapper implements Mapper {
         for (let i = 0; i < numAssetsIn; i++) {
             const deposit: Transaction = action.in[i];
             const coin: Coin = deposit.coins[0];
-            const { blockchain, currency } = parseMidgardAsset(coin.asset);
-
             let from = deposit.address;
 
             // Some older transactions for BNB LP seem to be missing the deposit address on the RUNE side.
@@ -66,9 +61,10 @@ export class AddLiquidityMapper implements Mapper {
             }
 
             // Midgard reports a savers deposit's coin as the synth (BTC/BTC), but a wallet on the asset's own
-            // chain sent the L1 asset and paid that chain's gas, not the protocol's native fee
+            // chain sent the L1 asset (BTC, not BTC.BTC) and paid that chain's gas, not the protocol's native fee
             const sentOnL1 = isSavers && !from.toLowerCase().startsWith(protocol.nativeAddressPrefix);
-            const feeAsset = sentOnL1 ? coin.asset.replace('/', '.') : coin.asset;
+            const sentAsset = sentOnL1 ? coin.asset.replace('/', '.') : coin.asset;
+            const { blockchain, currency } = parseMidgardAsset(sentAsset);
 
             transactions.push({
                 walletExchange: from,
@@ -76,12 +72,12 @@ export class AddLiquidityMapper implements Mapper {
                 type: CryptoTaxTransactionType.AddLiquidity,
                 baseCurrency: currency,
                 baseAmount: baseToAssetAmountString(coin.amount, protocol.decimals(coin.asset)),
-                ...getInboundFee(deposit.txID ?? '', thornodeTxs, feeAsset, protocol),
+                ...getInboundFee(deposit.txID ?? '', thornodeTxs, sentAsset, protocol),
                 from: from,
                 to: protocol.counterparty,
                 blockchain,
                 id: `${idPrefix}.add-liquidity.${currency}`,
-                description: `${currentTxNum}/${totalTxs} - Add liquidity ${currency} to ${poolName} (${symmDesc}); ${txId}`,
+                description: `${currentTxNum}/${totalTxs} - Add liquidity ${currency} to ${lpToken} (${symmDesc}); ${txId}`,
             });
 
             currentTxNum++;
@@ -148,7 +144,7 @@ export class AddLiquidityMapper implements Mapper {
             to: lpTokenReceivingAddress,
             blockchain: protocol.blockchain,
             id: `${idPrefix}.receive-lp-token`,
-            description: `${currentTxNum}/${totalTxs} - Receive LP token from ${poolName} (${symmDesc}); ${txId}`,
+            description: `${currentTxNum}/${totalTxs} - Receive LP token from ${lpToken} (${symmDesc}); ${txId}`,
             ...referencePrice
         });
 
@@ -164,7 +160,7 @@ export class AddLiquidityMapper implements Mapper {
             to: lpTokenReceivingAddress,
             id: `${idPrefix}.spam`,
             description:
-                `${currentTxNum}/${totalTxs} - Dummy transaction to get market price to then manually apply to the receive LP token transaction ${poolName} (${symmDesc}); ${txId}`,
+                `${currentTxNum}/${totalTxs} - Dummy transaction to get market price to then manually apply to the receive LP token transaction ${lpToken} (${symmDesc}); ${txId}`,
         });
 
         return transactions.reverse();

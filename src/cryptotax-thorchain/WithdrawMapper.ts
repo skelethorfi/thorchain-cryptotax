@@ -8,12 +8,11 @@ import { baseToAssetAmountString } from '../utils/Amount';
 import {
     parseMidgardAsset,
     parseMidgardDate,
-    parseMidgardPool,
 } from './MidgardUtils';
 import { Mapper } from './Mapper';
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
 import { Protocol, THORCHAIN } from '../protocols/Protocol';
-import { getInboundFee } from './ThorchainUtils';
+import { getInboundFee, getLpTokenName } from './ThorchainUtils';
 
 export class WithdrawMapper implements Mapper {
     toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = [], protocol: Protocol = THORCHAIN): CryptoTaxTransaction[] {
@@ -46,8 +45,6 @@ export class WithdrawMapper implements Mapper {
         const date: Date = parseMidgardDate(action.date);
         const timestamp: string = date.toISOString();
         const idPrefix: string = date.toISOString();
-        const pool: string = parseMidgardPool(action.pools[0]);
-        const poolName: string = `${protocol.lpTokenPrefix}.${pool}`;
         const liquidityUnits: string = baseToAssetAmountString(
             action.metadata.withdraw?.liquidityUnits ?? ''
         ).replace('-', '');
@@ -56,9 +53,9 @@ export class WithdrawMapper implements Mapper {
 
         const txId = action.in[0].txID ?? '';
 
-        // For savers the LP units are denominated in the asset used for saving, so we need to ensure it
-        // uses a different token name. eg. ThorLP.BTC/BTC
-        const lpToken: string = isSavers ? `${protocol.lpTokenPrefix}.${action.pools[0]}` : `${protocol.lpTokenPrefix}.${pool}`;
+        // Savers units are denominated in the asset saved, not pool LP units, so a savers position has its own
+        // token (e.g. ThorSavers.BTC.BTC; docs/specs/savers.md)
+        const lpToken: string = getLpTokenName(action.pools[0], protocol);
 
         const date_plus_10 = new Date(date.getTime() + (10 * 1000));
         const date_plus_20 = new Date(date.getTime() + (20 * 1000));
@@ -96,7 +93,7 @@ export class WithdrawMapper implements Mapper {
                 to: withdraw.address,
                 blockchain,
                 id: `${idPrefix}.remove-liquidity.${currency}`,
-                description: `${currentTxNum}/${totalTxs} - Remove liquidity ${currency} from ${poolName} (${symmDesc}); ${txId}`,
+                description: `${currentTxNum}/${totalTxs} - Remove liquidity ${currency} from ${lpToken} (${symmDesc}); ${txId}`,
             });
 
             currentTxNum--;
@@ -132,7 +129,7 @@ export class WithdrawMapper implements Mapper {
             to: protocol.counterparty,
             id: `${idPrefix}.spam`,
             description:
-                `${currentTxNum}/${totalTxs} - Dummy transaction to get market price to then manually apply to the return LP token transaction ${poolName} (${symmDesc}); ${txId}`,
+                `${currentTxNum}/${totalTxs} - Dummy transaction to get market price to then manually apply to the return LP token transaction ${lpToken} (${symmDesc}); ${txId}`,
         });
 
         currentTxNum--;
@@ -153,7 +150,7 @@ export class WithdrawMapper implements Mapper {
             to: protocol.counterparty,
             blockchain: protocol.blockchain,
             id: `${idPrefix}.return-lp-token`,
-            description: `${currentTxNum}/${totalTxs} - Return LP token to ${poolName} (${symmDesc}); ${txId}`,
+            description: `${currentTxNum}/${totalTxs} - Return LP token to ${lpToken} (${symmDesc}); ${txId}`,
             ...referencePrice
         });
 

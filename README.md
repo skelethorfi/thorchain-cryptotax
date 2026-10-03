@@ -165,8 +165,10 @@ If you found this useful, and it saved you a lot of manual effort, feel free to 
 - It also creates Receive/Return LP Token transactions
   - LP Token amount is set to the `liquidityUnits` amount provided by Midgard
     - For Savers, this is equal to the asset amount being added
-  - LP token is given the name `ThorLP.{savers_asset}`
-    - e.g. ThorLP.BTC/BTC (savers assets have a slash)
+  - The position token is named `ThorSavers.{chain}.{asset}`
+    - e.g. ThorSavers.BTC.BTC (it was ThorLP.BTC/BTC before October 2026)
+- A deposit sent from an L1 wallet is exported in the L1 asset (BTC), although Midgard
+  reports it as the synth. See [docs/specs/savers.md](docs/specs/savers.md)
 
 ### Sends/Receives
 
