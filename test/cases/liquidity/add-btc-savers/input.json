@@ -1,0 +1,35 @@
+{
+  "description": "addLiquidity success: [BTC/BTC] -> []",
+  "source": "midgard",
+  "wallet": "bc1qz0w77jfx0c86jjweljk98c4mafctgazhjnaf7n",
+  "data": {
+    "date": "1668444622461817147",
+    "height": "8223516",
+    "in": [
+      {
+        "address": "bc1qz0w77jfx0c86jjweljk98c4mafctgazhjnaf7n",
+        "coins": [
+          {
+            "amount": "140002825",
+            "asset": "BTC/BTC"
+          }
+        ],
+        "txID": "D4C3AA19D45F04C000FDF50F93CD70B8282A9B59D94E1D0E9B19A700A5D30DD1"
+      }
+    ],
+    "metadata": {
+      "addLiquidity": {
+        "affiliateAddress": "",
+        "affiliateFee": "0",
+        "liquidityUnits": "139974640",
+        "memo": ""
+      }
+    },
+    "out": [],
+    "pools": [
+      "BTC/BTC"
+    ],
+    "status": "success",
+    "type": "addLiquidity"
+  }
+}

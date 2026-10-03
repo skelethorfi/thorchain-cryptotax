@@ -65,13 +65,18 @@ export class AddLiquidityMapper implements Mapper {
                 from = 'MISSING-DEPOSIT-ADDRESS';
             }
 
+            // Midgard reports a savers deposit's coin as the synth (BTC/BTC), but a wallet on the asset's own
+            // chain sent the L1 asset and paid that chain's gas, not the protocol's native fee
+            const sentOnL1 = isSavers && !from.toLowerCase().startsWith(protocol.nativeAddressPrefix);
+            const feeAsset = sentOnL1 ? coin.asset.replace('/', '.') : coin.asset;
+
             transactions.push({
                 walletExchange: from,
                 timestamp,
                 type: CryptoTaxTransactionType.AddLiquidity,
                 baseCurrency: currency,
                 baseAmount: baseToAssetAmountString(coin.amount, protocol.decimals(coin.asset)),
-                ...getInboundFee(deposit.txID ?? '', thornodeTxs, coin.asset, protocol),
+                ...getInboundFee(deposit.txID ?? '', thornodeTxs, feeAsset, protocol),
                 from: from,
                 to: protocol.counterparty,
                 blockchain,
