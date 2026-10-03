@@ -44,18 +44,31 @@ the repo and pass its path:
 
 `npx ts-node src/full-export.ts ../my-tax/wallets-config.toml`
 
-Relative `outputPath`, `cachePath` and `unsupportedActionsPath` values in a config
+Relative `outputPath`, `storePath` and `unsupportedActionsPath` values in a config
 are relative to the config file's folder, so the output and cache are written next to
 your config, not into the repo.
 
 ### Re-running from the cache
 
-With `cacheDataSources = true`, the downloaded API responses are kept in the cache folder.
-Midgard and THORNode responses can change over time, so keep the cache from the run you
-used for your tax return.
+Downloaded data is kept in the store (`store/` next to your config, or the config's
+`storePath`), one file per action or tx, and a
+record that comes back different later is kept as a new copy next to the old one
+(`docs/specs/snapshots.md`). Each run picks the right copy of each record, e.g. a
+finalised one over a pending one, and the earlier full copy over one THORNode has
+since pruned. It lists what it used in `snapshots.json` in its output folder.
 
-To re-run exactly from that cache, without any network requests:
+- Default: download each wallet's history again (new activity, changed actions),
+  anything still pending, and anything not stored yet. Changed records are kept as
+  new copies, and the run lists what changed.
+- `--offline`: no network requests. Anything not stored is an error.
+- `--refetch-all`: download every action and tx again, e.g. before filing a year,
+  to see what the sources have revised or pruned since.
+- `--replay <run folder>`: use exactly the records that an earlier run used, e.g.
+  the run you filed.
 
-`npx ts-node src/full-export.ts --offline ../my-tax/wallets-config.toml`
+`npx ts-node src/full-export.ts --replay ../my-tax/FY2026/2026-10-03_15-33-50 ../my-tax/wallets-config.toml`
 
-Anything missing from the cache is an error rather than a new download.
+A cache from before the store (`cache/` with one file per wallet or tx) is not read
+by a run. Import it into the store first; for several old caches, oldest first:
+
+`npm run store -- import ../my-tax/store ../my-tax/FY2025/cache ../my-tax/cache`

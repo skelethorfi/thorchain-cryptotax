@@ -5,9 +5,10 @@ unsupported-actions/
 # output for CSV and report files
 output/
 
-# cache data sources
+# cache data sources (your wallets' data: never commit)
 # Note: match against cache in "root of repo", thus excludes src/cache
 /cache/
+/store/
 
 # NodeJS
 node_modules/

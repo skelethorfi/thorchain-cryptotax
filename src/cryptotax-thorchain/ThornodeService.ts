@@ -1,7 +1,8 @@
 import {Configuration, TransactionsApi, TxStatusResponse} from "@xchainjs/xchain-thornode";
 import axios from "axios";
 import axiosThrottle from 'axios-request-throttle';
-import {Cache, CacheOptions} from "../cache/Cache";
+import {RecordStore} from "../cache/RecordStore";
+import {THORNODE_RULES} from "../cache/Sources";
 import {API_URLS} from "../config/apiUrls";
 
 // Seems like not all transactions may be on the latest API URL
@@ -9,60 +10,37 @@ import {API_URLS} from "../config/apiUrls";
 axiosThrottle.use(axios, { requestsPerSecond: 1 });
 
 export class ThornodeService {
-    cache: Cache;
     api: TransactionsApi;
+    archive: TransactionsApi;
 
-    // Is this instance set to use the THORNode archive URL
-    isArchive: boolean;
-
-    // If this instance is using the current API URL then this will refer to the instance using the archive URL
-    archive?: ThornodeService;
-
-    constructor(cachePath: string = '_cache', isArchive: boolean = false, cacheOptions: CacheOptions = {}) {
-        this.isArchive = isArchive;
-
-        // Current API and archive API both use the same cache path.
-        // The response will not be cached if it's missing the transaction data.
-        this.cache = new Cache(cachePath, cacheOptions);
-
-        const apiUrl = isArchive ? API_URLS.thornodeArchive : API_URLS.thornode;
-        const apiConfig = new Configuration({basePath: apiUrl});
-        this.api = new TransactionsApi(apiConfig);
-
-        if (!isArchive) {
-            this.archive = new ThornodeService(cachePath, true, cacheOptions);
-        }
+    constructor(private store: RecordStore = new RecordStore('_cache'), private source: string = 'thornode') {
+        this.api = new TransactionsApi(new Configuration({basePath: API_URLS.thornode}));
+        this.archive = new TransactionsApi(new Configuration({basePath: API_URLS.thornodeArchive}));
     }
 
-    async getTxStatus(hash: string) {
+    async getTxStatus(hash: string): Promise<TxStatusResponse> {
         if (!hash) {
             throw new Error('No transaction hash');
         }
 
-        if (this.cache.has(hash)) {
-            return this.cache.read(hash);
-        }
+        return this.store.record(this.source, hash, () => this.fetchTxStatus(hash), THORNODE_RULES);
+    }
 
-        this.cache.assertCanFetch(hash);
-
-        const response = await this.api.txStatus(hash);
-        let tx: TxStatusResponse = response.data;
+    private async fetchTxStatus(hash: string) {
+        const tx = (await this.api.txStatus(hash)).data;
 
         // If the transaction data does not exist then fetch it from the archive
-        if (!tx.tx && !this.isArchive) {
-            tx = await this.archive?.getTxStatus(hash);
+        if (!tx.tx) {
+            return {data: (await this.archive.txStatus(hash)).data, url: `${API_URLS.thornodeArchive}/thorchain/tx/status/${hash}`};
         }
 
-        this.cache.write(hash, tx);
-
-        return tx;
+        return {data: tx, url: `${API_URLS.thornode}/thorchain/tx/status/${hash}`};
     }
 }
 
 async function test() {
     const hash = '';
     const thornode = new ThornodeService();
-    // thornode.cache.clear(hash);
     const tx = await thornode.getTxStatus(hash);
     console.log(tx);
 }

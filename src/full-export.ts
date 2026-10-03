@@ -1,4 +1,3 @@
-import fs from "fs-extra";
 import * as path from "path";
 import {format} from 'date-fns-tz';
 import {Exporter} from "./thorchain-exporter/Exporter";
@@ -11,11 +10,22 @@ async function main() {
 
     const args = process.argv.slice(2);
 
-    // --offline: only use cached data sources, fail on anything not cached
+    // --offline: only use what is stored, fail on anything not stored
     const offline = args.includes('--offline');
+    // By default a run fetches every wallet's history again (new activity, changed records) and records still
+    // pending; anything stored before is kept (docs/specs/snapshots.md). --refetch-all also fetches every
+    // finalised record again, e.g. to see what was revised or pruned before filing.
+    const fetch = args.includes('--refetch-all') ? 'all' : undefined;
+    // --replay <run folder>: read exactly the snapshots that run used
+    const replayIndex = args.indexOf('--replay');
+    const replay = replayIndex >= 0 ? args[replayIndex + 1] : undefined;
+
+    if (replayIndex >= 0 && !replay) {
+        throw new Error('--replay needs a run folder');
+    }
 
     // Get the last non-flag argument as the config filename
-    const configFile = args.filter(arg => !arg.startsWith('--')).pop() ?? '';
+    const configFile = args.filter(arg => !arg.startsWith('--') && arg !== replay).pop() ?? '';
 
     if (!configFile.endsWith('.json') && !configFile.endsWith('.toml')) {
         throw new Error('must specify config file');
@@ -24,17 +34,17 @@ async function main() {
     const timestamp = format(new Date(), 'yyyy-MM-dd_HH-mm-ss');
 
     // Read config
-    const exporter = new Exporter(configFile, {offline});
+    const exporter = new Exporter(configFile, {offline, fetch, replay});
 
     const outputPath = path.join(exporter.config.outputPath, timestamp);
-    const cachePath = exporter.config.cachePath;
+    const storePath = exporter.config.storePath;
 
-    if (offline) {
-        console.log(`Offline: reading only from cache: ${cachePath}\n`);
-    } else if (!exporter.config.cacheDataSources) {
-        // Delete all cached data sources
-        console.log(`Removing cache: ${cachePath}\n`);
-        fs.removeSync(cachePath);
+    if (replay) {
+        console.log(`Replay: reading the records of ${replay} from ${storePath}\n`);
+    } else if (offline) {
+        console.log(`Offline: reading only from the store: ${storePath}\n`);
+    } else {
+        console.log(`Fetching ${fetch === 'all' ? 'every record' : 'the latest data'}; earlier copies in ${storePath} are kept\n`);
     }
 
     const wallets = exporter.config.wallets;
@@ -58,6 +68,9 @@ async function main() {
     // Convert TaxEvents to CTC
     // Collect all events and then save, otherwise one wallet's TC swaps could overwrite another
     exporter.saveToCsv(allEvents.getAllCtcTx(), path.join(outputPath, 'csv'));
+
+    // Which snapshot of each source this run used, for --replay
+    exporter.snapshots.write(outputPath);
 }
 
 main().then(() => {

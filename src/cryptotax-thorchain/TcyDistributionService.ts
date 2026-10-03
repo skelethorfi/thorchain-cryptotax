@@ -1,4 +1,5 @@
-import { Cache, CacheOptions } from '../cache/Cache';
+import {RecordStore} from '../cache/RecordStore';
+import {tcyList} from '../cache/Sources';
 import axios from 'axios';
 import axiosThrottle from 'axios-request-throttle';
 import { API_URLS } from '../config/apiUrls';
@@ -26,13 +27,13 @@ export interface TcyDistributionItem {
 // Interface for TCY distribution response
 export interface TcyDistribution {
     /**
-     * Float, annual percentage rate of the TCY distribution.
+     * Float, annual percentage rate of the TCY distribution (today's; not stored).
      */
-    apr: string;
+    apr?: string;
     /**
-     * Int64(e8), total amount of RUNE distributed to the TCY holder.
+     * Int64(e8), total amount of RUNE distributed to the TCY holder (not stored).
      */
-    total: string;
+    total?: string;
     /**
      * TCY holder address.
      */
@@ -44,37 +45,28 @@ export interface TcyDistribution {
 }
 
 export class TcyDistributionService {
-    cache: Cache;
     baseUrl: string;
 
-    constructor(cachePath: string = '_cache', cacheOptions: CacheOptions = {}) {
-        this.cache = new Cache(cachePath, cacheOptions);
+    constructor(private store: RecordStore = new RecordStore('_cache'), private source: string = 'tcy') {
         this.baseUrl = MIDGARD_API_URL;
     }
 
+    // Each distribution is a record (Sources.ts). The response's apr (today's rate) and total are not
+    // stored: they change on every fetch and are not used.
     async getTcyDistribution(address: string): Promise<TcyDistribution> {
-        const cacheKey = `tcy_distribution_${address}`;
-
-        if (this.cache.has(cacheKey)) {
-            return this.cache.read(cacheKey);
-        }
-
-        this.cache.assertCanFetch(cacheKey);
-
         const url = `${this.baseUrl}/v2/tcy/distribution/${address}`;
-        const response = await axios.get(url);
-        const data: TcyDistribution = response.data;
+        const distributions = await this.store.list(this.source, address, async () => {
+            const response = await axios.get(url);
+            return {data: (response.data as TcyDistribution).distributions ?? [], url};
+        }, tcyList(address));
 
-        this.cache.write(cacheKey, data);
-
-        return data;
+        return {address, distributions};
     }
 }
 
 async function test() {
     const address = ''; // Example address
     const service = new TcyDistributionService();
-    // service.cache.clear(`tcy_distribution_${address}`);
     const distribution = await service.getTcyDistribution(address);
     console.log(distribution);
 }
