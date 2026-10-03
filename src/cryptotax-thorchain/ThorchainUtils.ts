@@ -44,7 +44,7 @@ export function getInboundFee(
         // Any transaction on THORChain (RUNE, TCY, KUJI, …) pays THORChain's native fee
         const shouldUseDefaultRuneGasFallback =
             asset.chain === 'THOR' ||
-            (protocol === THORCHAIN && [AssetType.SYNTH, AssetType.TRADE, AssetType.SECURED].includes(asset.type));
+            (protocol.id === THORCHAIN.id && [AssetType.SYNTH, AssetType.TRADE, AssetType.SECURED].includes(asset.type));
 
         if (shouldUseDefaultRuneGasFallback) {
             return {

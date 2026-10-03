@@ -34,6 +34,19 @@ Why:
   `THOR.RUJI`.
 - Descriptions keep Midgard's notation (`BTC/BTC`, `BTC~BTC`, `ETH-USDC`).
 
+## Config
+
+Trade and secured assets can be prefixed instead, per kind, in the config:
+
+```toml
+[assets]
+prefixSecuredAssets = true   # ETH-USDC → ThorSecured.ETH.USDC (default false: USDC)
+prefixTradeAssets = true     # BTC~BTC  → ThorTrade.BTC.BTC   (default false: BTC)
+```
+
+Both are optional; a config without `[assets]` exports L1 names. Synths are
+always prefixed. On Maya the prefix is `Maya` (`MayaSecured.BTC.BTC`).
+
 Summ does not recognise the synth names, so their value comes from the CSV's
 reference price columns where a row has them (swaps carry Midgard's USD
 prices).

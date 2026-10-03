@@ -19,6 +19,10 @@ export interface Protocol {
     // Names synths, which live on this chain but give exposure to another chain's asset:
     // <prefix>Synth.BTC.BTC (docs/specs/assets.md)
     assetNamePrefix: string;
+    // Also prefix secured and trade assets (<prefix>Secured.BTC.BTC, <prefix>Trade.BTC.BTC) instead of
+    // giving them the L1 asset's name. Set from the config's [assets] table (docs/specs/assets.md).
+    prefixSecuredAssets?: boolean;
+    prefixTradeAssets?: boolean;
     midgardUrl: string;
     // Fallback inbound gas (base units of the native asset) when THORNode data is missing
     defaultGas?: string;
@@ -81,4 +85,18 @@ export function getProtocol(id: string | undefined): Protocol {
 export function formatBlockchain(chain: string): string {
     const protocol = Object.values(PROTOCOLS).find(p => p.nativeChain === chain);
     return protocol ? protocol.blockchain : chain;
+}
+
+// Options from the config's [assets] table. All optional; the default is the L1 name for both.
+export interface AssetNamesConfig {
+    prefixSecuredAssets?: boolean;
+    prefixTradeAssets?: boolean;
+}
+
+export function withAssetNames(protocol: Protocol, assets: AssetNamesConfig = {}): Protocol {
+    return {
+        ...protocol,
+        prefixSecuredAssets: assets.prefixSecuredAssets ?? false,
+        prefixTradeAssets: assets.prefixTradeAssets ?? false,
+    };
 }
