@@ -87,7 +87,7 @@ transaction. Rows for what comes out have no fee.
 | Loan open | `CollateralDeposit` | inbound fee; the `Loan` row has none |
 | Loan repayment | `LoanRepayment` | inbound fee; the `CollateralWithdrawal` row has none |
 | Refund | `FailedOut` | inbound fee; what the protocol kept is a separate `Fee` row (see Refunds) |
-| Add liquidity | each `AddLiquidity` row | inbound fee of that deposit |
+| Add liquidity | each `AddLiquidity` row | inbound fee of that deposit. A savers deposit sent from an L1 wallet uses that chain's gas, although Midgard reports the coin as the synth (`BTC/BTC`) |
 | Withdraw liquidity | `ReturnLpToken` | inbound fee of the withdrawal request (e.g. 0.02 RUNE or 0.2 CACAO); `RemoveLiquidity` rows have none |
 | RUNEPool deposit | `AddLiquidity` | 0.02 RUNE |
 | RUNEPool withdraw | `ReturnLpToken` | 0.02 RUNE |
