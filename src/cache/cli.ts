@@ -1,5 +1,6 @@
 import fs from "fs-extra";
 import path from "path";
+import {Action} from "@xchainjs/xchain-midgard";
 import {Origin, RecordStore} from "./RecordStore";
 import {ListSource, SOURCES} from "./Sources";
 
@@ -24,11 +25,15 @@ export function importCache(store: RecordStore, cacheRoot: string): {[source: st
     const counts: {[source: string]: Counts} = {};
     const from = (file: string) => path.relative(path.dirname(store.root), file);
 
+    let txDates: Map<string, Date> | undefined;
+
+    // SOURCES lists Midgard before THORNode and Cosmos, so their txs can be dated by the actions just imported
     for (const [source, definition] of Object.entries(SOURCES)) {
         const count = counts[source] = {copies: 0, existing: 0, lists: 0, skipped: 0};
         const rulesFor = (wallet: string) => definition.kind === 'record' ? definition.rules : definition.options(wallet).rules ?? {};
+        const dateOf = (key: string) => definition.kind === 'record' ? (txDates ??= actionDates(store)).get(key.toUpperCase()) : undefined;
         const add = (key: string, data: any, wallet: string, origin: Origin) =>
-            store.importCopy(source, key, data, rulesFor(wallet), origin) ? count.copies++ : count.existing++;
+            store.importCopy(source, key, data, rulesFor(wallet), origin, dateOf(key)) ? count.copies++ : count.existing++;
         const addList = (wallet: string, keys: string[], origin: Origin) => {
             if (store.importList(source, wallet, keys, origin)) {
                 count.lists++;
@@ -53,6 +58,26 @@ export function importCache(store: RecordStore, cacheRoot: string): {[source: st
     }
 
     return counts;
+}
+
+// The date of each inbound txid, from the Midgard actions in the store: a THORNode or Cosmos tx has no
+// date of its own, so it is filed by the action it belongs to
+function actionDates(store: RecordStore): Map<string, Date> {
+    const dates = new Map<string, Date>();
+
+    for (const source of ['midgard', 'maya-midgard']) {
+        for (const key of store.keys(source)) {
+            const action = store.copies<Action>(source, key)[0].data;
+            const date = new Date(Number(action.date) / 1e6);
+
+            for (const txId of action.in.map(tx => tx.txID?.toUpperCase()).filter(Boolean)) {
+                const known = dates.get(txId);
+                dates.set(txId, known && known < date ? known : date);
+            }
+        }
+    }
+
+    return dates;
 }
 
 // Items of one wallet fetch, without the ones its source leaves out (genesisTx placeholders); returns their keys

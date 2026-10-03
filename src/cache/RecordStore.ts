@@ -9,7 +9,7 @@ import {withRetry} from "../utils/Retry";
 // copy over a pruned one, a finalised copy over a pending one) and lists the copies it used in its
 // manifest, so it can be replayed exactly. See docs/specs/snapshots.md.
 //
-//   <storePath>/records/<source>/[<yyyy>/<mm>/]<key>-000.json   a record's first copy; -001 the next, ...
+//   <storePath>/records/<source>/<yyyy>/<mm>/<key>-000.json   a record's first copy; -001 the next, ...
 //   <storePath>/lists/<source>/<wallet>-000.json                the record keys one fetch of a wallet returned
 //
 // The key is in the file name (encoded), so one scan of the names finds every copy. Copies are ordered by
@@ -43,8 +43,9 @@ export interface RecordRules<T = any> {
     // Drops what changes on every fetch but is not source data (e.g. a value at today's price), before
     // a copy is compared and stored
     normalise?: (data: T) => T;
-    // The folder of a new record, e.g. its month 'yyyy/mm'; none for records with no date of their own
-    folderOf?: (data: T) => string;
+    // The folder of a new record: its month 'yyyy/mm' (monthFolder), from its own date. A record with no
+    // date of its own (a THORNode tx status) takes the date of the action it was fetched for, or 'undated'.
+    folderOf?: (data: T) => string | undefined;
 }
 
 export interface ListOptions<T> {
@@ -106,6 +107,11 @@ export function decodeName(name: string): string {
 
 const COPY_FILE = /^(.+)-(\d{3,})\.json$/;
 
+// 'yyyy/mm' (UTC): the folder of a record
+export function monthFolder(date: Date): string {
+    return date.toISOString().slice(0, 7).replace('-', '/');
+}
+
 // Picks the copy to use: copies oldest first, each later one replaces the choice unless it has less in it.
 // Copies that differ only in what the source's normalise drops (stored before it was added) count as the same.
 export function chooseCopy<T>(copies: Copy<T>[], rules: RecordRules<T> = {}): {copy: Copy<T>, choice: Choice, ignored: Copy<T>[]} {
@@ -156,8 +162,9 @@ export class RecordStore {
         this.manifest = options.manifest;
     }
 
-    // One record, e.g. a THORNode tx
-    async record<T>(source: string, key: string, fetch: () => Promise<Fetched<T>>, rules: RecordRules<T> = {}): Promise<T> {
+    // One record, e.g. a THORNode tx. date: when the record started (e.g. the date of the action it belongs
+    // to), for filing a record with no date of its own
+    async record<T>(source: string, key: string, fetch: () => Promise<Fetched<T>>, rules: RecordRules<T> = {}, date?: Date): Promise<T> {
         if (this.replay) {
             return this.replayRecord(source, key);
         }
@@ -167,7 +174,7 @@ export class RecordStore {
         if (this.shouldFetchRecord(source, key, rules)) {
             this.assertCanFetch(`${source} ${key}`);
             const fetched = await withRetry(fetch, `${source} ${key}`);
-            fetchedNow = this.store(source, key, fetched.data, rules, {fetchedAt: new Date().toISOString(), url: fetched.url});
+            fetchedNow = this.store(source, key, fetched.data, rules, {fetchedAt: new Date().toISOString(), url: fetched.url}, date);
         }
 
         return this.use(source, key, rules, fetchedNow);
@@ -243,7 +250,7 @@ export class RecordStore {
     }
 
     // Adds a copy from an old cache or store, unless the same copy (after normalising) is already stored
-    importCopy<T>(source: string, key: string, data: T, rules: RecordRules<T>, origin: Origin): boolean {
+    importCopy<T>(source: string, key: string, data: T, rules: RecordRules<T>, origin: Origin, date?: Date): boolean {
         const normalised = rules.normalise ? rules.normalise(data) : data;
         const hash = sha256(normalised);
         const same = (copy: Copy<T>) => (rules.normalise ? sha256(rules.normalise(copy.data)) : copy.sha256) === hash;
@@ -252,7 +259,7 @@ export class RecordStore {
             return false;
         }
 
-        this.writeCopy(source, key, normalised, hash, rules, origin);
+        this.writeCopy(source, key, normalised, hash, rules, origin, date);
         return true;
     }
 
@@ -270,6 +277,11 @@ export class RecordStore {
         if (this.offline) {
             throw new StoreMissError(what);
         }
+    }
+
+    // Every record key stored for a source
+    keys(source: string): string[] {
+        return [...this.files('records', source).keys()];
     }
 
     // All stored copies of a record, oldest first
@@ -327,7 +339,7 @@ export class RecordStore {
     }
 
     // Stores a copy unless it is the same as the latest stored copy
-    private store<T>(source: string, key: string, fetchedData: T, rules: RecordRules<T>, origin: Origin): Stored<T> {
+    private store<T>(source: string, key: string, fetchedData: T, rules: RecordRules<T>, origin: Origin, date?: Date): Stored<T> {
         const data = rules.normalise ? rules.normalise(fetchedData) : fetchedData;
         const hash = sha256(data);
         const copies = this.copies<T>(source, key);
@@ -337,7 +349,7 @@ export class RecordStore {
             return {copy: latest, status: 'unchanged'};
         }
 
-        return {copy: this.writeCopy(source, key, data, hash, rules, origin), status: latest ? 'changed' : 'new'};
+        return {copy: this.writeCopy(source, key, data, hash, rules, origin, date), status: latest ? 'changed' : 'new'};
     }
 
     private storeList<T>(source: string, wallet: string, items: T[], {keyOf, rules = {}}: ListOptions<T>, origin: Origin): Map<string, Stored<T>> {
@@ -364,11 +376,12 @@ export class RecordStore {
     }
 
     // A new copy goes next to the record's first copy (so a revision that changes its date doesn't move it),
-    // or for a new record in the folder its rules give, numbered one after the highest stored
-    private writeCopy<T>(source: string, key: string, data: T, hash: string, rules: RecordRules<T>, origin: Origin): Copy<T> {
+    // or for a new record in its month, numbered one after the highest stored
+    private writeCopy<T>(source: string, key: string, data: T, hash: string, rules: RecordRules<T>, origin: Origin, date?: Date): Copy<T> {
         const files = this.files('records', source).get(key) ?? [];
         const first = [...files].sort((a, b) => copyNumber(a) - copyNumber(b))[0];
-        const dir = first ? path.dirname(first) : path.join(this.root, 'records', source, rules.folderOf?.(data) ?? '');
+        const folder = rules.folderOf?.(data) || (date ? monthFolder(date) : 'undated');
+        const dir = first ? path.dirname(first) : path.join(this.root, 'records', source, folder);
         const content = {source, key, ...originFields(origin), sha256: hash, data};
         const {file, n} = this.writeNew('records', source, key, dir, files, content);
 

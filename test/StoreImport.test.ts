@@ -27,6 +27,8 @@ describe('store import', () => {
         importCache(store, history);
 
         expect(fy25Counts.midgard.skipped).toBe(1);
+        // THORNode files have no date of their own: they are filed by the Midgard action with that txid
+        expect(path.relative(path.join(dir, 'store', 'records', 'thornode'), path.dirname(store.copies('thornode', 'A')[0].file))).toBe('1970/01');
         expect(store.copies('thornode', 'A').map(copy => copy.importedFrom)).toEqual(['FY2025/cache/thornode/A.json', 'history/cache/thornode/A.json']);
 
         const offline = new RecordStore(path.join(dir, 'store'), {offline: true});

@@ -6,6 +6,7 @@ import {ThornodeService} from "../cryptotax-thorchain/ThornodeService";
 import {RecordStore} from "../cache/RecordStore";
 import {CosmosTxService, getCosmosTxIds} from "../cryptotax-thorchain/CosmosTxService";
 import {getThornodeTxIds} from "../thorchain-exporter/Exporter";
+import {getActionDate} from "../cryptotax-thorchain/MidgardActionMapper";
 import {Anonymiser} from "./Anonymise";
 import {EXPECTED_FILE, formatRows, GoldenCaseInput, INPUT_FILE, readCaseInput, runCase, writeCaseExpected} from "./GoldenCase";
 import {getPrivateDir, mask, PrivateData} from "./PrivateData";
@@ -50,7 +51,7 @@ async function fetchInput(txid: string, protocol: Protocol, index?: number): Pro
         const thornode = new ThornodeService(new RecordStore(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-thornode-'))));
 
         for (const txId of thornodeTxIds) {
-            thornodeTxs.push(await thornode.getTxStatus(txId));
+            thornodeTxs.push(await thornode.getTxStatus(txId, getActionDate(action)));
         }
     }
 
@@ -61,7 +62,7 @@ async function fetchInput(txid: string, protocol: Protocol, index?: number): Pro
         const cosmos = new CosmosTxService(new RecordStore(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-cosmos-'))));
 
         for (const txId of cosmosTxIds) {
-            cosmosTxs.push(await cosmos.getTx(txId));
+            cosmosTxs.push(await cosmos.getTx(txId, getActionDate(action)));
         }
     }
 

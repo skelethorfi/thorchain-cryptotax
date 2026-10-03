@@ -154,14 +154,14 @@ export class Exporter {
 
             // The inbound THORNode transactions give the gas the wallet paid
             for (const txId of getThornodeTxIds(action)) {
-                thornodeTxs.push(await this.thornode.getTxStatus(txId));
+                thornodeTxs.push(await this.thornode.getTxStatus(txId, getActionDate(action)));
             }
 
             // A contract action's results are only in its Cosmos tx
             const cosmosTxs = [];
 
             for (const txId of getCosmosTxIds(action)) {
-                cosmosTxs.push(await this.cosmosTxs.getTx(txId));
+                cosmosTxs.push(await this.cosmosTxs.getTx(txId, getActionDate(action)));
             }
 
             try {

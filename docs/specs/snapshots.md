@@ -24,8 +24,8 @@ records/midgard/2025/07/swap.192D…296D-000.json     an action's first copy, in
 records/midgard/2025/07/swap.192D…296D-001.json     a later copy that differs
 records/viewblock/2025/07/192D…296D-000.json         a Viewblock tx, in its month
 records/tcy/2025/05/<wallet>.1746566872-000.json     a TCY distribution, in its month
-records/thornode/192D…296D-000.json                  THORNode and Cosmos txs: no date of their own
-records/thornode-cosmos/E703…6721-000.json
+records/thornode/2025/07/192D…296D-000.json          a THORNode tx status, in its action's month
+records/thornode-cosmos/2026/05/E703…6721-000.json   a Cosmos tx, in its block time's month
 lists/midgard/<wallet>-000.json                      the record keys one fetch of a wallet returned
 ```
 
@@ -34,8 +34,14 @@ lists/midgard/<wallet>-000.json                      the record keys one fetch o
   decodes back to the key (a contract's `/` is `%2F`).
 - A copy is `{source, key, fetchedAt, url, importedFrom, sha256, data}`; a list
   is `{source, wallet, fetchedAt, url, importedFrom, keys}`.
+- The month comes from the record's own date (action date, tx timestamp,
+  distribution date, Cosmos block time). A THORNode tx status has none, so it
+  takes the date of the action it was fetched for; the importer dates old
+  files by the stored Midgard action with that inbound txid. With no date at
+  all, a record goes in `undated/`.
 - A record's later copies stay in its first copy's folder, even if a revision
-  changes its date, so a path never moves once a manifest points at it.
+  changes its date, so a path never moves once a manifest points at it. The
+  date only decides where a record is first filed: lookups use the name scan.
 - A run finds every copy with one scan of the file names, so it doesn't need a
   record's date to find it. The scan refuses two keys that differ only in case,
   which macOS and Windows can't keep apart.

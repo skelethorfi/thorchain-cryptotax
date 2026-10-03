@@ -1,6 +1,6 @@
 import {Action} from "@xchainjs/xchain-midgard";
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
-import {ListOptions, RecordRules} from "./RecordStore";
+import {ListOptions, monthFolder, RecordRules} from "./RecordStore";
 import {ViewblockTx} from "../viewblock/ViewblockTx";
 import {TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService";
 import {CosmosTx} from "../cryptotax-thorchain/CosmosTxService";
@@ -8,10 +8,6 @@ import {CosmosTx} from "../cryptotax-thorchain/CosmosTxService";
 // How each source's records are keyed, filed and compared in the store (docs/specs/snapshots.md). The
 // services and the importer of old caches both use these.
 
-// 'yyyy/mm' (UTC): the folder of a record with a date of its own
-export function monthFolder(date: Date): string {
-    return date.toISOString().slice(0, 7).replace('-', '/');
-}
 
 // A Midgard action has no id. Its type and first txid are unique among a wallet's actions, except for
 // contract actions: one wasm call gives an action per event, so they add the event. The few with no txid
@@ -53,9 +49,11 @@ export const THORNODE_RULES: RecordRules<TxStatusResponse> = {
     },
 };
 
-// A copy without events (pruned) is not used over one with them
+// A copy without events (pruned) is not used over one with them. Filed by its block time; one stored
+// before the time was kept takes its action's date.
 export const COSMOS_TX_RULES: RecordRules<CosmosTx> = {
     completeness: tx => tx.events.length > 0 ? 1 : 0,
+    folderOf: tx => tx.timestamp ? monthFolder(new Date(tx.timestamp)) : undefined,
 };
 
 // Viewblock adds each amount's value at today's price (usdNew), which changes on every fetch and would make
@@ -105,8 +103,8 @@ export interface ListSource {
     legacyItems?: (data: any) => any[];
 }
 
-// The sources in a store: wallet lists, and records looked up one at a time (THORNode and Cosmos txs have
-// no date of their own, so they are not in month folders)
+// The sources in a store: wallet lists, and records looked up one at a time (a THORNode tx status has no
+// date of its own: it is filed by the date of the action it was fetched for)
 export const SOURCES: {[source: string]: ListSource | {kind: 'record', rules: RecordRules<any>}} = {
     'midgard': {kind: 'list', options: () => MIDGARD_LIST, skip: isGenesisPlaceholder},
     'maya-midgard': {kind: 'list', options: () => MIDGARD_LIST, skip: isGenesisPlaceholder},

@@ -18,12 +18,13 @@ export class ThornodeService {
         this.archive = new TransactionsApi(new Configuration({basePath: API_URLS.thornodeArchive}));
     }
 
-    async getTxStatus(hash: string): Promise<TxStatusResponse> {
+    // date: of the action the tx belongs to; a tx status has no date of its own to be filed by
+    async getTxStatus(hash: string, date?: Date): Promise<TxStatusResponse> {
         if (!hash) {
             throw new Error('No transaction hash');
         }
 
-        return this.store.record(this.source, hash, () => this.fetchTxStatus(hash), THORNODE_RULES);
+        return this.store.record(this.source, hash, () => this.fetchTxStatus(hash), THORNODE_RULES, date);
     }
 
     private async fetchTxStatus(hash: string) {

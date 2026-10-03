@@ -129,7 +129,7 @@ describe('RecordStore lists', () => {
         await store.list('midgard', 'w1', fetching([{id: 'a'}, {id: 'b'}]), LIST);
         await store.list('midgard', 'w2', fetching([{id: 'b'}]), LIST);
 
-        expect(fs.readdirSync(path.join(root, 'records', 'midgard')).sort()).toEqual(['a-000.json', 'b-000.json']);
+        expect(fs.readdirSync(path.join(root, 'records', 'midgard', 'undated')).sort()).toEqual(['a-000.json', 'b-000.json']);
         expect(store.copies('midgard', 'b')).toHaveLength(1);
     });
 
@@ -181,6 +181,14 @@ describe('Layout', () => {
         expect(fs.readJSONSync(path.join(root, 'records', 'midgard', '2025', '07', 'swap.ABC-000.json'))).toEqual(expect.objectContaining({source: 'midgard', key: 'swap.ABC'}));
     });
 
+    test('a record with no date of its own is filed by the date it is given, and stays there', async () => {
+        const root = makeDir();
+        await new RecordStore(root).record('thornode', 'A', fetching<Tx>({id: 'A', status: 'pending'}), RULES, new Date(Date.UTC(2025, 6, 4)));
+        await new RecordStore(root).record('thornode', 'A', fetching<Tx>({id: 'A', status: 'done'}), RULES, new Date(Date.UTC(2026, 0, 1)));
+
+        expect(fs.readdirSync(path.join(root, 'records', 'thornode', '2025', '07')).sort()).toEqual(['A-000.json', 'A-001.json']);
+    });
+
     test('names decode back to keys, and are safe as file names', async () => {
         const {encodeName, decodeName} = await import('../src/cache/RecordStore');
         const key = 'contract.CFB6.wasm-rujira-fin/trade';
@@ -214,7 +222,7 @@ describe('Layout', () => {
         await first.record('thornode', 'A', fetching<Tx>({id: 'A', gas: '1'}));
         await second.record('thornode', 'A', fetching<Tx>({id: 'A', gas: '2'}));
 
-        expect(fs.readdirSync(path.join(root, 'records', 'thornode')).sort()).toEqual(['A-000.json', 'A-001.json']);
+        expect(fs.readdirSync(path.join(root, 'records', 'thornode', 'undated')).sort()).toEqual(['A-000.json', 'A-001.json']);
     });
 
     test('keys that differ only in case are refused', async () => {

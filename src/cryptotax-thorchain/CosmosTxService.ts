@@ -9,6 +9,8 @@ import {API_URLS} from "../config/apiUrls";
 export interface CosmosTx {
     txhash: string;
     height: string;
+    // Block time; absent from txs stored before it was kept (2026-10-04)
+    timestamp?: string;
     code: number;
     fee: CosmosCoin[];
     events: CosmosEvent[];
@@ -36,6 +38,7 @@ export function toCosmosTx(response: any): CosmosTx {
     return {
         txhash: txResponse.txhash,
         height: txResponse.height,
+        timestamp: txResponse.timestamp,
         code: txResponse.code,
         fee: response.tx?.auth_info?.fee?.amount ?? [],
         // 'tx' events hold the signature and account sequence, which mappers don't use
@@ -50,11 +53,12 @@ export class CosmosTxService {
     constructor(private store: RecordStore = new RecordStore('_cache'), private source: string = 'thornode-cosmos') {
     }
 
-    async getTx(hash: string): Promise<CosmosTx> {
+    // date: of the action the tx belongs to, for filing a tx stored without its block time
+    async getTx(hash: string, date?: Date): Promise<CosmosTx> {
         return this.store.record(this.source, hash, async () => {
             const url = `${API_URLS.thornode}/cosmos/tx/v1beta1/txs/${hash}`;
             const response = await axios.get(url);
             return {data: toCosmosTx(response.data), url};
-        }, COSMOS_TX_RULES);
+        }, COSMOS_TX_RULES, date);
     }
 }
