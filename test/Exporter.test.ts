@@ -31,6 +31,11 @@ describe('Exporter thornode fetch wiring', () => {
         // e.g. 2021 BNB.RUNE switches returned by Midgard with an empty txID
         expect(ids(ActionTypeEnum.Switch, [inbound('', 'BNB.RUNE-B1A')])).toEqual([]);
     });
+
+    test('does not fetch the genesisTx placeholder', () => {
+        // Old Midgard's LP positions from before its start (2022-03)
+        expect(ids(ActionTypeEnum.AddLiquidity, [inbound('genesisTx', 'BTC.BTC')])).toEqual([]);
+    });
 });
 
 describe('Exporter action status filter', () => {

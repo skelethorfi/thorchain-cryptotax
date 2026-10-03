@@ -34,7 +34,8 @@ export function getThornodeTxIds(action: Action): string[] {
         txIds = inbounds.filter(inbound => isL1Asset(inbound.coins[0]?.asset)).map(inbound => inbound.txID);
     }
 
-    return [...new Set(txIds.filter((txId): txId is string => !!txId))];
+    // Old Midgard reports LP positions from before its start with the placeholder txid 'genesisTx'
+    return [...new Set(txIds.filter((txId): txId is string => !!txId && txId !== 'genesisTx'))];
 }
 
 function isL1Asset(asset?: string): boolean {
