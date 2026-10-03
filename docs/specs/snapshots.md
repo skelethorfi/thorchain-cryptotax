@@ -15,7 +15,9 @@ picks the right version of each record, and lists what it used.
 
 ## The store
 
-`src/cache/RecordStore.ts`, under the config's `cachePath`:
+`src/cache/RecordStore.ts`, under the config's `cachePath` (default `store/`
+next to the config, ignored by git in this repo). Several configs, e.g. one
+per tax year, can share one store, because copies are only ever added:
 
 ```
 records/<source>/<key>/<fetchedAt>.json    one copy of one record
@@ -31,10 +33,11 @@ with `-` for `:`, so names sort by time.
 | `thornode` | a tx status | txid |
 | `thornode-cosmos` | a Cosmos tx (contract calls) | txid |
 | `viewblock` | a tx | its hash |
-| `tcy` | a distribution | its date (one a day) |
+| `tcy` | a distribution | `<wallet>.<date>` (one a day; several wallets are paid on the same day) |
 
-A record is shared: a swap between two of my wallets is stored once, and both
-wallets' lists point at it. On the FY26 data, these keys are unique among
+An action or tx is shared: a swap between two of my wallets is stored once, and
+both wallets' lists point at it. A TCY distribution belongs to one wallet, so
+its key includes the wallet. On the FY26 data, these keys are unique among
 every wallet's actions.
 
 - A fetched record is stored only if it differs from its latest copy. Nothing
@@ -44,8 +47,15 @@ every wallet's actions.
   the value at the time of the tx, is kept), TCY's `apr` and `total`, and
   THORNode's `blocks_since_scheduled` for an outbound never signed (a switch).
 - A cache from before records (`<source>/<key>.json` with the whole response)
-  is imported on first use as copies with `fetchedAt: null`. Old caches need
-  no migration, and the old files are left in place.
+  in the store's folder is imported on first use as copies with
+  `fetchedAt: null`. The old files are left in place.
+- `npm run store -- import <store> <old cache>...` copies every version from
+  old caches into a store, oldest first (an old copy has no fetch time, so the
+  import order is the order of its copies). Each imported copy has
+  `importedFrom`, the old file it came from. Identical copies are skipped. Old
+  Midgard's `genesisTx` placeholder adds (positions that existed at its
+  2022-03-22 store migration) are left out: Midgard's archive has the real
+  adds, and keeping both would count those positions twice.
 
 ## Which copy a run uses
 

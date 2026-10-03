@@ -1,6 +1,7 @@
 import axios from "axios";
 import {Action} from "@xchainjs/xchain-midgard";
-import {RecordRules, RecordStore} from "../cache/RecordStore";
+import {RecordStore} from "../cache/RecordStore";
+import {COSMOS_TX_RULES} from "../cache/Sources";
 import {API_URLS} from "../config/apiUrls";
 
 // A THORChain Cosmos tx from THORNode's /cosmos/tx/v1beta1/txs/{hash}, trimmed to what the mappers use.
@@ -44,11 +45,6 @@ export function toCosmosTx(response: any): CosmosTx {
         })),
     };
 }
-
-// A copy without events (pruned) is not used over one with them
-export const COSMOS_TX_RULES: RecordRules<CosmosTx> = {
-    completeness: tx => tx.events.length > 0 ? 1 : 0,
-};
 
 export class CosmosTxService {
     constructor(private store: RecordStore = new RecordStore('_cache'), private source: string = 'thornode-cosmos') {

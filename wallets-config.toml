@@ -29,8 +29,9 @@ cacheDataSources = false
 # Optional: path to unsupported-actions/ directory
 # unsupportedActionsPath = "/some/path/unsupported-actions"
 
-# Optional: path to cache/ directory
-# cachePath = "/some/path/cache"
+# Optional: path to the store of downloaded data (default: store/ next to this config).
+# Several configs (e.g. one per tax year) can share one store.
+# cachePath = "/some/path/store"
 
 # List of wallets
 # add a new [[wallets]] entry for each wallet

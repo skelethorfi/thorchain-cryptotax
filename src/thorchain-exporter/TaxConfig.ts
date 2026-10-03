@@ -44,7 +44,8 @@ export class TaxConfig {
         const defaults = {
             outputPath: 'output',
             unsupportedActionsPath: 'unsupported-actions',
-            cachePath: 'cache',
+            // The record store (docs/specs/snapshots.md); can be shared by several configs
+            cachePath: 'store',
             toDate: dateToday
         };
 

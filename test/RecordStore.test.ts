@@ -4,7 +4,7 @@ import os from 'os';
 import path from 'path';
 import {chooseCopy, Copy, RecordRules, RecordStore, sha256, StoreMissError} from '../src/cache/RecordStore';
 import {SnapshotManifest} from '../src/cache/SnapshotManifest';
-import {THORNODE_RULES} from '../src/cryptotax-thorchain/ThornodeService';
+import {THORNODE_RULES} from '../src/cache/Sources';
 
 const makeDir = () => fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-store-'));
 const fetching = <T>(data: T) => jest.fn(async () => ({data, url: 'https://source/x'}));

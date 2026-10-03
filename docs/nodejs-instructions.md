@@ -50,7 +50,8 @@ your config, not into the repo.
 
 ### Re-running from the cache
 
-Downloaded data is kept in the cache folder, one file per action or tx, and a
+Downloaded data is kept in the store (`store/` next to your config, or the config's
+`cachePath`), one file per action or tx, and a
 record that comes back different later is kept as a new copy next to the old one
 (`docs/specs/snapshots.md`). Each run picks the right copy of each record, e.g. a
 finalised one over a pending one, and the earlier full copy over one THORNode has
@@ -65,3 +66,8 @@ since pruned. It lists what it used in `snapshots.json` in its output folder.
   the run you filed.
 
 `npx ts-node src/full-export.ts --replay ../my-tax/FY2026/2026-10-03_15-33-50 ../my-tax/wallets-config.toml`
+
+A cache from before the store (`cache/` with one file per wallet or tx) is read on
+first use. To bring several old caches into one store, oldest first:
+
+`npm run store -- import ../my-tax/store ../my-tax/FY2025/cache ../my-tax/cache`

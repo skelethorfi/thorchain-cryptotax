@@ -63,6 +63,8 @@ export interface Copy<T = any> {
     file: string;
     fetchedAt: string | null;
     url?: string;
+    // Where an imported copy came from (an old cache file)
+    importedFrom?: string;
     sha256: string;
     data: T;
 }
@@ -194,6 +196,35 @@ export class RecordStore {
         return true;
     }
 
+    // Adds a copy from an old cache, unless the same copy (after normalising) is already stored. With no
+    // fetchedAt, it sorts before every fetched copy, after earlier imports.
+    importCopy<T>(source: string, key: string, data: T, rules: RecordRules<T>, origin: {fetchedAt: string | null, url?: string, importedFrom: string}): boolean {
+        const normalised = rules.normalise ? rules.normalise(data) : data;
+        const hash = sha256(normalised);
+        const same = (copy: Copy<T>) => (rules.normalise ? sha256(rules.normalise(copy.data)) : copy.sha256) === hash;
+
+        if (this.copies<T>(source, key).some(same)) {
+            return false;
+        }
+
+        const file = this.newFile(path.join(this.root, 'records', source, safeKey(key)), origin.fetchedAt);
+        fs.outputJsonSync(file, {fetchedAt: origin.fetchedAt, ...(origin.url ? {url: origin.url} : {}), importedFrom: origin.importedFrom, sha256: hash, data: normalised}, {spaces: 2});
+
+        return true;
+    }
+
+    // Adds what one old fetch of a wallet returned, unless a stored list has the same keys
+    importList(source: string, wallet: string, keys: string[], origin: {fetchedAt: string | null, url?: string, importedFrom: string}): boolean {
+        if (this.lists(source, wallet).some(list => JSON.stringify(list.keys) === JSON.stringify(keys))) {
+            return false;
+        }
+
+        const file = this.newFile(path.join(this.root, 'lists', source, safeKey(wallet)), origin.fetchedAt);
+        fs.outputJsonSync(file, {fetchedAt: origin.fetchedAt, ...(origin.url ? {url: origin.url} : {}), importedFrom: origin.importedFrom, keys}, {spaces: 2});
+
+        return true;
+    }
+
     assertCanFetch(what: string) {
         if (this.offline) {
             throw new StoreMissError(what);
@@ -312,9 +343,10 @@ export class RecordStore {
     // File names sort by fetch time; an import of unknown time sorts first. Two in one millisecond get the next.
     private newFile(dir: string, fetchedAt: string | null): string {
         if (fetchedAt === null) {
+            const fileFor = (n: number) => path.join(dir, `0000-imported-${String(n).padStart(4, '0')}.json`);
             let n = 0;
-            while (fs.existsSync(path.join(dir, `0000-imported-${n}.json`))) n++;
-            return path.join(dir, `0000-imported-${n}.json`);
+            while (fs.existsSync(fileFor(n))) n++;
+            return fileFor(n);
         }
 
         let time = new Date(fetchedAt).getTime();

@@ -1,4 +1,5 @@
 import {RecordStore} from '../cache/RecordStore';
+import {tcyList} from '../cache/Sources';
 import axios from 'axios';
 import axiosThrottle from 'axios-request-throttle';
 import { API_URLS } from '../config/apiUrls';
@@ -50,18 +51,14 @@ export class TcyDistributionService {
         this.baseUrl = MIDGARD_API_URL;
     }
 
-    // Each distribution is a record, keyed by its date (one a day). The response's apr (today's rate) and
-    // total are not stored: they change on every fetch and are not used.
+    // Each distribution is a record (Sources.ts). The response's apr (today's rate) and total are not
+    // stored: they change on every fetch and are not used.
     async getTcyDistribution(address: string): Promise<TcyDistribution> {
         const url = `${this.baseUrl}/v2/tcy/distribution/${address}`;
         const distributions = await this.store.list(this.source, address, async () => {
             const response = await axios.get(url);
             return {data: (response.data as TcyDistribution).distributions ?? [], url};
-        }, {
-            keyOf: item => item.date,
-            legacyKey: `tcy_distribution_${address}`,
-            legacyItems: data => data.distributions ?? [],
-        });
+        }, tcyList(address));
 
         return {address, distributions};
     }

@@ -1,4 +1,5 @@
-import {RecordRules, RecordStore} from "../cache/RecordStore";
+import {RecordStore} from "../cache/RecordStore";
+import {MIDGARD_LIST} from "../cache/Sources";
 import {Action, Configuration, MidgardApi} from '@xchainjs/xchain-midgard';
 import assert from "assert";
 import axios from "axios";
@@ -16,21 +17,6 @@ axiosThrottle.use(axios, { requestsPerSecond: 1 });
 // MIDGARD_URL_A: "https://midgard.thorchain.info/v2/actions?limit=50&address={WALLETS}&offset={OFFSET}"
 // MIDGARD_URL_B: "https://midgard.thorswap.net/v2/actions?limit=50&address={WALLETS}&offset={OFFSET}"
 
-// A Midgard action has no id. Its type, first txid and sub-type are unique among a wallet's actions; the
-// few with no txid (e.g. some refunds) fall back to their date.
-export function midgardActionKey(action: Action): string {
-    const txId = action.in.find(tx => tx.txID)?.txID || action.out.find(tx => tx.txID)?.txID;
-    const metadata = action.metadata as any;
-    const subType = metadata.contract?.contractType ?? metadata.swap?.txType ?? '';
-
-    return [action.type, txId || `date-${action.date}`, subType].filter(Boolean).join('.');
-}
-
-// A pending action (e.g. an unfinished loan repayment or refund) can later be finalised
-export const MIDGARD_RULES: RecordRules<Action> = {
-    isPending: action => action.status !== 'success',
-};
-
 export class MidgardService {
     api: MidgardApi;
 
@@ -45,7 +31,7 @@ export class MidgardService {
 
         return this.store.list(this.source, address,
             async () => ({data: await this.fetchActions(address), url: `${this.basePath}/v2/actions?address=${address}`}),
-            {keyOf: midgardActionKey, rules: MIDGARD_RULES});
+            MIDGARD_LIST);
     }
 
     private async fetchActions(address: string): Promise<Action[]> {

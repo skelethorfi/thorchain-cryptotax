@@ -1,6 +1,7 @@
 import {range} from '../utils/Range';
 import {ViewblockTx} from './ViewblockTx';
 import {RecordStore} from "../cache/RecordStore";
+import {VIEWBLOCK_LIST} from "../cache/Sources";
 
 export const BASE_URL = 'https://api.viewblock.io';
 export const ORIGIN = 'https://viewblock.io';
@@ -80,7 +81,7 @@ export class Viewblock {
     }): Promise<ViewblockTx[]> {
         return this.store.list(this.source, address,
             async () => ({data: await this.fetchAllTxs({address, network, type}), url: `viewblock:${network}:${address}`}),
-            {keyOf: tx => tx.hash, rules: {normalise: withoutCurrentValues}});
+            VIEWBLOCK_LIST);
     }
 
     private async fetchAllTxs({address, network, type}: {address: string; network: string; type?: string}): Promise<ViewblockTx[]> {
@@ -124,21 +125,4 @@ export class Viewblock {
 
         return results;
     }
-}
-
-// Viewblock adds each amount's value at today's price (usdNew), which changes on every fetch and would make
-// every refresh look like a change in the source data (docs/specs/snapshots.md). It is dropped before a tx
-// is stored; the value at the time of the tx (usd) is kept.
-export function withoutCurrentValues<T>(value: T): T {
-    if (Array.isArray(value)) {
-        return value.map(withoutCurrentValues) as T;
-    }
-
-    if (value !== null && typeof value === 'object') {
-        return Object.fromEntries(Object.entries(value)
-            .filter(([key]) => key !== 'usdNew')
-            .map(([key, item]) => [key, withoutCurrentValues(item)])) as T;
-    }
-
-    return value;
 }

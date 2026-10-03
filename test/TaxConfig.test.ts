@@ -11,7 +11,7 @@ describe('TaxConfig', () => {
         expect(result).toEqual({
             outputPath: 'output',
             unsupportedActionsPath: 'unsupported-actions',
-            cachePath: 'cache',
+            cachePath: 'store',
             toDate: new Date().toISOString().substring(0, 10)
         });
     });

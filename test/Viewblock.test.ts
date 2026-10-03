@@ -2,7 +2,8 @@ import {describe, expect, jest, test} from '@jest/globals';
 import fs from 'fs-extra';
 import os from 'os';
 import path from 'path';
-import {Viewblock, withoutCurrentValues} from '../src/viewblock';
+import {Viewblock} from '../src/viewblock';
+import {withoutCurrentValues} from '../src/cache/Sources';
 import {RecordStore} from '../src/cache/RecordStore';
 
 describe('Viewblock', () => {
