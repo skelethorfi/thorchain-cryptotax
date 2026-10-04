@@ -21,7 +21,6 @@ test/cases/<group>/<name>/
 | `description` | What the case covers |
 | `source` | `midgard`, `viewblock` or `tcy` |
 | `wallet` | The wallet being exported (used by the viewblock and tcy mappers) |
-| `addReferencePrices` | Optional, default `false` |
 | `data` | The Midgard action, Viewblock tx or TCY distribution item, as returned by the API |
 | `thornodeTxs` | Optional related THORNode `tx/status` responses (swaps and switches) |
 

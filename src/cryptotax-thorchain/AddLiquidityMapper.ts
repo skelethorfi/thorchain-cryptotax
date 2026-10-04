@@ -3,7 +3,6 @@ import {
     CryptoTaxTransaction,
     CryptoTaxTransactionType,
 } from '../cryptotax';
-import { getPrice } from "../cmc-scraper";
 import {
     parseMidgardAsset,
     parseMidgardDate,
@@ -104,18 +103,6 @@ export class AddLiquidityMapper implements Mapper {
             parseFloat(transactions[0].baseAmount) * numAssetsIn
         ).toString();
 
-        let referencePrice = {};
-
-        if (addReferencePrices) {
-            const totalValue = getPrice(quoteCurrency, date) * parseFloat(quoteAmount);
-            const referencePricePerUnit = (totalValue / parseFloat(liquidityUnits)).toString();
-
-            referencePrice = {
-                referencePriceCurrency: 'USD',
-                referencePricePerUnit
-            };
-        }
-
         if (!action.in[0].address) {
             console.warn('Missing deposit address');
         }
@@ -144,8 +131,7 @@ export class AddLiquidityMapper implements Mapper {
             to: lpTokenReceivingAddress,
             blockchain: protocol.blockchain,
             id: `${idPrefix}.receive-lp-token`,
-            description: `${currentTxNum}/${totalTxs} - Receive LP token from ${lpToken} (${symmDesc}); ${txId}`,
-            ...referencePrice
+            description: `${currentTxNum}/${totalTxs} - Receive LP token from ${lpToken} (${symmDesc}); ${txId}`
         });
 
         currentTxNum++;

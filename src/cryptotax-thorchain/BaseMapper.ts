@@ -4,7 +4,6 @@ import { parseMidgardAsset, parseMidgardDate } from './MidgardUtils';
 import { baseToAssetAmountString } from '../utils/Amount';
 import { TxStatusResponse } from '@xchainjs/xchain-thornode';
 import { Mapper } from './Mapper';
-import { getPrice } from '../cmc-scraper';
 import { Protocol, THORCHAIN } from '../protocols/Protocol';
 
 export abstract class BaseMapper implements Mapper {
@@ -42,21 +41,6 @@ export abstract class BaseMapper implements Mapper {
         const { blockchain, currency, displayCurrency } = parseMidgardAsset(asset, this.protocol);
         const amountParsed = baseToAssetAmountString(amount, this.protocol.decimals(asset));
         return { blockchain, currency, displayCurrency, amountParsed };
-    }
-
-    protected handleReferencePrices(liquidityUnits: string, quoteCurrency: string, quoteAmount: string) {
-        if (this.addReferencePrices) {
-            const totalValue = getPrice(quoteCurrency, this.datetime) * parseFloat(quoteAmount);
-
-            const referencePricePerUnit = (totalValue / parseFloat(liquidityUnits)).toString();
-
-            return {
-                referencePriceCurrency: 'USD',
-                referencePricePerUnit,
-            };
-        }
-
-        return {};
     }
 
     protected error(message: string): Error {

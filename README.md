@@ -192,7 +192,9 @@ This is not a public API, so may change without warning which breaks the tool.
 
 ### Reference Prices
 
-Fetching reference prices is disabled as it's not currently working and needs updating.
+Swap rows carry Midgard's USD price of each side. Other rows have no reference price
+(the old CoinMarketCap price lookup and the `addReferencePrices` wallet setting were removed;
+a config that still sets it gets a warning).
 
 So adding the market price to LP transactions requires the manual step of copying the fiat amount from
 the related Spam transaction into the market value section for the LP token in CTC.

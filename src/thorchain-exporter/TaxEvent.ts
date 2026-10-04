@@ -24,7 +24,6 @@ export class TaxEvent {
     cosmosTxs: CosmosTx[] = [];  // The Cosmos tx of a contract action, from THORNode
     output: CryptoTaxTransaction[] = [];
     wallet: IWallet;
-    addReferencePrices: boolean;
     config: ITaxConfig;
     // Protocol of a midgard event
     protocol: Protocol;
@@ -33,22 +32,21 @@ export class TaxEvent {
         this.datetime = datetime;
         this.source = source;
         this.wallet = wallet;
-        this.addReferencePrices = wallet.addReferencePrices ?? false;
         this.config = config;
         this.protocol = protocol;
     }
 
     convert() {
         if (this.source === 'viewblock') {
-            this.convertViewblock(this.addReferencePrices);
+            this.convertViewblock();
         } else if (this.source === 'midgard') {
-            this.convertMidgardAction(this.addReferencePrices);
+            this.convertMidgardAction();
         } else if (this.source === 'tcy') {
             this.convertTcy();
         }
     }
 
-    convertViewblock(addReferencePrices: boolean) {
+    convertViewblock() {
         const tx = this.input as ViewblockTx;
 
         // const labels = tx.extra.thorLabels;
@@ -80,8 +78,8 @@ export class TaxEvent {
         this.output = mapper.toCtc();
     }
 
-    convertMidgardAction(addReferencePrices: boolean) {
-        this.output = actionToCryptoTax(this.input as Action, this.thornodeTxs, addReferencePrices, this.config.unsupportedActionsPath, this.protocol, this.cosmosTxs);
+    convertMidgardAction() {
+        this.output = actionToCryptoTax(this.input as Action, this.thornodeTxs, false, this.config.unsupportedActionsPath, this.protocol, this.cosmosTxs);
     }
 
     convertTcy() {
