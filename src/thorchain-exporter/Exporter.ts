@@ -7,7 +7,6 @@ import {ThornodeService} from "../cryptotax-thorchain/ThornodeService";
 import {CosmosTxService} from "../cryptotax-thorchain/CosmosTxService";
 import {TcyDistributionService} from "../cryptotax-thorchain/TcyDistributionService";
 import {ITaxConfig} from "./ITaxConfig";
-import {IWallet} from "./IWallet";
 import {TaxEvents} from "./TaxEvents";
 import {DateRange, generateDateRanges} from "../utils/DateRange";
 import path from "path";
@@ -16,7 +15,7 @@ import {FetchMode, RecordStore} from "../cache/RecordStore";
 import {SnapshotManifest} from "../cache/SnapshotManifest";
 import {getProtocol, Protocol, THORCHAIN, withAssetNames} from "../protocols/Protocol";
 import {MidgardSource, Source, TcySource, ViewblockSource} from "../sources/Source";
-import {getBundleSourceName, RawBundle} from "../sources/RawBundle";
+import {dedupeBundles, getBundleSourceName, RawBundle} from "../sources/RawBundle";
 import {TaxEvent} from "./TaxEvent";
 import {Action} from "@xchainjs/xchain-midgard";
 
@@ -86,18 +85,34 @@ export class Exporter {
         ];
     }
 
-    async getEvents(wallet: IWallet, outputPath: string): Promise<TaxEvents> {
+    // Every wallet's bundles, wallet by wallet in config order
+    async collectBundles(): Promise<RawBundle[]> {
+        const bundles: RawBundle[] = [];
+
+        for (const wallet of this.config.wallets) {
+            for (const source of this.sources()) {
+                bundles.push(...await source.bundlesFor(wallet.address));
+            }
+        }
+
+        return bundles;
+    }
+
+    getEvents(bundles: RawBundle[], outputPath: string): TaxEvents {
         const events = new TaxEvents();
+        const unique = dedupeBundles(bundles);
 
-        for (const source of this.sources()) {
-            for (const bundle of await source.bundlesFor(wallet.address)) {
-                const event = TaxEvent.fromBundle(bundle, wallet, this.protocolFor(bundle));
-                this.handleIssues(bundle, event, outputPath);
+        if (unique.duplicates > 0) {
+            console.log(`Skipped ${unique.duplicates} Midgard actions also listed for an earlier wallet`);
+        }
 
-                // A failed bundle gives no rows; its copy is saved for a look
-                if (!event.issues.some(issue => issue.kind === 'failed')) {
-                    events.add(event);
-                }
+        for (const bundle of unique.bundles) {
+            const event = TaxEvent.fromBundle(bundle, this.protocolFor(bundle));
+            this.handleIssues(bundle, event, outputPath);
+
+            // A failed bundle gives no rows; its copy is saved for a look
+            if (!event.issues.some(issue => issue.kind === 'failed')) {
+                events.add(event);
             }
         }
 
