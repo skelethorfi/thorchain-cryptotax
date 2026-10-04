@@ -12,6 +12,7 @@ import {TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService
 import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
 import {Protocol, THORCHAIN} from "../protocols/Protocol";
 import {CosmosTx} from "../cryptotax-thorchain/CosmosTxService";
+import {getBundleDate, RawBundle} from "../sources/RawBundle";
 
 type TaxEventSource = 'viewblock' | 'midgard' | 'tcy';
 
@@ -34,6 +35,17 @@ export class TaxEvent {
         this.wallet = wallet;
         this.config = config;
         this.protocol = protocol;
+    }
+
+    // The event of one bundle, mapped
+    static fromBundle(bundle: RawBundle, wallet: IWallet, config: ITaxConfig, protocol: Protocol): TaxEvent {
+        const event = new TaxEvent(getBundleDate(bundle), bundle.source, wallet, config, protocol);
+        event.input = bundle.data;
+        event.thornodeTxs = bundle.thornodeTxs;
+        event.cosmosTxs = bundle.cosmosTxs;
+        event.convert();
+
+        return event;
     }
 
     convert() {

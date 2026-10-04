@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { ActionTypeEnum } from '@xchainjs/xchain-midgard';
-import { getThornodeTxIds, shouldIncludeAction } from '../src/thorchain-exporter/Exporter';
+import { getThornodeTxIds, shouldIncludeAction } from '../src/sources/Source';
 
 describe('Exporter thornode fetch wiring', () => {
     const inbound = (txID: string, asset?: string) => ({ txID, coins: asset ? [{ asset, amount: '1' }] : [] });
