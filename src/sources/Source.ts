@@ -4,7 +4,7 @@ import {MidgardService} from "../cryptotax-thorchain/MidgardService";
 import {ThornodeService} from "../cryptotax-thorchain/ThornodeService";
 import {CosmosTxService, getCosmosTxIds} from "../cryptotax-thorchain/CosmosTxService";
 import {TcyDistributionService} from "../cryptotax-thorchain/TcyDistributionService";
-import {getActionDate} from "../cryptotax-thorchain/MidgardActionMapper";
+import {getActionDate} from "../cryptotax-thorchain/MidgardUtils";
 import {Viewblock} from "../viewblock";
 import {Protocol, THORCHAIN} from "../protocols/Protocol";
 import {RawBundle} from "./RawBundle";

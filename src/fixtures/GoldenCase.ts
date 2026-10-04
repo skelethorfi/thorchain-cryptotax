@@ -1,5 +1,4 @@
 import fs from "fs-extra";
-import os from "os";
 import path from "path";
 import YAML from "yaml";
 import {Action} from "@xchainjs/xchain-midgard";
@@ -121,13 +120,16 @@ export function toCaseInput(bundle: RawBundle, description: string): GoldenCaseI
     };
 }
 
-// Runs a case through the same TaxEvent path the exporter uses.
-// Unsupported actions are written to a temporary folder rather than the repo.
-export function runCase(input: GoldenCaseInput, unsupportedActionsPath?: string): CryptoTaxTransaction[] {
-    const config = {
-        unsupportedActionsPath: unsupportedActionsPath ?? fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-unsupported-')),
-    } as ITaxConfig;
+// Runs a case through the same TaxEvent path the exporter uses. An unsupported action gives no rows;
+// a failure throws, so a case can't pass by failing.
+export function runCase(input: GoldenCaseInput): CryptoTaxTransaction[] {
     const wallet = {name: 'test', address: input.wallet, blockchain: ''};
+    const event = TaxEvent.fromBundle(toBundle(input), wallet, getProtocol(input.protocol));
+    const failure = event.issues.find(issue => issue.kind === 'failed');
 
-    return TaxEvent.fromBundle(toBundle(input), wallet, config, getProtocol(input.protocol)).output;
+    if (failure) {
+        throw new Error(failure.message);
+    }
+
+    return event.output;
 }
