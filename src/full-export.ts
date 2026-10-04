@@ -2,7 +2,6 @@ import * as path from "path";
 import {format} from 'date-fns-tz';
 import {Exporter} from "./thorchain-exporter/Exporter";
 import {oldCacheHint} from "./cache/cli";
-import {TaxEvents} from "./thorchain-exporter/TaxEvents";
 
 async function main() {
 
@@ -53,17 +52,7 @@ async function main() {
         console.log(`Fetching ${fetch === 'all' ? 'every record' : 'the latest data'}; earlier copies in ${storePath} are kept\n`);
     }
 
-    const wallets = exporter.config.wallets;
-    const allEvents = new TaxEvents();
-
-    // Import viewblock and midgard into TaxEvents
-
-    for (const wallet of wallets) {
-        const events = await exporter.getEvents(wallet, outputPath);
-        events.sortDesc();
-        allEvents.addEvents(events);
-    }
-
+    const allEvents = exporter.getEvents(await exporter.collectBundles(), outputPath);
     allEvents.sortDesc();
 
     // Convert TaxEvents to CTC

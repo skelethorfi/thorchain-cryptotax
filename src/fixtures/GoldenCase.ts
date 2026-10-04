@@ -123,8 +123,7 @@ export function toCaseInput(bundle: RawBundle, description: string): GoldenCaseI
 // Runs a case through the same TaxEvent path the exporter uses. An unsupported action gives no rows;
 // a failure throws, so a case can't pass by failing.
 export function runCase(input: GoldenCaseInput): CryptoTaxTransaction[] {
-    const wallet = {name: 'test', address: input.wallet, blockchain: ''};
-    const event = TaxEvent.fromBundle(toBundle(input), wallet, getProtocol(input.protocol));
+    const event = TaxEvent.fromBundle(toBundle(input), getProtocol(input.protocol));
     const failure = event.issues.find(issue => issue.kind === 'failed');
 
     if (failure) {
