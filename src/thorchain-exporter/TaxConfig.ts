@@ -5,7 +5,7 @@ import toml from "js-toml";
 
 export class TaxConfig {
     static load(filename: string): ITaxConfig {
-        const config = this.loadConfigFile(filename);
+        const config = this.renameDeprecated(this.loadConfigFile(filename));
         return this.resolvePaths(this.applyDefaults(config), path.dirname(path.resolve(filename)));
     }
 
@@ -16,8 +16,23 @@ export class TaxConfig {
             ...config,
             outputPath: path.resolve(baseDir, config.outputPath),
             unsupportedActionsPath: path.resolve(baseDir, config.unsupportedActionsPath),
-            cachePath: path.resolve(baseDir, config.cachePath),
+            storePath: path.resolve(baseDir, config.storePath),
         };
+    }
+
+    // Old configs keep working: cachePath is now storePath
+    static renameDeprecated(config: Partial<ITaxConfig>): Partial<ITaxConfig> {
+        if (config.cachePath === undefined) {
+            return config;
+        }
+
+        if (config.storePath !== undefined) {
+            throw new Error('Config has both storePath and its old name cachePath: keep storePath');
+        }
+
+        console.warn('Config: cachePath is now called storePath (cachePath still works)');
+        const {cachePath, ...rest} = config;
+        return {...rest, storePath: cachePath};
     }
 
     private static loadConfigFile(filename: string): ITaxConfig {
@@ -44,7 +59,8 @@ export class TaxConfig {
         const defaults = {
             outputPath: 'output',
             unsupportedActionsPath: 'unsupported-actions',
-            cachePath: 'cache',
+            // The record store (docs/specs/snapshots.md); can be shared by several configs
+            storePath: 'store',
             toDate: dateToday
         };
 

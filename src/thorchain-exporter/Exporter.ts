@@ -17,7 +17,8 @@ import {BaseMapper} from "./BaseMapper";
 import {getActionDate} from "../cryptotax-thorchain/MidgardActionMapper";
 import {TaxConfig} from "./TaxConfig";
 import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
-import {CacheOptions} from "../cache/Cache";
+import {FetchMode, RecordStore} from "../cache/RecordStore";
+import {SnapshotManifest} from "../cache/SnapshotManifest";
 import {getProtocol, Protocol, THORCHAIN, withAssetNames} from "../protocols/Protocol";
 import {assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
 
@@ -69,8 +70,19 @@ export function shouldIncludeAction(action: Action): boolean {
     return false;
 }
 
+export interface ExportOptions {
+    // Only read cached snapshots; fail on anything not cached
+    offline?: boolean;
+    // 'latest' (default: wallet lists and pending records) or 'all' (every record again)
+    fetch?: FetchMode;
+    // A run folder (or its snapshots.json) whose exact records to read
+    replay?: string;
+}
+
 export class Exporter {
     config: ITaxConfig;
+    // The snapshots this run used
+    snapshots: SnapshotManifest;
     viewblock: Viewblock;
     midgard: MidgardService;
     // Midgard of each other protocol enabled in the config (e.g. Maya)
@@ -81,21 +93,33 @@ export class Exporter {
     tcyDistribution: TcyDistributionService;
     report: Reporter;
 
-    constructor(filename: string, cacheOptions: CacheOptions = {}) {
+    constructor(filename: string, options: ExportOptions = {}) {
         this.config = TaxConfig.load(filename);
-        const cachePath = this.config.cachePath;
-        this.viewblock = new Viewblock(path.join(cachePath, 'viewblock'), cacheOptions);
-        this.midgard = new MidgardService(path.join(cachePath, 'midgard'), cacheOptions);
-        this.thornode = new ThornodeService(path.join(cachePath, 'thornode'), false, cacheOptions);
-        this.cosmosTxs = new CosmosTxService(path.join(cachePath, 'thornode-cosmos'), cacheOptions);
-        this.tcyDistribution = new TcyDistributionService(path.join(cachePath, 'tcy'), cacheOptions);
+        const storePath = this.config.storePath;
+        this.snapshots = new SnapshotManifest();
+        // One store for every source (docs/specs/snapshots.md)
+        if (this.config.cacheDataSources !== undefined) {
+            console.warn('Config: cacheDataSources is no longer used: every run fetches the latest data and keeps what was stored; use --offline to fetch nothing');
+        }
+
+        const store = new RecordStore(storePath, {
+            offline: options.offline,
+            fetch: options.fetch,
+            replay: options.replay ? SnapshotManifest.load(options.replay) : undefined,
+            manifest: this.snapshots,
+        });
+        this.viewblock = new Viewblock(store);
+        this.midgard = new MidgardService(store);
+        this.thornode = new ThornodeService(store);
+        this.cosmosTxs = new CosmosTxService(store);
+        this.tcyDistribution = new TcyDistributionService(store);
         this.thorchain = withAssetNames(THORCHAIN, this.config.assets);
         this.otherMidgards = (this.config.protocols ?? ['thorchain'])
             .map(id => withAssetNames(getProtocol(id), this.config.assets))
             .filter(protocol => protocol.id !== THORCHAIN.id)
             .map(protocol => ({
                 protocol,
-                midgard: new MidgardService(path.join(cachePath, `${protocol.id}-midgard`), cacheOptions, protocol.midgardUrl),
+                midgard: new MidgardService(store, `${protocol.id}-midgard`, protocol.midgardUrl),
             }));
         this.report = new Reporter();
     }
@@ -130,14 +154,14 @@ export class Exporter {
 
             // The inbound THORNode transactions give the gas the wallet paid
             for (const txId of getThornodeTxIds(action)) {
-                thornodeTxs.push(await this.thornode.getTxStatus(txId));
+                thornodeTxs.push(await this.thornode.getTxStatus(txId, getActionDate(action)));
             }
 
             // A contract action's results are only in its Cosmos tx
             const cosmosTxs = [];
 
             for (const txId of getCosmosTxIds(action)) {
-                cosmosTxs.push(await this.cosmosTxs.getTx(txId));
+                cosmosTxs.push(await this.cosmosTxs.getTx(txId, getActionDate(action)));
             }
 
             try {

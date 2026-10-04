@@ -1,6 +1,7 @@
 import axios from "axios";
 import {Action} from "@xchainjs/xchain-midgard";
-import {Cache, CacheOptions} from "../cache/Cache";
+import {RecordStore} from "../cache/RecordStore";
+import {COSMOS_TX_RULES} from "../cache/Sources";
 import {API_URLS} from "../config/apiUrls";
 
 // A THORChain Cosmos tx from THORNode's /cosmos/tx/v1beta1/txs/{hash}, trimmed to what the mappers use.
@@ -8,6 +9,8 @@ import {API_URLS} from "../config/apiUrls";
 export interface CosmosTx {
     txhash: string;
     height: string;
+    // Block time; absent from txs stored before it was kept (2026-10-04)
+    timestamp?: string;
     code: number;
     fee: CosmosCoin[];
     events: CosmosEvent[];
@@ -35,6 +38,7 @@ export function toCosmosTx(response: any): CosmosTx {
     return {
         txhash: txResponse.txhash,
         height: txResponse.height,
+        timestamp: txResponse.timestamp,
         code: txResponse.code,
         fee: response.tx?.auth_info?.fee?.amount ?? [],
         // 'tx' events hold the signature and account sequence, which mappers don't use
@@ -46,24 +50,15 @@ export function toCosmosTx(response: any): CosmosTx {
 }
 
 export class CosmosTxService {
-    cache: Cache;
-
-    constructor(cachePath: string = '_cache', cacheOptions: CacheOptions = {}) {
-        this.cache = new Cache(cachePath, cacheOptions);
+    constructor(private store: RecordStore = new RecordStore('_cache'), private source: string = 'thornode-cosmos') {
     }
 
-    async getTx(hash: string): Promise<CosmosTx> {
-        if (this.cache.has(hash)) {
-            return this.cache.read(hash);
-        }
-
-        this.cache.assertCanFetch(hash);
-
-        const response = await axios.get(`${API_URLS.thornode}/cosmos/tx/v1beta1/txs/${hash}`);
-        const tx = toCosmosTx(response.data);
-
-        this.cache.write(hash, tx);
-
-        return tx;
+    // date: of the action the tx belongs to, for filing a tx stored without its block time
+    async getTx(hash: string, date?: Date): Promise<CosmosTx> {
+        return this.store.record(this.source, hash, async () => {
+            const url = `${API_URLS.thornode}/cosmos/tx/v1beta1/txs/${hash}`;
+            const response = await axios.get(url);
+            return {data: toCosmosTx(response.data), url};
+        }, COSMOS_TX_RULES, date);
     }
 }

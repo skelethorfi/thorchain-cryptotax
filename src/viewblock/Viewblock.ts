@@ -1,6 +1,7 @@
 import {range} from '../utils/Range';
 import {ViewblockTx} from './ViewblockTx';
-import {Cache, CacheOptions} from "../cache/Cache";
+import {RecordStore} from "../cache/RecordStore";
+import {VIEWBLOCK_LIST} from "../cache/Sources";
 
 export const BASE_URL = 'https://api.viewblock.io';
 export const ORIGIN = 'https://viewblock.io';
@@ -29,11 +30,9 @@ interface PaginatedQueryTxs {
 
 export class Viewblock {
 
-    cache: Cache;
     apiKey?: string;
 
-    constructor(cachePath: string = '_cache', cacheOptions: CacheOptions = {}) {
-        this.cache = new Cache(cachePath, cacheOptions);
+    constructor(private store: RecordStore = new RecordStore('_cache'), private source: string = 'viewblock') {
     }
 
     async query(path: any, { apiKey, query = {}, network }: any) {
@@ -80,13 +79,12 @@ export class Viewblock {
         network: string;
         type?: string;
     }): Promise<ViewblockTx[]> {
+        return this.store.list(this.source, address,
+            async () => ({data: await this.fetchAllTxs({address, network, type}), url: `viewblock:${network}:${address}`}),
+            VIEWBLOCK_LIST);
+    }
 
-        if (this.cache.has(address)) {
-            return this.cache.read(address);
-        }
-
-        this.cache.assertCanFetch(address);
-
+    private async fetchAllTxs({address, network, type}: {address: string; network: string; type?: string}): Promise<ViewblockTx[]> {
         let page = await this.getTxs({
             address,
             network,
@@ -103,7 +101,6 @@ export class Viewblock {
 
         if (total === 0) {
             console.log(`[WARN] No transactions for ${address}`);
-            this.cache.write(address, []);
             return [];
         }
 
@@ -125,8 +122,6 @@ export class Viewblock {
                 `num results is ${results.length} but total should be ${total}`
             );
         }
-
-        this.cache.write(address, results);
 
         return results;
     }
