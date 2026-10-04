@@ -3,7 +3,7 @@ import {TxStatusResponse} from "@xchainjs/xchain-thornode";
 import {ViewblockTx} from "../viewblock";
 import {TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService";
 import {CosmosTx} from "../cryptotax-thorchain/CosmosTxService";
-import {getActionDate} from "../cryptotax-thorchain/MidgardActionMapper";
+import {getActionDate} from "../cryptotax-thorchain/MidgardUtils";
 import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
 import {BaseMapper} from "../thorchain-exporter/BaseMapper";
 import {ProtocolId} from "../protocols/Protocol";

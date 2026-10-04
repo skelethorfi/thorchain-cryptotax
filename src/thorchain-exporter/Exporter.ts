@@ -16,7 +16,9 @@ import {FetchMode, RecordStore} from "../cache/RecordStore";
 import {SnapshotManifest} from "../cache/SnapshotManifest";
 import {getProtocol, Protocol, THORCHAIN, withAssetNames} from "../protocols/Protocol";
 import {MidgardSource, Source, TcySource, ViewblockSource} from "../sources/Source";
-import {getBundleDate, getBundleSourceName, RawBundle} from "../sources/RawBundle";
+import {getBundleSourceName, RawBundle} from "../sources/RawBundle";
+import {TaxEvent} from "./TaxEvent";
+import {Action} from "@xchainjs/xchain-midgard";
 
 export interface ExportOptions {
     // Only read cached snapshots; fail on anything not cached
@@ -89,17 +91,46 @@ export class Exporter {
 
         for (const source of this.sources()) {
             for (const bundle of await source.bundlesFor(wallet.address)) {
-                try {
-                    events.addBundle(bundle, wallet, this.config, this.protocolFor(bundle));
-                } catch (error) {
-                    // Log the error, save a copy of failed transaction and keep going
-                    console.error(error);
-                    this.saveFailure(outputPath, wallet.address, getBundleSourceName(bundle), getBundleDate(bundle), bundle.data, error);
+                const event = TaxEvent.fromBundle(bundle, wallet, this.protocolFor(bundle));
+                this.handleIssues(bundle, event, outputPath);
+
+                // A failed bundle gives no rows; its copy is saved for a look
+                if (!event.issues.some(issue => issue.kind === 'failed')) {
+                    events.add(event);
                 }
             }
         }
 
         return events;
+    }
+
+    // Unsupported actions are saved for triage and failures with their error; both are logged
+    private handleIssues(bundle: RawBundle, event: TaxEvent, outputPath: string) {
+        const date = event.datetime.toISOString();
+        const type = bundle.source === 'midgard' ? (bundle.data as Action).type : bundle.source;
+
+        if (bundle.source === 'midgard' && event.issues.length === 0) {
+            console.log(`${date} ${type}: ${event.output.length}`);
+        }
+
+        for (const issue of event.issues) {
+            if (issue.kind === 'unsupported') {
+                console.error(`${date} ${type}: unsupported action`);
+                this.saveUnsupported(bundle, event.datetime);
+            } else if (issue.kind === 'failed') {
+                console.error(`${date} ${type}: ${issue.message}`);
+                this.saveFailure(outputPath, bundle.wallet, getBundleSourceName(bundle), event.datetime, bundle.data, issue.message);
+            }
+        }
+    }
+
+    private saveUnsupported(bundle: RawBundle, date: Date) {
+        const action = bundle.data as Action;
+        const txId = action.in?.[0]?.txID;
+        const filename = (txId ? txId : date.toISOString()) + '.json';
+        const protocolDir = bundle.protocol === THORCHAIN.id ? '' : bundle.protocol;
+        const filePath = path.join(this.config.unsupportedActionsPath, protocolDir, action.type, filename);
+        fs.outputFileSync(filePath, JSON.stringify(action, null, 4));
     }
 
     // Midgard actions are mapped with their protocol's asset-name settings; Viewblock sends and TCY
@@ -221,11 +252,10 @@ export class Exporter {
         return address.slice(-5);
     }
 
-    private saveFailure(outputPath: string, walletAddress: string, source: string, date: Date, data: any, error: any): void {
+    private saveFailure(outputPath: string, walletAddress: string, source: string, date: Date, data: any, errorMessage: string): void {
         const failureDir = path.join(outputPath, 'failures', walletAddress, source);
         fs.ensureDirSync(failureDir);
         const timestamp = format(date, 'yyyy-MM-dd_HHmm_ssSSS');
-        const errorMessage = error.message || 'unknown error';
         fs.writeJsonSync(path.join(failureDir, `${timestamp}.json`), { ERROR_MESSAGE: errorMessage, ...data }, { spaces: 4});
     }
 }

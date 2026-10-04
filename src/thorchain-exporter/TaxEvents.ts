@@ -1,18 +1,15 @@
 import {TaxEvent} from "./TaxEvent";
 import {IWallet} from "./IWallet";
-import {ITaxConfig} from "./ITaxConfig";
 import {CryptoTaxTransaction} from "../cryptotax";
 import {Action} from "@xchainjs/xchain-midgard";
 import {deepEqual} from "../utils/DeepEqual";
-import {Protocol} from "../protocols/Protocol";
-import {RawBundle} from "../sources/RawBundle";
 
 export class TaxEvents {
 
     events: TaxEvent[] = [];
 
-    addBundle(bundle: RawBundle, wallet: IWallet, config: ITaxConfig, protocol: Protocol) {
-        this.events.push(TaxEvent.fromBundle(bundle, wallet, config, protocol));
+    add(event: TaxEvent) {
+        this.events.push(event);
     }
 
     sortDesc() {
