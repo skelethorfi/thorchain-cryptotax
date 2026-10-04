@@ -75,15 +75,9 @@ export class SwapMapper extends BaseMapper {
             throw this.error('No input amount');
         }
 
-        console.log(
-            `${this.timestamp} swap ${inputBlockchain}.${inputDisplayCurrency}${
-                inputIsSynth ? ' *synth*' : ''
-            } to ${outputBlockchain}.${outputDisplayCurrency}${outputIsSynth ? ' *synth*' : ''} - ${input.txID ?? output.txID}`
-        );
-
         // If synth (eg. BTC/BTC) but address is not thor, then ignore. Likely a savers withdrawal.
         if (inputIsSynth && !input.address.startsWith('thor1')) {
-            console.log('SWAP IGNORED');
+            this.issues.push({kind: 'ignored', message: 'synth swap from an L1 address (a savers withdrawal)'});
             return [];
         }
 

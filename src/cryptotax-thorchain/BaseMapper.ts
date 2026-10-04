@@ -4,6 +4,7 @@ import { parseMidgardAsset, parseMidgardDate } from './MidgardUtils';
 import { baseToAssetAmountString } from '../utils/Amount';
 import { TxStatusResponse } from '@xchainjs/xchain-thornode';
 import { Mapper } from './Mapper';
+import { Issue } from '../domain/Issue';
 import { Protocol, THORCHAIN } from '../protocols/Protocol';
 
 export abstract class BaseMapper implements Mapper {
@@ -12,6 +13,7 @@ export abstract class BaseMapper implements Mapper {
     protected timestamp: string;
     protected datetime: Date;
     protected transactions: CryptoTaxTransaction[] = [];
+    issues: Issue[] = [];
 
     constructor(protected action: Action, protected addReferencePrices: boolean, protected thornodeTxs: TxStatusResponse[] = [],
                 protected protocol: Protocol = THORCHAIN) {
@@ -44,7 +46,6 @@ export abstract class BaseMapper implements Mapper {
     }
 
     protected error(message: string): Error {
-        console.log('action:', JSON.stringify(this.action, null, 4));
         return new Error(`${this.mapperName}: ${message}`);
     }
 }

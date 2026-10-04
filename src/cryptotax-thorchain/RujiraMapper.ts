@@ -4,6 +4,7 @@ import {CryptoTaxTransaction, CryptoTaxTransactionType} from '../cryptotax';
 import {baseToAssetAmountString} from '../utils/Amount';
 import {Protocol, THORCHAIN} from '../protocols/Protocol';
 import {Mapper} from './Mapper';
+import {Issue} from '../domain/Issue';
 import {CosmosTx} from './CosmosTxService';
 import {parseMidgardAsset, parseMidgardDate} from './MidgardUtils';
 import {formatBlockchainForOutput} from './ThorchainUtils';
@@ -81,6 +82,7 @@ function denomToAsset(denom: string): string {
 }
 
 export class RujiraMapper implements Mapper {
+    issues: Issue[] = [];
     private action!: Action;
     private contract!: Contract;
     private cosmosTx?: CosmosTx;
@@ -210,7 +212,7 @@ export class RujiraMapper implements Mapper {
             throw new Error(`RujiraMapper: unsupported contract ${this.contract.contractType}`);
         }
 
-        console.log(`${this.timestamp} Levana perps: enter by hand; ${this.txId}`);
+        this.issues.push({kind: 'manual', message: `Levana perps position; ${this.txId}`});
         return [];
     }
 
