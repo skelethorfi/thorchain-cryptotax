@@ -102,7 +102,6 @@ export class LoanOpenMapper implements Mapper {
             const inputCoin = input?.coins[0];
 
             if (!inputCoin) {
-                console.log(thornodeTxs[0]);
                 throw this.error('Missing input coin', action);
             }
 
@@ -152,7 +151,6 @@ export class LoanOpenMapper implements Mapper {
 
 
     error(message: string, action: Action) {
-        console.log('action:', JSON.stringify(action, null, 4));
         return new Error(`LoanOpenMapper: ${message}`);
     }
 }

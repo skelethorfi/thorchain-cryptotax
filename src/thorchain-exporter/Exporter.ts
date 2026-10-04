@@ -104,17 +104,20 @@ export class Exporter {
         return events;
     }
 
-    // Unsupported actions are saved for triage and failures with their error; both are logged
+    // Unsupported actions are saved for triage and failures with their error; those, warnings and
+    // actions to enter by hand are logged
     private handleIssues(bundle: RawBundle, event: TaxEvent, outputPath: string) {
         const date = event.datetime.toISOString();
         const type = bundle.source === 'midgard' ? (bundle.data as Action).type : bundle.source;
 
-        if (bundle.source === 'midgard' && event.issues.length === 0) {
+        if (bundle.source === 'midgard' && !event.issues.some(issue => ['unsupported', 'failed', 'ignored'].includes(issue.kind))) {
             console.log(`${date} ${type}: ${event.output.length}`);
         }
 
         for (const issue of event.issues) {
-            if (issue.kind === 'unsupported') {
+            if (issue.kind === 'warning' || issue.kind === 'manual') {
+                console.warn(`${date} ${type}: ${issue.kind === 'manual' ? 'enter by hand: ' : ''}${issue.message}`);
+            } else if (issue.kind === 'unsupported') {
                 console.error(`${date} ${type}: unsupported action`);
                 this.saveUnsupported(bundle, event.datetime);
             } else if (issue.kind === 'failed') {

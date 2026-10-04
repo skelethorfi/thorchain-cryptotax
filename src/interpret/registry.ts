@@ -36,35 +36,34 @@ export type Interpreter = (bundle: RawBundle, protocol: Protocol) => Interpretat
 
 const rows = (rows: CryptoTaxTransaction[]): Interpretation => ({rows, issues: []});
 
-// A Midgard mapper that keeps no state between actions
-const midgard = (mapper: Mapper): Interpreter => (bundle, protocol) =>
-    rows(mapper.toCryptoTax(bundle.data as Action, false, bundle.thornodeTxs, protocol, bundle.cosmosTxs));
+// A Midgard mapper, made for each action so the issues it finds are that action's
+const midgard = (make: (bundle: RawBundle, protocol: Protocol) => Mapper): Interpreter => (bundle, protocol) => {
+    const mapper = make(bundle, protocol);
+    const rows = mapper.toCryptoTax(bundle.data as Action, false, bundle.thornodeTxs, protocol, bundle.cosmosTxs);
+    return {rows, issues: mapper.issues ?? []};
+};
 
 const ignore = (message: string): Interpreter => () => ({rows: [], issues: [{kind: 'ignored', message}]});
 
-const swap: Interpreter = (bundle, protocol) =>
-    rows(new SwapMapper(bundle.data as Action, false, bundle.thornodeTxs, protocol).toCryptoTax(bundle.data as Action, false, bundle.thornodeTxs, protocol));
-
-const rujira: Interpreter = (bundle, protocol) =>
-    rows(new RujiraMapper().toCryptoTax(bundle.data as Action, false, bundle.thornodeTxs, protocol, bundle.cosmosTxs));
+const rujira = midgard(() => new RujiraMapper());
 
 // Keyed on 'source/type' or 'source/type/subtype'; a subtype entry wins over its type's
 const REGISTRY: Record<string, Interpreter> = {
-    [`midgard/${ActionType.AddLiquidity}`]: midgard(new AddLiquidityMapper()),
-    [`midgard/${ActionType.Withdraw}`]: midgard(new WithdrawMapper()),
-    [`midgard/${ActionType.Swap}`]: swap,
-    [`midgard/${ActionType.Swap}/loanOpen`]: midgard(new LoanOpenMapper()),
-    [`midgard/${ActionType.Swap}/loanRepayment`]: midgard(new LoanRepaymentMapper()),
-    [`midgard/${ActionType.Refund}`]: midgard(new RefundMapper()),
-    [`midgard/${ActionType.Switch}`]: midgard(new SwitchMapper()),
-    [`midgard/${ActionType.Thorname}`]: midgard(new ThornameMapper()),
-    [`midgard/${ActionType.RunePoolDeposit}`]: midgard(new RunePoolDepositMapper()),
-    [`midgard/${ActionType.RunePoolWithdraw}`]: midgard(new RunePoolWithdrawMapper()),
-    'midgard/bond': midgard(new BondMapper()),
-    'midgard/unbond': midgard(new UnbondMapper()),
-    'midgard/tcy_claim': midgard(new TcyClaimMapper()),
-    'midgard/tcy_stake': midgard(new TcyStakeMapper()),
-    'midgard/tcy_unstake': midgard(new TcyUnstakeMapper()),
+    [`midgard/${ActionType.AddLiquidity}`]: midgard(() => new AddLiquidityMapper()),
+    [`midgard/${ActionType.Withdraw}`]: midgard(() => new WithdrawMapper()),
+    [`midgard/${ActionType.Swap}`]: midgard((bundle, protocol) => new SwapMapper(bundle.data as Action, false, bundle.thornodeTxs, protocol)),
+    [`midgard/${ActionType.Swap}/loanOpen`]: midgard(() => new LoanOpenMapper()),
+    [`midgard/${ActionType.Swap}/loanRepayment`]: midgard(() => new LoanRepaymentMapper()),
+    [`midgard/${ActionType.Refund}`]: midgard(() => new RefundMapper()),
+    [`midgard/${ActionType.Switch}`]: midgard(() => new SwitchMapper()),
+    [`midgard/${ActionType.Thorname}`]: midgard(() => new ThornameMapper()),
+    [`midgard/${ActionType.RunePoolDeposit}`]: midgard(() => new RunePoolDepositMapper()),
+    [`midgard/${ActionType.RunePoolWithdraw}`]: midgard(() => new RunePoolWithdrawMapper()),
+    'midgard/bond': midgard(() => new BondMapper()),
+    'midgard/unbond': midgard(() => new UnbondMapper()),
+    'midgard/tcy_claim': midgard(() => new TcyClaimMapper()),
+    'midgard/tcy_stake': midgard(() => new TcyStakeMapper()),
+    'midgard/tcy_unstake': midgard(() => new TcyUnstakeMapper()),
     [`midgard/${ActionType.Send}`]: ignore('Midgard send: sends come from Viewblock'),
     ...Object.fromEntries(RUJIRA_CONTRACT_TYPES.map(type => [`midgard/contract/${type}`, rujira])),
     'viewblock/send': bundle => rows(new SendMapper(bundle.data as ViewblockTx, bundle.wallet).toCtc()),

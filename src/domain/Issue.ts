@@ -6,7 +6,11 @@ export type IssueKind =
     // The interpreter threw: no rows, and the action is saved with the error
     | 'failed'
     // Listed but deliberately not mapped (e.g. Midgard sends, which come from Viewblock until row 6)
-    | 'ignored';
+    | 'ignored'
+    // Mapped, but something in the source data looks wrong
+    | 'warning'
+    // Not mapped: enter it by hand
+    | 'manual';
 
 export interface Issue {
     kind: IssueKind;

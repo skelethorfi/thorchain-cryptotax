@@ -9,11 +9,14 @@ import {
 } from './MidgardUtils';
 import { baseToAssetAmountString } from '../utils/Amount';
 import { Mapper } from './Mapper';
+import { Issue } from '../domain/Issue';
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
 import { Protocol, THORCHAIN } from '../protocols/Protocol';
 import { getInboundFee, getLpTokenName } from './ThorchainUtils';
 
 export class AddLiquidityMapper implements Mapper {
+    issues: Issue[] = [];
+
     toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = [], protocol: Protocol = THORCHAIN): CryptoTaxTransaction[] {
         const numAssetsIn: number = action.in.length;
 
@@ -104,7 +107,7 @@ export class AddLiquidityMapper implements Mapper {
         ).toString();
 
         if (!action.in[0].address) {
-            console.warn('Missing deposit address');
+            this.issues.push({kind: 'warning', message: 'missing deposit address'});
         }
 
         // Check if the native asset (e.g. RUNE) is not the first asset in the deposit
@@ -153,7 +156,6 @@ export class AddLiquidityMapper implements Mapper {
     }
 
     error(message: string, action: Action) {
-        console.log('action:', JSON.stringify(action, null, 4));
         return new Error(`AddLiquidityMapper: ${message}`);
     }
 }

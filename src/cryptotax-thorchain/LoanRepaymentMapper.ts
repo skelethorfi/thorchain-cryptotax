@@ -131,7 +131,6 @@ export class LoanRepaymentMapper implements Mapper {
 
 
     error(message: string, action: Action) {
-        console.log('action:', JSON.stringify(action, null, 4));
         return new Error(`LoanRepaymentMapper: ${message}`);
     }
 }
