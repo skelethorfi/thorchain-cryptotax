@@ -129,7 +129,7 @@ describe('RecordStore lists', () => {
         await store.list('midgard', 'w1', fetching([{id: 'a'}, {id: 'b'}]), LIST);
         await store.list('midgard', 'w2', fetching([{id: 'b'}]), LIST);
 
-        expect(fs.readdirSync(path.join(root, 'records', 'midgard', 'undated')).sort()).toEqual(['a-000.json', 'b-000.json']);
+        expect(fs.readdirSync(path.join(root, 'records', 'midgard', 'undated')).sort()).toEqual(['a.0.json', 'b.0.json']);
         expect(store.copies('midgard', 'b')).toHaveLength(1);
     });
 
@@ -170,15 +170,15 @@ describe('RecordStore lists', () => {
 describe('Layout', () => {
     const DATED = {keyOf: (tx: Tx & {month?: string}) => tx.id, rules: {folderOf: (tx: Tx & {month?: string}) => tx.month ?? ''}};
 
-    test('a record is <key>-NNN.json in the folder its rules give; a later copy stays next to the first', async () => {
+    test('a record is <key>.<n>.json in the folder its rules give; a later copy stays next to the first', async () => {
         const root = makeDir();
         await new RecordStore(root).list('midgard', 'w', fetching([{id: 'swap.ABC', month: '2025/07'}]), DATED);
         // A revision whose date moved to another month
         await new RecordStore(root).list('midgard', 'w', fetching([{id: 'swap.ABC', month: '2025/08'}]), DATED);
 
-        expect(fs.readdirSync(path.join(root, 'records', 'midgard', '2025', '07')).sort()).toEqual(['swap.ABC-000.json', 'swap.ABC-001.json']);
-        expect(fs.readdirSync(path.join(root, 'lists', 'midgard'))).toEqual(['w-000.json']);
-        expect(fs.readJSONSync(path.join(root, 'records', 'midgard', '2025', '07', 'swap.ABC-000.json'))).toEqual(expect.objectContaining({source: 'midgard', key: 'swap.ABC'}));
+        expect(fs.readdirSync(path.join(root, 'records', 'midgard', '2025', '07')).sort()).toEqual(['swap.ABC.0.json', 'swap.ABC.1.json']);
+        expect(fs.readdirSync(path.join(root, 'lists', 'midgard'))).toEqual(['w.0.json']);
+        expect(fs.readJSONSync(path.join(root, 'records', 'midgard', '2025', '07', 'swap.ABC.0.json'))).toEqual(expect.objectContaining({source: 'midgard', key: 'swap.ABC'}));
     });
 
     test('a record with no date of its own is filed by the date it is given, and stays there', async () => {
@@ -186,7 +186,7 @@ describe('Layout', () => {
         await new RecordStore(root).record('thornode', 'A', fetching<Tx>({id: 'A', status: 'pending'}), RULES, new Date(Date.UTC(2025, 6, 4)));
         await new RecordStore(root).record('thornode', 'A', fetching<Tx>({id: 'A', status: 'done'}), RULES, new Date(Date.UTC(2026, 0, 1)));
 
-        expect(fs.readdirSync(path.join(root, 'records', 'thornode', '2025', '07')).sort()).toEqual(['A-000.json', 'A-001.json']);
+        expect(fs.readdirSync(path.join(root, 'records', 'thornode', '2025', '07')).sort()).toEqual(['A.0.json', 'A.1.json']);
     });
 
     test('names decode back to keys, and are safe as file names', async () => {
@@ -222,13 +222,13 @@ describe('Layout', () => {
         await first.record('thornode', 'A', fetching<Tx>({id: 'A', gas: '1'}));
         await second.record('thornode', 'A', fetching<Tx>({id: 'A', gas: '2'}));
 
-        expect(fs.readdirSync(path.join(root, 'records', 'thornode', 'undated')).sort()).toEqual(['A-000.json', 'A-001.json']);
+        expect(fs.readdirSync(path.join(root, 'records', 'thornode', 'undated')).sort()).toEqual(['A.0.json', 'A.1.json']);
     });
 
     test('keys that differ only in case are refused', async () => {
         const root = makeDir();
-        fs.outputJsonSync(path.join(root, 'records', 'viewblock', 'abc-000.json'), {});
-        fs.outputJsonSync(path.join(root, 'records', 'viewblock', 'ABC-000.json'), {});
+        fs.outputJsonSync(path.join(root, 'records', 'viewblock', 'abc.0.json'), {});
+        fs.outputJsonSync(path.join(root, 'records', 'viewblock', 'ABC.0.json'), {});
 
         if (fs.readdirSync(path.join(root, 'records', 'viewblock')).length === 2) {
             expect(() => new RecordStore(root).copies('viewblock', 'abc')).toThrow(/differ only in case/);

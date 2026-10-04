@@ -9,8 +9,8 @@ import {withRetry} from "../utils/Retry";
 // copy over a pruned one, a finalised copy over a pending one) and lists the copies it used in its
 // manifest, so it can be replayed exactly. See docs/specs/snapshots.md.
 //
-//   <storePath>/records/<source>/<yyyy>/<mm>/<key>-000.json   a record's first copy; -001 the next, ...
-//   <storePath>/lists/<source>/<wallet>-000.json                the record keys one fetch of a wallet returned
+//   <storePath>/records/<source>/<yyyy>/<mm>/<key>.0.json   a record's first copy; .1 the next, ...
+//   <storePath>/lists/<source>/<wallet>.0.json                the record keys one fetch of a wallet returned
 //
 // The key is in the file name (encoded), so one scan of the names finds every copy. Copies are ordered by
 // fetchedAt (unknown, for copies imported from old caches, sorts first), then by number.
@@ -105,7 +105,8 @@ export function decodeName(name: string): string {
     return decodeURIComponent(name);
 }
 
-const COPY_FILE = /^(.+)-(\d{3,})\.json$/;
+// <key>.<n>.json: the copy number is always the last number, so a key may itself end in one (TCY's date)
+const COPY_FILE = /^(.+)\.(\d+)\.json$/;
 
 // 'yyyy/mm' (UTC): the folder of a record
 export function monthFolder(date: Date): string {
@@ -393,13 +394,13 @@ export class RecordStore {
         this.writeNew('lists', source, wallet, path.join(this.root, 'lists', source), files, {source, wallet, ...originFields(origin), keys});
     }
 
-    // Creates <key>-NNN.json with the next free number; never overwrites a file, even one another run is writing
+    // Creates <key>.<n>.json with the next free number; never overwrites a file, even one another run is writing
     private writeNew(kind: string, source: string, key: string, dir: string, files: string[], content: any): {file: string, n: number} {
         fs.mkdirpSync(dir);
         let n = files.reduce((max, file) => Math.max(max, copyNumber(file) + 1), 0);
 
         for (; ; n++) {
-            const file = path.join(dir, `${encodeName(key)}-${String(n).padStart(3, '0')}.json`);
+            const file = path.join(dir, `${encodeName(key)}.${n}.json`);
             let fd: number;
 
             try {

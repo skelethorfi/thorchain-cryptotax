@@ -20,16 +20,19 @@ next to the config, ignored by git in this repo). Several configs, e.g. one
 per tax year, can share one store, because copies are only ever added:
 
 ```
-records/midgard/2025/07/swap.192D…296D-000.json     an action's first copy, in its month (UTC)
-records/midgard/2025/07/swap.192D…296D-001.json     a later copy that differs
-records/viewblock/2025/07/192D…296D-000.json         a Viewblock tx, in its month
-records/tcy/2025/05/<wallet>.1746566872-000.json     a TCY distribution, in its month
-records/thornode/2025/07/192D…296D-000.json          a THORNode tx status, in its action's month
-records/thornode-cosmos/2026/05/E703…6721-000.json   a Cosmos tx, in its block time's month
-lists/midgard/<wallet>-000.json                      the record keys one fetch of a wallet returned
+records/midgard/2025/07/swap.192D…296D.0.json      an action's first copy, in its month (UTC)
+records/midgard/2025/07/swap.192D…296D.1.json      a later copy that differs
+records/viewblock/2025/07/192D…296D.0.json         a Viewblock tx, in its month
+records/tcy/2025/05/<wallet>.1746566872.0.json     a TCY distribution, in its month
+records/thornode/2025/07/192D…296D.0.json          a THORNode tx status, in its action's month
+records/thornode-cosmos/2026/05/E703…6721.0.json   a Cosmos tx, in its block time's month
+lists/midgard/<wallet>.0.json                      the record keys one fetch of a wallet returned
 ```
 
-- The file name is the record's key, then `-NNN` (000, 001, …) for each copy.
+- The file name is the record's key, then `.<n>` (0, 1, …) for each copy: the
+  copy number is always the last number, so a key may end in one (TCY's
+  `<wallet>.<date>.0.json`). Copies beyond `.9` list out of order (`.10` before
+  `.2`); that is cosmetic, as copies are ordered by fetch time.
   Letters, digits and `. _ + -` are kept; anything else is `%XX`, so the name
   decodes back to the key (a contract's `/` is `%2F`).
 - A copy is `{source, key, fetchedAt, url, importedFrom, sha256, data}`; a list
@@ -135,7 +138,7 @@ still fails keeps what it stored so far, and can be run again.
 
 ## The manifest (snapshot)
 
-Each run writes `snapshots.json` to its output folder, with `layout: 2` (a
+Each run writes `snapshots.json` to its output folder, with `layout: 3` (a
 manifest from an earlier layout is refused, as its paths no longer exist):
 
 - `records`: for each record used, the source, key, copy file (relative to

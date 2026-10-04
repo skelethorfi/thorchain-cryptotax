@@ -86,7 +86,7 @@ describe('store import from the folder-per-record layout', () => {
         const store = new RecordStore(path.join(dir, 'store'));
         importCache(store, v1);
 
-        expect(fs.readdirSync(path.join(dir, 'store', 'records', 'midgard', '2025', '07'))).toEqual(['swap.A-000.json']);
+        expect(fs.readdirSync(path.join(dir, 'store', 'records', 'midgard', '2025', '07'))).toEqual(['swap.A.0.json']);
         expect(store.copies('midgard', 'swap.A')[0].importedFrom).toBe('FY/cache/midgard/w.json');
         jest.spyOn(console, 'log').mockImplementation(() => {});
         const offline = new RecordStore(path.join(dir, 'store'), {offline: true});

@@ -7,8 +7,8 @@ import * as path from "path";
 
 export const MANIFEST_FILE = 'snapshots.json';
 
-// The store layout the manifest's paths are in: 2 is records/<source>/[<yyyy>/<mm>/]<key>-NNN.json
-const LAYOUT = 2;
+// The store layout the manifest's paths are in: 3 is records/<source>/<yyyy>/<mm>/<key>.<n>.json
+const LAYOUT = 3;
 
 const FETCHED_RANK: (RecordEntry['fetched'])[] = [undefined, 'unchanged', 'new', 'changed'];
 
