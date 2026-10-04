@@ -23,7 +23,7 @@ import { formatBlockchainForOutput, getInboundFee } from './ThorchainUtils';
 // Both transactions are created here as we have the details from both chains from the Midgard API.
 // The external transaction will be a send to THORChain with the memo "switch:{to_thorchain_address}".
 export class SwitchMapper implements Mapper {
-    toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = []): CryptoTaxTransaction[] {
+    toCryptoTax(action: Action, thornodeTxs: TxStatusResponse[] = []): CryptoTaxTransaction[] {
         const date: Date = parseMidgardDate(action.date);
         const timestamp: string = date.toISOString();
         const idPrefix: string = date.toISOString();

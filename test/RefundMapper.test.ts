@@ -17,7 +17,7 @@ describe('RefundMapper', () => {
     test('the send is one failed-out row with the native fee, whatever Midgard lists as network fees', () => {
         const action = refund([{asset: 'ETH.ETH', amount: '4929'}, {asset: 'THOR.RUNE', amount: '2000000'}]);
         action.out[0].coins[0].amount = '100000000';
-        const rows = new RefundMapper().toCryptoTax(action, false);
+        const rows = new RefundMapper().toCryptoTax(action);
 
         expect(rows).toHaveLength(1);
         expect(rows[0].type).toBe('failed-out');
@@ -29,7 +29,7 @@ describe('RefundMapper', () => {
 
     // Midgard returns both the inbound and the outbound. The outbound is not a row; what was kept is.
     test('when less comes back than was sent, the difference is a fee row', () => {
-        const [send, kept] = new RefundMapper().toCryptoTax(refund([]), false);
+        const [send, kept] = new RefundMapper().toCryptoTax(refund([]));
 
         expect(send.type).toBe('failed-out');
         expect(send.baseAmount).toBe('1');
@@ -45,7 +45,7 @@ describe('RefundMapper', () => {
         action.in[0].coins[0].asset = 'BTC.BTC';
         action.out[0] = {address: 'thor1-user-wallet-11111', txID: 'tx-return', coins: [{asset: 'BTC.BTC', amount: '98000000'}]};
         const thornodeTx = {tx: {id: 'tx-refund', coins: [{asset: 'BTC.BTC', amount: '100000000'}], gas: [{asset: 'BTC.BTC', amount: '1660'}]}} as any;
-        const [send, kept] = new RefundMapper().toCryptoTax(action, false, [thornodeTx]);
+        const [send, kept] = new RefundMapper().toCryptoTax(action, [thornodeTx]);
 
         expect(send.feeCurrency).toBe('BTC');
         expect(send.feeAmount).toBe('0.0000166');
@@ -57,7 +57,7 @@ describe('RefundMapper', () => {
         const action = refund([{asset: 'BTC.BTC', amount: '3735'}]);
         action.in[0].coins[0].asset = 'BTC.BTC';
         action.out[0].coins[0].asset = 'BTC.BTC';
-        const [send] = new RefundMapper().toCryptoTax(action, false);
+        const [send] = new RefundMapper().toCryptoTax(action);
 
         expect(send.feeCurrency).toBe('');
         expect(send.feeAmount).toBe('');
@@ -67,7 +67,7 @@ describe('RefundMapper', () => {
         const action = refund([{asset: 'ETH.ETH', amount: '4929'}]);
         action.out.push({address: '0x-destination', txID: 'tx-swap-out', coins: [{asset: 'ETH.ETH', amount: '5000000'}]});
 
-        expect(new RefundMapper().toCryptoTax(action, false)).toEqual([]);
+        expect(new RefundMapper().toCryptoTax(action)).toEqual([]);
     });
 
     test('a refunded affiliate-fee swap, which the wallet did not send, has no row', () => {
@@ -75,7 +75,7 @@ describe('RefundMapper', () => {
         action.in[0].coins[0] = {asset: 'ETH-USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48', amount: '99900026'};
         const thornodeTx = {tx: {id: 'tx-refund', coins: [{asset: 'ETH.ETH', amount: '800000'}], gas: [{asset: 'ETH.ETH', amount: '4138'}]}} as any;
 
-        expect(new RefundMapper().toCryptoTax(action, false, [thornodeTx])).toEqual([]);
+        expect(new RefundMapper().toCryptoTax(action, [thornodeTx])).toEqual([]);
     });
 
     test('a refund of what the wallet sent keeps its row when THORNode lists the same asset in another case', () => {
@@ -84,6 +84,6 @@ describe('RefundMapper', () => {
         action.out[0].coins[0].asset = 'ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48';
         const thornodeTx = {tx: {id: 'tx-refund', coins: [{asset: 'ETH.USDC-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', amount: '1'}], gas: [{asset: 'ETH.ETH', amount: '4138'}]}} as any;
 
-        expect(new RefundMapper().toCryptoTax(action, false, [thornodeTx])[0].type).toBe('failed-out');
+        expect(new RefundMapper().toCryptoTax(action, [thornodeTx])[0].type).toBe('failed-out');
     });
 });

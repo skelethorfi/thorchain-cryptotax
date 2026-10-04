@@ -10,7 +10,7 @@ describe('ThornameMapper', () => {
         const action = fs.readJSONSync('test/testdata/Thorname.json');
 
         thornameMapper = new ThornameMapper();
-        const result = thornameMapper.toCryptoTax(action, false, []);
+        const result = thornameMapper.toCryptoTax(action, []);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toStrictEqual({
@@ -36,7 +36,7 @@ describe('ThornameMapper', () => {
         action.in[0].coins = [];
 
         thornameMapper = new ThornameMapper();
-        const result = thornameMapper.toCryptoTax(action, false, []);
+        const result = thornameMapper.toCryptoTax(action, []);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toStrictEqual({
@@ -64,7 +64,7 @@ describe('ThornameMapper', () => {
         action.metadata.thorname.owner = 'thor1-owner-fallback-22222';
 
         thornameMapper = new ThornameMapper();
-        const result = thornameMapper.toCryptoTax(action, false, []);
+        const result = thornameMapper.toCryptoTax(action, []);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toStrictEqual({

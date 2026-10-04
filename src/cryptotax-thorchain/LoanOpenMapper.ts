@@ -16,7 +16,7 @@ const LOANOPEN_DESTADDR = 2;
 // * [loan] receive currency B from thorchain
 
 export class LoanOpenMapper implements Mapper {
-    toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = []): CryptoTaxTransaction[] {
+    toCryptoTax(action: Action, thornodeTxs: TxStatusResponse[] = []): CryptoTaxTransaction[] {
 
         const numAssetsIn: number = action.in.length;
 

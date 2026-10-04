@@ -15,14 +15,14 @@ export abstract class BaseMapper implements Mapper {
     protected transactions: CryptoTaxTransaction[] = [];
     issues: Issue[] = [];
 
-    constructor(protected action: Action, protected addReferencePrices: boolean, protected thornodeTxs: TxStatusResponse[] = [],
+    constructor(protected action: Action, protected thornodeTxs: TxStatusResponse[] = [],
                 protected protocol: Protocol = THORCHAIN) {
         this.datetime = parseMidgardDate(action.date);
         this.timestamp = this.datetime.toISOString();
         this.idPrefix = this.datetime.toISOString();
     }
 
-    abstract toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[], protocol?: Protocol): CryptoTaxTransaction[];
+    abstract toCryptoTax(action: Action, thornodeTxs: TxStatusResponse[], protocol?: Protocol): CryptoTaxTransaction[];
 
     protected createTransaction(overrides: Partial<CryptoTaxTransaction>): CryptoTaxTransaction {
         return {

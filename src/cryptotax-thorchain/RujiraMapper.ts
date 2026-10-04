@@ -91,7 +91,7 @@ export class RujiraMapper implements Mapper {
     private txId = '';
     private timestamp = '';
 
-    toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = [], protocol: Protocol = THORCHAIN,
+    toCryptoTax(action: Action, thornodeTxs: TxStatusResponse[] = [], protocol: Protocol = THORCHAIN,
                 cosmosTxs: CosmosTx[] = []): CryptoTaxTransaction[] {
         this.action = action;
         this.contract = (action.metadata as any).contract;

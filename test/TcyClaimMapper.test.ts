@@ -10,7 +10,7 @@ describe('TcyClaimMapper', () => {
         const action = fs.readJSONSync('test/testdata/TcyClaim.json');
 
         tcyClaimMapper = new TcyClaimMapper();
-        const result = tcyClaimMapper.toCryptoTax(action, false, []);
+        const result = tcyClaimMapper.toCryptoTax(action, []);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toStrictEqual({

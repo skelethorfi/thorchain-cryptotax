@@ -6,7 +6,7 @@ const mapper = new LoanRepaymentMapper();
 describe('LoanRepaymentMapper', () => {
     test('Deposit BTC to repay BTC loan. No closure', () => {
         const action = fs.readJSONSync('test/testdata/LoanRepayment_Deposit_BTC_to_repay_BTC_loan_No_closure.json');
-        const txs = mapper.toCryptoTax(action, false);
+        const txs = mapper.toCryptoTax(action);
 
         expect(txs.length).toBe(1);
 
@@ -29,7 +29,7 @@ describe('LoanRepaymentMapper', () => {
 
     test('Deposit RUNE to repay BTC loan. Closed loan', () => {
         const action = fs.readJSONSync('test/testdata/LoanRepayment_Deposit_RUNE_to_repay_BTC_loan_Closed_loan.json');
-        const txs = mapper.toCryptoTax(action, false);
+        const txs = mapper.toCryptoTax(action);
 
         expect(txs.length).toBe(2);
 

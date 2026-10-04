@@ -17,7 +17,7 @@ import { getInboundFee, getLpTokenName } from './ThorchainUtils';
 export class AddLiquidityMapper implements Mapper {
     issues: Issue[] = [];
 
-    toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = [], protocol: Protocol = THORCHAIN): CryptoTaxTransaction[] {
+    toCryptoTax(action: Action, thornodeTxs: TxStatusResponse[] = [], protocol: Protocol = THORCHAIN): CryptoTaxTransaction[] {
         const numAssetsIn: number = action.in.length;
 
         if (numAssetsIn === 0 || numAssetsIn > 2) {

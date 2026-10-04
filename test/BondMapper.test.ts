@@ -10,7 +10,7 @@ describe('BondMapper', () => {
         const action = fs.readJSONSync('test/testdata/Bond.json');
 
         bondMapper = new BondMapper();
-        const result = bondMapper.toCryptoTax(action, false, []);
+        const result = bondMapper.toCryptoTax(action, []);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toStrictEqual({

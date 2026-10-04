@@ -6,7 +6,7 @@ const mapper = new LoanOpenMapper();
 describe('LoanOpenMapper', () => {
     test('Deposit BTC, borrow RUNE. No affiliate fee', () => {
         const action = fs.readJSONSync('test/testdata/LoanOpen_Deposit_BTC_borrow_RUNE.json');
-        const txs = mapper.toCryptoTax(action, false);
+        const txs = mapper.toCryptoTax(action);
 
         expect(txs.length).toBe(2);
 
@@ -43,7 +43,7 @@ describe('LoanOpenMapper', () => {
 
     test('Deposit BTC, borrow RUNE. With affiliate fee', () => {
         const action = fs.readJSONSync('test/testdata/LoanOpen_Deposit_BTC_borrow_RUNE_Affiliate_Fee.json');
-        const txs = mapper.toCryptoTax(action, false);
+        const txs = mapper.toCryptoTax(action);
 
         expect(txs.length).toBe(2);
 

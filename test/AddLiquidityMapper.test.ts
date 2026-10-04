@@ -15,7 +15,7 @@ const saversDeposit = (address: string) => ({
 } as any);
 
 const depositRow = (action: any, thornodeTxs: any[] = []) =>
-    new AddLiquidityMapper().toCryptoTax(action, false, thornodeTxs).find((row) => row.type === 'add-liquidity')!;
+    new AddLiquidityMapper().toCryptoTax(action, thornodeTxs).find((row) => row.type === 'add-liquidity')!;
 
 describe('AddLiquidityMapper', () => {
     test('a savers deposit sent from an L1 wallet has no fee without THORNode gas, not the RUNE fee', () => {
