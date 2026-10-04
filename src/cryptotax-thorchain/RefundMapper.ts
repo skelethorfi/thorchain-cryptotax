@@ -19,7 +19,7 @@ import { formatBlockchainForOutput, getInboundFee } from './ThorchainUtils';
 import { Protocol, THORCHAIN } from '../protocols/Protocol';
 
 export class RefundMapper implements Mapper {
-    toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = [], protocol: Protocol = THORCHAIN): CryptoTaxTransaction[] {
+    toCryptoTax(action: Action, thornodeTxs: TxStatusResponse[] = [], protocol: Protocol = THORCHAIN): CryptoTaxTransaction[] {
         const date: Date = parseMidgardDate(action.date);
         const timestamp: string = date.toISOString();
         const idPrefix: string = date.toISOString();

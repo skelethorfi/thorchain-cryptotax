@@ -34,7 +34,7 @@ describe('SwitchMapper', () => {
         };
 
         switchMapper = new SwitchMapper();
-        const result = switchMapper.toCryptoTax(action, false, [thornodeTxs as any]);
+        const result = switchMapper.toCryptoTax(action, [thornodeTxs as any]);
 
         expect(result).toHaveLength(2);
         expect(result[0].type).toBe(CryptoTaxTransactionType.BridgeOut);

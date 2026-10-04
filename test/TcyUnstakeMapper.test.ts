@@ -10,7 +10,7 @@ describe('TcyUnstakeMapper', () => {
         const action = fs.readJSONSync('test/testdata/TcyUnstake.json');
 
         tcyUnstakeMapper = new TcyUnstakeMapper();
-        const result = tcyUnstakeMapper.toCryptoTax(action, false, []);
+        const result = tcyUnstakeMapper.toCryptoTax(action, []);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toStrictEqual({

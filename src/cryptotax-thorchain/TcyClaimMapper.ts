@@ -9,7 +9,7 @@ import {TxStatusResponse} from "@xchainjs/xchain-thornode";
 // This is only mapping the receive tx of TCY.
 // Not the signing tx with a dust amount from the original wallet.
 export class TcyClaimMapper implements Mapper {
-    toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = []): CryptoTaxTransaction[] {
+    toCryptoTax(action: Action, thornodeTxs: TxStatusResponse[] = []): CryptoTaxTransaction[] {
         const date: Date = parseMidgardDate(action.date);
         const timestamp: string = date.toISOString();
         const idPrefix: string = date.toISOString();

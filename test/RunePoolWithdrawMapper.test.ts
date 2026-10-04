@@ -10,7 +10,7 @@ describe('RunePoolWithdrawMapper', () => {
         const action = fs.readJSONSync('test/testdata/RunePoolWithdraw.json');
 
         runePoolWithdrawMapper = new RunePoolWithdrawMapper();
-        const result = runePoolWithdrawMapper.toCryptoTax(action, false, []);
+        const result = runePoolWithdrawMapper.toCryptoTax(action, []);
 
         expect(result).toHaveLength(2);
         expect(result[0]).toStrictEqual({

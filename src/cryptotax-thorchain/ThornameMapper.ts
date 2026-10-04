@@ -9,7 +9,7 @@ import {getDefaultRuneGas} from './ThorchainUtils';
 // Assumes default gas fee. One sample from thornode had no gas, but not sure if that's a data quality issue.
 // Could update this to get the gas from the thornode tx.
 export class ThornameMapper implements Mapper {
-    toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = []): CryptoTaxTransaction[] {
+    toCryptoTax(action: Action, thornodeTxs: TxStatusResponse[] = []): CryptoTaxTransaction[] {
         const date: Date = parseMidgardDate(action.date);
         const timestamp: string = date.toISOString();
         const idPrefix: string = date.toISOString();

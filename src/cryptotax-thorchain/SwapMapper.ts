@@ -25,9 +25,8 @@ function getActualBlockchain(tx: Transaction, parsedBlockchain: string): string 
 export class SwapMapper extends BaseMapper {
     protected mapperName: string = 'SwapMapper';
 
-    toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = [], protocol?: Protocol): CryptoTaxTransaction[] {
+    toCryptoTax(action: Action, thornodeTxs: TxStatusResponse[] = [], protocol?: Protocol): CryptoTaxTransaction[] {
         super.action = action;
-        super.addReferencePrices = addReferencePrices;
         super.thornodeTxs = thornodeTxs;
         super.protocol = protocol ?? this.protocol;
         const counterparty = this.protocol.counterparty;

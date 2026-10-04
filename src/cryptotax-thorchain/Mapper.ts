@@ -9,6 +9,5 @@ import {Issue} from "../domain/Issue";
 export interface Mapper {
     issues?: Issue[];
     // protocol defaults to THORChain. cosmosTxs are given for contract actions (docs/specs/rujira.md).
-    // addReferencePrices is ignored: CoinMarketCap reference prices were removed
-    toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[], protocol?: Protocol, cosmosTxs?: CosmosTx[]): CryptoTaxTransaction[];
+    toCryptoTax(action: Action, thornodeTxs: TxStatusResponse[], protocol?: Protocol, cosmosTxs?: CosmosTx[]): CryptoTaxTransaction[];
 }

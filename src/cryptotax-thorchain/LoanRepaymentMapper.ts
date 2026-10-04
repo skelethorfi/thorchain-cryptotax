@@ -18,7 +18,7 @@ const REPAYLOAN_DESTADDR = 2;
 // * [collateral-withdrawal] receive currency B from thorchain
 
 export class LoanRepaymentMapper implements Mapper {
-    toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = []): CryptoTaxTransaction[] {
+    toCryptoTax(action: Action, thornodeTxs: TxStatusResponse[] = []): CryptoTaxTransaction[] {
 
         const numAssetsIn: number = action.in.length;
         const numAssetsOut: number = action.out.length;

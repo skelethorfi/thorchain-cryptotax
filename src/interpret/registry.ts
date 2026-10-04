@@ -39,7 +39,7 @@ const rows = (rows: CryptoTaxTransaction[]): Interpretation => ({rows, issues: [
 // A Midgard mapper, made for each action so the issues it finds are that action's
 const midgard = (make: (bundle: RawBundle, protocol: Protocol) => Mapper): Interpreter => (bundle, protocol) => {
     const mapper = make(bundle, protocol);
-    const rows = mapper.toCryptoTax(bundle.data as Action, false, bundle.thornodeTxs, protocol, bundle.cosmosTxs);
+    const rows = mapper.toCryptoTax(bundle.data as Action, bundle.thornodeTxs, protocol, bundle.cosmosTxs);
     return {rows, issues: mapper.issues ?? []};
 };
 
@@ -51,7 +51,7 @@ const rujira = midgard(() => new RujiraMapper());
 const REGISTRY: Record<string, Interpreter> = {
     [`midgard/${ActionType.AddLiquidity}`]: midgard(() => new AddLiquidityMapper()),
     [`midgard/${ActionType.Withdraw}`]: midgard(() => new WithdrawMapper()),
-    [`midgard/${ActionType.Swap}`]: midgard((bundle, protocol) => new SwapMapper(bundle.data as Action, false, bundle.thornodeTxs, protocol)),
+    [`midgard/${ActionType.Swap}`]: midgard((bundle, protocol) => new SwapMapper(bundle.data as Action, bundle.thornodeTxs, protocol)),
     [`midgard/${ActionType.Swap}/loanOpen`]: midgard(() => new LoanOpenMapper()),
     [`midgard/${ActionType.Swap}/loanRepayment`]: midgard(() => new LoanRepaymentMapper()),
     [`midgard/${ActionType.Refund}`]: midgard(() => new RefundMapper()),

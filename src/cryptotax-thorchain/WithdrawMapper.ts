@@ -14,7 +14,7 @@ import { Protocol, THORCHAIN } from '../protocols/Protocol';
 import { getInboundFee, getLpTokenName } from './ThorchainUtils';
 
 export class WithdrawMapper implements Mapper {
-    toCryptoTax(action: Action, addReferencePrices: boolean, thornodeTxs: TxStatusResponse[] = [], protocol: Protocol = THORCHAIN): CryptoTaxTransaction[] {
+    toCryptoTax(action: Action, thornodeTxs: TxStatusResponse[] = [], protocol: Protocol = THORCHAIN): CryptoTaxTransaction[] {
         const numAssetsOut: number = action.out.length;
 
         if (numAssetsOut === 0 || numAssetsOut > 2) {

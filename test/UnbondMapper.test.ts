@@ -10,7 +10,7 @@ describe('UnbondMapper', () => {
         const action = fs.readJSONSync('test/testdata/Unbond.json');
 
         unbondMapper = new UnbondMapper();
-        const result = unbondMapper.toCryptoTax(action, false, []);
+        const result = unbondMapper.toCryptoTax(action, []);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toStrictEqual({
