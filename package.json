@@ -12,7 +12,6 @@
   "dependencies": {
     "@types/fs-extra": "^11.0.4",
     "@types/lodash": "^4.17.20",
-    "@types/markdown-it": "^14.1.2",
     "@xchainjs/xchain-midgard": "^1.0.4",
     "@xchainjs/xchain-thornode": "^1.0.3",
     "@xchainjs/xchain-util": "^2.0.5",
@@ -23,8 +22,6 @@
     "fs-extra": "^11.3.2",
     "js-toml": "^1.0.0",
     "lodash": "^4.17.21",
-    "markdown-it": "^14.1.0",
-    "markdown-it-collapsible": "^2.0.2",
     "ts-node": "^10.9.1",
     "typescript": "^5.9.3"
   },

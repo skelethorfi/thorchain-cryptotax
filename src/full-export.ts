@@ -2,7 +2,6 @@ import * as path from "path";
 import {format} from 'date-fns-tz';
 import {Exporter} from "./thorchain-exporter/Exporter";
 import {oldCacheHint} from "./cache/cli";
-import {generateReport} from "./thorchain-exporter/Reporter";
 import {TaxEvents} from "./thorchain-exporter/TaxEvents";
 
 async function main() {
@@ -62,11 +61,6 @@ async function main() {
     for (const wallet of wallets) {
         const events = await exporter.getEvents(wallet, outputPath);
         events.sortDesc();
-
-        // Generate each report with the events for that wallet only.
-        // After calling addEvents then events will be de-duplicated so not all would show up in their wallet report.
-        generateReport(events, wallet, path.join(outputPath, 'report'));
-
         allEvents.addEvents(events);
     }
 
