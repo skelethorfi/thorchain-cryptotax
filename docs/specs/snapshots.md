@@ -84,7 +84,10 @@ share a key, the run stops rather than merge them.
   copies are skipped. Old Midgard's `genesisTx` placeholder adds (positions
   that existed at its 2022-03-22 store migration) are left out: Midgard's
   archive has the real adds, and keeping both would count those positions
-  twice. An old cache is not read unless imported.
+  twice. An old cache is not read unless imported: while the store is empty,
+  a run that finds one (in the store folder, for a config whose `cachePath`
+  still points at it, or `cache/` next to the config) warns and prints the
+  import command.
 
 ## Which copy a run uses
 

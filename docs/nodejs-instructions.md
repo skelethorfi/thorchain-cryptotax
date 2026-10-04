@@ -69,6 +69,7 @@ since pruned. It lists what it used in `snapshots.json` in its output folder.
 `npx ts-node src/full-export.ts --replay ../my-tax/FY2026/2026-10-03_15-33-50 ../my-tax/wallets-config.toml`
 
 A cache from before the store (`cache/` with one file per wallet or tx) is not read
-by a run. Import it into the store first; for several old caches, oldest first:
+by a run; while the store is empty, a run warns and prints the import command. Import
+it into the store first; for several old caches, oldest first:
 
 `npm run store -- import ../my-tax/store ../my-tax/FY2025/cache ../my-tax/cache`

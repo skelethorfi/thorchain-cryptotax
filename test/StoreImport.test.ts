@@ -93,3 +93,18 @@ describe('store import from the folder-per-record layout', () => {
         expect((await new MidgardService(offline).getActions('w')).map(a => a.type)).toEqual(['swap']);
     });
 });
+
+describe('oldCacheHint', () => {
+    test('suggests importing an old cache next to the config, or in the store folder, while the store is empty', async () => {
+        const {oldCacheHint} = await import('../src/cache/cli');
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-hint-'));
+        fs.outputJsonSync(path.join(dir, 'cache', 'midgard', 'w.json'), []);
+
+        expect(oldCacheHint(path.join(dir, 'store'), dir)).toMatch(/npm run store -- import .*store .*cache$/);
+        // A config whose cachePath still points at the old cache
+        expect(oldCacheHint(path.join(dir, 'cache'), dir)).toMatch(/import .*cache .*cache$/);
+
+        fs.outputJsonSync(path.join(dir, 'store', 'records', 'thornode', 'undated', 'A.0.json'), {});
+        expect(oldCacheHint(path.join(dir, 'store'), dir)).toBeUndefined();
+    });
+});

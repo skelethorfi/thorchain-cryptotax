@@ -1,6 +1,7 @@
 import * as path from "path";
 import {format} from 'date-fns-tz';
 import {Exporter} from "./thorchain-exporter/Exporter";
+import {oldCacheHint} from "./cache/cli";
 import {generateReport} from "./thorchain-exporter/Reporter";
 import {TaxEvents} from "./thorchain-exporter/TaxEvents";
 
@@ -38,6 +39,12 @@ async function main() {
 
     const outputPath = path.join(exporter.config.outputPath, timestamp);
     const storePath = exporter.config.storePath;
+
+    const importCommand = replay ? undefined : oldCacheHint(storePath, path.dirname(path.resolve(configFile)));
+
+    if (importCommand) {
+        console.warn(`Found a cache from before the store, which runs no longer read. To keep what it holds, stop and import it first:\n  ${importCommand}\n`);
+    }
 
     if (replay) {
         console.log(`Replay: reading the records of ${replay} from ${storePath}\n`);

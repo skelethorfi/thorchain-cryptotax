@@ -161,6 +161,21 @@ function walk(dir: string): string[] {
         entry.isDirectory() ? walk(path.join(dir, entry.name)) : entry.name.endsWith('.json') ? [path.join(dir, entry.name)] : []);
 }
 
+// A cache from before the store, which runs no longer read: the store folder itself (a config whose
+// cachePath still points at it) or cache/ next to the config. Returns the import command to suggest, while
+// the store holds nothing yet.
+export function oldCacheHint(storePath: string, configDir: string): string | undefined {
+    if (walk(path.join(storePath, 'records')).length > 0) {
+        return undefined;
+    }
+
+    const isOldCache = (dir: string) => Object.keys(SOURCES).some(source =>
+        fs.existsSync(path.join(dir, source)) && fs.readdirSync(path.join(dir, source)).some(name => name.endsWith('.json')));
+    const oldCache = [storePath, path.join(configDir, 'cache')].find(isOldCache);
+
+    return oldCache && `npm run store -- import ${path.relative(process.cwd(), storePath) || '.'} ${path.relative(process.cwd(), oldCache) || '.'}`;
+}
+
 function main() {
     const [command, storeRoot, ...cacheRoots] = process.argv.slice(2);
 
