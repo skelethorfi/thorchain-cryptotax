@@ -8,20 +8,18 @@ import {CryptoTaxTransaction} from "../cryptotax";
 import {ViewblockTx} from "../viewblock";
 import {TaxEvent} from "../thorchain-exporter/TaxEvent";
 import {ITaxConfig} from "../thorchain-exporter/ITaxConfig";
-import {getActionDate} from "../cryptotax-thorchain/MidgardActionMapper";
 import {TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService";
-import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
-import {BaseMapper} from "../thorchain-exporter/BaseMapper";
 import {getProtocol, ProtocolId} from "../protocols/Protocol";
 import {CosmosTx} from "../cryptotax-thorchain/CosmosTxService";
+import {BundleSource, RawBundle} from "../sources/RawBundle";
 
 // A golden test case is a folder containing:
-//   input.json    - the raw source data (a GoldenCaseInput)
+//   input.json    - the raw source data (a GoldenCaseInput: a RawBundle plus a description)
 //   expected.yaml - the CSV rows the exporter should produce, reviewed by hand;
 //                   one YAML document per row, separated by '---' ('[]' for no rows)
 // Inputs must never contain anyone's own wallets or txids (see docs/specs/fixtures.md).
 
-export type GoldenCaseSource = 'midgard' | 'viewblock' | 'tcy';
+export type GoldenCaseSource = BundleSource;
 
 export interface GoldenCaseInput {
     description: string;
@@ -99,6 +97,30 @@ export function writeCaseExpected(dir: string, rows: CryptoTaxTransaction[]) {
     fs.outputFileSync(path.join(dir, EXPECTED_FILE), formatRows(rows));
 }
 
+// A case's input is a RawBundle, written without the fields that are at their default
+export function toBundle(input: GoldenCaseInput): RawBundle {
+    return {
+        source: input.source,
+        protocol: input.protocol ?? 'thorchain',
+        wallet: input.wallet,
+        data: input.data,
+        thornodeTxs: input.thornodeTxs ?? [],
+        cosmosTxs: input.cosmosTxs ?? [],
+    };
+}
+
+export function toCaseInput(bundle: RawBundle, description: string): GoldenCaseInput {
+    return {
+        description,
+        source: bundle.source,
+        ...(bundle.protocol === 'thorchain' ? {} : {protocol: bundle.protocol}),
+        wallet: bundle.wallet,
+        data: bundle.data,
+        ...(bundle.thornodeTxs.length ? {thornodeTxs: bundle.thornodeTxs} : {}),
+        ...(bundle.cosmosTxs.length ? {cosmosTxs: bundle.cosmosTxs} : {}),
+    };
+}
+
 // Runs a case through the same TaxEvent path the exporter uses.
 // Unsupported actions are written to a temporary folder rather than the repo.
 export function runCase(input: GoldenCaseInput, unsupportedActionsPath?: string): CryptoTaxTransaction[] {
@@ -107,22 +129,5 @@ export function runCase(input: GoldenCaseInput, unsupportedActionsPath?: string)
     } as ITaxConfig;
     const wallet = {name: 'test', address: input.wallet, blockchain: ''};
 
-    const event = new TaxEvent(getCaseDate(input), input.source, wallet, config, getProtocol(input.protocol));
-    event.input = input.data;
-    event.thornodeTxs = input.thornodeTxs ?? [];
-    event.cosmosTxs = input.cosmosTxs ?? [];
-    event.convert();
-
-    return event.output;
-}
-
-function getCaseDate(input: GoldenCaseInput): Date {
-    switch (input.source) {
-        case 'midgard':
-            return getActionDate(input.data as Action);
-        case 'viewblock':
-            return new BaseMapper(input.data as ViewblockTx, input.wallet).datetime;
-        case 'tcy':
-            return TcyDistributionMapper.parseDate(input.data as TcyDistributionItem);
-    }
+    return TaxEvent.fromBundle(toBundle(input), wallet, config, getProtocol(input.protocol)).output;
 }

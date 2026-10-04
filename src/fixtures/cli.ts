@@ -4,14 +4,14 @@ import path from "path";
 import {Action, Configuration, MidgardApi} from "@xchainjs/xchain-midgard";
 import {ThornodeService} from "../cryptotax-thorchain/ThornodeService";
 import {RecordStore} from "../cache/RecordStore";
-import {CosmosTxService, getCosmosTxIds} from "../cryptotax-thorchain/CosmosTxService";
-import {getThornodeTxIds} from "../thorchain-exporter/Exporter";
-import {getActionDate} from "../cryptotax-thorchain/MidgardActionMapper";
+import {CosmosTxService} from "../cryptotax-thorchain/CosmosTxService";
+import {MidgardService} from "../cryptotax-thorchain/MidgardService";
+import {MidgardSource} from "../sources/Source";
 import {Anonymiser} from "./Anonymise";
-import {EXPECTED_FILE, formatRows, GoldenCaseInput, INPUT_FILE, readCaseInput, runCase, writeCaseExpected} from "./GoldenCase";
+import {EXPECTED_FILE, formatRows, GoldenCaseInput, INPUT_FILE, readCaseInput, runCase, toCaseInput, writeCaseExpected} from "./GoldenCase";
 import {getPrivateDir, mask, PrivateData} from "./PrivateData";
 import {describeShape, getActionIds, getActionShape, sameShape} from "./Shape";
-import {getProtocol, Protocol, THORCHAIN} from "../protocols/Protocol";
+import {getProtocol, Protocol} from "../protocols/Protocol";
 
 // Workflow for adding a golden test case without leaking private data:
 //
@@ -43,38 +43,13 @@ async function fetchInput(txid: string, protocol: Protocol, index?: number): Pro
     }
 
     const action = actions[index ?? 0];
-    const thornodeTxs = [];
+    // The exporter's bundle builder; related txs go to a throwaway store, as the tx may be anyone's
+    const store = new RecordStore(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-fixture-')));
+    const source = new MidgardSource(protocol, new MidgardService(store, `${protocol.id}-midgard`, protocol.midgardUrl),
+        new ThornodeService(store), new CosmosTxService(store));
+    const bundle = await source.bundle(action, action.in[0]?.address ?? '');
 
-    const thornodeTxIds = protocol.id === THORCHAIN.id ? getThornodeTxIds(action) : [];
-
-    if (thornodeTxIds.length) {
-        const thornode = new ThornodeService(new RecordStore(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-thornode-'))));
-
-        for (const txId of thornodeTxIds) {
-            thornodeTxs.push(await thornode.getTxStatus(txId, getActionDate(action)));
-        }
-    }
-
-    const cosmosTxs = [];
-    const cosmosTxIds = protocol.id === THORCHAIN.id ? getCosmosTxIds(action) : [];
-
-    if (cosmosTxIds.length) {
-        const cosmos = new CosmosTxService(new RecordStore(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-cosmos-'))));
-
-        for (const txId of cosmosTxIds) {
-            cosmosTxs.push(await cosmos.getTx(txId, getActionDate(action)));
-        }
-    }
-
-    return {
-        description: describeShape(getActionShape(action)),
-        source: 'midgard',
-        ...(protocol.id === THORCHAIN.id ? {} : {protocol: protocol.id}),
-        wallet: action.in[0]?.address ?? '',
-        data: action,
-        ...(thornodeTxs.length ? {thornodeTxs} : {}),
-        ...(cosmosTxs.length ? {cosmosTxs} : {}),
-    };
+    return toCaseInput(bundle, describeShape(getActionShape(action)));
 }
 
 async function findSimilar(input: GoldenCaseInput, maxPages: number, privateData: PrivateData): Promise<Action[]> {

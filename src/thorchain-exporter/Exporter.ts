@@ -4,70 +4,19 @@ import {format} from 'date-fns-tz';
 import {CryptoTaxTransaction, writeCsv} from "../cryptotax";
 import {MidgardService} from "../cryptotax-thorchain/MidgardService";
 import {ThornodeService} from "../cryptotax-thorchain/ThornodeService";
-import {CosmosTxService, getCosmosTxIds} from "../cryptotax-thorchain/CosmosTxService";
+import {CosmosTxService} from "../cryptotax-thorchain/CosmosTxService";
 import {TcyDistributionService} from "../cryptotax-thorchain/TcyDistributionService";
-import {Action, ActionStatusEnum, ActionTypeEnum} from "@xchainjs/xchain-midgard";
 import {ITaxConfig} from "./ITaxConfig";
 import {IWallet} from "./IWallet";
 import {TaxEvents} from "./TaxEvents";
 import {DateRange, generateDateRanges} from "../utils/DateRange";
 import path from "path";
-import {BaseMapper} from "./BaseMapper";
-import {getActionDate} from "../cryptotax-thorchain/MidgardActionMapper";
 import {TaxConfig} from "./TaxConfig";
-import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
 import {FetchMode, RecordStore} from "../cache/RecordStore";
 import {SnapshotManifest} from "../cache/SnapshotManifest";
 import {getProtocol, Protocol, THORCHAIN, withAssetNames} from "../protocols/Protocol";
-import {assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
-
-// The inbound txids to look up on THORNode, which is the only source of the gas the wallet paid on an
-// L1 chain (docs/specs/fees.md). A refund's is looked up to see what the wallet sent, not for its gas.
-export function getThornodeTxIds(action: Action): string[] {
-    const inbounds = action.in ?? [];
-    let txIds: (string | undefined)[] = [];
-
-    if (action.type === ActionTypeEnum.Swap || action.type === ActionTypeEnum.Switch || action.type === ActionTypeEnum.Refund) {
-        txIds = [inbounds[0]?.txID];
-    } else if (action.type === ActionTypeEnum.AddLiquidity || action.type === ActionTypeEnum.Withdraw) {
-        // Deposits and withdrawal requests sent on THORChain pay the native fee, so only L1 ones are looked up
-        txIds = inbounds.filter(inbound => isL1Asset(inbound.coins[0]?.asset)).map(inbound => inbound.txID);
-    }
-
-    // Old Midgard reports LP positions from before its start with the placeholder txid 'genesisTx'
-    return [...new Set(txIds.filter((txId): txId is string => !!txId && txId !== 'genesisTx'))];
-}
-
-function isL1Asset(asset?: string): boolean {
-    if (!asset) {
-        return false;
-    }
-
-    const {chain, type} = assetFromStringEx(asset);
-
-    return chain !== 'THOR' && type === AssetType.NATIVE;
-}
-
-export function shouldIncludeAction(action: Action): boolean {
-    if (action.status === ActionStatusEnum.Success) {
-        return true;
-    }
-
-    const txType = (action.metadata.swap as any)?.txType;
-
-    // Loan repayments show as 'pending' if the loan is not closed
-    if (txType === 'loanRepayment') {
-        return true;
-    }
-
-    // A loan open with an output was paid out, whatever its status. Midgard reports loan opens that
-    // borrowed RUNE as 'pending' (the RUNE payout has no txid). See docs/specs/loans.md.
-    if (txType === 'loanOpen') {
-        return action.out.some(out => out.coins.length > 0);
-    }
-
-    return false;
-}
+import {MidgardSource, Source, TcySource, ViewblockSource} from "../sources/Source";
+import {getBundleDate, getBundleSourceName, RawBundle} from "../sources/RawBundle";
 
 export interface ExportOptions {
     // Only read cached snapshots; fail on anything not cached
@@ -124,81 +73,28 @@ export class Exporter {
             }));
     }
 
+    // Each source's bundles for the wallet, in this order: Viewblock sends, THORChain Midgard, other
+    // protocols' Midgards (e.g. Maya), TCY distributions
+    sources(): Source[] {
+        return [
+            new ViewblockSource(this.viewblock),
+            new MidgardSource(this.thorchain, this.midgard, this.thornode, this.cosmosTxs),
+            ...this.otherMidgards.map(({protocol, midgard}) => new MidgardSource(protocol, midgard, this.thornode, this.cosmosTxs)),
+            new TcySource(this.tcyDistribution),
+        ];
+    }
+
     async getEvents(wallet: IWallet, outputPath: string): Promise<TaxEvents> {
         const events = new TaxEvents();
 
-        const txs = await this.viewblock.getAllTxs({
-            address: wallet.address,
-            network: 'mainnet'
-            // type: 'all',
-        });
-
-        for (const tx of txs) {
-            try {
-                events.addViewblock(tx, wallet, this.config);
-            } catch (error) {
-                // Log the error, save a copy of failed transaction and keep going
-                console.error(error);
-                const mapper = new BaseMapper(tx, wallet.address);
-                this.saveFailure(outputPath, wallet.address, 'viewblock', mapper.datetime, tx, error);
-            }
-        }
-
-        // Get Midgard actions
-        let actions: Action[] = await this.midgard.getActions(wallet.address);
-
-        actions = this.excludeNonSuccess(actions);
-
-        for (const action of actions) {
-            const thornodeTxs = [];
-
-            // The inbound THORNode transactions give the gas the wallet paid
-            for (const txId of getThornodeTxIds(action)) {
-                thornodeTxs.push(await this.thornode.getTxStatus(txId, getActionDate(action)));
-            }
-
-            // A contract action's results are only in its Cosmos tx
-            const cosmosTxs = [];
-
-            for (const txId of getCosmosTxIds(action)) {
-                cosmosTxs.push(await this.cosmosTxs.getTx(txId, getActionDate(action)));
-            }
-
-            try {
-                events.addMidgard(action, wallet, thornodeTxs, this.config, this.thorchain, cosmosTxs);
-            } catch (error) {
-                // Log the error, save a copy of failed transaction and keep going
-                console.error(error);
-                this.saveFailure(outputPath, wallet.address, 'midgard', getActionDate(action), action, error);
-            }
-        }
-
-        // Get actions from other protocols' Midgards (e.g. Maya), for every wallet
-        for (const {protocol, midgard} of this.otherMidgards) {
-            const protocolActions = this.excludeNonSuccess(await midgard.getActions(wallet.address));
-
-            for (const action of protocolActions) {
+        for (const source of this.sources()) {
+            for (const bundle of await source.bundlesFor(wallet.address)) {
                 try {
-                    events.addMidgard(action, wallet, [], this.config, protocol);
-                } catch (error) {
-                    console.error(error);
-                    this.saveFailure(outputPath, wallet.address, `${protocol.id}-midgard`, getActionDate(action), action, error);
-                }
-            }
-        }
-
-        // Get TCY distributions
-        if (this.isThorchain(wallet.address)) {
-            const tcyDistribution = await this.tcyDistribution.getTcyDistribution(wallet.address);
-            const distributions = tcyDistribution.distributions || [];
-
-            for (const item of distributions) {
-                try {
-                    events.addTcyDistribution(item, wallet, this.config);
+                    events.addBundle(bundle, wallet, this.config, this.protocolFor(bundle));
                 } catch (error) {
                     // Log the error, save a copy of failed transaction and keep going
                     console.error(error);
-                    this.saveFailure(outputPath, wallet.address, 'tcy', TcyDistributionMapper.parseDate(item), item, error);
+                    this.saveFailure(outputPath, wallet.address, getBundleSourceName(bundle), getBundleDate(bundle), bundle.data, error);
                 }
             }
         }
@@ -206,8 +102,14 @@ export class Exporter {
         return events;
     }
 
-    excludeNonSuccess(actions: Action[]): Action[] {
-        return actions.filter(shouldIncludeAction);
+    // Midgard actions are mapped with their protocol's asset-name settings; Viewblock sends and TCY
+    // distributions with THORChain's defaults
+    private protocolFor(bundle: RawBundle): Protocol {
+        if (bundle.source !== 'midgard') {
+            return THORCHAIN;
+        }
+
+        return [{protocol: this.thorchain}, ...this.otherMidgards].find(({protocol}) => protocol.id === bundle.protocol)!.protocol;
     }
 
     saveToCsv(txs: CryptoTaxTransaction[], outputPath: string) {
@@ -325,9 +227,5 @@ export class Exporter {
         const timestamp = format(date, 'yyyy-MM-dd_HHmm_ssSSS');
         const errorMessage = error.message || 'unknown error';
         fs.writeJsonSync(path.join(failureDir, `${timestamp}.json`), { ERROR_MESSAGE: errorMessage, ...data }, { spaces: 4});
-    }
-
-    private isThorchain(wallet: string): boolean {
-        return wallet.toLowerCase().startsWith('thor1');
     }
 }
