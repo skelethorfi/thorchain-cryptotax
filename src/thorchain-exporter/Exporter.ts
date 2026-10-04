@@ -8,7 +8,6 @@ import {CosmosTxService, getCosmosTxIds} from "../cryptotax-thorchain/CosmosTxSe
 import {TcyDistributionService} from "../cryptotax-thorchain/TcyDistributionService";
 import {Action, ActionStatusEnum, ActionTypeEnum} from "@xchainjs/xchain-midgard";
 import {ITaxConfig} from "./ITaxConfig";
-import {Reporter} from "./Reporter";
 import {IWallet} from "./IWallet";
 import {TaxEvents} from "./TaxEvents";
 import {DateRange, generateDateRanges} from "../utils/DateRange";
@@ -91,7 +90,6 @@ export class Exporter {
     thornode: ThornodeService;
     cosmosTxs: CosmosTxService;
     tcyDistribution: TcyDistributionService;
-    report: Reporter;
 
     constructor(filename: string, options: ExportOptions = {}) {
         this.config = TaxConfig.load(filename);
@@ -121,7 +119,6 @@ export class Exporter {
                 protocol,
                 midgard: new MidgardService(store, `${protocol.id}-midgard`, protocol.midgardUrl),
             }));
-        this.report = new Reporter();
     }
 
     async getEvents(wallet: IWallet, outputPath: string): Promise<TaxEvents> {
