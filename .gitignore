@@ -13,9 +13,6 @@ output/
 # NodeJS
 node_modules/
 
-# Python
-venv/
-
 # IntelliJ
 *.iml
 .idea/

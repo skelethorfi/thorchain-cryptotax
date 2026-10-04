@@ -3,7 +3,6 @@ import {
     CryptoTaxTransaction,
     CryptoTaxTransactionType,
 } from '../cryptotax';
-import { getPrice } from "../cmc-scraper";
 import { baseToAssetAmountString } from '../utils/Amount';
 import {
     parseMidgardAsset,
@@ -105,18 +104,6 @@ export class WithdrawMapper implements Mapper {
             parseFloat(transactions[0].baseAmount) * numAssetsOut
         ).toString();
 
-        let referencePrice = {};
-
-        if (addReferencePrices) {
-            const totalValue = getPrice(quoteCurrency, date) * parseFloat(quoteAmount);
-            const referencePricePerUnit = (totalValue / parseFloat(liquidityUnits)).toString();
-
-            referencePrice = {
-                referencePriceCurrency: 'USD',
-                referencePricePerUnit
-            };
-        }
-
         // Market price for LP units
 
         transactions.unshift({
@@ -150,8 +137,7 @@ export class WithdrawMapper implements Mapper {
             to: protocol.counterparty,
             blockchain: protocol.blockchain,
             id: `${idPrefix}.return-lp-token`,
-            description: `${currentTxNum}/${totalTxs} - Return LP token to ${lpToken} (${symmDesc}); ${txId}`,
-            ...referencePrice
+            description: `${currentTxNum}/${totalTxs} - Return LP token to ${lpToken} (${symmDesc}); ${txId}`
         });
 
         return transactions.reverse();

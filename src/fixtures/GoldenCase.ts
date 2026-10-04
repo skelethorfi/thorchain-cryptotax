@@ -30,7 +30,6 @@ export interface GoldenCaseInput {
     protocol?: ProtocolId;
     // The wallet being exported. Required for viewblock and tcy, which map relative to a wallet.
     wallet: string;
-    addReferencePrices?: boolean;
     data: Action | ViewblockTx | TcyDistributionItem;
     // Related THORNode transactions (midgard swaps and switches)
     thornodeTxs?: TxStatusResponse[];
@@ -106,7 +105,7 @@ export function runCase(input: GoldenCaseInput, unsupportedActionsPath?: string)
     const config = {
         unsupportedActionsPath: unsupportedActionsPath ?? fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-unsupported-')),
     } as ITaxConfig;
-    const wallet = {name: 'test', address: input.wallet, blockchain: '', addReferencePrices: input.addReferencePrices ?? false};
+    const wallet = {name: 'test', address: input.wallet, blockchain: ''};
 
     const event = new TaxEvent(getCaseDate(input), input.source, wallet, config, getProtocol(input.protocol));
     event.input = input.data;

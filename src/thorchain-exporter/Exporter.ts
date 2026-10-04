@@ -99,6 +99,9 @@ export class Exporter {
         if (this.config.cacheDataSources !== undefined) {
             console.warn('Config: cacheDataSources is no longer used: every run fetches the latest data and keeps what was stored; use --offline to fetch nothing');
         }
+        for (const wallet of this.config.wallets.filter(w => w.addReferencePrices)) {
+            console.warn(`Config: addReferencePrices is no longer supported and is ignored (wallet ${wallet.name})`);
+        }
 
         const store = new RecordStore(storePath, {
             offline: options.offline,
