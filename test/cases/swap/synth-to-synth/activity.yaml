@@ -1,0 +1,50 @@
+id: midgard/swap.91F0B32DB9B7475D3895A376BE95137C441FD7CABBDCC1359CC037650AC1BCBD
+protocol: thorchain
+kind: swap
+status: success
+time: 2022-03-20T07:19:18.793Z
+txids:
+  in:
+    - 91F0B32DB9B7475D3895A376BE95137C441FD7CABBDCC1359CC037650AC1BCBD
+  out: []
+memo: SWAP:BNB/BUSD-BD1:thor1yep703ewakef0h2l9qel93xh96tvkm004pesq7:826719094098
+legs:
+  - direction: out
+    wallet: thor1yep703ewakef0h2l9qel93xh96tvkm004pesq7
+    asset:
+      notation: BTC/BTC
+      kind: synth
+    role: principal
+    basis: observed
+    amount: "0.21823"
+    decimals: 8
+  - direction: in
+    wallet: thor1yep703ewakef0h2l9qel93xh96tvkm004pesq7
+    asset:
+      notation: BNB/BUSD-BD1
+      kind: synth
+    role: principal
+    basis: observed
+    amount: "9255.63936161"
+    decimals: 8
+  - direction: out
+    wallet: thor1yep703ewakef0h2l9qel93xh96tvkm004pesq7
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: gas
+    basis: default
+    amount: "0.02"
+    decimals: 8
+prices:
+  - asset:
+      notation: BTC/BTC
+      kind: synth
+    usd: "42423.47396404385"
+    source: midgard:swap.inPriceUSD
+  - asset:
+      notation: BNB/BUSD-BD1
+      kind: synth
+    usd: "0.9999999999999999"
+    source: midgard:swap.outPriceUSD
+details: {}

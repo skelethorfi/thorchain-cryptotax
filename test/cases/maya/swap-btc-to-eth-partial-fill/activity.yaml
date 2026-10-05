@@ -1,0 +1,52 @@
+id: maya-midgard/swap.0275FE2418BEC28ADF5D9F8635D0BC06359CC6BB835DC2485EB51DAEC4E1CBCB
+protocol: maya
+kind: swap
+status: success
+time: 2026-08-18T17:46:41.880Z
+txids:
+  in:
+    - 0275FE2418BEC28ADF5D9F8635D0BC06359CC6BB835DC2485EB51DAEC4E1CBCB
+  out:
+    - F12741DA9A6B8AB7CC3A38482C557526176217848E3E922BB8D057B8219F61FE
+    - D3D019FEF8CFA4311B18858E32E9ECF647D164A864833796BB53B694F3EFB518
+memo: =:ETH.ETH:0x6BFb3172717047DE7D68CdF7Cc2073Cc73A9495c:157642132/1/3
+legs:
+  - direction: out
+    wallet: bc1qj2c8q8ex4te9ufp5afdfpwr4e7hz64esnddewp
+    asset:
+      notation: BTC.BTC
+      kind: native
+    role: principal
+    basis: observed
+    amount: "0.03106666"
+    decimals: 8
+  - direction: in
+    wallet: bc1qj2c8q8ex4te9ufp5afdfpwr4e7hz64esnddewp
+    asset:
+      notation: BTC.BTC
+      kind: native
+    role: returned
+    basis: observed
+    amount: "0.01553184"
+    decimals: 8
+  - direction: in
+    wallet: "0x6bfb3172717047de7d68cdf7cc2073cc73a9495c"
+    asset:
+      notation: ETH.ETH
+      kind: native
+    role: principal
+    basis: observed
+    amount: "1.05891769"
+    decimals: 8
+prices:
+  - asset:
+      notation: BTC.BTC
+      kind: native
+    usd: "71351.27349148977"
+    source: midgard:swap.inPriceUSD
+  - asset:
+      notation: ETH.ETH
+      kind: native
+    usd: "2056.997050126577"
+    source: midgard:swap.outPriceUSD
+details: {}

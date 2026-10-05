@@ -99,7 +99,7 @@ export function formatRows(rows: object[]): string {
         return '[]\n';
     }
 
-    return rows.map(row => YAML.stringify(row, {lineWidth: 0})).join('---\n');
+    return rows.map(row => YAML.stringify(row, {lineWidth: 0, aliasDuplicateObjects: false})).join('---\n');
 }
 
 export function writeCaseExpected(dir: string, rows: CryptoTaxTransaction[]) {

@@ -1,0 +1,51 @@
+id: maya-midgard/swap.6A923F07C97C6EE09AE2DDEFF8D9329AFC61F38925CF4965BDB0D7D1FD88F279
+protocol: maya
+kind: swap
+status: success
+time: 2025-10-03T02:11:13.439Z
+txids:
+  in:
+    - 6A923F07C97C6EE09AE2DDEFF8D9329AFC61F38925CF4965BDB0D7D1FD88F279
+  out:
+    - 717A31A8B297E17E5FFEFF91BD9A6B58A5B72762CEC7494A6C4D57689B8FDDEB
+memo: =:ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48:0x36944b474580f5da31b864fbae80dd53c9814d49:369540949179/3/0:wr:0
+legs:
+  - direction: out
+    wallet: maya1s7naj6kzxpudy64zka8h5w7uffnzmhzlue4w3p
+    asset:
+      notation: MAYA.CACAO
+      kind: native
+    role: principal
+    basis: observed
+    amount: "20000"
+    decimals: 10
+  - direction: in
+    wallet: "0x36944b474580f5da31b864fbae80dd53c9814d49"
+    asset:
+      notation: ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48
+      kind: token
+    role: principal
+    basis: observed
+    amount: "3798.840908"
+    decimals: 8
+  - direction: out
+    wallet: maya1s7naj6kzxpudy64zka8h5w7uffnzmhzlue4w3p
+    asset:
+      notation: MAYA.CACAO
+      kind: native
+    role: gas
+    basis: default
+    amount: "0.2"
+    decimals: 10
+prices:
+  - asset:
+      notation: MAYA.CACAO
+      kind: native
+    usd: "0.19053173093158599"
+    source: midgard:swap.inPriceUSD
+  - asset:
+      notation: ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48
+      kind: token
+    usd: "0.998580942216526"
+    source: midgard:swap.outPriceUSD
+details: {}
