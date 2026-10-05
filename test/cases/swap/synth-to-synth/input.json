@@ -1,0 +1,71 @@
+{
+  "description": "swap/swap success: [BTC/BTC] -> [BNB/BUSD-BD1]",
+  "source": "midgard",
+  "wallet": "thor1yep703ewakef0h2l9qel93xh96tvkm004pesq7",
+  "data": {
+    "date": "1647760758793384221",
+    "height": "4760955",
+    "in": [
+      {
+        "address": "thor1yep703ewakef0h2l9qel93xh96tvkm004pesq7",
+        "coins": [
+          {
+            "amount": "21823000",
+            "asset": "BTC/BTC"
+          }
+        ],
+        "txID": "91F0B32DB9B7475D3895A376BE95137C441FD7CABBDCC1359CC037650AC1BCBD"
+      }
+    ],
+    "metadata": {
+      "swap": {
+        "affiliateAddress": "",
+        "affiliateFee": "0",
+        "inPriceUSD": "42423.47396404385",
+        "isStreamingSwap": false,
+        "liquidityFee": "42548001",
+        "memo": "SWAP:BNB/BUSD-BD1:thor1yep703ewakef0h2l9qel93xh96tvkm004pesq7:826719094098",
+        "networkFees": [
+          {
+            "amount": "17465832",
+            "asset": "BNB/BUSD-BD1"
+          }
+        ],
+        "outPriceUSD": "0.9999999999999999",
+        "swapSlip": "4",
+        "swapTarget": "826719094098",
+        "txType": "swap"
+      }
+    },
+    "out": [
+      {
+        "address": "thor1yep703ewakef0h2l9qel93xh96tvkm004pesq7",
+        "coins": [
+          {
+            "amount": "925563936161",
+            "asset": "BNB/BUSD-BD1"
+          }
+        ],
+        "height": "4760955",
+        "txID": ""
+      }
+    ],
+    "pools": [
+      "BTC.BTC",
+      "BNB.BUSD-BD1"
+    ],
+    "status": "success",
+    "type": "swap"
+  },
+  "thornodeTxs": [
+    {
+      "stages": {
+        "inbound_observed": {
+          "started": false,
+          "final_count": 0,
+          "completed": false
+        }
+      }
+    }
+  ]
+}

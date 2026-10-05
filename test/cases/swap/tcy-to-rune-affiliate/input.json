@@ -1,0 +1,159 @@
+{
+  "description": "swap/swap success: [THOR.TCY] -> [THOR.RUNE, THOR.RUNE]",
+  "source": "midgard",
+  "wallet": "thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j",
+  "data": {
+    "date": "1747635397730592836",
+    "height": "21160249",
+    "in": [
+      {
+        "address": "thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j",
+        "coins": [
+          {
+            "amount": "5000000000000",
+            "asset": "THOR.TCY"
+          }
+        ],
+        "txID": "A46848A2984FB8738BE9B41EB9C8ADA22854BE22F0DAF99B630184C7A172372D"
+      }
+    ],
+    "metadata": {
+      "swap": {
+        "affiliateAddress": "va",
+        "affiliateFee": "50",
+        "inPriceUSD": "0.3612794057368309",
+        "isStreamingSwap": true,
+        "liquidityFee": "478689968",
+        "memo": "=:THOR.RUNE:thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j:0/1/0:va:50",
+        "networkFees": [
+          {
+            "amount": "2000000",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "outPriceUSD": "1.7703625161270882",
+        "streamingSwapMeta": {
+          "count": "47",
+          "depositedCoin": {
+            "amount": "5000000000000",
+            "asset": "THOR.TCY"
+          },
+          "inCoin": {
+            "amount": "5000000000000",
+            "asset": "THOR.TCY"
+          },
+          "interval": "1",
+          "lastHeight": "21160295",
+          "outCoin": {
+            "amount": "976485207376",
+            "asset": "THOR.RUNE"
+          },
+          "outEstimation": "1022383680314",
+          "quantity": "47"
+        },
+        "swapSlip": "5",
+        "swapTarget": "0",
+        "txType": "swap"
+      }
+    },
+    "out": [
+      {
+        "address": "thor1svfwxevnxtm4ltnw92hrqpqk4vzuzw9a4jzy04",
+        "affiliate": true,
+        "coins": [
+          {
+            "amount": "4882426037",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "height": "21160295",
+        "txID": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      {
+        "address": "thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j",
+        "coins": [
+          {
+            "amount": "971600781339",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "height": "21160295",
+        "txID": ""
+      }
+    ],
+    "pools": [
+      "THOR.TCY"
+    ],
+    "status": "success",
+    "type": "swap"
+  },
+  "thornodeTxs": [
+    {
+      "tx": {
+        "id": "A46848A2984FB8738BE9B41EB9C8ADA22854BE22F0DAF99B630184C7A172372D",
+        "chain": "THOR",
+        "from_address": "thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j",
+        "to_address": "thor1g98cy3n9mmjrpn0sxmn63lztelera37n8n67c0",
+        "coins": [
+          {
+            "asset": "THOR.TCY",
+            "amount": "5000000000000"
+          }
+        ],
+        "gas": null,
+        "memo": "=:THOR.RUNE:thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j:0/1/0:va:50"
+      },
+      "planned_out_txs": [
+        {
+          "chain": "THOR",
+          "to_address": "thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j",
+          "coin": {
+            "asset": "THOR.RUNE",
+            "amount": "971600781339"
+          },
+          "refund": false
+        }
+      ],
+      "out_txs": [
+        {
+          "id": "0000000000000000000000000000000000000000000000000000000000000000",
+          "chain": "THOR",
+          "from_address": "thor1g98cy3n9mmjrpn0sxmn63lztelera37n8n67c0",
+          "to_address": "thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j",
+          "coins": [
+            {
+              "asset": "THOR.RUNE",
+              "amount": "971600781339"
+            }
+          ],
+          "gas": [
+            {
+              "asset": "THOR.RUNE",
+              "amount": "2000000"
+            }
+          ],
+          "memo": "OUT:A46848A2984FB8738BE9B41EB9C8ADA22854BE22F0DAF99B630184C7A172372D"
+        }
+      ],
+      "stages": {
+        "inbound_observed": {
+          "final_count": 0,
+          "completed": true
+        },
+        "inbound_confirmation_counted": {
+          "remaining_confirmation_seconds": 0,
+          "completed": true
+        },
+        "inbound_finalised": {
+          "completed": true
+        },
+        "swap_status": {
+          "pending": false
+        },
+        "swap_finalised": {
+          "completed": true
+        }
+      }
+    }
+  ]
+}

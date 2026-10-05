@@ -1,0 +1,70 @@
+{
+  "description": "swap/swap success: [THOR.RUNE] -> [ETH.ETH]",
+  "source": "midgard",
+  "wallet": "thor1lnre6rd4m2fnrpemsmffksvw7wm65gwfcvfa35",
+  "data": {
+    "date": "1684923331478023635",
+    "height": "10985133",
+    "in": [
+      {
+        "address": "thor1lnre6rd4m2fnrpemsmffksvw7wm65gwfcvfa35",
+        "coins": [
+          {
+            "amount": "998525539977",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "txID": "197E79C4AF5647087738DAA5D314F37C0435A455F804B4FA0AB4F72B087D70AB"
+      }
+    ],
+    "metadata": {
+      "swap": {
+        "affiliateAddress": "t",
+        "affiliateFee": "15",
+        "inPriceUSD": "1.1146313541194603",
+        "isStreamingSwap": false,
+        "liquidityFee": "1141552900",
+        "memo": "=:ETH.ETH:0x5225c3548a8d143d68c4b266218c1f92add08ac4:607152672:t:15:f2:2a6F:420042957972160472115800",
+        "networkFees": [
+          {
+            "amount": "600000",
+            "asset": "ETH.ETH"
+          }
+        ],
+        "outPriceUSD": "1822.2074678384636",
+        "swapSlip": "11",
+        "swapTarget": "607152672",
+        "txType": "swap"
+      }
+    },
+    "out": [
+      {
+        "address": "0x5225c3548a8d143d68c4b266218c1f92add08ac4",
+        "coins": [
+          {
+            "amount": "610188379",
+            "asset": "ETH.ETH"
+          }
+        ],
+        "height": "10985240",
+        "txID": "1B031CA139B576C2FABAF483A10A47B0EFA213F0EE05518C1826C22C93935AB7"
+      }
+    ],
+    "pools": [
+      "ETH.ETH"
+    ],
+    "status": "success",
+    "type": "swap"
+  },
+  "thornodeTxs": [
+    {
+      "stages": {
+        "inbound_observed": {
+          "started": false,
+          "final_count": 0,
+          "completed": false
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+walletExchange: thor1yep703ewakef0h2l9qel93xh96tvkm004pesq7
+timestamp: 2022-03-20T07:19:18.793Z
+type: bridge-trade-out
+baseCurrency: ThorSynth.BTC.BTC
+baseAmount: "0.21823"
+quoteCurrency: ThorSynth.BNB.BUSD
+quoteAmount: "9255.63936161"
+feeCurrency: RUNE
+feeAmount: "0.02"
+from: thor1yep703ewakef0h2l9qel93xh96tvkm004pesq7
+to: thorchain
+blockchain: THORChain
+referencePricePerUnit: "42423.47396404385"
+referencePriceCurrency: USD
+id: 2022-03-20T07:19:18.793Z.thorchain.bridge-trade-out
+description: 1/2 - Swap 0.21823 Synth BTC/BTC to 9255.63936161 Synth BNB/BUSD; 91F0B32DB9B7475D3895A376BE95137C441FD7CABBDCC1359CC037650AC1BCBD
+---
+walletExchange: thor1yep703ewakef0h2l9qel93xh96tvkm004pesq7
+timestamp: 2022-03-20T07:19:28.793Z
+type: bridge-trade-in
+baseCurrency: ThorSynth.BNB.BUSD
+baseAmount: "9255.63936161"
+from: thorchain
+to: thor1yep703ewakef0h2l9qel93xh96tvkm004pesq7
+blockchain: THORChain
+referencePricePerUnit: "0.9999999999999999"
+referencePriceCurrency: USD
+id: 2022-03-20T07:19:18.793Z.thorchain.bridge-trade-in
+description: 2/2 - Swap 0.21823 Synth BTC/BTC to 9255.63936161 Synth BNB/BUSD; 91F0B32DB9B7475D3895A376BE95137C441FD7CABBDCC1359CC037650AC1BCBD

@@ -1,0 +1,29 @@
+walletExchange: thor18rf5jlxe4ckg2ftcc8ysf78z2rrhhl0el2xav4
+timestamp: 2025-02-01T20:57:59.258Z
+type: bridge-trade-out
+baseCurrency: RUNE
+baseAmount: "5000"
+quoteCurrency: USDC
+quoteAmount: "6325.973167"
+feeCurrency: RUNE
+feeAmount: "0.02"
+from: thor18rf5jlxe4ckg2ftcc8ysf78z2rrhhl0el2xav4
+to: thorchain
+blockchain: THORChain
+referencePricePerUnit: "1.277622935708596"
+referencePriceCurrency: USD
+id: 2025-02-01T20:57:59.258Z.thorchain.bridge-trade-out
+description: 1/2 - Swap 5000 RUNE to 6325.973167 USDC; B9FA308764553E2DFFA0C80094C1FC55B52560FE68C018422A3FEA657F5CCA1F
+---
+walletExchange: "0xbd9ce28a34f53753e88ff901c23d7b7a159c583f"
+timestamp: 2025-02-01T20:58:09.258Z
+type: bridge-trade-in
+baseCurrency: USDC
+baseAmount: "6325.973167"
+from: thorchain
+to: "0xbd9ce28a34f53753e88ff901c23d7b7a159c583f"
+blockchain: ETH
+referencePricePerUnit: "1.003858920232459"
+referencePriceCurrency: USD
+id: 2025-02-01T20:57:59.258Z.thorchain.bridge-trade-in
+description: 2/2 - Swap 5000 RUNE to 6325.973167 USDC; B9FA308764553E2DFFA0C80094C1FC55B52560FE68C018422A3FEA657F5CCA1F

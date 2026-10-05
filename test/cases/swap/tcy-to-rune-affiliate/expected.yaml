@@ -1,0 +1,29 @@
+walletExchange: thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j
+timestamp: 2025-05-19T06:16:37.730Z
+type: bridge-trade-out
+baseCurrency: TCY
+baseAmount: "50000"
+quoteCurrency: RUNE
+quoteAmount: "9716.00781339"
+feeCurrency: RUNE
+feeAmount: "0.02"
+from: thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j
+to: thorchain
+blockchain: THORChain
+referencePricePerUnit: "0.3612794057368309"
+referencePriceCurrency: USD
+id: 2025-05-19T06:16:37.730Z.thorchain.bridge-trade-out
+description: 1/2 - Swap 50000 TCY to 9716.00781339 RUNE; A46848A2984FB8738BE9B41EB9C8ADA22854BE22F0DAF99B630184C7A172372D
+---
+walletExchange: thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j
+timestamp: 2025-05-19T06:16:47.730Z
+type: bridge-trade-in
+baseCurrency: RUNE
+baseAmount: "9716.00781339"
+from: thorchain
+to: thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j
+blockchain: THORChain
+referencePricePerUnit: "1.7703625161270882"
+referencePriceCurrency: USD
+id: 2025-05-19T06:16:37.730Z.thorchain.bridge-trade-in
+description: 2/2 - Swap 50000 TCY to 9716.00781339 RUNE; A46848A2984FB8738BE9B41EB9C8ADA22854BE22F0DAF99B630184C7A172372D

@@ -1,0 +1,179 @@
+{
+  "description": "swap/swap success: [THOR.RUNE] -> [ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48, THOR.RUNE]",
+  "source": "midgard",
+  "wallet": "thor18rf5jlxe4ckg2ftcc8ysf78z2rrhhl0el2xav4",
+  "data": {
+    "date": "1738443479258192968",
+    "height": "19685733",
+    "in": [
+      {
+        "address": "thor18rf5jlxe4ckg2ftcc8ysf78z2rrhhl0el2xav4",
+        "coins": [
+          {
+            "amount": "500000000000",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "txID": "B9FA308764553E2DFFA0C80094C1FC55B52560FE68C018422A3FEA657F5CCA1F"
+      }
+    ],
+    "metadata": {
+      "swap": {
+        "affiliateAddress": "t",
+        "affiliateFee": "50",
+        "inPriceUSD": "1.277622935708596",
+        "isStreamingSwap": true,
+        "liquidityFee": "638117132",
+        "memo": "=:ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48:0xbd9Ce28A34F53753e88Ff901c23D7B7A159c583f:623019405200:t:50",
+        "networkFees": [
+          {
+            "amount": "2000000",
+            "asset": "THOR.RUNE"
+          },
+          {
+            "amount": "355809500",
+            "asset": "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48"
+          }
+        ],
+        "outPriceUSD": "1.003858920232459",
+        "swapSlip": "13",
+        "swapTarget": "623019405200",
+        "txType": "swap"
+      }
+    },
+    "out": [
+      {
+        "address": "0xbd9ce28a34f53753e88ff901c23d7b7a159c583f",
+        "coins": [
+          {
+            "amount": "632597316700",
+            "asset": "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48"
+          }
+        ],
+        "height": "19685748",
+        "txID": "55860A1E4E029A040242443BC45DD278B2484949AB016F26123FED6B11510619"
+      },
+      {
+        "address": "thor1dl7un46w7l7f3ewrnrm6nq58nerjtp0dradjtd",
+        "affiliate": true,
+        "coins": [
+          {
+            "amount": "2494649400",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "height": "19685739",
+        "txID": ""
+      }
+    ],
+    "pools": [
+      "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48"
+    ],
+    "status": "success",
+    "type": "swap"
+  },
+  "thornodeTxs": [
+    {
+      "tx": {
+        "id": "B9FA308764553E2DFFA0C80094C1FC55B52560FE68C018422A3FEA657F5CCA1F",
+        "chain": "THOR",
+        "from_address": "thor18rf5jlxe4ckg2ftcc8ysf78z2rrhhl0el2xav4",
+        "to_address": "thor1g98cy3n9mmjrpn0sxmn63lztelera37n8n67c0",
+        "coins": [
+          {
+            "asset": "THOR.RUNE",
+            "amount": "500000000000"
+          }
+        ],
+        "gas": null,
+        "memo": "=:ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48:0xbd9Ce28A34F53753e88Ff901c23D7B7A159c583f:623019405200:t:50"
+      },
+      "planned_out_txs": [
+        {
+          "chain": "ETH",
+          "to_address": "0xbd9Ce28A34F53753e88Ff901c23D7B7A159c583f",
+          "coin": {
+            "asset": "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
+            "amount": "632597316700"
+          },
+          "refund": false
+        },
+        {
+          "chain": "THOR",
+          "to_address": "thor1dl7un46w7l7f3ewrnrm6nq58nerjtp0dradjtd",
+          "coin": {
+            "asset": "THOR.RUNE",
+            "amount": "2494649400"
+          },
+          "refund": false
+        }
+      ],
+      "out_txs": [
+        {
+          "id": "0000000000000000000000000000000000000000000000000000000000000000",
+          "chain": "THOR",
+          "from_address": "thor1g98cy3n9mmjrpn0sxmn63lztelera37n8n67c0",
+          "to_address": "thor1dl7un46w7l7f3ewrnrm6nq58nerjtp0dradjtd",
+          "coins": [
+            {
+              "asset": "THOR.RUNE",
+              "amount": "2494649400"
+            }
+          ],
+          "gas": [
+            {
+              "asset": "THOR.RUNE",
+              "amount": "2000000"
+            }
+          ],
+          "memo": "OUT:B9FA308764553E2DFFA0C80094C1FC55B52560FE68C018422A3FEA657F5CCA1F"
+        },
+        {
+          "id": "55860A1E4E029A040242443BC45DD278B2484949AB016F26123FED6B11510619",
+          "chain": "ETH",
+          "from_address": "0xfde6557c86e8d58a2563ae708124f9c8a0a30b94",
+          "to_address": "0xbd9Ce28A34F53753e88Ff901c23D7B7A159c583f",
+          "coins": [
+            {
+              "asset": "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
+              "amount": "632597316700",
+              "decimals": 6
+            }
+          ],
+          "gas": [
+            {
+              "asset": "ETH.ETH",
+              "amount": "42107"
+            }
+          ],
+          "memo": "OUT:B9FA308764553E2DFFA0C80094C1FC55B52560FE68C018422A3FEA657F5CCA1F"
+        }
+      ],
+      "stages": {
+        "inbound_observed": {
+          "final_count": 0,
+          "completed": true
+        },
+        "inbound_confirmation_counted": {
+          "remaining_confirmation_seconds": 0,
+          "completed": true
+        },
+        "inbound_finalised": {
+          "completed": true
+        },
+        "swap_status": {
+          "pending": false
+        },
+        "swap_finalised": {
+          "completed": true
+        },
+        "outbound_delay": {
+          "completed": true
+        },
+        "outbound_signed": {
+          "completed": true
+        }
+      }
+    }
+  ]
+}
