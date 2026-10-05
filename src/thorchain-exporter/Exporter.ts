@@ -7,7 +7,6 @@ import {ThornodeService} from "../cryptotax-thorchain/ThornodeService";
 import {CosmosTxService} from "../cryptotax-thorchain/CosmosTxService";
 import {TcyDistributionService} from "../cryptotax-thorchain/TcyDistributionService";
 import {ITaxConfig} from "./ITaxConfig";
-import {TaxEvents} from "./TaxEvents";
 import {DateRange, generateDateRanges} from "../utils/DateRange";
 import path from "path";
 import {TaxConfig} from "./TaxConfig";
@@ -16,7 +15,7 @@ import {SnapshotManifest} from "../cache/SnapshotManifest";
 import {getProtocol, Protocol, THORCHAIN, withAssetNames} from "../protocols/Protocol";
 import {MidgardSource, Source, TcySource, ViewblockSource} from "../sources/Source";
 import {dedupeBundles, getBundleSourceName, RawBundle} from "../sources/RawBundle";
-import {TaxEvent} from "./TaxEvent";
+import {BundleResult, collectRows, runBundle} from "../pipeline/run";
 import {Action} from "@xchainjs/xchain-midgard";
 
 export interface ExportOptions {
@@ -98,46 +97,39 @@ export class Exporter {
         return bundles;
     }
 
-    getEvents(bundles: RawBundle[], outputPath: string): TaxEvents {
-        const events = new TaxEvents();
+    // Every row of the bundles; issues are logged, and unsupported and failed actions saved
+    getRows(bundles: RawBundle[], outputPath: string): CryptoTaxTransaction[] {
         const unique = dedupeBundles(bundles);
 
         if (unique.duplicates > 0) {
             console.log(`Skipped ${unique.duplicates} Midgard actions also listed for an earlier wallet`);
         }
 
-        for (const bundle of unique.bundles) {
-            const event = TaxEvent.fromBundle(bundle, this.protocolFor(bundle), {assets: this.config.assets});
-            this.handleIssues(bundle, event, outputPath);
+        const results = unique.bundles.map(bundle => runBundle(bundle, this.protocolFor(bundle), {assets: this.config.assets}));
+        results.forEach(result => this.handleIssues(result, outputPath));
 
-            // A failed bundle gives no rows; its copy is saved for a look
-            if (!event.issues.some(issue => issue.kind === 'failed')) {
-                events.add(event);
-            }
-        }
-
-        return events;
+        return collectRows(results);
     }
 
     // Unsupported actions are saved for triage and failures with their error; those, warnings and
     // actions to enter by hand are logged
-    private handleIssues(bundle: RawBundle, event: TaxEvent, outputPath: string) {
-        const date = event.datetime.toISOString();
+    private handleIssues({bundle, time, rows, issues}: BundleResult, outputPath: string) {
+        const date = time.toISOString();
         const type = bundle.source === 'midgard' ? (bundle.data as Action).type : bundle.source;
 
-        if (bundle.source === 'midgard' && !event.issues.some(issue => ['unsupported', 'failed', 'ignored'].includes(issue.kind))) {
-            console.log(`${date} ${type}: ${event.output.length}`);
+        if (bundle.source === 'midgard' && !issues.some(issue => ['unsupported', 'failed', 'ignored'].includes(issue.kind))) {
+            console.log(`${date} ${type}: ${rows.length}`);
         }
 
-        for (const issue of event.issues) {
+        for (const issue of issues) {
             if (issue.kind === 'warning' || issue.kind === 'manual') {
                 console.warn(`${date} ${type}: ${issue.kind === 'manual' ? 'enter by hand: ' : ''}${issue.message}`);
             } else if (issue.kind === 'unsupported') {
                 console.error(`${date} ${type}: unsupported action`);
-                this.saveUnsupported(bundle, event.datetime);
+                this.saveUnsupported(bundle, time);
             } else if (issue.kind === 'failed') {
                 console.error(`${date} ${type}: ${issue.message}`);
-                this.saveFailure(outputPath, bundle.wallet, getBundleSourceName(bundle), event.datetime, bundle.data, issue.message);
+                this.saveFailure(outputPath, bundle.wallet, getBundleSourceName(bundle), time, bundle.data, issue.message);
             }
         }
     }

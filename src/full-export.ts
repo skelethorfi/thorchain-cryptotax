@@ -52,12 +52,8 @@ async function main() {
         console.log(`Fetching ${fetch === 'all' ? 'every record' : 'the latest data'}; earlier copies in ${storePath} are kept\n`);
     }
 
-    const allEvents = exporter.getEvents(await exporter.collectBundles(), outputPath);
-    allEvents.sortDesc();
-
-    // Convert TaxEvents to CTC
-    // Collect all events and then save, otherwise one wallet's TC swaps could overwrite another
-    exporter.saveToCsv(allEvents.getAllCtcTx(), path.join(outputPath, 'csv'));
+    // Every wallet's rows are collected before saving, otherwise one wallet's TC swaps could overwrite another
+    exporter.saveToCsv(exporter.getRows(await exporter.collectBundles(), outputPath), path.join(outputPath, 'csv'));
 
     // Which snapshot of each source this run used, for --replay
     exporter.snapshots.write(outputPath);

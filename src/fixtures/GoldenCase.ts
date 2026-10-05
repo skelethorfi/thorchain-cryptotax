@@ -5,7 +5,7 @@ import {Action} from "@xchainjs/xchain-midgard";
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
 import {CryptoTaxTransaction} from "../cryptotax";
 import {ViewblockTx} from "../viewblock";
-import {TaxEvent} from "../thorchain-exporter/TaxEvent";
+import {runBundle} from "../pipeline/run";
 import {ITaxConfig} from "../thorchain-exporter/ITaxConfig";
 import {TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService";
 import {getProtocol, ProtocolId} from "../protocols/Protocol";
@@ -143,7 +143,7 @@ export function toCaseInput(bundle: RawBundle, description: string): GoldenCaseI
     };
 }
 
-// Runs a case through the same TaxEvent path the exporter uses. An unsupported action gives no rows;
+// Runs a case through the same path the exporter uses (runBundle). An unsupported action gives no rows;
 // a failure throws, so a case can't pass by failing.
 export function runCase(input: GoldenCaseInput): CryptoTaxTransaction[] {
     return runCaseLayers(input).rows;
@@ -151,12 +151,12 @@ export function runCase(input: GoldenCaseInput): CryptoTaxTransaction[] {
 
 // The activities a ported action type gives, and the rows
 export function runCaseLayers(input: GoldenCaseInput): {activities: Activity[]; rows: CryptoTaxTransaction[]} {
-    const event = TaxEvent.fromBundle(toBundle(input), getProtocol(input.protocol));
-    const failure = event.issues.find(issue => issue.kind === 'failed');
+    const {activities, rows, issues} = runBundle(toBundle(input), getProtocol(input.protocol));
+    const failure = issues.find(issue => issue.kind === 'failed');
 
     if (failure) {
         throw new Error(failure.message);
     }
 
-    return {activities: event.activities, rows: event.output};
+    return {activities, rows};
 }
