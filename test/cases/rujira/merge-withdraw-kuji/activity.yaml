@@ -1,0 +1,44 @@
+id: midgard/contract.B23EBFA300BD403F35E37662A057DBE783D488F73655DD601B61B3913065D2B0.wasm-rujira-merge/withdraw
+protocol: thorchain
+kind: rujira.merge.withdraw
+status: success
+time: 2026-04-25T17:12:18.203Z
+txids:
+  in:
+    - B23EBFA300BD403F35E37662A057DBE783D488F73655DD601B61B3913065D2B0
+  out:
+    - B23EBFA300BD403F35E37662A057DBE783D488F73655DD601B61B3913065D2B0
+legs:
+  - direction: out
+    wallet: thor168f3hdmg5duafwqsrqfx0n4q5meq98mlv2tyd3
+    asset:
+      notation: THOR.KUJI
+      kind: position
+      position: merge
+    role: principal
+    basis: observed
+    txid: B23EBFA300BD403F35E37662A057DBE783D488F73655DD601B61B3913065D2B0
+    amount: "42.51523793"
+    decimals: 8
+  - direction: in
+    wallet: thor168f3hdmg5duafwqsrqfx0n4q5meq98mlv2tyd3
+    asset:
+      notation: X/RUJI
+      kind: native
+    role: principal
+    basis: observed
+    txid: B23EBFA300BD403F35E37662A057DBE783D488F73655DD601B61B3913065D2B0
+    amount: "56.92373804"
+    decimals: 8
+  - direction: out
+    wallet: thor168f3hdmg5duafwqsrqfx0n4q5meq98mlv2tyd3
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: gas
+    basis: observed
+    txid: B23EBFA300BD403F35E37662A057DBE783D488F73655DD601B61B3913065D2B0
+    amount: "0.00002448"
+    decimals: 8
+prices: []
+details: {}

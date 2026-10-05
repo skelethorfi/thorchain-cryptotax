@@ -8,8 +8,8 @@ import {assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
 export type AssetKind = 'native' | 'token' | 'synth' | 'trade' | 'secured' | 'position';
 
 // lp: units of a liquidity pool; savers: a savers position, denominated in the asset saved; runepool:
-// RUNEPool units (RUNE lent to the protocol-owned liquidity)
-export type PositionKind = 'lp' | 'savers' | 'runepool';
+// RUNEPool units (RUNE lent to the protocol-owned liquidity); merge: shares of a Rujira merge pool
+export type PositionKind = 'lp' | 'savers' | 'runepool' | 'merge';
 
 export interface Asset {
     // As the source writes it: Midgard notation, or a Cosmos denom (x/ruji). Exporters name it.

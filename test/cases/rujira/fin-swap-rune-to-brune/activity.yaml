@@ -1,0 +1,43 @@
+id: midgard/contract.47E2DFDED36A137A7D3FCBC444E2F149CD3A5778EB7A1395303E95A37FFBA31B.wasm-rujira-fin/trade
+protocol: thorchain
+kind: rujira.fin.trade
+status: success
+time: 2026-05-06T08:43:29.080Z
+txids:
+  in:
+    - 47E2DFDED36A137A7D3FCBC444E2F149CD3A5778EB7A1395303E95A37FFBA31B
+  out:
+    - 47E2DFDED36A137A7D3FCBC444E2F149CD3A5778EB7A1395303E95A37FFBA31B
+legs:
+  - direction: out
+    wallet: thor1v46lh3v2vk9mkcvjs46v203xn46ey40p4xtfcn
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: principal
+    basis: observed
+    txid: 47E2DFDED36A137A7D3FCBC444E2F149CD3A5778EB7A1395303E95A37FFBA31B
+    amount: "550"
+    decimals: 8
+  - direction: in
+    wallet: thor1v46lh3v2vk9mkcvjs46v203xn46ey40p4xtfcn
+    asset:
+      notation: X/BRUNE
+      kind: native
+    role: principal
+    basis: observed
+    txid: 47E2DFDED36A137A7D3FCBC444E2F149CD3A5778EB7A1395303E95A37FFBA31B
+    amount: "549.175"
+    decimals: 8
+  - direction: out
+    wallet: thor1v46lh3v2vk9mkcvjs46v203xn46ey40p4xtfcn
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: gas
+    basis: observed
+    txid: 47E2DFDED36A137A7D3FCBC444E2F149CD3A5778EB7A1395303E95A37FFBA31B
+    amount: "0.21920891"
+    decimals: 8
+prices: []
+details: {}

@@ -394,6 +394,23 @@ describe('swap', () => {
         expect(result[0].to).toBe('mayaprotocol');
     });
 
+    test('Maya: a synth swapped from a Maya wallet is the wallet\'s swap, not a savers withdrawal', () => {
+        const action = createMockAction({
+            inputAsset: 'BTC/BTC',
+            inputAmount: 1,
+            outputAsset: 'MAYA.CACAO',
+            outputAmount: 1,
+            inputAddress: 'maya1-user',
+            outputAddress: 'maya1-user',
+            txID: 'tx-maya-synth',
+        });
+
+        const result = swap(action, [], MAYA);
+
+        expect(result).toHaveLength(2);
+        expect(result[0].blockchain).toBe('MayaProtocol');
+    });
+
     test('Maya: a RUNE input still pays THORChain gas', () => {
         const action = createMockAction({
             inputAsset: 'THOR.RUNE',

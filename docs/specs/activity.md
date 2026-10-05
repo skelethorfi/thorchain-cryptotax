@@ -73,7 +73,7 @@ An asset keeps the source's notation (`BTC.BTC`, `BTC/BTC`, `BTC~BTC`,
 | `native` | a chain's own coin or a protocol's token: `BTC.BTC`, `THOR.RUNE`, `THOR.TCY`, `MAYA.CACAO`, `x/ruji` |
 | `token` | a token on an L1 chain: `ETH.USDC-0X…` |
 | `synth`, `trade`, `secured` | held on THORChain or Maya, for an L1 asset: `BTC/BTC`, `BTC~BTC`, `BTC-BTC` |
-| `position` | a share of a pool; the notation is the pool, and `position` says which: `lp` (`BTC.BTC`), `savers` (`BTC/BTC`) or `runepool` (`THOR.RUNE`) |
+| `position` | a share of a pool; the notation is the pool, and `position` says which: `lp` (`BTC.BTC`), `savers` (`BTC/BTC`), `runepool` (`THOR.RUNE`) or `merge` (the asset a Rujira merge pool takes, e.g. `THOR.KUJI`) |
 
 Naming an asset for a tax tool (`ThorSynth.BTC.BTC`, `ThorLP.BTC.BTC`,
 `ThorSavers.BTC.BTC`, the `[assets]` prefixes) is the exporter's job
@@ -108,15 +108,15 @@ exporter cannot be built until it handles every kind.
 | `tcy.stake`, `tcy.unstake` | 8d | the TCY sent or received (observed); gas: the native fee (default) | — |
 | `tcy.distribution` | 8d | in: reward, the RUNE paid to the wallet it was listed for (observed). Price: the RUNE price the TCY API gives (`midgard:tcy.distribution.price`) | — |
 | `thorname` | 8d | out: principal, the RUNE paid to register or renew (observed, when any; an update pays none); gas: the native fee (default). An update with no input address takes the name's owner as the wallet | `name` |
+| `rujira.stake` | 8e | out: principal, the coin bonded (observed); gas: the wasm call's gas from its Cosmos tx (observed, when any; not the native fee, `rujira.md`) | `bond`: `liquid` or `account`; `shares` for a liquid bond |
+| `rujira.fin.trade` | 8e | out: principal, the coin sent to FIN (observed); in: returned, any of it sent back (observed); in: principal, the coin received, net of FIN's fee, from the Cosmos tx (observed); gas as above | — |
+| `rujira.merge.deposit`, `rujira.merge.withdraw` | 8e | the coin merged or the RUJI withdrawn (observed), against shares of the merge pool, a `merge` position (observed); gas as above | — |
 
-The other kinds are added in later steps:
-
-| Step | Kinds |
-| --- | --- |
-| 8e | Rujira (`rujira.stake`, `rujira.fin.trade`, `rujira.merge.deposit`, `rujira.merge.withdraw`); Maya through the same interpreters |
-
-Viewblock sends stay on the old path until Midgard sends replace them
-(backlog row 6).
+Every Midgard action type the exporter maps has a kind. Maya actions go
+through the same interpreters with Maya's protocol values (decimals, native
+asset and fee, address prefix, chain); only a tx sent on THORChain inside a
+Maya action pays THORChain's fee. Viewblock sends stay on the old path until
+Midgard sends replace them (backlog row 6).
 
 ## Example
 
@@ -158,5 +158,5 @@ row of 1 RUNE with a 0.02 RUNE fee: today's row. The interpreter is
 - Golden cases of ported kinds have a reviewed `activity.yaml` between
   `input.json` and `expected.yaml` (`fixtures.md`), so an interpreter bug and
   an exporter bug fail different checks: the `bond/`, `swap/`, `refund/`,
-  `liquidity/`, `switch/`, `runepool/`, `loan/`, `tcy/` and `thorname/`
-  cases and the Maya swaps and liquidity.
+  `liquidity/`, `switch/`, `runepool/`, `loan/`, `tcy/`, `thorname/` and
+  `rujira/` cases and the Maya swaps and liquidity.
