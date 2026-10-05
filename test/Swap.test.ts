@@ -1,12 +1,23 @@
-import { SwapMapper } from '../src/cryptotax-thorchain/SwapMapper';
+import { runBundle } from '../src/pipeline/run';
 import { Action, Transaction, Coin } from '@xchainjs/xchain-midgard';
-import { describe, expect, test, beforeEach } from '@jest/globals';
+import { describe, expect, test } from '@jest/globals';
 import { CryptoTaxTransactionType } from '../src/cryptotax';
 import { toMidgardNanoTimestamp } from '../src/cryptotax-thorchain/MidgardUtils';
-import { MAYA } from '../src/protocols/Protocol';
+import { MAYA, Protocol, THORCHAIN } from '../src/protocols/Protocol';
 
-describe('SwapMapper', () => {
-    let swapMapper: SwapMapper;
+describe('swap', () => {
+    // A swap through the exporter's path: interpreted, then exported as rows. A failure throws.
+    const swap = (action: Action, thornodeTxs: any[] = [], protocol: Protocol = THORCHAIN) => {
+        const bundle = {source: 'midgard' as const, protocol: protocol.id, wallet: '', data: action, thornodeTxs, cosmosTxs: []};
+        const {rows, issues} = runBundle(bundle, protocol);
+        const failure = issues.find(issue => issue.kind === 'failed');
+
+        if (failure) {
+            throw new Error(failure.message);
+        }
+
+        return rows;
+    };
 
     const createMockAction = ({
         inputAsset,
@@ -102,9 +113,8 @@ describe('SwapMapper', () => {
             txID: 'tx123',
         });
 
-        swapMapper = new SwapMapper(action, []);
 
-        expect(() => swapMapper.toCryptoTax(action)).toThrow(
+        expect(() => swap(action)).toThrow(
             'Failed to parse asset string: "BTCBTC"'
         );
     });
@@ -120,8 +130,7 @@ describe('SwapMapper', () => {
             txID: 'tx123',
         });
 
-        swapMapper = new SwapMapper(action, []);
-        const result = swapMapper.toCryptoTax(action);
+        const result = swap(action);
 
         expect(result).toHaveLength(2);
         expect(result[0].type).toBe(CryptoTaxTransactionType.BridgeTradeOut);
@@ -148,8 +157,7 @@ describe('SwapMapper', () => {
 
         action.metadata.swap!.networkFees = [{ asset: 'ETH.ETH', amount: '28423' }];
 
-        swapMapper = new SwapMapper(action, []);
-        const result = swapMapper.toCryptoTax(action, [
+        const result = swap(action, [
             createMockThornodeTx({
                 txID: 'tx-gas',
                 gasAsset: 'BTC.BTC',
@@ -174,8 +182,7 @@ describe('SwapMapper', () => {
 
         action.metadata.swap!.networkFees = [{ asset: 'ETH.ETH', amount: '28423' }];
 
-        swapMapper = new SwapMapper(action, []);
-        const result = swapMapper.toCryptoTax(action, []);
+        const result = swap(action, []);
 
         expect(result[0].feeCurrency).toBe('');
         expect(result[0].feeAmount).toBe('');
@@ -195,8 +202,7 @@ describe('SwapMapper', () => {
         action.metadata.swap!.inPriceUSD = '30000';
         action.metadata.swap!.outPriceUSD = '1500';
 
-        swapMapper = new SwapMapper(action, []);
-        const result = swapMapper.toCryptoTax(action);
+        const result = swap(action);
 
         expect(result[0].referencePricePerUnit).toBe('30000');
         expect(result[0].referencePriceCurrency).toBe('USD');
@@ -215,8 +221,7 @@ describe('SwapMapper', () => {
             txID: 'tx456',
         });
 
-        swapMapper = new SwapMapper(action, []);
-        const result = swapMapper.toCryptoTax(action);
+        const result = swap(action);
 
         expect(result).toHaveLength(2);
         expect(result[0].description).toContain('Synth BTC/BTC');
@@ -242,8 +247,7 @@ describe('SwapMapper', () => {
 
         action.metadata.swap!.networkFees = [{ asset: 'BTC.BTC', amount: '5000' }];
 
-        swapMapper = new SwapMapper(action, []);
-        const result = swapMapper.toCryptoTax(action, []);
+        const result = swap(action, []);
 
         expect(result[0].feeCurrency).toBe('RUNE');
         expect(result[0].feeAmount).toBe('0.02');
@@ -262,8 +266,7 @@ describe('SwapMapper', () => {
 
         action.metadata.swap!.networkFees = [{ asset: 'ETH.ETH', amount: '28423' }];
 
-        swapMapper = new SwapMapper(action, []);
-        const result = swapMapper.toCryptoTax(action, []);
+        const result = swap(action, []);
 
         expect(result[0].feeCurrency).toBe('RUNE');
         expect(result[0].feeAmount).toBe('0.02');
@@ -282,8 +285,7 @@ describe('SwapMapper', () => {
 
         action.metadata.swap!.networkFees = [{ asset: 'THOR.RUNE', amount: '2000000' }];
 
-        swapMapper = new SwapMapper(action, []);
-        const result = swapMapper.toCryptoTax(action, []);
+        const result = swap(action, []);
 
         expect(result[0].feeCurrency).toBe('');
         expect(result[0].feeAmount).toBe('');
@@ -303,9 +305,8 @@ describe('SwapMapper', () => {
             in: [],
         };
 
-        swapMapper = new SwapMapper(invalidAction, []);
-        expect(() => swapMapper.toCryptoTax(invalidAction)).toThrow(
-            'Expected numAssetsIn to be 1 but was 0'
+        expect(() => swap(invalidAction)).toThrow(
+            'swap: expected 1 input but there were 0'
         );
     });
 
@@ -320,8 +321,7 @@ describe('SwapMapper', () => {
             txID: 'tx101112',
         });
 
-        swapMapper = new SwapMapper(action, []);
-        const result = swapMapper.toCryptoTax(action);
+        const result = swap(action);
 
         expect(result).toHaveLength(0);
     });
@@ -337,9 +337,8 @@ describe('SwapMapper', () => {
             txID: 'tx131415',
         });
 
-        swapMapper = new SwapMapper(action, []);
-        expect(() => swapMapper.toCryptoTax(action)).toThrow(
-            'Invalid swap - THOR.TOR'
+        expect(() => swap(action)).toThrow(
+            'swap: invalid swap - THOR.TOR'
         );
     });
 
@@ -355,8 +354,7 @@ describe('SwapMapper', () => {
         });
         action.metadata.swap!.memo = '=:ARB.ETH:::wr:0';
 
-        swapMapper = new SwapMapper(action, []);
-        const result = swapMapper.toCryptoTax(action);
+        const result = swap(action);
 
         expect(result[1].to).toBe('0xSameAddress');
         expect(result[1].baseAmount).toBe('0.99');
@@ -374,9 +372,8 @@ describe('SwapMapper', () => {
         });
         action.metadata.swap!.memo = '=:ARB.ETH:::wr:0';
 
-        swapMapper = new SwapMapper(action, []);
 
-        expect(() => swapMapper.toCryptoTax(action)).toThrow('No matching out tx');
+        expect(() => swap(action)).toThrow('swap: no matching out tx');
     });
 
     test('Maya: a CACAO input without node data falls back to the 0.2 CACAO native fee', () => {
@@ -390,7 +387,7 @@ describe('SwapMapper', () => {
             txID: 'tx-cacao',
         });
 
-        const result = new SwapMapper(action, [], MAYA).toCryptoTax(action, [], MAYA);
+        const result = swap(action, [], MAYA);
 
         expect(result[0].feeCurrency).toBe('CACAO');
         expect(result[0].feeAmount).toBe('0.2');
@@ -408,7 +405,7 @@ describe('SwapMapper', () => {
             txID: 'tx-rune',
         });
 
-        const result = new SwapMapper(action, [], MAYA).toCryptoTax(action, [], MAYA);
+        const result = swap(action, [], MAYA);
 
         expect(result[0].feeCurrency).toBe('RUNE');
         expect(result[0].feeAmount).toBe('0.02');

@@ -1,7 +1,8 @@
 import { TxStatusResponse } from '@xchainjs/xchain-thornode';
 import { parseMidgardAsset, parseMidgardPool } from './MidgardUtils';
 import { baseToAssetAmountString } from '../utils/Amount';
-import { assetFromStringEx, AssetType } from '@xchainjs/xchain-util';
+import { inboundGas } from '../interpret/midgard/gas';
+import { formatAmount } from '../domain/Amount';
 import { formatBlockchain, Protocol, THORCHAIN } from '../protocols/Protocol';
 
 export function getDefaultRuneGas(): string {
@@ -21,51 +22,20 @@ export function formatBlockchainForOutput(blockchain: string): string {
     return formatBlockchain(blockchain);
 }
 
+// The fee columns for an inbound transaction: its gas leg, named for the CSV (docs/specs/fees.md)
 export function getInboundFee(
     txId: string,
     thornodeTxs: TxStatusResponse[],
     inputAsset?: string,
     protocol: Protocol = THORCHAIN
 ): { feeCurrency: string; feeAmount: string } {
-    const thornodeTx = thornodeTxs.find((tx) => tx.tx?.id === txId);
-    const gasCoin = thornodeTx?.tx?.gas?.[0];
+    const gas = inboundGas(txId, thornodeTxs, '', inputAsset, protocol);
 
-    if (gasCoin?.asset) {
-        const { currency } = parseMidgardAsset(gasCoin.asset, protocol);
-
-        return {
-            feeCurrency: currency,
-            feeAmount: baseToAssetAmountString(gasCoin.amount),
-        };
+    if (!gas) {
+        return {feeCurrency: '', feeAmount: ''};
     }
 
-    if (inputAsset) {
-        const asset = assetFromStringEx(inputAsset);
-        // Any transaction on THORChain (RUNE, TCY, KUJI, …) pays THORChain's native fee
-        const shouldUseDefaultRuneGasFallback =
-            asset.chain === 'THOR' ||
-            (protocol.id === THORCHAIN.id && [AssetType.SYNTH, AssetType.TRADE, AssetType.SECURED].includes(asset.type));
-
-        if (shouldUseDefaultRuneGasFallback) {
-            return {
-                feeCurrency: 'RUNE',
-                feeAmount: baseToAssetAmountString(getDefaultRuneGas()),
-            };
-        }
-
-        // e.g. CACAO sent to Maya pays Maya's native transaction fee
-        if (inputAsset === protocol.nativeAsset && protocol.defaultGas) {
-            return {
-                feeCurrency: parseMidgardAsset(protocol.nativeAsset).currency,
-                feeAmount: baseToAssetAmountString(protocol.defaultGas, protocol.decimals(protocol.nativeAsset)),
-            };
-        }
-    }
-
-    return {
-        feeCurrency: '',
-        feeAmount: '',
-    };
+    return {feeCurrency: parseMidgardAsset(gas.asset.notation, protocol).currency, feeAmount: formatAmount(gas.amount)};
 }
 
 // The token for a liquidity position. Midgard names a savers pool by its synth (BTC/BTC); the token

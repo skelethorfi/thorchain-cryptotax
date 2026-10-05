@@ -1,0 +1,51 @@
+id: midgard/swap.A46848A2984FB8738BE9B41EB9C8ADA22854BE22F0DAF99B630184C7A172372D
+protocol: thorchain
+kind: swap
+status: success
+time: 2025-05-19T06:16:37.730Z
+txids:
+  in:
+    - A46848A2984FB8738BE9B41EB9C8ADA22854BE22F0DAF99B630184C7A172372D
+  out:
+    - "0000000000000000000000000000000000000000000000000000000000000000"
+memo: =:THOR.RUNE:thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j:0/1/0:va:50
+legs:
+  - direction: out
+    wallet: thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j
+    asset:
+      notation: THOR.TCY
+      kind: native
+    role: principal
+    basis: observed
+    amount: "50000"
+    decimals: 8
+  - direction: in
+    wallet: thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: principal
+    basis: observed
+    amount: "9716.00781339"
+    decimals: 8
+  - direction: out
+    wallet: thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: gas
+    basis: default
+    amount: "0.02"
+    decimals: 8
+prices:
+  - asset:
+      notation: THOR.TCY
+      kind: native
+    usd: "0.3612794057368309"
+    source: midgard:swap.inPriceUSD
+  - asset:
+      notation: THOR.RUNE
+      kind: native
+    usd: "1.7703625161270882"
+    source: midgard:swap.outPriceUSD
+details: {}

@@ -7,7 +7,7 @@ import {Asset} from "./Asset";
 
 // One kind per thing that happens. The union grows as each action type is ported to an activity, so every
 // exporter has to handle a kind before it can be emitted.
-export type ActivityKind = 'bond' | 'unbond';
+export type ActivityKind = 'bond' | 'unbond' | 'swap';
 
 export type ActivityStatus = 'success' | 'pending' | 'failed';
 

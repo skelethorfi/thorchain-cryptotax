@@ -1,0 +1,51 @@
+id: maya-midgard/swap.7B11F20814EF6BC5D7ACF1A295CCF1746899A478110220C0BCF4CEC95E516806
+protocol: maya
+kind: swap
+status: success
+time: 2024-01-04T18:57:51.301Z
+txids:
+  in:
+    - 7B11F20814EF6BC5D7ACF1A295CCF1746899A478110220C0BCF4CEC95E516806
+  out:
+    - A3985E660B3F98DA5679EBEBC6DEF9CC4D3878B2B8C64C109D893AB88454FC65
+memo: =:KUJI.KUJI:kujira13kkml6e2df9fl4tmscqlzqg45va0rzla73f5ed::ELD:75
+legs:
+  - direction: out
+    wallet: thor1cl6wx08s76yhf8smvt5pcqnfh2rts42ytqul4e
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: principal
+    basis: observed
+    amount: "244"
+    decimals: 8
+  - direction: in
+    wallet: kujira13kkml6e2df9fl4tmscqlzqg45va0rzla73f5ed
+    asset:
+      notation: KUJI.KUJI
+      kind: native
+    role: principal
+    basis: observed
+    amount: "270.527074"
+    decimals: 8
+  - direction: out
+    wallet: thor1cl6wx08s76yhf8smvt5pcqnfh2rts42ytqul4e
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: gas
+    basis: default
+    amount: "0.02"
+    decimals: 8
+prices:
+  - asset:
+      notation: THOR.RUNE
+      kind: native
+    usd: "5.386507959551423"
+    source: midgard:swap.inPriceUSD
+  - asset:
+      notation: KUJI.KUJI
+      kind: native
+    usd: "4.821764001830525"
+    source: midgard:swap.outPriceUSD
+details: {}

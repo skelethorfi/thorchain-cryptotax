@@ -94,12 +94,13 @@ exporter cannot be built until it handles every kind.
 | --- | --- | --- | --- |
 | `bond` | 7 | out: principal RUNE (observed); out: gas 0.02 RUNE (default) | `node` |
 | `unbond` | 7 | in: principal RUNE (observed); out: gas 0.02 RUNE (default) | `node` |
+| `swap` | 8a | out: principal, the full amount sent (observed); in: returned, the unfilled part of a streaming swap paid back to the sender (observed, when any); in: principal, paid to the memo's destination (observed); out: gas, the inbound fee (`fees.md`: observed from THORNode, else the native fee as a default, else none). Affiliate outputs are not legs. Prices: Midgard's `inPriceUSD` and `outPriceUSD`. A synth swapped from an L1 address (a savers withdrawal's internal leg) gives no activity, only an `ignored` issue | — |
 
 The other kinds are added in later steps:
 
 | Step | Kinds |
 | --- | --- |
-| 8a | `swap`, `refund` |
+| 8a | `refund` |
 | 8b | `lp.add`, `lp.withdraw`, `savers.add`, `savers.withdraw` |
 | 8c | `loan.open`, `loan.repay`, `switch`, `runepool.deposit`, `runepool.withdraw` |
 | 8d | `tcy.claim`, `tcy.stake`, `tcy.unstake`, `tcy.distribution`, `thorname` |
@@ -147,4 +148,5 @@ row of 1 RUNE with a 0.02 RUNE fee: today's row. The interpreter is
   `assets.md`.
 - Golden cases of ported kinds have a reviewed `activity.yaml` between
   `input.json` and `expected.yaml` (`fixtures.md`), so an interpreter bug and
-  an exporter bug fail different checks: `bond/bond`, `bond/unbond`.
+  an exporter bug fail different checks: the `bond/` and `swap/` cases and
+  the Maya swaps.
