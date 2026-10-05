@@ -6,13 +6,13 @@ import path from "path";
 
 describe('TaxConfig', () => {
     test('applyDefaults with empty config', () => {
-        const result = TaxConfig.applyDefaults({});
+        const result = TaxConfig.applyDefaults({}, new Date('2026-06-30T23:30:00.000Z'));
 
         expect(result).toEqual({
             outputPath: 'output',
             unsupportedActionsPath: 'unsupported-actions',
             storePath: 'store',
-            toDate: new Date().toISOString().substring(0, 10)
+            toDate: '2026-06-30'
         });
     });
 
@@ -28,7 +28,7 @@ describe('TaxConfig', () => {
             wallets: []
         };
 
-        const result = TaxConfig.applyDefaults(config);
+        const result = TaxConfig.applyDefaults(config, new Date());
 
         expect(result).toEqual({
             fromDate: '2020-01-01',
@@ -45,7 +45,7 @@ describe('TaxConfig', () => {
 
 describe('TaxConfig paths', () => {
     test('resolves relative paths against the config file folder', () => {
-        const config = TaxConfig.resolvePaths(TaxConfig.applyDefaults({storePath: 'FY/store'}), '/private/tax');
+        const config = TaxConfig.resolvePaths(TaxConfig.applyDefaults({storePath: 'FY/store'}, new Date()), '/private/tax');
 
         expect(config.outputPath).toBe(path.resolve('/private/tax/output'));
         expect(config.unsupportedActionsPath).toBe(path.resolve('/private/tax/unsupported-actions'));
@@ -53,7 +53,7 @@ describe('TaxConfig paths', () => {
     });
 
     test('keeps absolute paths', () => {
-        const config = TaxConfig.resolvePaths(TaxConfig.applyDefaults({outputPath: '/elsewhere/output'}), '/private/tax');
+        const config = TaxConfig.resolvePaths(TaxConfig.applyDefaults({outputPath: '/elsewhere/output'}, new Date()), '/private/tax');
 
         expect(config.outputPath).toBe(path.resolve('/elsewhere/output'));
     });
@@ -63,7 +63,7 @@ describe('TaxConfig paths', () => {
         const file = path.join(dir, 'config.toml');
         fs.writeFileSync(file, 'fromDate = "2024-07-01"\ncachePath = "FY/cache"\n');
 
-        const config = TaxConfig.load(file);
+        const config = TaxConfig.load(file, new Date());
 
         expect(config.storePath).toBe(path.join(dir, 'FY/cache'));
         expect(config.outputPath).toBe(path.join(dir, 'output'));
@@ -90,6 +90,6 @@ describe('TaxConfig paths', () => {
             'prefixSecuredAssets = true',
         ].join('\n'));
 
-        expect(TaxConfig.load(file).assets).toEqual({prefixSecuredAssets: true});
+        expect(TaxConfig.load(file, new Date()).assets).toEqual({prefixSecuredAssets: true});
     });
 });

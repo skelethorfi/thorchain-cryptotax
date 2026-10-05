@@ -7,7 +7,7 @@ import {ThornodeService} from "../cryptotax-thorchain/ThornodeService";
 import {CosmosTxService} from "../cryptotax-thorchain/CosmosTxService";
 import {TcyDistributionService} from "../cryptotax-thorchain/TcyDistributionService";
 import {ITaxConfig} from "./ITaxConfig";
-import {DateRange, generateDateRanges} from "../utils/DateRange";
+import {generateDateRanges} from "../utils/DateRange";
 import path from "path";
 import {TaxConfig} from "./TaxConfig";
 import {FetchMode, RecordStore} from "../cache/RecordStore";
@@ -16,6 +16,7 @@ import {getProtocol, Protocol, THORCHAIN, withAssetNames} from "../protocols/Pro
 import {MidgardSource, Source, TcySource, ViewblockSource} from "../sources/Source";
 import {dedupeBundles, getBundleSourceName, RawBundle} from "../sources/RawBundle";
 import {BundleResult, collectRows, runBundle} from "../pipeline/run";
+import {csvFiles} from "../export/summ/files";
 import {Action} from "@xchainjs/xchain-midgard";
 
 export interface ExportOptions {
@@ -25,6 +26,8 @@ export interface ExportOptions {
     fetch?: FetchMode;
     // A run folder (or its snapshots.json) whose exact records to read
     replay?: string;
+    // The run's date: the default toDate. Default: now
+    today?: Date;
 }
 
 export class Exporter {
@@ -41,7 +44,7 @@ export class Exporter {
     tcyDistribution: TcyDistributionService;
 
     constructor(filename: string, options: ExportOptions = {}) {
-        this.config = TaxConfig.load(filename);
+        this.config = TaxConfig.load(filename, options.today ?? new Date());
         const storePath = this.config.storePath;
         this.snapshots = new SnapshotManifest();
         // One store for every source (docs/specs/snapshots.md)
@@ -153,108 +156,13 @@ export class Exporter {
         return [{protocol: this.thorchain}, ...this.otherMidgards].find(({protocol}) => protocol.id === bundle.protocol)!.protocol;
     }
 
+    // Writes the CSV files that csvFiles lays out
     saveToCsv(txs: CryptoTaxTransaction[], outputPath: string) {
-        let expectedExportCount =  0;
-        let count = 0;
-        const walletExchanges = this.getUniqueWalletExchanges(txs);
-
-        // Output all fetched txs in a single CSV
-        writeCsv(path.join(outputPath, 'all.csv'), txs);
-
         const ranges = generateDateRanges(this.config.fromDate, this.config.toDate, this.config.frequency);
-
-        for (const range of ranges) {
-            const rangeTxs = this.getTxsInRange(txs, range);
-            expectedExportCount += rangeTxs.length;
-
-            // Output all txs in each range to CSV
-            const fn1 = `all-${range.from}_${range.to}.csv`;
-
-            writeCsv(path.join(outputPath, fn1), rangeTxs);
-
-            // If no txs in the current range then skip
-            if (rangeTxs.length === 0) {
-                continue;
-            }
-
-            for (const walletExchange of walletExchanges) {
-                const walletTxs = this.getTxsForWallet(rangeTxs, walletExchange);
-
-                if (walletTxs.length) {
-                    if (walletExchange === 'thorchain') {
-                        // validate txs
-                        const badTxs = walletTxs.filter(tx => tx.from !== 'thorchain' && tx.to !== 'thorchain');
-                        if (badTxs.length > 0) {
-                            console.error(badTxs);
-                            throw new Error('bad txs');
-                        }
-
-                        const fn2 = `${range.from}_${range.to}_THOR_thorchain_swaps.csv`;
-
-                        writeCsv(path.join(outputPath, fn2), walletTxs);
-
-                        count += walletTxs.length;
-
-                    } else {
-                        const fn3 = this.makeFilename(walletExchange, range) + '.csv';
-
-                        writeCsv(path.join(outputPath, fn3), walletTxs);
-
-                        count += walletTxs.length;
-                    }
-                }
-            }
-        }
-
-        console.log(`Total exported: ${count}`);
-
-        if (count !== expectedExportCount) {
-            throw new Error(`failed to export all txs. expected ${expectedExportCount}`);
-        }
-    }
-
-    private getTxsForWallet(monthTxs: CryptoTaxTransaction[], walletExchange: string) {
-        return monthTxs.filter(tx => tx.walletExchange === walletExchange);
-    }
-
-    private getTxsInRange(txs: CryptoTaxTransaction[], range: DateRange) {
-        return txs.filter((tx) => {
-            const txDate = tx.timestamp;
-
-            return txDate >= new Date(range.from) && txDate <= new Date(range.to);
-        });
-    }
-
-    private getUniqueWalletExchanges(txs: CryptoTaxTransaction[]): Set<string> {
-        return new Set(txs.map((tx) => {
-            if (!tx.walletExchange) {
-                console.warn(`WARN: missing walletExchange`);
-                console.log(tx);
-                return 'MISSING-ADDRESS';
-            }
-
-            return tx.walletExchange;
-        }));
-    }
-
-    private findWalletByAddress(address: string) {
-        return this.config.wallets.find(wallet => wallet.address.toLowerCase() === address.toLowerCase());
-    }
-
-    private makeFilename(walletExchange: string, range: DateRange) {
-        const wallet = this.findWalletByAddress(walletExchange);
-
-        if (!wallet) {
-            console.warn(`wallet not found in config: ${walletExchange}`);
-            return `${range.from}_${range.to}_${walletExchange}`;
-        }
-
-        return `${range.from}_${range.to}_${wallet.blockchain}_${this.shortenAddress(wallet.address)}_${wallet.name}`;
-    }
-
-    // Returns last 5 characters of address
-    private shortenAddress(address: string): string {
-        return address.slice(-5);
+        const {files, exported, warnings} = csvFiles(txs, ranges, this.config.wallets);
+        warnings.forEach(warning => console.warn(`WARN: ${warning}`));
+        files.forEach(file => writeCsv(path.join(outputPath, file.name), file.rows));
+        console.log(`Total exported: ${exported}`);
     }
 
     private saveFailure(outputPath: string, walletAddress: string, source: string, date: Date, data: any, errorMessage: string): void {
