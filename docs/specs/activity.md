@@ -104,12 +104,15 @@ exporter cannot be built until it handles every kind.
 | `runepool.deposit`, `runepool.withdraw` | 8c | the RUNE sent or received (observed); the RUNEPool units received or given up, a `runepool` position (observed); gas: the native fee (default) | — |
 | `loan.open` | 8c | out: principal, the collateral sent (observed; when Midgard shows `THOR.TOR`, the THORNode tx's coin), followed by its gas leg; in: principal, the amount borrowed, paid to the memo's destination (observed). `loans.md` says which pending loan opens count | — |
 | `loan.repay` | 8c | out: principal, the repayment (observed), followed by its gas leg; in: principal, the collateral paid back when the loan closes (observed, one output) | `collateral`: the memo's collateral asset |
+| `tcy.claim` | 8d | in: principal, the TCY claimed (observed); gas: the native fee (default), only when the claim was sent from the same THORChain wallet | `claimedFor`: the address that held the claim |
+| `tcy.stake`, `tcy.unstake` | 8d | the TCY sent or received (observed); gas: the native fee (default) | — |
+| `tcy.distribution` | 8d | in: reward, the RUNE paid to the wallet it was listed for (observed). Price: the RUNE price the TCY API gives (`midgard:tcy.distribution.price`) | — |
+| `thorname` | 8d | out: principal, the RUNE paid to register or renew (observed, when any; an update pays none); gas: the native fee (default). An update with no input address takes the name's owner as the wallet | `name` |
 
 The other kinds are added in later steps:
 
 | Step | Kinds |
 | --- | --- |
-| 8d | `tcy.claim`, `tcy.stake`, `tcy.unstake`, `tcy.distribution`, `thorname` |
 | 8e | Rujira (`rujira.stake`, `rujira.fin.trade`, `rujira.merge.deposit`, `rujira.merge.withdraw`); Maya through the same interpreters |
 
 Viewblock sends stay on the old path until Midgard sends replace them
@@ -155,5 +158,5 @@ row of 1 RUNE with a 0.02 RUNE fee: today's row. The interpreter is
 - Golden cases of ported kinds have a reviewed `activity.yaml` between
   `input.json` and `expected.yaml` (`fixtures.md`), so an interpreter bug and
   an exporter bug fail different checks: the `bond/`, `swap/`, `refund/`,
-  `liquidity/`, `switch/`, `runepool/` and `loan/` cases and the Maya swaps
-  and liquidity.
+  `liquidity/`, `switch/`, `runepool/`, `loan/`, `tcy/` and `thorname/`
+  cases and the Maya swaps and liquidity.

@@ -44,6 +44,11 @@ export interface TcyDistribution {
     distributions: TcyDistributionItem[];
 }
 
+// A distribution's date is a Unix timestamp in seconds
+export function getDistributionDate(item: TcyDistributionItem): Date {
+    return new Date(parseInt(item.date) * 1000);
+}
+
 export class TcyDistributionService {
     baseUrl: string;
 

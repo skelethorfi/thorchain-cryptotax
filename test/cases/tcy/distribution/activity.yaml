@@ -1,0 +1,25 @@
+id: tcy/thor1-user-wallet-11111.1609419600
+protocol: thorchain
+kind: tcy.distribution
+status: success
+time: 2020-12-31T13:00:00.000Z
+txids:
+  in: []
+  out: []
+legs:
+  - direction: in
+    wallet: thor1-user-wallet-11111
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: reward
+    basis: observed
+    amount: "1.23456"
+    decimals: 8
+prices:
+  - asset:
+      notation: THOR.RUNE
+      kind: native
+    usd: "1.23456789"
+    source: midgard:tcy.distribution.price
+details: {}

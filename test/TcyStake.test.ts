@@ -1,16 +1,13 @@
-import {TcyStakeMapper} from '../src/cryptotax-thorchain/TcyStakeMapper';
+import {mapAction} from './mapAction';
 import {describe, expect, test} from '@jest/globals';
 import {CryptoTaxTransactionType} from '../src/cryptotax';
 import fs from 'fs-extra';
 
-describe('TcyStakeMapper', () => {
-    let tcyStakeMapper: TcyStakeMapper;
+describe('TcyStake', () => {
 
     test('should correctly map a tcy_stake action', () => {
         const action = fs.readJSONSync('test/testdata/TcyStake.json');
-
-        tcyStakeMapper = new TcyStakeMapper();
-        const result = tcyStakeMapper.toCryptoTax(action, []);
+        const result = mapAction(action, []);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toStrictEqual({

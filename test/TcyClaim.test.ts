@@ -1,16 +1,13 @@
-import {TcyClaimMapper} from '../src/cryptotax-thorchain/TcyClaimMapper';
+import {mapAction} from './mapAction';
 import {describe, expect, test} from '@jest/globals';
 import {CryptoTaxTransactionType} from '../src/cryptotax';
 import fs from 'fs-extra';
 
-describe('TcyClaimMapper', () => {
-    let tcyClaimMapper: TcyClaimMapper;
+describe('TcyClaim', () => {
 
     test('should correctly map a tcy_claim action', () => {
         const action = fs.readJSONSync('test/testdata/TcyClaim.json');
-
-        tcyClaimMapper = new TcyClaimMapper();
-        const result = tcyClaimMapper.toCryptoTax(action, []);
+        const result = mapAction(action, []);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toStrictEqual({
