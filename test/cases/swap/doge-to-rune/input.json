@@ -1,0 +1,70 @@
+{
+  "description": "swap/swap success: [DOGE.DOGE] -> [THOR.RUNE]",
+  "source": "midgard",
+  "wallet": "D5qdyiTXkt1MEfoPpimXvjgUCMzV6YtbsM",
+  "data": {
+    "date": "1717715816359403783",
+    "height": "16295008",
+    "in": [
+      {
+        "address": "D5qdyiTXkt1MEfoPpimXvjgUCMzV6YtbsM",
+        "coins": [
+          {
+            "amount": "10207047000",
+            "asset": "DOGE.DOGE"
+          }
+        ],
+        "txID": "BA6C60ED809F3CFED3CCB9E119A582024520A8D23C64B487AD0A44C83D3054EF"
+      }
+    ],
+    "metadata": {
+      "swap": {
+        "affiliateAddress": "ti",
+        "affiliateFee": "70",
+        "inPriceUSD": "0.16062196514599122",
+        "isStreamingSwap": false,
+        "liquidityFee": "849",
+        "memo": "=:THOR.RUNE:thor16tfxw0z2nj2aqatrxfjaadw02j9mpzgndsehj6:0/1/0:ti:70",
+        "networkFees": [
+          {
+            "amount": "2000000",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "outPriceUSD": "6.027024207031798",
+        "swapSlip": "0",
+        "swapTarget": "0",
+        "txType": "swap"
+      }
+    },
+    "out": [
+      {
+        "address": "thor16tfxw0z2nj2aqatrxfjaadw02j9mpzgndsehj6",
+        "coins": [
+          {
+            "amount": "270020800",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "height": "16295008",
+        "txID": ""
+      }
+    ],
+    "pools": [
+      "DOGE.DOGE"
+    ],
+    "status": "success",
+    "type": "swap"
+  },
+  "thornodeTxs": [
+    {
+      "stages": {
+        "inbound_observed": {
+          "started": false,
+          "final_count": 0,
+          "completed": false
+        }
+      }
+    }
+  ]
+}
