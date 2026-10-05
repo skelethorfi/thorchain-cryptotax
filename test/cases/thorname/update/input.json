@@ -1,0 +1,33 @@
+{
+  "description": "thorname success: [] -> [] (hand-made: a THORName update with no coin, no txid and no input address; the wallet is the owner)",
+  "source": "midgard",
+  "wallet": "thor1-user-wallet-11111",
+  "data": {
+    "date": "1609419600000000000",
+    "height": "10000000",
+    "in": [
+      {
+        "address": "",
+        "coins": [],
+        "txID": ""
+      }
+    ],
+    "metadata": {
+      "thorname": {
+        "address": "thor1-user-wallet-11111",
+        "chain": "THOR",
+        "expire": "90000000",
+        "fundAmount": "0",
+        "memo": "~:testthorname:THOR:thor1-user-wallet-11111",
+        "owner": "thor1-user-wallet-11111",
+        "registrationFee": "0",
+        "thorname": "testthorname",
+        "txType": "thorname"
+      }
+    },
+    "out": [],
+    "pools": [],
+    "status": "success",
+    "type": "thorname"
+  }
+}
