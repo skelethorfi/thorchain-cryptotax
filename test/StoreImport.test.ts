@@ -12,24 +12,24 @@ const action = (txID: string, extra: any = {}) => ({type: 'addLiquidity', status
 describe('store import', () => {
     test('keeps every version from old caches; runs use the good copy; genesisTx placeholders are left out', async () => {
         const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-import-'));
-        const fy25 = path.join(dir, 'FY2025', 'cache');
+        const older = path.join(dir, 'older', 'cache');
         const history = path.join(dir, 'history', 'cache');
 
-        // FY2025 (older Midgard): a genesis placeholder and a full THORNode tx
-        fs.outputJsonSync(path.join(fy25, 'midgard', 'w.json'), [action('genesisTx'), action('A')]);
-        fs.outputJsonSync(path.join(fy25, 'thornode', 'A.json'), {tx: {gas: [{asset: 'BTC.BTC', amount: '1'}]}});
+        // An older cache (older Midgard): a genesis placeholder and a full THORNode tx
+        fs.outputJsonSync(path.join(older, 'midgard', 'w.json'), [action('genesisTx'), action('A')]);
+        fs.outputJsonSync(path.join(older, 'thornode', 'A.json'), {tx: {gas: [{asset: 'BTC.BTC', amount: '1'}]}});
         // A year later: the real old add from the archive, and THORNode has pruned the tx
         fs.outputJsonSync(path.join(history, 'midgard', 'w.json'), [action('A'), action('OLD')]);
         fs.outputJsonSync(path.join(history, 'thornode', 'A.json'), {});
 
         const store = new RecordStore(path.join(dir, 'store'));
-        const fy25Counts = importCache(store, fy25);
+        const olderCounts = importCache(store, older);
         importCache(store, history);
 
-        expect(fy25Counts.midgard.skipped).toBe(1);
+        expect(olderCounts.midgard.skipped).toBe(1);
         // THORNode files have no date of their own: they are filed by the Midgard action with that txid
         expect(path.relative(path.join(dir, 'store', 'records', 'thornode'), path.dirname(store.copies('thornode', 'A')[0].file))).toBe('1970/01');
-        expect(store.copies('thornode', 'A').map(copy => copy.importedFrom)).toEqual(['FY2025/cache/thornode/A.json', 'history/cache/thornode/A.json']);
+        expect(store.copies('thornode', 'A').map(copy => copy.importedFrom)).toEqual(['older/cache/thornode/A.json', 'history/cache/thornode/A.json']);
 
         const offline = new RecordStore(path.join(dir, 'store'), {offline: true});
         jest.spyOn(console, 'log').mockImplementation(() => {});
