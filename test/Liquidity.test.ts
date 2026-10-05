@@ -1,5 +1,6 @@
 import {describe, expect, test} from '@jest/globals';
-import {AddLiquidityMapper} from '../src/cryptotax-thorchain/AddLiquidityMapper';
+import {runBundle} from '../src/pipeline/run';
+import {THORCHAIN} from '../src/protocols/Protocol';
 import {toMidgardNanoTimestamp} from '../src/cryptotax-thorchain/MidgardUtils';
 
 // Midgard reports a savers deposit's coin as the synth, whichever chain it was sent on
@@ -15,9 +16,10 @@ const saversDeposit = (address: string) => ({
 } as any);
 
 const depositRow = (action: any, thornodeTxs: any[] = []) =>
-    new AddLiquidityMapper().toCryptoTax(action, thornodeTxs).find((row) => row.type === 'add-liquidity')!;
+    runBundle({source: 'midgard', protocol: 'thorchain', wallet: '', data: action, thornodeTxs, cosmosTxs: []}, THORCHAIN)
+        .rows.find((row) => row.type === 'add-liquidity')!;
 
-describe('AddLiquidityMapper', () => {
+describe('liquidity', () => {
     test('a savers deposit sent from an L1 wallet has no fee without THORNode gas, not the RUNE fee', () => {
         const row = depositRow(saversDeposit('bc1q-user-wallet'));
 

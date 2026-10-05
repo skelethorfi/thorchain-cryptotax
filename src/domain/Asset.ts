@@ -4,12 +4,21 @@ import {assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
 // native: a chain's own coin or a protocol's token (BTC.BTC, THOR.RUNE, THOR.TCY, x/ruji)
 // token: a token on an L1 chain (ETH.USDC-0X…)
 // synth, trade, secured: held on THORChain or Maya, for an L1 asset (BTC/BTC, BTC~BTC, BTC-BTC)
-export type AssetKind = 'native' | 'token' | 'synth' | 'trade' | 'secured';
+// position: a share of a pool, its notation the pool (BTC.BTC, or BTC/BTC for savers)
+export type AssetKind = 'native' | 'token' | 'synth' | 'trade' | 'secured' | 'position';
+
+// lp: units of a liquidity pool; savers: a savers position, denominated in the asset saved
+export type PositionKind = 'lp' | 'savers';
 
 export interface Asset {
     // As the source writes it: Midgard notation, or a Cosmos denom (x/ruji). Exporters name it.
     notation: string;
     kind: AssetKind;
+    position?: PositionKind;
+}
+
+export function toPositionAsset(pool: string): Asset {
+    return {notation: pool, kind: 'position', position: pool.includes('/') ? 'savers' : 'lp'};
 }
 
 const KINDS: {[type in AssetType]: AssetKind} = {

@@ -111,12 +111,13 @@ export function writeCaseActivities(dir: string, activities: Activity[]) {
 }
 
 // An activity as activity.yaml holds it: amounts as decimal strings with their decimals, times as ISO
+// (fields that are undefined, e.g. a missing memo, are left out, as YAML can't hold them)
 export function toPlainActivity(activity: Activity): object {
-    return {
+    return JSON.parse(JSON.stringify({
         ...activity,
         time: activity.time.toISOString(),
         legs: activity.legs.map(({amount, ...leg}) => ({...leg, amount: formatAmount(amount), decimals: amount.decimals})),
-    };
+    }));
 }
 
 // A case's input is a RawBundle, written without the fields that are at their default

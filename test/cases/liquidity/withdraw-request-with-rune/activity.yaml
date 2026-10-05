@@ -1,0 +1,45 @@
+id: midgard/withdraw.E07F05F4C34B9114ECD94B00542452A9E6E24CA16175EE2CBF5FE79449787BEE
+protocol: thorchain
+kind: lp.withdraw
+status: success
+time: 2022-03-24T03:13:58.031Z
+txids:
+  in:
+    - E07F05F4C34B9114ECD94B00542452A9E6E24CA16175EE2CBF5FE79449787BEE
+  out: []
+memo: -:BNB.ETH:10000
+legs:
+  - direction: in
+    wallet: thor1zptf89px22fmucr2j924vnrfc8ts3cdw8znj09
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: principal
+    basis: observed
+    txid: ""
+    amount: "69.9505605"
+    decimals: 8
+  - direction: out
+    wallet: thor1zptf89px22fmucr2j924vnrfc8ts3cdw8znj09
+    asset:
+      notation: BNB.ETH-1C9
+      kind: position
+      position: lp
+    role: principal
+    basis: observed
+    txid: E07F05F4C34B9114ECD94B00542452A9E6E24CA16175EE2CBF5FE79449787BEE
+    amount: "16.59440181"
+    decimals: 8
+  - direction: out
+    wallet: thor1zptf89px22fmucr2j924vnrfc8ts3cdw8znj09
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: gas
+    basis: default
+    txid: E07F05F4C34B9114ECD94B00542452A9E6E24CA16175EE2CBF5FE79449787BEE
+    amount: "0.02"
+    decimals: 8
+prices: []
+details:
+  pool: BNB.ETH-1C9

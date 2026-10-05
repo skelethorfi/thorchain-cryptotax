@@ -7,7 +7,7 @@ import {Asset} from "./Asset";
 
 // One kind per thing that happens. The union grows as each action type is ported to an activity, so every
 // exporter has to handle a kind before it can be emitted.
-export type ActivityKind = 'bond' | 'unbond' | 'swap' | 'refund';
+export type ActivityKind = 'bond' | 'unbond' | 'swap' | 'refund' | 'lp.add' | 'lp.withdraw' | 'savers.add' | 'savers.withdraw';
 
 export type ActivityStatus = 'success' | 'pending' | 'failed';
 
@@ -44,6 +44,8 @@ export interface Leg {
     amount: Amount;
     role: LegRole;
     basis: Basis;
+    // The on-chain tx the amount moved in, when the source gives it
+    txid?: string;
 }
 
 export interface Price {

@@ -3,6 +3,7 @@ import {CryptoTaxTransaction} from "../../cryptotax";
 import {bondRows} from "./bond";
 import {swapRows} from "./swap";
 import {refundRows} from "./refund";
+import {addLiquidityRows, withdrawRows} from "./liquidity";
 import {AssetNamesConfig, getProtocol, Protocol, withAssetNames} from "../../protocols/Protocol";
 
 // The tax choices the Summ rows depend on, from the config. Today: how assets are named
@@ -25,5 +26,11 @@ function toRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] 
             return swapRows(activity, protocol);
         case 'refund':
             return refundRows(activity, protocol);
+        case 'lp.add':
+        case 'savers.add':
+            return addLiquidityRows(activity, protocol);
+        case 'lp.withdraw':
+        case 'savers.withdraw':
+            return withdrawRows(activity, protocol);
     }
 }

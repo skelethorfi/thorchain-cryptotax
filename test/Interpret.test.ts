@@ -49,9 +49,9 @@ describe('interpret', () => {
         const bundle = toBundle(readCaseInput('test/cases/liquidity/add-btc-rune-symmetric'));
         (bundle.data as any).in[0].address = '';
 
-        const {rows, issues} = interpret(bundle, THORCHAIN);
+        const {activities, issues} = interpret(bundle, THORCHAIN);
         expect(issues).toStrictEqual([{kind: 'warning', message: 'missing deposit address'}]);
-        expect(rows.length).toBeGreaterThan(0);
+        expect(activities).toHaveLength(1);
     });
 
     test('a synth swap from an L1 address (a savers withdrawal) is ignored', () => {
