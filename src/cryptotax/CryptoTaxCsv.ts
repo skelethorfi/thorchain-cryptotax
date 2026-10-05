@@ -26,16 +26,23 @@ function createHeader(): string {
 
 export function txToCsv(tx: CryptoTaxTransaction): string {
     return csvMapping
-        .map((column) => replaceNewline((tx as any)[column.field] ?? ''))
+        .map((column) => csvField((tx as any)[column.field] ?? ''))
         .join(',');
 }
 
-function replaceNewline(value: string): string {
-    return value.replaceAll('\n', '; ');
+// Newlines become '; ' so every row stays on one line. A field with a comma or a double quote is
+// quoted, with its quotes doubled (RFC 4180); every other field is written as it is.
+export function csvField(value: string): string {
+    const text = value.replaceAll('\n', '; ');
+    return /[",]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }
 
-function toCsv(txs: CryptoTaxTransaction[]): string {
-    return createHeader() + txs.map(txToCsv).join('\n');
+// The text of one CSV file: the header, then the rows newest first, each with the ID
+// `<fileName>:<n>`, numbered from the oldest row up
+export function renderCsv(txs: CryptoTaxTransaction[], fileName: string): string {
+    const rows = ctcSortDesc(txs.map(tx => ({...tx})));
+    rows.forEach((tx, i) => tx.id = `${fileName}:${rows.length - i}`);
+    return createHeader() + rows.map(txToCsv).join('\n');
 }
 
 export function writeCsv(
@@ -46,22 +53,6 @@ export function writeCsv(
         return;
     }
 
-    const filenameOnly = filename.split('/').pop() ?? filename;
-
-    // Using ... to copy txs
-    txs = ctcSortDesc([...txs]);
-    updateIds(txs, filenameOnly);
-
     console.log(`Write CSV: ${filename}`);
-    const output: string = toCsv(txs);
-    fs.outputFileSync(filename, output);
-}
-
-function updateIds(txs: CryptoTaxTransaction[], prefix: string) {
-    let id = txs.length;
-
-    for (let i = 0; i < txs.length; i++) {
-        txs[i].id = prefix + ':' + id;
-        id--;
-    }
+    fs.outputFileSync(filename, renderCsv(txs, filename.split('/').pop() ?? filename));
 }
