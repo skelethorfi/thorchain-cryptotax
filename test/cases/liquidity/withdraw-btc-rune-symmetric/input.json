@@ -1,0 +1,64 @@
+{
+  "description": "withdraw success: [] -> [BTC.BTC, THOR.RUNE]",
+  "source": "midgard",
+  "wallet": "thor1ef95h5r7xcvahpw480pacslhutw6t6770phu0z",
+  "data": {
+    "date": "1649435571962775034",
+    "height": "5042911",
+    "in": [
+      {
+        "address": "thor1ef95h5r7xcvahpw480pacslhutw6t6770phu0z",
+        "coins": [],
+        "txID": "3C909D763AC1102872E14FE402D04354AE0691E76D24844E6AB86E05F184B0C6"
+      }
+    ],
+    "metadata": {
+      "withdraw": {
+        "asymmetry": "0",
+        "basisPoints": "10000",
+        "impermanentLossProtection": "0",
+        "liquidityUnits": "-451787555095",
+        "memo": "-:BTC.BTC:10000",
+        "networkFees": [
+          {
+            "amount": "27000",
+            "asset": "BTC.BTC"
+          },
+          {
+            "amount": "2000000",
+            "asset": "THOR.RUNE"
+          }
+        ]
+      }
+    },
+    "out": [
+      {
+        "address": "thor1ef95h5r7xcvahpw480pacslhutw6t6770phu0z",
+        "coins": [
+          {
+            "amount": "527138655272",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "height": "5043125",
+        "txID": ""
+      },
+      {
+        "address": "bc1qn20y0larf5nq26a0hwjmz5e447s5r2t9cgcwxh",
+        "coins": [
+          {
+            "amount": "110972609",
+            "asset": "BTC.BTC"
+          }
+        ],
+        "height": "5043125",
+        "txID": "5612D02DCE579800E7846EC8B7DEB3E4E2E289DAA27937A21D4BA64ED9375053"
+      }
+    ],
+    "pools": [
+      "BTC.BTC"
+    ],
+    "status": "success",
+    "type": "withdraw"
+  }
+}
