@@ -1,0 +1,22 @@
+id: midgard/thorname.date-1609419600000000000
+protocol: thorchain
+kind: thorname
+status: success
+time: 2020-12-31T13:00:00.000Z
+txids:
+  in: []
+  out: []
+legs:
+  - direction: out
+    wallet: thor1-user-wallet-11111
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: gas
+    basis: default
+    txid: ""
+    amount: "0.02"
+    decimals: 8
+prices: []
+details:
+  name: testthorname

@@ -1,10 +1,9 @@
 import {Action} from "@xchainjs/xchain-midgard";
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
 import {ViewblockTx} from "../viewblock";
-import {TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService";
+import {getDistributionDate, TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService";
 import {CosmosTx} from "../cryptotax-thorchain/CosmosTxService";
 import {getActionDate} from "../cryptotax-thorchain/MidgardUtils";
-import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
 import {BaseMapper} from "../thorchain-exporter/BaseMapper";
 import {ProtocolId} from "../protocols/Protocol";
 import {midgardActionKey, tcyList, VIEWBLOCK_LIST} from "../cache/Sources";
@@ -34,7 +33,7 @@ export function getBundleDate(bundle: RawBundle): Date {
         case 'viewblock':
             return new BaseMapper(bundle.data as ViewblockTx, bundle.wallet).datetime;
         case 'tcy':
-            return TcyDistributionMapper.parseDate(bundle.data as TcyDistributionItem);
+            return getDistributionDate(bundle.data as TcyDistributionItem);
     }
 }
 

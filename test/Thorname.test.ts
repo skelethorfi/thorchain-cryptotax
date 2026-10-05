@@ -1,16 +1,13 @@
-import {ThornameMapper} from '../src/cryptotax-thorchain/ThornameMapper';
+import {mapAction} from './mapAction';
 import {describe, expect, test} from '@jest/globals';
 import {CryptoTaxTransactionType} from '../src/cryptotax';
 import fs from 'fs-extra';
 
-describe('ThornameMapper', () => {
-    let thornameMapper: ThornameMapper;
+describe('Thorname', () => {
 
     test('should correctly map a thorname action', () => {
         const action = fs.readJSONSync('test/testdata/Thorname.json');
-
-        thornameMapper = new ThornameMapper();
-        const result = thornameMapper.toCryptoTax(action, []);
+        const result = mapAction(action, []);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toStrictEqual({
@@ -34,9 +31,7 @@ describe('ThornameMapper', () => {
 
         // Thorname update has no coins. No cost other than gas fee.
         action.in[0].coins = [];
-
-        thornameMapper = new ThornameMapper();
-        const result = thornameMapper.toCryptoTax(action, []);
+        const result = mapAction(action, []);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toStrictEqual({
@@ -62,9 +57,7 @@ describe('ThornameMapper', () => {
         action.in[0].coins = [];
         action.in[0].txID = '';
         action.metadata.thorname.owner = 'thor1-owner-fallback-22222';
-
-        thornameMapper = new ThornameMapper();
-        const result = thornameMapper.toCryptoTax(action, []);
+        const result = mapAction(action, []);
 
         expect(result).toHaveLength(1);
         expect(result[0]).toStrictEqual({

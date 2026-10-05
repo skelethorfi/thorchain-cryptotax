@@ -4,7 +4,6 @@ import {Issue} from "../domain/Issue";
 import {RawBundle} from "../sources/RawBundle";
 import {Protocol, THORCHAIN} from "../protocols/Protocol";
 import {ViewblockTx} from "../viewblock";
-import {TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService";
 import {Mapper} from "../cryptotax-thorchain/Mapper";
 import {interpretBond} from "./midgard/bond";
 import {interpretSwap} from "./midgard/swap";
@@ -12,13 +11,9 @@ import {interpretRefund} from "./midgard/refund";
 import {interpretAddLiquidity, interpretWithdraw} from "./midgard/liquidity";
 import {interpretRunePool, interpretSwitch} from "./midgard/switch";
 import {interpretLoanOpen, interpretLoanRepay} from "./midgard/loan";
+import {interpretTcyClaim, interpretTcyDistribution, interpretTcyStake, interpretThorname} from "./midgard/tcy";
 import {Activity} from "../domain/Activity";
-import {TcyClaimMapper} from "../cryptotax-thorchain/TcyClaimMapper";
-import {TcyStakeMapper} from "../cryptotax-thorchain/TcyStakeMapper";
-import {TcyUnstakeMapper} from "../cryptotax-thorchain/TcyUnstakeMapper";
-import {ThornameMapper} from "../cryptotax-thorchain/ThornameMapper";
 import {RUJIRA_CONTRACT_TYPES, RujiraMapper} from "../cryptotax-thorchain/RujiraMapper";
-import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
 import {SendMapper} from "../thorchain-exporter/SendMapper";
 import {DelegateArkeoMapper} from "../thorchain-exporter/DelegateArkeoMapper";
 
@@ -56,21 +51,21 @@ const REGISTRY: Record<string, Interpreter> = {
     [`midgard/${ActionType.Swap}/loanRepayment`]: activity(interpretLoanRepay),
     [`midgard/${ActionType.Refund}`]: (bundle, protocol) => ({rows: [], ...interpretRefund(bundle, protocol)}),
     [`midgard/${ActionType.Switch}`]: activity(interpretSwitch),
-    [`midgard/${ActionType.Thorname}`]: midgard(() => new ThornameMapper()),
+    [`midgard/${ActionType.Thorname}`]: activity(interpretThorname),
     [`midgard/${ActionType.RunePoolDeposit}`]: activity(interpretRunePool),
     [`midgard/${ActionType.RunePoolWithdraw}`]: activity(interpretRunePool),
     'midgard/bond': activity(interpretBond),
     'midgard/unbond': activity(interpretBond),
-    'midgard/tcy_claim': midgard(() => new TcyClaimMapper()),
-    'midgard/tcy_stake': midgard(() => new TcyStakeMapper()),
-    'midgard/tcy_unstake': midgard(() => new TcyUnstakeMapper()),
+    'midgard/tcy_claim': activity(interpretTcyClaim),
+    'midgard/tcy_stake': activity(interpretTcyStake),
+    'midgard/tcy_unstake': activity(interpretTcyStake),
     [`midgard/${ActionType.Send}`]: ignore('Midgard send: sends come from Viewblock'),
     ...Object.fromEntries(RUJIRA_CONTRACT_TYPES.map(type => [`midgard/contract/${type}`, rujira])),
     'viewblock/send': bundle => rows(new SendMapper(bundle.data as ViewblockTx, bundle.wallet).toCtc()),
     'viewblock/send/delegate-arkeo': bundle => rows(new DelegateArkeoMapper(bundle.data as ViewblockTx, bundle.wallet).toCtc()),
     // Only sends are taken from Viewblock; every other action comes from Midgard
     'viewblock/other': ignore('Viewblock tx other than a send'),
-    'tcy/distribution': bundle => rows(new TcyDistributionMapper(bundle.data as TcyDistributionItem, bundle.wallet).toCtc()),
+    'tcy/distribution': activity(interpretTcyDistribution),
 };
 
 // Midgard action types handled on protocols other than THORChain (see docs/specs/maya.md)

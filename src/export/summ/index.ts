@@ -6,6 +6,7 @@ import {refundRows} from "./refund";
 import {addLiquidityRows, withdrawRows} from "./liquidity";
 import {runePoolRows, switchRows} from "./switch";
 import {loanOpenRows, loanRepayRows} from "./loan";
+import {tcyClaimRows, tcyDistributionRows, tcyStakeRows, thornameRows} from "./tcy";
 import {AssetNamesConfig, getProtocol, Protocol, withAssetNames} from "../../protocols/Protocol";
 
 // The tax choices the Summ rows depend on, from the config. Today: how assets are named
@@ -43,5 +44,14 @@ function toRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] 
             return loanOpenRows(activity, protocol);
         case 'loan.repay':
             return loanRepayRows(activity, protocol);
+        case 'tcy.claim':
+            return tcyClaimRows(activity, protocol);
+        case 'tcy.stake':
+        case 'tcy.unstake':
+            return tcyStakeRows(activity, protocol);
+        case 'tcy.distribution':
+            return tcyDistributionRows(activity, protocol);
+        case 'thorname':
+            return thornameRows(activity, protocol);
     }
 }

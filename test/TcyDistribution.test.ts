@@ -1,14 +1,14 @@
-import {TcyDistributionMapper} from "../src/cryptotax-thorchain/TcyDistributionMapper";
+import {runBundle} from '../src/pipeline/run';
+import {THORCHAIN} from '../src/protocols/Protocol';
 import {describe, expect, test} from '@jest/globals';
 import {CryptoTaxTransactionType} from '../src/cryptotax';
 
-describe("TcyDistributionMapper", () => {
+describe("TcyDistribution", () => {
     test("should map tcy distribution", () => {
         const data = require("./testdata/TcyDistribution.json");
 
-        const mapper = new TcyDistributionMapper(data, "thor1-user-wallet-11111");
-
-        const result = mapper.toCtc();
+        const bundle = {source: 'tcy' as const, protocol: 'thorchain' as const, wallet: 'thor1-user-wallet-11111', data, thornodeTxs: [], cosmosTxs: []};
+        const result = runBundle(bundle, THORCHAIN).rows;
 
         expect(result).toHaveLength(1);
         expect(result[0]).toStrictEqual({
