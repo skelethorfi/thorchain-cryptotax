@@ -1,0 +1,55 @@
+id: maya-midgard/addLiquidity.493628E56D76DCB664E14C142C35CB4AA45D5643A0958F250F583A4029D11166
+protocol: maya
+kind: lp.add
+status: success
+time: 2023-11-09T06:40:04.262Z
+txids:
+  in:
+    - 493628E56D76DCB664E14C142C35CB4AA45D5643A0958F250F583A4029D11166
+    - A93E940CECD931784A998010462F25FFF482A4C0A33A415632295AAABC1E7AE3
+  out: []
+memo: +:KUJI.KUJI:maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q:wr:30
+legs:
+  - direction: out
+    wallet: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
+    asset:
+      notation: MAYA.CACAO
+      kind: native
+    role: principal
+    basis: observed
+    txid: 493628E56D76DCB664E14C142C35CB4AA45D5643A0958F250F583A4029D11166
+    amount: "355.055465624"
+    decimals: 10
+  - direction: out
+    wallet: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
+    asset:
+      notation: MAYA.CACAO
+      kind: native
+    role: gas
+    basis: default
+    txid: 493628E56D76DCB664E14C142C35CB4AA45D5643A0958F250F583A4029D11166
+    amount: "0.2"
+    decimals: 10
+  - direction: out
+    wallet: kujira1wml3m2tkkdv5z6rdj3l4mp229c2493kaayukp6
+    asset:
+      notation: KUJI.KUJI
+      kind: native
+    role: principal
+    basis: observed
+    txid: A93E940CECD931784A998010462F25FFF482A4C0A33A415632295AAABC1E7AE3
+    amount: "17.59938896"
+    decimals: 8
+  - direction: in
+    wallet: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
+    asset:
+      notation: KUJI.KUJI
+      kind: position
+      position: lp
+    role: principal
+    basis: observed
+    amount: "9931.43775001"
+    decimals: 8
+prices: []
+details:
+  pool: KUJI.KUJI

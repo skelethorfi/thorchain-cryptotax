@@ -1,0 +1,56 @@
+id: midgard/withdraw.3C909D763AC1102872E14FE402D04354AE0691E76D24844E6AB86E05F184B0C6
+protocol: thorchain
+kind: lp.withdraw
+status: success
+time: 2022-04-08T16:32:51.962Z
+txids:
+  in:
+    - 3C909D763AC1102872E14FE402D04354AE0691E76D24844E6AB86E05F184B0C6
+  out:
+    - 5612D02DCE579800E7846EC8B7DEB3E4E2E289DAA27937A21D4BA64ED9375053
+memo: -:BTC.BTC:10000
+legs:
+  - direction: in
+    wallet: thor1ef95h5r7xcvahpw480pacslhutw6t6770phu0z
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: principal
+    basis: observed
+    txid: ""
+    amount: "5271.38655272"
+    decimals: 8
+  - direction: in
+    wallet: bc1qn20y0larf5nq26a0hwjmz5e447s5r2t9cgcwxh
+    asset:
+      notation: BTC.BTC
+      kind: native
+    role: principal
+    basis: observed
+    txid: 5612D02DCE579800E7846EC8B7DEB3E4E2E289DAA27937A21D4BA64ED9375053
+    amount: "1.10972609"
+    decimals: 8
+  - direction: out
+    wallet: thor1ef95h5r7xcvahpw480pacslhutw6t6770phu0z
+    asset:
+      notation: BTC.BTC
+      kind: position
+      position: lp
+    role: principal
+    basis: observed
+    txid: 3C909D763AC1102872E14FE402D04354AE0691E76D24844E6AB86E05F184B0C6
+    amount: "4517.87555095"
+    decimals: 8
+  - direction: out
+    wallet: thor1ef95h5r7xcvahpw480pacslhutw6t6770phu0z
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: gas
+    basis: default
+    txid: 3C909D763AC1102872E14FE402D04354AE0691E76D24844E6AB86E05F184B0C6
+    amount: "0.02"
+    decimals: 8
+prices: []
+details:
+  pool: BTC.BTC

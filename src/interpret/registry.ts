@@ -6,14 +6,13 @@ import {Protocol, THORCHAIN} from "../protocols/Protocol";
 import {ViewblockTx} from "../viewblock";
 import {TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService";
 import {Mapper} from "../cryptotax-thorchain/Mapper";
-import {AddLiquidityMapper} from "../cryptotax-thorchain/AddLiquidityMapper";
 import {SwitchMapper} from "../cryptotax-thorchain/SwitchMapper";
-import {WithdrawMapper} from "../cryptotax-thorchain/WithdrawMapper";
 import {LoanOpenMapper} from "../cryptotax-thorchain/LoanOpenMapper";
 import {LoanRepaymentMapper} from "../cryptotax-thorchain/LoanRepaymentMapper";
 import {interpretBond} from "./midgard/bond";
 import {interpretSwap} from "./midgard/swap";
 import {interpretRefund} from "./midgard/refund";
+import {interpretAddLiquidity, interpretWithdraw} from "./midgard/liquidity";
 import {Activity} from "../domain/Activity";
 import {TcyClaimMapper} from "../cryptotax-thorchain/TcyClaimMapper";
 import {TcyStakeMapper} from "../cryptotax-thorchain/TcyStakeMapper";
@@ -53,8 +52,8 @@ const rujira = midgard(() => new RujiraMapper());
 
 // Keyed on 'source/type' or 'source/type/subtype'; a subtype entry wins over its type's
 const REGISTRY: Record<string, Interpreter> = {
-    [`midgard/${ActionType.AddLiquidity}`]: midgard(() => new AddLiquidityMapper()),
-    [`midgard/${ActionType.Withdraw}`]: midgard(() => new WithdrawMapper()),
+    [`midgard/${ActionType.AddLiquidity}`]: (bundle, protocol) => ({rows: [], ...interpretAddLiquidity(bundle, protocol)}),
+    [`midgard/${ActionType.Withdraw}`]: (bundle, protocol) => ({rows: [], ...interpretWithdraw(bundle, protocol)}),
     [`midgard/${ActionType.Swap}`]: (bundle, protocol) => ({rows: [], ...interpretSwap(bundle, protocol)}),
     [`midgard/${ActionType.Swap}/loanOpen`]: midgard(() => new LoanOpenMapper()),
     [`midgard/${ActionType.Swap}/loanRepayment`]: midgard(() => new LoanRepaymentMapper()),

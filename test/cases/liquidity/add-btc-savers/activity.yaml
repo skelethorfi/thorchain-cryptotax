@@ -1,0 +1,33 @@
+id: midgard/addLiquidity.D4C3AA19D45F04C000FDF50F93CD70B8282A9B59D94E1D0E9B19A700A5D30DD1
+protocol: thorchain
+kind: savers.add
+status: success
+time: 2022-11-14T16:50:22.461Z
+txids:
+  in:
+    - D4C3AA19D45F04C000FDF50F93CD70B8282A9B59D94E1D0E9B19A700A5D30DD1
+  out: []
+legs:
+  - direction: out
+    wallet: bc1qz0w77jfx0c86jjweljk98c4mafctgazhjnaf7n
+    asset:
+      notation: BTC.BTC
+      kind: native
+    role: principal
+    basis: observed
+    txid: D4C3AA19D45F04C000FDF50F93CD70B8282A9B59D94E1D0E9B19A700A5D30DD1
+    amount: "1.40002825"
+    decimals: 8
+  - direction: in
+    wallet: bc1qz0w77jfx0c86jjweljk98c4mafctgazhjnaf7n
+    asset:
+      notation: BTC/BTC
+      kind: position
+      position: savers
+    role: principal
+    basis: observed
+    amount: "1.3997464"
+    decimals: 8
+prices: []
+details:
+  pool: BTC/BTC

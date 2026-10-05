@@ -1,0 +1,56 @@
+id: maya-midgard/withdraw.F0090B6558270A00B6D228770C7C13F3B7B4F4A7DAA7F80EBA642D0AA7D67E54
+protocol: maya
+kind: lp.withdraw
+status: success
+time: 2025-10-06T01:34:01.409Z
+txids:
+  in:
+    - F0090B6558270A00B6D228770C7C13F3B7B4F4A7DAA7F80EBA642D0AA7D67E54
+  out:
+    - 9446B4F8E23DE4C719121998AD9EAA7321E22F814C7D6832C5EEEB2BF4427E52
+memo: -:THOR.RUNE:10000
+legs:
+  - direction: in
+    wallet: thor136tmapkujkwewjncdx3jck2amp4y0twh2nlwxs
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: principal
+    basis: observed
+    txid: 9446B4F8E23DE4C719121998AD9EAA7321E22F814C7D6832C5EEEB2BF4427E52
+    amount: "77.91722919"
+    decimals: 8
+  - direction: in
+    wallet: maya136tmapkujkwewjncdx3jck2amp4y0twh2ypzsq
+    asset:
+      notation: MAYA.CACAO
+      kind: native
+    role: principal
+    basis: observed
+    txid: ""
+    amount: "475.1200903869"
+    decimals: 10
+  - direction: out
+    wallet: maya136tmapkujkwewjncdx3jck2amp4y0twh2ypzsq
+    asset:
+      notation: THOR.RUNE
+      kind: position
+      position: lp
+    role: principal
+    basis: observed
+    txid: F0090B6558270A00B6D228770C7C13F3B7B4F4A7DAA7F80EBA642D0AA7D67E54
+    amount: "62370.32912229"
+    decimals: 8
+  - direction: out
+    wallet: maya136tmapkujkwewjncdx3jck2amp4y0twh2ypzsq
+    asset:
+      notation: MAYA.CACAO
+      kind: native
+    role: gas
+    basis: default
+    txid: F0090B6558270A00B6D228770C7C13F3B7B4F4A7DAA7F80EBA642D0AA7D67E54
+    amount: "0.2"
+    decimals: 10
+prices: []
+details:
+  pool: THOR.RUNE
