@@ -11,9 +11,13 @@ import {TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService
 import {getProtocol, ProtocolId} from "../protocols/Protocol";
 import {CosmosTx} from "../cryptotax-thorchain/CosmosTxService";
 import {BundleSource, RawBundle} from "../sources/RawBundle";
+import {Activity} from "../domain/Activity";
+import {formatAmount} from "../domain/Amount";
 
 // A golden test case is a folder containing:
 //   input.json    - the raw source data (a GoldenCaseInput: a RawBundle plus a description)
+//   activity.yaml - the activities an interpreter makes from it, reviewed by hand; only for action
+//                   types ported to activities (docs/specs/activity.md)
 //   expected.yaml - the CSV rows the exporter should produce, reviewed by hand;
 //                   one YAML document per row, separated by '---' ('[]' for no rows)
 // Inputs must never contain anyone's own wallets or txids (see docs/specs/fixtures.md).
@@ -36,6 +40,7 @@ export interface GoldenCaseInput {
 
 export const INPUT_FILE = 'input.json';
 export const EXPECTED_FILE = 'expected.yaml';
+export const ACTIVITY_FILE = 'activity.yaml';
 
 export function findCaseDirs(root: string): string[] {
     if (!fs.existsSync(root)) {
@@ -70,7 +75,12 @@ export function readCaseExpected(dir: string): CryptoTaxTransaction[] | undefine
     return fs.existsSync(file) ? parseRows(fs.readFileSync(file, 'utf8')) : undefined;
 }
 
-export function parseRows(text: string): CryptoTaxTransaction[] {
+export function readCaseActivities(dir: string): object[] | undefined {
+    const file = path.join(dir, ACTIVITY_FILE);
+    return fs.existsSync(file) ? parseRows(fs.readFileSync(file, 'utf8')) : undefined;
+}
+
+export function parseRows(text: string): any[] {
     const docs = YAML.parseAllDocuments(text).map(doc => {
         if (doc.errors.length > 0) {
             throw doc.errors[0];
@@ -84,7 +94,7 @@ export function parseRows(text: string): CryptoTaxTransaction[] {
 
 // One document per row. Strings that look like numbers (e.g. amounts) are quoted,
 // so they parse back as strings.
-export function formatRows(rows: CryptoTaxTransaction[]): string {
+export function formatRows(rows: object[]): string {
     if (rows.length === 0) {
         return '[]\n';
     }
@@ -94,6 +104,19 @@ export function formatRows(rows: CryptoTaxTransaction[]): string {
 
 export function writeCaseExpected(dir: string, rows: CryptoTaxTransaction[]) {
     fs.outputFileSync(path.join(dir, EXPECTED_FILE), formatRows(rows));
+}
+
+export function writeCaseActivities(dir: string, activities: Activity[]) {
+    fs.outputFileSync(path.join(dir, ACTIVITY_FILE), formatRows(activities.map(toPlainActivity)));
+}
+
+// An activity as activity.yaml holds it: amounts as decimal strings with their decimals, times as ISO
+export function toPlainActivity(activity: Activity): object {
+    return {
+        ...activity,
+        time: activity.time.toISOString(),
+        legs: activity.legs.map(({amount, ...leg}) => ({...leg, amount: formatAmount(amount), decimals: amount.decimals})),
+    };
 }
 
 // A case's input is a RawBundle, written without the fields that are at their default
@@ -123,6 +146,11 @@ export function toCaseInput(bundle: RawBundle, description: string): GoldenCaseI
 // Runs a case through the same TaxEvent path the exporter uses. An unsupported action gives no rows;
 // a failure throws, so a case can't pass by failing.
 export function runCase(input: GoldenCaseInput): CryptoTaxTransaction[] {
+    return runCaseLayers(input).rows;
+}
+
+// The activities a ported action type gives, and the rows
+export function runCaseLayers(input: GoldenCaseInput): {activities: Activity[]; rows: CryptoTaxTransaction[]} {
     const event = TaxEvent.fromBundle(toBundle(input), getProtocol(input.protocol));
     const failure = event.issues.find(issue => issue.kind === 'failed');
 
@@ -130,5 +158,5 @@ export function runCase(input: GoldenCaseInput): CryptoTaxTransaction[] {
         throw new Error(failure.message);
     }
 
-    return event.output;
+    return {activities: event.activities, rows: event.output};
 }

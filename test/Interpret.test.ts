@@ -15,7 +15,7 @@ describe('interpret', () => {
         // Make the asset string invalid
         action.in[0].coins[0].asset = 'INVALID';
 
-        expect(interpret(midgardBundle(action), THORCHAIN)).toStrictEqual({rows: [], issues: [{
+        expect(interpret(midgardBundle(action), THORCHAIN)).toStrictEqual({activities: [], rows: [], issues: [{
             kind: 'failed',
             message: '[Midgard] Failed to parse asset string: "INVALID". type: switch, txid: 0000000000000000000000000000000000000000000000000000000000000000',
         }]});
@@ -62,7 +62,7 @@ describe('interpret', () => {
             metadata: {swap: {memo: '=:BTC.BTC:bc1qexample', networkFees: [], affiliateAddress: '', affiliateFee: '0', isStreamingSwap: false, txType: 'swap'}},
         };
 
-        expect(interpret(midgardBundle(action), THORCHAIN)).toStrictEqual({rows: [], issues: [{
+        expect(interpret(midgardBundle(action), THORCHAIN)).toStrictEqual({activities: [], rows: [], issues: [{
             kind: 'ignored',
             message: 'synth swap from an L1 address (a savers withdrawal)',
         }]});

@@ -107,7 +107,7 @@ export class Exporter {
         }
 
         for (const bundle of unique.bundles) {
-            const event = TaxEvent.fromBundle(bundle, this.protocolFor(bundle));
+            const event = TaxEvent.fromBundle(bundle, this.protocolFor(bundle), {assets: this.config.assets});
             this.handleIssues(bundle, event, outputPath);
 
             // A failed bundle gives no rows; its copy is saved for a look
