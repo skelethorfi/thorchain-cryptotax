@@ -27,7 +27,7 @@ test/cases/<group>/<name>/
 | `thornodeTxs` | Optional related THORNode `tx/status` responses (swaps and switches) |
 | `cosmosTxs` | Optional Cosmos txs of a contract action |
 
-`test/GoldenCases.test.ts` runs every case through `TaxEvent`, the same path the
+`test/GoldenCases.test.ts` runs every case through `runBundle`, the same path the
 exporter uses, and compares the result with `expected.yaml`. For an action type
 ported to activities it also compares the activities with `activity.yaml`, so an
 interpreter bug and an exporter bug fail different checks; a ported case without
