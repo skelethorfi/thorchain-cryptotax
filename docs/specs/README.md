@@ -6,3 +6,4 @@
 - [Loans](./loans.md)
 - [Rujira](./rujira.md)
 - [Source data snapshots](./snapshots.md)
+- [Activity](./activity.md)
