@@ -66,10 +66,10 @@ since pruned. It lists what it used in `snapshots.json` in its output folder.
 - `--replay <run folder>`: use exactly the records that an earlier run used, e.g.
   the run you filed.
 
-`npx ts-node src/full-export.ts --replay ../my-tax/output/2026-10-03_15-33-50 ../my-tax/wallets-config.toml`
+`npx ts-node src/full-export.ts --replay ../my-tax/tax2026/2026-10-03_15-33-50 ../my-tax/wallets-config.toml`
 
 A cache from before the store (`cache/` with one file per wallet or tx) is not read
 by a run; while the store is empty, a run warns and prints the import command. Import
 it into the store first; for several old caches, oldest first:
 
-`npm run store -- import ../my-tax/store ../my-tax/old-cache ../my-tax/cache`
+`npm run store -- import ../my-tax/store ../my-tax/tax2025/cache ../my-tax/cache`
