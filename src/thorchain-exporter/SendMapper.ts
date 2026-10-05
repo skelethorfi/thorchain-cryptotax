@@ -2,7 +2,7 @@ import {AnyAsset, assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
 import {BaseMapper} from "./BaseMapper";
 import {ViewblockCoin, ViewblockEvent, ViewblockEventSend, ViewblockTx} from "../viewblock";
 import { baseToAssetAmountString } from "../utils/Amount";
-import {CryptoTaxTransaction, CryptoTaxTransactionType, txToCsv} from "../cryptotax";
+import {CryptoTaxTransaction, CryptoTaxTransactionType} from "../cryptotax";
 import assert from "assert";
 
 export class SendMapper extends BaseMapper {
