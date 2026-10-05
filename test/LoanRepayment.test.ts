@@ -1,12 +1,11 @@
-import {LoanRepaymentMapper} from "../src/cryptotax-thorchain/LoanRepaymentMapper";
+import {mapAction} from "./mapAction";
 import fs from 'fs-extra';
 import {describe, expect, test} from '@jest/globals';
-const mapper = new LoanRepaymentMapper();
 
-describe('LoanRepaymentMapper', () => {
+describe('LoanRepayment', () => {
     test('Deposit BTC to repay BTC loan. No closure', () => {
         const action = fs.readJSONSync('test/testdata/LoanRepayment_Deposit_BTC_to_repay_BTC_loan_No_closure.json');
-        const txs = mapper.toCryptoTax(action);
+        const txs = mapAction(action);
 
         expect(txs.length).toBe(1);
 
@@ -29,7 +28,7 @@ describe('LoanRepaymentMapper', () => {
 
     test('Deposit RUNE to repay BTC loan. Closed loan', () => {
         const action = fs.readJSONSync('test/testdata/LoanRepayment_Deposit_RUNE_to_repay_BTC_loan_Closed_loan.json');
-        const txs = mapper.toCryptoTax(action);
+        const txs = mapAction(action);
 
         expect(txs.length).toBe(2);
 
