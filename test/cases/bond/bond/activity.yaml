@@ -1,0 +1,33 @@
+id: midgard/bond.0000000000000000000000000000000000000000000000000000000000000000
+protocol: thorchain
+kind: bond
+status: success
+time: 2020-12-31T13:00:00.000Z
+txids:
+  in:
+    - "0000000000000000000000000000000000000000000000000000000000000000"
+  out:
+    - "0000000000000000000000000000000000000000000000000000000000000000"
+memo: BOND:thor1-node-address
+legs:
+  - direction: out
+    wallet: thor1-user-wallet-11111
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: principal
+    basis: observed
+    amount: "1"
+    decimals: 8
+  - direction: out
+    wallet: thor1-user-wallet-11111
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: gas
+    basis: default
+    amount: "0.02"
+    decimals: 8
+prices: []
+details:
+  node: thor1-node-address

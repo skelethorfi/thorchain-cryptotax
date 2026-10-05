@@ -8,7 +8,10 @@ import {CosmosTxService} from "../cryptotax-thorchain/CosmosTxService";
 import {MidgardService} from "../cryptotax-thorchain/MidgardService";
 import {MidgardSource} from "../sources/Source";
 import {Anonymiser} from "./Anonymise";
-import {EXPECTED_FILE, formatRows, GoldenCaseInput, INPUT_FILE, readCaseInput, runCase, toCaseInput, writeCaseExpected} from "./GoldenCase";
+import {
+    ACTIVITY_FILE, EXPECTED_FILE, formatRows, GoldenCaseInput, INPUT_FILE, readCaseInput, runCaseLayers, toCaseInput, toPlainActivity,
+    writeCaseActivities, writeCaseExpected,
+} from "./GoldenCase";
 import {getPrivateDir, mask, PrivateData} from "./PrivateData";
 import {describeShape, getActionIds, getActionShape, sameShape} from "./Shape";
 import {getProtocol, Protocol} from "../protocols/Protocol";
@@ -107,14 +110,24 @@ function writeCase(name: string, input: GoldenCaseInput) {
 }
 
 function show(dir: string, write: boolean) {
-    const rows = runCase(readCaseInput(dir));
+    const {activities, rows} = runCaseLayers(readCaseInput(dir));
+
+    if (activities.length) {
+        console.log(`# ${ACTIVITY_FILE}\n${formatRows(activities.map(toPlainActivity))}\n# ${EXPECTED_FILE}`);
+    }
+
     console.log(formatRows(rows));
 
     if (write) {
+        if (activities.length) {
+            writeCaseActivities(dir, activities);
+            console.log(`Wrote ${path.relative(process.cwd(), path.join(dir, ACTIVITY_FILE))}`);
+        }
+
         writeCaseExpected(dir, rows);
         console.log(`Wrote ${path.relative(process.cwd(), path.join(dir, EXPECTED_FILE))}`);
     } else {
-        console.log(`\nReview these rows against the spec. If they are right: npm run fixture -- show ${path.relative(process.cwd(), dir)} --write`);
+        console.log(`\nReview ${activities.length ? 'the activities and ' : ''}these rows against the spec. If they are right: npm run fixture -- show ${path.relative(process.cwd(), dir)} --write`);
     }
 }
 

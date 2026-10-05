@@ -10,7 +10,8 @@ Cases must never contain a contributor's own wallets or transactions.
 
 ```
 test/cases/<group>/<name>/
-  input.json      raw source data
+  input.json      raw source data (a raw bundle)
+  activity.yaml   reviewed activities, for action types ported to activities (activity.md)
   expected.yaml   reviewed CSV rows
 ```
 
@@ -22,10 +23,16 @@ test/cases/<group>/<name>/
 | `source` | `midgard`, `viewblock` or `tcy` |
 | `wallet` | The wallet being exported (used by the viewblock and tcy mappers) |
 | `data` | The Midgard action, Viewblock tx or TCY distribution item, as returned by the API |
+| `protocol` | Optional, `maya` for a Maya case (default `thorchain`) |
 | `thornodeTxs` | Optional related THORNode `tx/status` responses (swaps and switches) |
+| `cosmosTxs` | Optional Cosmos txs of a contract action |
 
 `test/GoldenCases.test.ts` runs every case through `TaxEvent`, the same path the
-exporter uses, and compares the result with `expected.yaml`. A case without
+exporter uses, and compares the result with `expected.yaml`. For an action type
+ported to activities it also compares the activities with `activity.yaml`, so an
+interpreter bug and an exporter bug fail different checks; a ported case without
+`activity.yaml` fails. `npm run fixture -- show` prints both, and `--write` saves
+both after review. A case without
 `expected.yaml` is reported as a todo: its input is in, but its mapper or review is
 not.
 

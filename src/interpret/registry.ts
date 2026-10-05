@@ -13,8 +13,8 @@ import {WithdrawMapper} from "../cryptotax-thorchain/WithdrawMapper";
 import {RefundMapper} from "../cryptotax-thorchain/RefundMapper";
 import {LoanOpenMapper} from "../cryptotax-thorchain/LoanOpenMapper";
 import {LoanRepaymentMapper} from "../cryptotax-thorchain/LoanRepaymentMapper";
-import {BondMapper} from "../cryptotax-thorchain/BondMapper";
-import {UnbondMapper} from "../cryptotax-thorchain/UnbondMapper";
+import {interpretBond} from "./midgard/bond";
+import {Activity} from "../domain/Activity";
 import {TcyClaimMapper} from "../cryptotax-thorchain/TcyClaimMapper";
 import {TcyStakeMapper} from "../cryptotax-thorchain/TcyStakeMapper";
 import {TcyUnstakeMapper} from "../cryptotax-thorchain/TcyUnstakeMapper";
@@ -26,7 +26,9 @@ import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMappe
 import {SendMapper} from "../thorchain-exporter/SendMapper";
 import {DelegateArkeoMapper} from "../thorchain-exporter/DelegateArkeoMapper";
 
+// A ported action type gives activities, which an exporter turns into rows; the rest still give rows
 export interface Interpretation {
+    activities: Activity[];
     rows: CryptoTaxTransaction[];
     issues: Issue[];
 }
@@ -34,16 +36,18 @@ export interface Interpretation {
 // Turns one bundle into rows. Pure: no network, files, clock or logging; problems are returned as issues.
 export type Interpreter = (bundle: RawBundle, protocol: Protocol) => Interpretation;
 
-const rows = (rows: CryptoTaxTransaction[]): Interpretation => ({rows, issues: []});
+const rows = (rows: CryptoTaxTransaction[]): Interpretation => ({activities: [], rows, issues: []});
+const activity = (interpreter: (bundle: RawBundle, protocol: Protocol) => Activity): Interpreter => (bundle, protocol) =>
+    ({activities: [interpreter(bundle, protocol)], rows: [], issues: []});
 
 // A Midgard mapper, made for each action so the issues it finds are that action's
 const midgard = (make: (bundle: RawBundle, protocol: Protocol) => Mapper): Interpreter => (bundle, protocol) => {
     const mapper = make(bundle, protocol);
     const rows = mapper.toCryptoTax(bundle.data as Action, bundle.thornodeTxs, protocol, bundle.cosmosTxs);
-    return {rows, issues: mapper.issues ?? []};
+    return {activities: [], rows, issues: mapper.issues ?? []};
 };
 
-const ignore = (message: string): Interpreter => () => ({rows: [], issues: [{kind: 'ignored', message}]});
+const ignore = (message: string): Interpreter => () => ({activities: [], rows: [], issues: [{kind: 'ignored', message}]});
 
 const rujira = midgard(() => new RujiraMapper());
 
@@ -59,8 +63,8 @@ const REGISTRY: Record<string, Interpreter> = {
     [`midgard/${ActionType.Thorname}`]: midgard(() => new ThornameMapper()),
     [`midgard/${ActionType.RunePoolDeposit}`]: midgard(() => new RunePoolDepositMapper()),
     [`midgard/${ActionType.RunePoolWithdraw}`]: midgard(() => new RunePoolWithdrawMapper()),
-    'midgard/bond': midgard(() => new BondMapper()),
-    'midgard/unbond': midgard(() => new UnbondMapper()),
+    'midgard/bond': activity(interpretBond),
+    'midgard/unbond': activity(interpretBond),
     'midgard/tcy_claim': midgard(() => new TcyClaimMapper()),
     'midgard/tcy_stake': midgard(() => new TcyStakeMapper()),
     'midgard/tcy_unstake': midgard(() => new TcyUnstakeMapper()),
@@ -125,12 +129,12 @@ export function interpret(bundle: RawBundle, protocol: Protocol): Interpretation
 
         if (!interpreter) {
             const {type, subtype} = getBundleType(bundle);
-            return {rows: [], issues: [{kind: 'unsupported', message: `unsupported action: ${[type, subtype].filter(Boolean).join(' ')}`}]};
+            return {activities: [], rows: [], issues: [{kind: 'unsupported', message: `unsupported action: ${[type, subtype].filter(Boolean).join(' ')}`}]};
         }
 
         return interpreter(bundle, protocol);
     } catch (e: any) {
-        return {rows: [], issues: [{kind: 'failed', message: failureMessage(bundle, protocol, e)}]};
+        return {activities: [], rows: [], issues: [{kind: 'failed', message: failureMessage(bundle, protocol, e)}]};
     }
 }
 

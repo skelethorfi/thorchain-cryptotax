@@ -127,8 +127,9 @@ prices: []
 details: {node: thor1-node-address}
 ```
 
-The Summ exporter turns it into one `staking-deposit` row of 1 RUNE with a
-0.02 RUNE fee: today's row.
+The Summ exporter (`src/export/summ/`) turns it into one `staking-deposit`
+row of 1 RUNE with a 0.02 RUNE fee: today's row. The interpreter is
+`src/interpret/midgard/bond.ts`.
 
 ## Not in an activity
 
@@ -144,6 +145,6 @@ The Summ exporter turns it into one `staking-deposit` row of 1 RUNE with a
 - `test/Domain.test.ts`: `formatAmount` matches the CSV's formatting for every
   decimals value in use, and `toAsset` kinds for each notation in
   `assets.md`.
-- From step 7, golden cases gain a reviewed `activity.yaml` between `input.json`
-  and `expected.yaml`, so an interpreter bug and an exporter bug fail
-  different checks.
+- Golden cases of ported kinds have a reviewed `activity.yaml` between
+  `input.json` and `expected.yaml` (`fixtures.md`), so an interpreter bug and
+  an exporter bug fail different checks: `bond/bond`, `bond/unbond`.

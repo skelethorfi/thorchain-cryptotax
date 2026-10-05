@@ -1,6 +1,8 @@
 import {describe, expect, test} from '@jest/globals';
 import path from 'path';
-import {findCaseDirs, readCaseExpected, readCaseInput, runCase, toBundle, toCaseInput} from '../src/fixtures/GoldenCase';
+import {
+    findCaseDirs, readCaseActivities, readCaseExpected, readCaseInput, runCase, runCaseLayers, toBundle, toCaseInput, toPlainActivity,
+} from '../src/fixtures/GoldenCase';
 
 const CASES_DIR = path.join(__dirname, 'cases');
 const caseDirs = findCaseDirs(CASES_DIR);
@@ -17,6 +19,13 @@ describe('golden cases', () => {
 
     test.each(reviewed.map(dir => [name(dir), dir]))('%s', (_name, dir) => {
         expect(runCase(readCaseInput(dir))).toStrictEqual(readCaseExpected(dir));
+    });
+
+    // A ported action type is checked at both layers, so an interpreter bug and an exporter bug fail
+    // different checks
+    test.each(reviewed.map(dir => [name(dir), dir]))('%s activity.yaml', (_name, dir) => {
+        const activities = runCaseLayers(readCaseInput(dir)).activities.map(toPlainActivity);
+        expect(activities).toStrictEqual(readCaseActivities(dir) ?? []);
     });
 
     // The fixture tool writes input.json from a RawBundle, so every case must survive the round trip
