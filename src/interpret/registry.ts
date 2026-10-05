@@ -6,13 +6,12 @@ import {Protocol, THORCHAIN} from "../protocols/Protocol";
 import {ViewblockTx} from "../viewblock";
 import {TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService";
 import {Mapper} from "../cryptotax-thorchain/Mapper";
-import {LoanOpenMapper} from "../cryptotax-thorchain/LoanOpenMapper";
-import {LoanRepaymentMapper} from "../cryptotax-thorchain/LoanRepaymentMapper";
 import {interpretBond} from "./midgard/bond";
 import {interpretSwap} from "./midgard/swap";
 import {interpretRefund} from "./midgard/refund";
 import {interpretAddLiquidity, interpretWithdraw} from "./midgard/liquidity";
 import {interpretRunePool, interpretSwitch} from "./midgard/switch";
+import {interpretLoanOpen, interpretLoanRepay} from "./midgard/loan";
 import {Activity} from "../domain/Activity";
 import {TcyClaimMapper} from "../cryptotax-thorchain/TcyClaimMapper";
 import {TcyStakeMapper} from "../cryptotax-thorchain/TcyStakeMapper";
@@ -53,8 +52,8 @@ const REGISTRY: Record<string, Interpreter> = {
     [`midgard/${ActionType.AddLiquidity}`]: (bundle, protocol) => ({rows: [], ...interpretAddLiquidity(bundle, protocol)}),
     [`midgard/${ActionType.Withdraw}`]: (bundle, protocol) => ({rows: [], ...interpretWithdraw(bundle, protocol)}),
     [`midgard/${ActionType.Swap}`]: (bundle, protocol) => ({rows: [], ...interpretSwap(bundle, protocol)}),
-    [`midgard/${ActionType.Swap}/loanOpen`]: midgard(() => new LoanOpenMapper()),
-    [`midgard/${ActionType.Swap}/loanRepayment`]: midgard(() => new LoanRepaymentMapper()),
+    [`midgard/${ActionType.Swap}/loanOpen`]: activity(interpretLoanOpen),
+    [`midgard/${ActionType.Swap}/loanRepayment`]: activity(interpretLoanRepay),
     [`midgard/${ActionType.Refund}`]: (bundle, protocol) => ({rows: [], ...interpretRefund(bundle, protocol)}),
     [`midgard/${ActionType.Switch}`]: activity(interpretSwitch),
     [`midgard/${ActionType.Thorname}`]: midgard(() => new ThornameMapper()),

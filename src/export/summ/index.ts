@@ -5,6 +5,7 @@ import {swapRows} from "./swap";
 import {refundRows} from "./refund";
 import {addLiquidityRows, withdrawRows} from "./liquidity";
 import {runePoolRows, switchRows} from "./switch";
+import {loanOpenRows, loanRepayRows} from "./loan";
 import {AssetNamesConfig, getProtocol, Protocol, withAssetNames} from "../../protocols/Protocol";
 
 // The tax choices the Summ rows depend on, from the config. Today: how assets are named
@@ -38,5 +39,9 @@ function toRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] 
         case 'runepool.deposit':
         case 'runepool.withdraw':
             return runePoolRows(activity, protocol);
+        case 'loan.open':
+            return loanOpenRows(activity, protocol);
+        case 'loan.repay':
+            return loanRepayRows(activity, protocol);
     }
 }

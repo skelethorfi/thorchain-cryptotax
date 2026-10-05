@@ -1,0 +1,33 @@
+id: midgard/swap.005959124F7D1AD405A406FD7029078C1FA45F9B827FCC85F15A3992245B8C61
+protocol: thorchain
+kind: loan.open
+status: pending
+time: 2024-02-20T19:01:15.710Z
+txids:
+  in:
+    - 005959124F7D1AD405A406FD7029078C1FA45F9B827FCC85F15A3992245B8C61
+  out: []
+memo: loan+:THOR.RUNE:thor1hhjupkzy3t6ccelhz7qw8epyx4rm8a06nlm5ce:0:thor160yye65pf9rzwrgqmtgav69n6zlsyfpgm9a7xk:0:::0
+legs:
+  - direction: out
+    wallet: bc1qzjvp0aqx8vt6hw06zpc2fhr2xxcujac32nrvu8
+    asset:
+      notation: BTC.BTC
+      kind: native
+    role: principal
+    basis: observed
+    txid: 005959124F7D1AD405A406FD7029078C1FA45F9B827FCC85F15A3992245B8C61
+    amount: "0.128"
+    decimals: 8
+  - direction: in
+    wallet: thor1hhjupkzy3t6ccelhz7qw8epyx4rm8a06nlm5ce
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: principal
+    basis: observed
+    txid: ""
+    amount: "644.53740577"
+    decimals: 8
+prices: []
+details: {}

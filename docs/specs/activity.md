@@ -102,12 +102,13 @@ exporter cannot be built until it handles every kind.
 | `lp.withdraw`, `savers.withdraw` | 8b | in: principal per asset paid out (observed); out: principal, the position units given up (observed), followed by the request's gas leg (the request's own coin, usually dust, is not a leg) | `pool` |
 | `switch` | 8c | out: principal, the asset on its old chain (observed), followed by its gas leg; in: principal, the same asset on THORChain (observed) | — |
 | `runepool.deposit`, `runepool.withdraw` | 8c | the RUNE sent or received (observed); the RUNEPool units received or given up, a `runepool` position (observed); gas: the native fee (default) | — |
+| `loan.open` | 8c | out: principal, the collateral sent (observed; when Midgard shows `THOR.TOR`, the THORNode tx's coin), followed by its gas leg; in: principal, the amount borrowed, paid to the memo's destination (observed). `loans.md` says which pending loan opens count | — |
+| `loan.repay` | 8c | out: principal, the repayment (observed), followed by its gas leg; in: principal, the collateral paid back when the loan closes (observed, one output) | `collateral`: the memo's collateral asset |
 
 The other kinds are added in later steps:
 
 | Step | Kinds |
 | --- | --- |
-| 8c | `loan.open`, `loan.repay` |
 | 8d | `tcy.claim`, `tcy.stake`, `tcy.unstake`, `tcy.distribution`, `thorname` |
 | 8e | Rujira (`rujira.stake`, `rujira.fin.trade`, `rujira.merge.deposit`, `rujira.merge.withdraw`); Maya through the same interpreters |
 
@@ -154,5 +155,5 @@ row of 1 RUNE with a 0.02 RUNE fee: today's row. The interpreter is
 - Golden cases of ported kinds have a reviewed `activity.yaml` between
   `input.json` and `expected.yaml` (`fixtures.md`), so an interpreter bug and
   an exporter bug fail different checks: the `bond/`, `swap/`, `refund/`,
-  `liquidity/`, `switch/` and `runepool/` cases and the Maya swaps and
-  liquidity.
+  `liquidity/`, `switch/`, `runepool/` and `loan/` cases and the Maya swaps
+  and liquidity.
