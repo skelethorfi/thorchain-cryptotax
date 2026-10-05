@@ -6,19 +6,17 @@ import {Protocol, THORCHAIN} from "../protocols/Protocol";
 import {ViewblockTx} from "../viewblock";
 import {TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService";
 import {Mapper} from "../cryptotax-thorchain/Mapper";
-import {SwitchMapper} from "../cryptotax-thorchain/SwitchMapper";
 import {LoanOpenMapper} from "../cryptotax-thorchain/LoanOpenMapper";
 import {LoanRepaymentMapper} from "../cryptotax-thorchain/LoanRepaymentMapper";
 import {interpretBond} from "./midgard/bond";
 import {interpretSwap} from "./midgard/swap";
 import {interpretRefund} from "./midgard/refund";
 import {interpretAddLiquidity, interpretWithdraw} from "./midgard/liquidity";
+import {interpretRunePool, interpretSwitch} from "./midgard/switch";
 import {Activity} from "../domain/Activity";
 import {TcyClaimMapper} from "../cryptotax-thorchain/TcyClaimMapper";
 import {TcyStakeMapper} from "../cryptotax-thorchain/TcyStakeMapper";
 import {TcyUnstakeMapper} from "../cryptotax-thorchain/TcyUnstakeMapper";
-import {RunePoolDepositMapper} from "../cryptotax-thorchain/RunePoolDepositMapper";
-import {RunePoolWithdrawMapper} from "../cryptotax-thorchain/RunePoolWithdrawMapper";
 import {ThornameMapper} from "../cryptotax-thorchain/ThornameMapper";
 import {RUJIRA_CONTRACT_TYPES, RujiraMapper} from "../cryptotax-thorchain/RujiraMapper";
 import {TcyDistributionMapper} from "../cryptotax-thorchain/TcyDistributionMapper";
@@ -58,10 +56,10 @@ const REGISTRY: Record<string, Interpreter> = {
     [`midgard/${ActionType.Swap}/loanOpen`]: midgard(() => new LoanOpenMapper()),
     [`midgard/${ActionType.Swap}/loanRepayment`]: midgard(() => new LoanRepaymentMapper()),
     [`midgard/${ActionType.Refund}`]: (bundle, protocol) => ({rows: [], ...interpretRefund(bundle, protocol)}),
-    [`midgard/${ActionType.Switch}`]: midgard(() => new SwitchMapper()),
+    [`midgard/${ActionType.Switch}`]: activity(interpretSwitch),
     [`midgard/${ActionType.Thorname}`]: midgard(() => new ThornameMapper()),
-    [`midgard/${ActionType.RunePoolDeposit}`]: midgard(() => new RunePoolDepositMapper()),
-    [`midgard/${ActionType.RunePoolWithdraw}`]: midgard(() => new RunePoolWithdrawMapper()),
+    [`midgard/${ActionType.RunePoolDeposit}`]: activity(interpretRunePool),
+    [`midgard/${ActionType.RunePoolWithdraw}`]: activity(interpretRunePool),
     'midgard/bond': activity(interpretBond),
     'midgard/unbond': activity(interpretBond),
     'midgard/tcy_claim': midgard(() => new TcyClaimMapper()),

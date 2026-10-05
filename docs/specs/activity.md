@@ -73,7 +73,7 @@ An asset keeps the source's notation (`BTC.BTC`, `BTC/BTC`, `BTC~BTC`,
 | `native` | a chain's own coin or a protocol's token: `BTC.BTC`, `THOR.RUNE`, `THOR.TCY`, `MAYA.CACAO`, `x/ruji` |
 | `token` | a token on an L1 chain: `ETH.USDC-0X…` |
 | `synth`, `trade`, `secured` | held on THORChain or Maya, for an L1 asset: `BTC/BTC`, `BTC~BTC`, `BTC-BTC` |
-| `position` | a share of a pool; the notation is the pool, and `position` says which: `lp` (`BTC.BTC`) or `savers` (`BTC/BTC`) |
+| `position` | a share of a pool; the notation is the pool, and `position` says which: `lp` (`BTC.BTC`), `savers` (`BTC/BTC`) or `runepool` (`THOR.RUNE`) |
 
 Naming an asset for a tax tool (`ThorSynth.BTC.BTC`, `ThorLP.BTC.BTC`,
 `ThorSavers.BTC.BTC`, the `[assets]` prefixes) is the exporter's job
@@ -100,12 +100,14 @@ exporter cannot be built until it handles every kind.
 | `refund` | 8a | out: principal, the amount sent (observed); in: returned, what the protocol paid back (observed, when any); out: gas, the inbound fee. The exporter writes the send as a failed-out with the fee, and sent − returned as a separate fee row (`fees.md`). A refund of an affiliate's cut, or of a partially filled swap's unfilled part, gives no activity, only an `ignored` issue | `reason` |
 | `lp.add`, `savers.add` | 8b | out: principal per deposit (observed; a savers deposit sent from an L1 wallet is the L1 asset, `savers.md`), each followed by its gas leg; in: principal, the position units to the first depositor's wallet (observed). Two deposits: the native asset first | `pool` |
 | `lp.withdraw`, `savers.withdraw` | 8b | in: principal per asset paid out (observed); out: principal, the position units given up (observed), followed by the request's gas leg (the request's own coin, usually dust, is not a leg) | `pool` |
+| `switch` | 8c | out: principal, the asset on its old chain (observed), followed by its gas leg; in: principal, the same asset on THORChain (observed) | — |
+| `runepool.deposit`, `runepool.withdraw` | 8c | the RUNE sent or received (observed); the RUNEPool units received or given up, a `runepool` position (observed); gas: the native fee (default) | — |
 
 The other kinds are added in later steps:
 
 | Step | Kinds |
 | --- | --- |
-| 8c | `loan.open`, `loan.repay`, `switch`, `runepool.deposit`, `runepool.withdraw` |
+| 8c | `loan.open`, `loan.repay` |
 | 8d | `tcy.claim`, `tcy.stake`, `tcy.unstake`, `tcy.distribution`, `thorname` |
 | 8e | Rujira (`rujira.stake`, `rujira.fin.trade`, `rujira.merge.deposit`, `rujira.merge.withdraw`); Maya through the same interpreters |
 
@@ -151,5 +153,6 @@ row of 1 RUNE with a 0.02 RUNE fee: today's row. The interpreter is
   `assets.md`.
 - Golden cases of ported kinds have a reviewed `activity.yaml` between
   `input.json` and `expected.yaml` (`fixtures.md`), so an interpreter bug and
-  an exporter bug fail different checks: the `bond/`, `swap/`, `refund/` and
-  `liquidity/` cases and the Maya swaps and liquidity.
+  an exporter bug fail different checks: the `bond/`, `swap/`, `refund/`,
+  `liquidity/`, `switch/` and `runepool/` cases and the Maya swaps and
+  liquidity.
