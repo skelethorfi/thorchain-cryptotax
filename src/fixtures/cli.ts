@@ -7,7 +7,8 @@ import {RecordStore} from "../cache/RecordStore";
 import {CosmosTxService} from "../cryptotax-thorchain/CosmosTxService";
 import {MidgardService} from "../cryptotax-thorchain/MidgardService";
 import {MidgardSource} from "../sources/Source";
-import {Anonymiser} from "./Anonymise";
+import {execFileSync} from "child_process";
+import {Anonymiser, findSurvivors, getTokens} from "./Anonymise";
 import {
     ACTIVITY_FILE, EXPECTED_FILE, formatRows, GoldenCaseInput, INPUT_FILE, readCaseInput, runCaseLayers, toCaseInput, toPlainActivity,
     writeCaseActivities, writeCaseExpected,
@@ -29,7 +30,34 @@ import {getProtocol, Protocol} from "../protocols/Protocol";
 //
 // fetch, similar and add take --protocol maya for Maya Protocol txs (default thorchain).
 
-const CASES_DIR = path.resolve(__dirname, '../../test/cases');
+const REPO_DIR = path.resolve(__dirname, '../..');
+
+// Written next to an anonymised case. The owner's pre-commit hook blocks committing anything in the case's
+// folder while it exists, and CI fails on it: a fresh reviewer deletes it once the case is checked.
+const REVIEW_MARKER = 'TO-REVIEW.md';
+const REVIEW_CHECKLIST = `# To review: anonymised case
+
+This case was anonymised from a private transaction. Before it is committed, a fresh reviewer (a
+new agent, or the owner) checks it, reporting only counts, field names and shapes, never private values:
+
+1. No token of the original survives (\`npm run fixture -- anonymise\` already refuses if one does).
+2. No number or name in the case appears in the private store or private-denylist.txt.
+3. Nothing else narrows the search on-chain: asset pair, action or contract type, memo layout, output
+   count, anything unusual.
+4. The case maps to the same row types as the original.
+5. No test value written alongside it comes from the private transaction.
+
+Delete this file once the review finds nothing (or after fixing what it found).
+`;
+const CASES_DIR = path.join(REPO_DIR, 'test/cases');
+
+// Tokens already public: in the repo's tracked code, docs and tests
+function getPublicTokens(): Set<string> {
+    const files = execFileSync('git', ['ls-files', 'src', 'docs', 'test'], {cwd: REPO_DIR, encoding: 'utf8'}).split('\n').filter(Boolean);
+    const tokens = new Set<string>();
+    files.forEach(file => getTokens(fs.readFileSync(path.join(REPO_DIR, file), 'utf8'), tokens));
+    return tokens;
+}
 const midgardFor = (protocol: Protocol) => new MidgardApi(new Configuration({basePath: protocol.midgardUrl}));
 
 async function fetchInput(txid: string, protocol: Protocol, index?: number): Promise<GoldenCaseInput> {
@@ -191,9 +219,22 @@ async function main() {
         }
         case 'anonymise': {
             const [file, name] = positional;
-            const input: GoldenCaseInput = new Anonymiser().anonymise(fs.readJSONSync(file));
+            const original: GoldenCaseInput = fs.readJSONSync(file);
+            const input: GoldenCaseInput = new Anonymiser().anonymise(original);
             input.description = `${input.description} (anonymised)`;
             assertNoPrivateData(input, privateData);
+
+            // Anything of the original that is still there and not already public could identify it
+            const survivors = findSurvivors(original, input, getPublicTokens());
+
+            if (survivors.length > 0) {
+                survivors.forEach(token => console.error(`  kept: ${mask(token)}`));
+                throw new Error(`refusing to write: ${survivors.length} values of the original survive anonymising; extend src/fixtures/Anonymise.ts or edit the case by hand`);
+            }
+
+            fs.outputFileSync(path.join(CASES_DIR, name, REVIEW_MARKER), REVIEW_CHECKLIST);
+            console.log(`Wrote ${path.relative(process.cwd(), path.join(CASES_DIR, name, REVIEW_MARKER))}: the case can't be committed until a fresh review deletes it`);
+
             writeCase(name, input);
             break;
         }

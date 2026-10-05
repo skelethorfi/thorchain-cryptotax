@@ -44,10 +44,28 @@ not.
    transaction being supported. The shape is the action type, its subtype
    (swap `txType` or contract `contractType`), status, input and output assets,
    and contract funds denoms.
-2. Only if no such transaction exists, anonymise one: replace every address and
-   txid with a placeholder, scale every amount by one factor, and shift every
-   date by one offset. Amounts and times also have to change, because an
-   amount plus a timestamp can identify a transaction on-chain.
+2. Only if no such transaction exists, anonymise one with `npm run fixture --
+   anonymise`. It replaces every address, txid, signature and other base64
+   blob, and every name in a memo (THORNames, affiliates, aggregator codes),
+   with a placeholder; sets every date, time and block height to one fixed
+   value (2020-12-31 13:00 UTC, height 10000000, as in the hand-made cases)
+   and every USD price to 1; blanks a refund's `reason`; and replaces every
+   number (including those in coin strings, memos and JSON inside strings) by
+   its rank among the case's amounts (the smallest becomes 10, the next 20,
+   …). Each original value can identify a transaction on-chain on its own,
+   but the mappers depend on amounts only through equality and order, which
+   ranks keep: every golden case and the owner's private fixtures give the
+   same rows once anonymised.
+
+   It then refuses to write the case if any token (4+ letters or digits) of
+   the original survives that is not already in the public repo (`src/`,
+   `docs/`, `test/`). That catches what the rules miss.
+
+   It also writes `TO-REVIEW.md` next to the case, with a checklist. A fresh
+   reviewer checks the case and deletes the file. Until then, the owner's
+   pre-commit hook blocks committing anything in the case's folder, and CI
+   fails if one is pushed. The review matters because the case's shape
+   (action type, asset pair, contract type) remains.
 
 ### Expected output
 

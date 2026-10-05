@@ -1,4 +1,5 @@
 import {describe, expect, test} from '@jest/globals';
+import fs from 'fs';
 import path from 'path';
 import {
     findCaseDirs, readCaseActivities, readCaseExpected, readCaseInput, runCase, runCaseLayers, toBundle, toCaseInput, toPlainActivity,
@@ -33,6 +34,20 @@ describe('golden cases', () => {
         const input = readCaseInput(dir);
         expect(toCaseInput(toBundle(input), input.description)).toStrictEqual(input);
     });
+
+    // An anonymised case is reviewed, and its TO-REVIEW.md deleted, before it is committed
+    // (docs/specs/fixtures.md). Locally that is the pre-commit hook's job; in CI, fail if one got through.
+    const awaitingReview = caseDirs.filter(dir => fs.existsSync(path.join(dir, 'TO-REVIEW.md')));
+
+    if (process.env.CI) {
+        test('no case is awaiting a privacy review', () => {
+            expect(awaitingReview.map(name)).toEqual([]);
+        });
+    } else {
+        for (const dir of awaitingReview) {
+            test.todo(`${name(dir)} (anonymised: awaiting privacy review)`);
+        }
+    }
 
     for (const dir of pending) {
         test.todo(`${name(dir)} (no expected.yaml yet)`);
