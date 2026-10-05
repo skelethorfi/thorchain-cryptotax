@@ -1,0 +1,72 @@
+{
+  "description": "swap/loanOpen pending: [BTC.BTC] -> [THOR.RUNE]",
+  "source": "midgard",
+  "wallet": "bc1qzjvp0aqx8vt6hw06zpc2fhr2xxcujac32nrvu8",
+  "data": {
+    "date": "1708455675710912370",
+    "height": "14791212",
+    "in": [
+      {
+        "address": "bc1qzjvp0aqx8vt6hw06zpc2fhr2xxcujac32nrvu8",
+        "coins": [
+          {
+            "amount": "12800000",
+            "asset": "BTC.BTC"
+          }
+        ],
+        "txID": "005959124F7D1AD405A406FD7029078C1FA45F9B827FCC85F15A3992245B8C61"
+      }
+    ],
+    "metadata": {
+      "swap": {
+        "affiliateAddress": "",
+        "affiliateFee": "0",
+        "inPriceUSD": "51415.91802456387",
+        "isStreamingSwap": true,
+        "liquidityFee": "135299507",
+        "memo": "loan+:THOR.RUNE:thor1hhjupkzy3t6ccelhz7qw8epyx4rm8a06nlm5ce:0:thor160yye65pf9rzwrgqmtgav69n6zlsyfpgm9a7xk:0:::0",
+        "networkFees": [
+          {
+            "amount": "2000000",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "outPriceUSD": "-13659.696811779313",
+        "swapSlip": "2",
+        "swapTarget": "0",
+        "txType": "loanOpen"
+      }
+    },
+    "out": [
+      {
+        "address": "thor1hhjupkzy3t6ccelhz7qw8epyx4rm8a06nlm5ce",
+        "affiliate": true,
+        "coins": [
+          {
+            "amount": "64453740577",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "height": "14791213",
+        "txID": ""
+      }
+    ],
+    "pools": [
+      "BTC.BTC",
+      "THOR.BTC"
+    ],
+    "status": "pending",
+    "type": "swap"
+  },
+  "thornodeTxs": [
+    {
+      "stages": {
+        "inbound_observed": {
+          "started": false,
+          "final_count": 0,
+          "completed": false
+        }
+      }
+    }
+  ]
+}

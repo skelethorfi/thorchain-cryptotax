@@ -1,0 +1,37 @@
+{
+  "description": "switch success: [BNB.RUNE-B1A] -> [THOR.RUNE]",
+  "source": "midgard",
+  "wallet": "bnb1mdvkxuuxewcu65w5jd3pmtwqrdpslgnmj6py2r",
+  "data": {
+    "date": "1622549642199444691",
+    "height": "810297",
+    "in": [
+      {
+        "address": "bnb1mdvkxuuxewcu65w5jd3pmtwqrdpslgnmj6py2r",
+        "coins": [
+          {
+            "amount": "2200000000",
+            "asset": "BNB.RUNE-B1A"
+          }
+        ],
+        "txID": ""
+      }
+    ],
+    "metadata": {},
+    "out": [
+      {
+        "address": "thor12gn4hnukdg3dz9le8cjarv8e94tevsy0qj9h4k",
+        "coins": [
+          {
+            "amount": "2200000000",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "txID": ""
+      }
+    ],
+    "pools": [],
+    "status": "success",
+    "type": "switch"
+  }
+}
