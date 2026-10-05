@@ -178,7 +178,7 @@ No row is exported for it:
   single payout, which is the swap output less the outbound fee only, and the
   swap's `BridgeTradeIn` row already carries that full amount.
 
-`RefundMapper` detects it by the THORNode inbound transaction listing a
+The refund interpreter (`src/interpret/midgard/refund.ts`) detects it by the THORNode inbound transaction listing a
 different asset from the refund's input (`refund/affiliate-fee-swap`). Without
 THORNode data the row is kept.
 
