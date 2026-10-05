@@ -13,7 +13,7 @@ export function refundRows(activity: Activity, protocol: Protocol): CryptoTaxTra
     const kept = {...sent.amount, base: sent.amount.base - returnedAmount.base};
     const {blockchain, currency, amount: sentAmount} = named(sent, protocol);
     const txId = activity.txids.in[0] ?? '';
-    const time = activity.time.toISOString();
+    const time = activity.time;
     const rows: CryptoTaxTransaction[] = [{
         walletExchange: sent.wallet,
         timestamp: time,
@@ -24,7 +24,7 @@ export function refundRows(activity: Activity, protocol: Protocol): CryptoTaxTra
         from: sent.wallet,
         to: protocol.counterparty,
         blockchain: formatBlockchain(blockchain),
-        id: `${time}.refund`,
+        id: `${time.toISOString()}.refund`,
         description: `refund (${txId}): ${activity.details.reason}`,
     }];
 
@@ -41,7 +41,7 @@ export function refundRows(activity: Activity, protocol: Protocol): CryptoTaxTra
             from: sent.wallet,
             to: protocol.counterparty,
             blockchain: formatBlockchain(blockchain),
-            id: `${time}.refund-fee`,
+            id: `${time.toISOString()}.refund-fee`,
             description: `refund (${txId}): kept by ${protocol.counterparty}, ${sentAmount} ${currency} sent, ${returnedNote}`,
         });
     }

@@ -219,12 +219,7 @@ export class Exporter {
 
     private getTxsInRange(txs: CryptoTaxTransaction[], range: DateRange) {
         return txs.filter((tx) => {
-            const txDate = new Date((tx.timestamp as string).split(' ')[0].split('/').reverse().join('-'));
-
-            if (isNaN((txDate as any))) {
-                console.log(tx);
-                throw new Error('invalid date');
-            }
+            const txDate = tx.timestamp;
 
             return txDate >= new Date(range.from) && txDate <= new Date(range.to);
         });

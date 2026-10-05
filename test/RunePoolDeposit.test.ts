@@ -12,7 +12,7 @@ describe('RunePoolDeposit', () => {
         expect(result).toHaveLength(2);
         expect(result[0]).toStrictEqual({
             walletExchange: 'thor1-user-wallet-11111',
-            timestamp: '2020-12-31T13:00:00.000Z',
+            timestamp: new Date('2020-12-31T13:00:00.000Z'),
             type: CryptoTaxTransactionType.AddLiquidity,
             baseCurrency: 'RUNE',
             baseAmount: '200',
@@ -27,7 +27,7 @@ describe('RunePoolDeposit', () => {
 
         expect(result[1]).toStrictEqual({
             walletExchange: 'thor1-user-wallet-11111',
-            timestamp: '2020-12-31T13:00:10.000Z',
+            timestamp: new Date('2020-12-31T13:00:10.000Z'),
             type: CryptoTaxTransactionType.ReceiveLpToken,
             baseCurrency: 'ThorLP.THOR.RUNE',
             baseAmount: '190',

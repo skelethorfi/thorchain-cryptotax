@@ -22,7 +22,7 @@ export function swapRows(activity: Activity, protocol: Protocol): CryptoTaxTrans
     return [
         {
             walletExchange: sent.wallet,
-            timestamp: activity.time.toISOString(),
+            timestamp: activity.time,
             type: CryptoTaxTransactionType.BridgeTradeOut,
             baseCurrency: input.currency,
             baseAmount: input.amount,

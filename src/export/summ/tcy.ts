@@ -14,7 +14,7 @@ function feeIfAny(activity: Activity, protocol: Protocol): Pick<CryptoTaxTransac
 export function tcyClaimRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
     const tcy = leg(activity, 'principal', 'in');
     const amount = formatAmount(tcy.amount);
-    const time = activity.time.toISOString();
+    const time = activity.time;
 
     return [{
         walletExchange: tcy.wallet,
@@ -26,7 +26,7 @@ export function tcyClaimRows(activity: Activity, protocol: Protocol): CryptoTaxT
         from: protocol.counterparty,
         to: tcy.wallet,
         blockchain: protocol.blockchain,
-        id: `${time}.tcy_claim`,
+        id: `${time.toISOString()}.tcy_claim`,
         description: `1/1 - Claim ${amount} TCY for address ${activity.details.claimedFor}; ${tcy.txid ?? ''}`,
     }];
 }
@@ -35,7 +35,7 @@ export function tcyStakeRows(activity: Activity, protocol: Protocol): CryptoTaxT
     const isStake = activity.kind === 'tcy.stake';
     const tcy = leg(activity, 'principal');
     const amount = formatAmount(tcy.amount);
-    const time = activity.time.toISOString();
+    const time = activity.time;
 
     return [{
         walletExchange: tcy.wallet,
@@ -47,7 +47,7 @@ export function tcyStakeRows(activity: Activity, protocol: Protocol): CryptoTaxT
         from: isStake ? tcy.wallet : protocol.counterparty,
         to: isStake ? protocol.counterparty : tcy.wallet,
         blockchain: protocol.blockchain,
-        id: `${time}.${isStake ? 'tcy_stake' : 'tcy_unstake'}`,
+        id: `${time.toISOString()}.${isStake ? 'tcy_stake' : 'tcy_unstake'}`,
         description: `1/1 - ${isStake ? 'Stake' : 'Unstake'} ${amount} TCY; ${tcy.txid ?? ''}`,
     }];
 }
@@ -58,7 +58,7 @@ export function thornameRows(activity: Activity, protocol: Protocol): CryptoTaxT
     const gas = leg(activity, 'gas');
     const wallet = paid?.wallet ?? gas.wallet;
     const amount = paid ? formatAmount(paid.amount) : '';
-    const time = activity.time.toISOString();
+    const time = activity.time;
 
     return [{
         walletExchange: wallet,
@@ -70,7 +70,7 @@ export function thornameRows(activity: Activity, protocol: Protocol): CryptoTaxT
         from: wallet,
         to: protocol.counterparty,
         blockchain: protocol.blockchain,
-        id: `${time}.thorname`,
+        id: `${time.toISOString()}.thorname`,
         description: paid ? `1/1 - Register/fund Thorname with ${amount} RUNE; ${gas.txid ?? ''}` : `1/1 - Update Thorname; ${gas.txid ?? ''}`,
     }];
 }
@@ -79,7 +79,7 @@ export function thornameRows(activity: Activity, protocol: Protocol): CryptoTaxT
 export function tcyDistributionRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
     const reward = leg(activity, 'reward');
     const amount = formatAmount(reward.amount);
-    const time = activity.time.toISOString();
+    const time = activity.time;
 
     return [{
         walletExchange: reward.wallet,
@@ -91,7 +91,7 @@ export function tcyDistributionRows(activity: Activity, protocol: Protocol): Cry
         to: reward.wallet,
         blockchain: protocol.blockchain,
         description: `1/1 - Received ${amount} RUNE from TCY staking`,
-        id: `${time}.staking`,
+        id: `${time.toISOString()}.staking`,
         referencePricePerUnit: activity.prices.find(price => price.source === 'midgard:tcy.distribution.price')?.usd,
         referencePriceCurrency: 'USD',
     }];

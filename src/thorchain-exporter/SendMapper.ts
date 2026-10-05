@@ -31,7 +31,7 @@ export class SendMapper extends BaseMapper {
             assert.fail('failed to determine send or receive');
         }
 
-        ctcTx.timestamp = this.timestamp;
+        ctcTx.timestamp = this.datetime;
 
         assert.equal(1, event.params.coins.length);
 

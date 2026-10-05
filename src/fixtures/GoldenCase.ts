@@ -70,7 +70,7 @@ export function readCaseInput(dir: string): GoldenCaseInput {
     return fs.readJSONSync(path.join(dir, INPUT_FILE));
 }
 
-export function readCaseExpected(dir: string): CryptoTaxTransaction[] | undefined {
+export function readCaseExpected(dir: string): object[] | undefined {
     const file = path.join(dir, EXPECTED_FILE);
     return fs.existsSync(file) ? parseRows(fs.readFileSync(file, 'utf8')) : undefined;
 }
@@ -102,7 +102,7 @@ export function formatRows(rows: object[]): string {
     return rows.map(row => YAML.stringify(row, {lineWidth: 0, aliasDuplicateObjects: false})).join('---\n');
 }
 
-export function writeCaseExpected(dir: string, rows: CryptoTaxTransaction[]) {
+export function writeCaseExpected(dir: string, rows: object[]) {
     fs.outputFileSync(path.join(dir, EXPECTED_FILE), formatRows(rows));
 }
 
@@ -118,6 +118,11 @@ export function toPlainActivity(activity: Activity): object {
         time: activity.time.toISOString(),
         legs: activity.legs.map(({amount, ...leg}) => ({...leg, amount: formatAmount(amount), decimals: amount.decimals})),
     }));
+}
+
+// A row as expected.yaml holds it: the timestamp as ISO, as the CSV writes it
+export function toPlainRow(row: CryptoTaxTransaction): object {
+    return {...row, timestamp: row.timestamp.toISOString()};
 }
 
 // A case's input is a RawBundle, written without the fields that are at their default
@@ -146,12 +151,12 @@ export function toCaseInput(bundle: RawBundle, description: string): GoldenCaseI
 
 // Runs a case through the same path the exporter uses (runBundle). An unsupported action gives no rows;
 // a failure throws, so a case can't pass by failing.
-export function runCase(input: GoldenCaseInput): CryptoTaxTransaction[] {
+export function runCase(input: GoldenCaseInput): object[] {
     return runCaseLayers(input).rows;
 }
 
-// The activities a ported action type gives, and the rows
-export function runCaseLayers(input: GoldenCaseInput): {activities: Activity[]; rows: CryptoTaxTransaction[]} {
+// The activities a ported action type gives, and the rows as expected.yaml holds them
+export function runCaseLayers(input: GoldenCaseInput): {activities: Activity[]; rows: object[]} {
     const {activities, rows, issues} = runBundle(toBundle(input), getProtocol(input.protocol));
     const failure = issues.find(issue => issue.kind === 'failed');
 
@@ -159,5 +164,5 @@ export function runCaseLayers(input: GoldenCaseInput): {activities: Activity[]; 
         throw new Error(failure.message);
     }
 
-    return {activities, rows};
+    return {activities, rows: rows.map(toPlainRow)};
 }
