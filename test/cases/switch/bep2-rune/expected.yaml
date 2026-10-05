@@ -1,0 +1,23 @@
+walletExchange: bnb1mdvkxuuxewcu65w5jd3pmtwqrdpslgnmj6py2r
+timestamp: 2021-06-01T12:14:02.199Z
+type: bridge-out
+baseCurrency: RUNE
+baseAmount: "22"
+feeCurrency: ""
+feeAmount: ""
+from: bnb1mdvkxuuxewcu65w5jd3pmtwqrdpslgnmj6py2r
+to: thor12gn4hnukdg3dz9le8cjarv8e94tevsy0qj9h4k
+blockchain: BNB
+id: 2021-06-01T12:14:02.199Z.bridge-out
+description: "1/2 - Switch BNB.RUNE to THOR.RUNE (send BNB.RUNE); "
+---
+walletExchange: thor12gn4hnukdg3dz9le8cjarv8e94tevsy0qj9h4k
+timestamp: 2021-06-01T12:14:12.199Z
+type: bridge-in
+baseCurrency: RUNE
+baseAmount: "22"
+from: bnb1mdvkxuuxewcu65w5jd3pmtwqrdpslgnmj6py2r
+to: thor12gn4hnukdg3dz9le8cjarv8e94tevsy0qj9h4k
+blockchain: THORChain
+id: 2021-06-01T12:14:02.199Z.bridge-in
+description: "2/2 - Switch BNB.RUNE to THOR.RUNE (receive THOR.RUNE); "
