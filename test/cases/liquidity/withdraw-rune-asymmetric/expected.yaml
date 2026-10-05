@@ -1,0 +1,35 @@
+walletExchange: thor12vtlhpqe3lwqwn8kpua77n23r3h5s8ptda9cmn
+timestamp: 2021-11-06T01:24:15.352Z
+type: remove-liquidity
+baseCurrency: RUNE
+baseAmount: "2.46630814"
+feeCurrency: ""
+feeAmount: ""
+from: thorchain
+to: thor12vtlhpqe3lwqwn8kpua77n23r3h5s8ptda9cmn
+blockchain: THOR
+id: 2021-11-06T01:23:55.352Z.remove-liquidity.RUNE
+description: 3/3 - Remove liquidity RUNE from ThorLP.ETH.THOR (asymmetric); 540F7BEC12BAC6D2DB5AB1DE894F1EEF4780E2B9E6CA578EC8C97C2D8FC6C54E
+---
+walletExchange: thor12vtlhpqe3lwqwn8kpua77n23r3h5s8ptda9cmn
+timestamp: 2021-11-06T01:24:05.352Z
+type: spam
+baseCurrency: RUNE
+baseAmount: "2.46630814"
+from: thor12vtlhpqe3lwqwn8kpua77n23r3h5s8ptda9cmn
+to: thorchain
+id: 2021-11-06T01:23:55.352Z.spam
+description: 2/3 - Dummy transaction to get market price to then manually apply to the return LP token transaction ThorLP.ETH.THOR (asymmetric); 540F7BEC12BAC6D2DB5AB1DE894F1EEF4780E2B9E6CA578EC8C97C2D8FC6C54E
+---
+walletExchange: thor12vtlhpqe3lwqwn8kpua77n23r3h5s8ptda9cmn
+timestamp: 2021-11-06T01:23:55.352Z
+type: return-lp-token
+baseCurrency: ThorLP.ETH.THOR
+baseAmount: "0.06961383"
+feeCurrency: RUNE
+feeAmount: "0.02"
+from: thor12vtlhpqe3lwqwn8kpua77n23r3h5s8ptda9cmn
+to: thorchain
+blockchain: THORChain
+id: 2021-11-06T01:23:55.352Z.return-lp-token
+description: 1/3 - Return LP token to ThorLP.ETH.THOR (asymmetric); 540F7BEC12BAC6D2DB5AB1DE894F1EEF4780E2B9E6CA578EC8C97C2D8FC6C54E

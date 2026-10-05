@@ -1,0 +1,54 @@
+{
+  "description": "withdraw success: [THOR.RUNE] -> [THOR.RUNE]",
+  "source": "midgard",
+  "wallet": "thor1zptf89px22fmucr2j924vnrfc8ts3cdw8znj09",
+  "data": {
+    "date": "1648091638031807178",
+    "height": "4816019",
+    "in": [
+      {
+        "address": "thor1zptf89px22fmucr2j924vnrfc8ts3cdw8znj09",
+        "coins": [
+          {
+            "amount": "1",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "txID": "E07F05F4C34B9114ECD94B00542452A9E6E24CA16175EE2CBF5FE79449787BEE"
+      }
+    ],
+    "metadata": {
+      "withdraw": {
+        "asymmetry": "0",
+        "basisPoints": "10000",
+        "impermanentLossProtection": "0",
+        "liquidityUnits": "-1659440181",
+        "memo": "-:BNB.ETH:10000",
+        "networkFees": [
+          {
+            "amount": "2000000",
+            "asset": "THOR.RUNE"
+          }
+        ]
+      }
+    },
+    "out": [
+      {
+        "address": "thor1zptf89px22fmucr2j924vnrfc8ts3cdw8znj09",
+        "coins": [
+          {
+            "amount": "6995056050",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "height": "4816019",
+        "txID": ""
+      }
+    ],
+    "pools": [
+      "BNB.ETH-1C9"
+    ],
+    "status": "success",
+    "type": "withdraw"
+  }
+}
