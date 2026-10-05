@@ -1,16 +1,13 @@
-import {RunePoolWithdrawMapper} from '../src/cryptotax-thorchain/RunePoolWithdrawMapper';
+import {mapAction} from './mapAction';
 import {describe, expect, test} from '@jest/globals';
 import {CryptoTaxTransactionType} from '../src/cryptotax';
 import fs from 'fs-extra';
 
-describe('RunePoolWithdrawMapper', () => {
-    let runePoolWithdrawMapper: RunePoolWithdrawMapper;
+describe('RunePoolWithdraw', () => {
 
     test('should correctly map a runePoolWithdraw action', () => {
         const action = fs.readJSONSync('test/testdata/RunePoolWithdraw.json');
-
-        runePoolWithdrawMapper = new RunePoolWithdrawMapper();
-        const result = runePoolWithdrawMapper.toCryptoTax(action, []);
+        const result = mapAction(action, []);
 
         expect(result).toHaveLength(2);
         expect(result[0]).toStrictEqual({

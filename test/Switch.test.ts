@@ -1,10 +1,9 @@
-import {SwitchMapper} from '../src/cryptotax-thorchain/SwitchMapper';
+import {mapAction} from './mapAction';
 import {describe, expect, test} from '@jest/globals';
 import {CryptoTaxTransactionType} from '../src/cryptotax';
 import fs from 'fs-extra';
 
-describe('SwitchMapper', () => {
-    let switchMapper: SwitchMapper;
+describe('Switch', () => {
 
     test('should correctly map a switch from GAIA.KUJI to THOR.KUJI', () => {
         const action = fs.readJSONSync('test/testdata/Switch_KUJI.json');
@@ -32,9 +31,7 @@ describe('SwitchMapper', () => {
                 "memo": "switch:thor1-user-wallet-11111"
             }
         };
-
-        switchMapper = new SwitchMapper();
-        const result = switchMapper.toCryptoTax(action, [thornodeTxs as any]);
+        const result = mapAction(action, [thornodeTxs as any]);
 
         expect(result).toHaveLength(2);
         expect(result[0].type).toBe(CryptoTaxTransactionType.BridgeOut);

@@ -28,7 +28,13 @@ export function inboundGas(txId: string, thornodeTxs: TxStatusResponse[], wallet
         return undefined;
     }
 
-    const asset = assetFromStringEx(inputAsset);
+    let asset;
+
+    try {
+        asset = assetFromStringEx(inputAsset);
+    } catch {
+        throw new Error(`Failed to parse asset string: "${inputAsset}"`);
+    }
     const sentOnThorchain = asset.chain === 'THOR'
         || (protocol.id === THORCHAIN.id && [AssetType.SYNTH, AssetType.TRADE, AssetType.SECURED].includes(asset.type));
 

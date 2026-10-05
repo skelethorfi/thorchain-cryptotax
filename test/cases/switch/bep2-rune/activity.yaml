@@ -1,0 +1,31 @@
+id: midgard/switch.date-1622549642199444691
+protocol: thorchain
+kind: switch
+status: success
+time: 2021-06-01T12:14:02.199Z
+txids:
+  in: []
+  out: []
+legs:
+  - direction: out
+    wallet: bnb1mdvkxuuxewcu65w5jd3pmtwqrdpslgnmj6py2r
+    asset:
+      notation: BNB.RUNE-B1A
+      kind: token
+    role: principal
+    basis: observed
+    txid: ""
+    amount: "22"
+    decimals: 8
+  - direction: in
+    wallet: thor12gn4hnukdg3dz9le8cjarv8e94tevsy0qj9h4k
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: principal
+    basis: observed
+    txid: ""
+    amount: "22"
+    decimals: 8
+prices: []
+details: {}
