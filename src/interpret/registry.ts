@@ -4,7 +4,6 @@ import {Issue} from "../domain/Issue";
 import {RawBundle} from "../sources/RawBundle";
 import {Protocol, THORCHAIN} from "../protocols/Protocol";
 import {ViewblockTx} from "../viewblock";
-import {Mapper} from "../cryptotax-thorchain/Mapper";
 import {interpretBond} from "./midgard/bond";
 import {interpretSwap} from "./midgard/swap";
 import {interpretRefund} from "./midgard/refund";
@@ -13,7 +12,7 @@ import {interpretRunePool, interpretSwitch} from "./midgard/switch";
 import {interpretLoanOpen, interpretLoanRepay} from "./midgard/loan";
 import {interpretTcyClaim, interpretTcyDistribution, interpretTcyStake, interpretThorname} from "./midgard/tcy";
 import {Activity} from "../domain/Activity";
-import {RUJIRA_CONTRACT_TYPES, RujiraMapper} from "../cryptotax-thorchain/RujiraMapper";
+import {interpretRujira, RUJIRA_CONTRACT_TYPES} from "./midgard/rujira";
 import {SendMapper} from "../thorchain-exporter/SendMapper";
 import {DelegateArkeoMapper} from "../thorchain-exporter/DelegateArkeoMapper";
 
@@ -31,16 +30,9 @@ const rows = (rows: CryptoTaxTransaction[]): Interpretation => ({activities: [],
 const activity = (interpreter: (bundle: RawBundle, protocol: Protocol) => Activity): Interpreter => (bundle, protocol) =>
     ({activities: [interpreter(bundle, protocol)], rows: [], issues: []});
 
-// A Midgard mapper, made for each action so the issues it finds are that action's
-const midgard = (make: (bundle: RawBundle, protocol: Protocol) => Mapper): Interpreter => (bundle, protocol) => {
-    const mapper = make(bundle, protocol);
-    const rows = mapper.toCryptoTax(bundle.data as Action, bundle.thornodeTxs, protocol, bundle.cosmosTxs);
-    return {activities: [], rows, issues: mapper.issues ?? []};
-};
-
 const ignore = (message: string): Interpreter => () => ({activities: [], rows: [], issues: [{kind: 'ignored', message}]});
 
-const rujira = midgard(() => new RujiraMapper());
+const rujira: Interpreter = (bundle, protocol) => ({rows: [], ...interpretRujira(bundle, protocol)});
 
 // Keyed on 'source/type' or 'source/type/subtype'; a subtype entry wins over its type's
 const REGISTRY: Record<string, Interpreter> = {

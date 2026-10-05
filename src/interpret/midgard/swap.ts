@@ -30,7 +30,7 @@ export function interpretSwap(bundle: RawBundle, protocol: Protocol): {activitie
     const outputAsset = toAsset(outputCoin.asset);
 
     // A synth swapped from an L1 address is a savers withdrawal's internal leg, not the wallet's swap
-    if (inputCoin.asset.includes('/') && !input.address.startsWith('thor1')) {
+    if (inputCoin.asset.includes('/') && !input.address.toLowerCase().startsWith(protocol.nativeAddressPrefix)) {
         return {activities: [], issues: [{kind: 'ignored', message: 'synth swap from an L1 address (a savers withdrawal)'}]};
     }
 

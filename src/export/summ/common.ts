@@ -25,10 +25,11 @@ export function named(item: Leg, protocol: Protocol, amount: Amount = item.amoun
     return {blockchain, currency, displayCurrency, amount: formatAmount(amount)};
 }
 
-// A synth is held on THORChain when its wallet is a THORChain address
+// A synth is held on the protocol's chain when its wallet is an address there
 export function legBlockchain(item: Leg, protocol: Protocol): string {
     const isSynth = item.asset.notation.includes('/');
-    const blockchain = isSynth && item.wallet.toLowerCase().startsWith('thor1') ? 'THOR' : named(item, protocol).blockchain;
+    const onProtocol = isSynth && item.wallet.toLowerCase().startsWith(protocol.nativeAddressPrefix);
+    const blockchain = onProtocol ? protocol.nativeChain : named(item, protocol).blockchain;
     return formatBlockchain(blockchain);
 }
 

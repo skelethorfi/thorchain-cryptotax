@@ -5,9 +5,6 @@ import {parseAmount} from "../../domain/Amount";
 import {toAsset} from "../../domain/Asset";
 import {Protocol, THORCHAIN} from "../../protocols/Protocol";
 
-// THORChain's native transaction fee: 0.02 RUNE
-const NATIVE_RUNE_FEE = '2000000';
-
 // The gas the wallet paid to send its inbound transaction (docs/specs/fees.md):
 // 1. THORNode's gas for the tx (observed);
 // 2. otherwise the native fee of a tx sent on THORChain (RUNE, a THORChain token, or a synth, trade or
@@ -35,11 +32,12 @@ export function inboundGas(txId: string, thornodeTxs: TxStatusResponse[], wallet
     } catch {
         throw new Error(`Failed to parse asset string: "${inputAsset}"`);
     }
-    const sentOnThorchain = asset.chain === 'THOR'
+    // A tx sent on THORChain pays THORChain's fee, also inside a Maya action (e.g. RUNE swapped on Maya)
+    const sentOnThorchain = asset.chain === THORCHAIN.nativeChain
         || (protocol.id === THORCHAIN.id && [AssetType.SYNTH, AssetType.TRADE, AssetType.SECURED].includes(asset.type));
 
     if (sentOnThorchain) {
-        return leg(THORCHAIN.nativeAsset, NATIVE_RUNE_FEE, 8, 'default');
+        return leg(THORCHAIN.nativeAsset, THORCHAIN.defaultGas!, THORCHAIN.decimals(THORCHAIN.nativeAsset), 'default');
     }
 
     if (inputAsset === protocol.nativeAsset && protocol.defaultGas) {

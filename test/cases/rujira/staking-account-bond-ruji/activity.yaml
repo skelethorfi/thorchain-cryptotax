@@ -1,0 +1,24 @@
+id: midgard/contract.877690166C2333DDCCE8B168BBC9DB899073A9E0721404A365A90E83CE720699.wasm-rujira-staking/account.bond
+protocol: thorchain
+kind: rujira.stake
+status: success
+time: 2025-08-22T09:04:30.168Z
+txids:
+  in:
+    - 877690166C2333DDCCE8B168BBC9DB899073A9E0721404A365A90E83CE720699
+  out:
+    - 877690166C2333DDCCE8B168BBC9DB899073A9E0721404A365A90E83CE720699
+legs:
+  - direction: out
+    wallet: thor15exarm29qcnh82el44xn68r3whs4gp7u2qmz7g
+    asset:
+      notation: X/RUJI
+      kind: native
+    role: principal
+    basis: observed
+    txid: 877690166C2333DDCCE8B168BBC9DB899073A9E0721404A365A90E83CE720699
+    amount: "1.5"
+    decimals: 8
+prices: []
+details:
+  bond: account

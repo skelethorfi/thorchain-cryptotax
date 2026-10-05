@@ -1,0 +1,35 @@
+id: midgard/contract.C74C2BD4E65A2F8EDF6630552429FD148D90DD07AE4877DFCAF54F0EF6E06D8B.wasm-rujira-staking/liquid.bond
+protocol: thorchain
+kind: rujira.stake
+status: success
+time: 2025-07-23T22:26:38.775Z
+txids:
+  in:
+    - C74C2BD4E65A2F8EDF6630552429FD148D90DD07AE4877DFCAF54F0EF6E06D8B
+  out:
+    - C74C2BD4E65A2F8EDF6630552429FD148D90DD07AE4877DFCAF54F0EF6E06D8B
+legs:
+  - direction: out
+    wallet: thor1d9j83ll3e0jh5w8kycjcmzcm2wdy0mr3wr9mtq
+    asset:
+      notation: X/RUJI
+      kind: native
+    role: principal
+    basis: observed
+    txid: C74C2BD4E65A2F8EDF6630552429FD148D90DD07AE4877DFCAF54F0EF6E06D8B
+    amount: "2269.0107783"
+    decimals: 8
+  - direction: out
+    wallet: thor1d9j83ll3e0jh5w8kycjcmzcm2wdy0mr3wr9mtq
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: gas
+    basis: observed
+    txid: C74C2BD4E65A2F8EDF6630552429FD148D90DD07AE4877DFCAF54F0EF6E06D8B
+    amount: "0.00003255"
+    decimals: 8
+prices: []
+details:
+  bond: liquid
+  shares: "225215635519"
