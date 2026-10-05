@@ -1,6 +1,6 @@
 import {assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
 
-// Where an asset lives and what it is (docs/specs/assets.md, docs/specs/std-tx.md):
+// Where an asset lives and what it is (docs/specs/assets.md, docs/specs/activity.md):
 // native: a chain's own coin or a protocol's token (BTC.BTC, THOR.RUNE, THOR.TCY, x/ruji)
 // token: a token on an L1 chain (ETH.USDC-0X…)
 // synth, trade, secured: held on THORChain or Maya, for an L1 asset (BTC/BTC, BTC~BTC, BTC-BTC)

@@ -3,20 +3,20 @@ import {Amount} from "./Amount";
 import {Asset} from "./Asset";
 
 // What happened on-chain, independent of any tax tool and of which wallet is exported
-// (docs/specs/std-tx.md). Interpreters make it from a bundle; exporters turn it into rows.
+// (docs/specs/activity.md). Interpreters make it from a bundle; exporters turn it into rows.
 
-// One kind per thing that happens. The union grows as each action type is ported to StdTx, so every
+// One kind per thing that happens. The union grows as each action type is ported to an activity, so every
 // exporter has to handle a kind before it can be emitted.
-export type StdKind = 'bond' | 'unbond';
+export type ActivityKind = 'bond' | 'unbond';
 
-export type StdStatus = 'success' | 'pending' | 'failed';
+export type ActivityStatus = 'success' | 'pending' | 'failed';
 
-export interface StdTx {
+export interface Activity {
     // The bundle's store record key, e.g. midgard/bond.<txid>
     id: string;
     protocol: ProtocolId;
-    kind: StdKind;
-    status: StdStatus;
+    kind: ActivityKind;
+    status: ActivityStatus;
     time: Date;
     // The txids the wallet sent (in) and the protocol paid out (out), as the source gives them
     txids: {in: string[]; out: string[]};

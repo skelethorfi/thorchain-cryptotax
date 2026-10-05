@@ -1,14 +1,18 @@
-# Standard transaction (StdTx)
+# Activity
 
 A run turns source data into tax rows in stages:
 
 ```
-sources ──► raw bundles ──► interpret ──► StdTx ──► export ──► files
+sources ──► raw bundles ──► interpret ──► Activity ──► export ──► files
 ```
 
-A **StdTx** records what happened on-chain in one action. It says nothing
-about a tax tool: no Summ types, no row IDs, no descriptions, and no choice of
-which file a row goes in. An interpreter makes it from a raw bundle (one
+An **activity** records what happened on-chain in one action. "Action"
+always means the raw source item (a Midgard action, or one contract event);
+"activity" means the interpreted one. An activity can span several on-chain
+transactions: a swap's inbound and outbound, a refund's send and return.
+
+An activity says nothing about a tax tool: no Summ types, no row IDs, no
+descriptions, and no choice of which file a row goes in. An interpreter makes it from a raw bundle (one
 Midgard action with its THORNode and Cosmos txs). An exporter turns it into
 rows, applying the tax treatment chosen in the config.
 
@@ -19,14 +23,14 @@ Kept apart this way, each kind of change touches one module:
   change in the exporter;
 - a second output format is a second exporter.
 
-The types are in `src/domain/` (`StdTx.ts`, `Asset.ts`, `Amount.ts`,
+The types are in `src/domain/` (`Activity.ts`, `Asset.ts`, `Amount.ts`,
 `Issue.ts`).
 
 ## Shape
 
 | Field | Meaning |
 | --- | --- |
-| `id` | The bundle's store record key, e.g. `midgard/bond.<txid>` or `maya-midgard/swap.<txid>` (`getBundleKey`). An action listed for several wallets is one StdTx |
+| `id` | The bundle's store record key, e.g. `midgard/bond.<txid>` or `maya-midgard/swap.<txid>` (`getBundleKey`). An action listed for several wallets is one activity |
 | `protocol` | `thorchain` or `maya` |
 | `kind` | What happened (see Kinds) |
 | `status` | `success`, `pending` or `failed`, as the source reports it. The exporter decides what a pending or failed action gives |
@@ -83,7 +87,7 @@ string the CSV has always had (`0.02`, `1`, `5000`).
 
 ## Kinds
 
-`StdKind` is a closed union. It grows as each action type is ported, so an
+`ActivityKind` is a closed union. It grows as each action type is ported, so an
 exporter cannot be built until it handles every kind.
 
 | Kind | Port step | Legs | Details |
@@ -126,13 +130,13 @@ details: {node: thor1-node-address}
 The Summ exporter turns it into one `staking-deposit` row of 1 RUNE with a
 0.02 RUNE fee: today's row.
 
-## Not in a StdTx
+## Not in an activity
 
 - Summ types, the `+10 s` timestamps on receiving legs, the `1/2 -`
   descriptions and the LP price-helper row: these are Summ's format, so the
   Summ exporter adds them.
 - Row IDs and file names: the exporter and the file layout produce them.
-- The wallet being exported: a StdTx covers every wallet it touches. The
+- The wallet being exported: an activity covers every wallet it touches. The
   exporter puts each leg's rows in its wallet's file.
 
 ## Tests
@@ -140,6 +144,6 @@ The Summ exporter turns it into one `staking-deposit` row of 1 RUNE with a
 - `test/Domain.test.ts`: `formatAmount` matches the CSV's formatting for every
   decimals value in use, and `toAsset` kinds for each notation in
   `assets.md`.
-- From step 7, golden cases gain a reviewed `std.yaml` between `input.json`
+- From step 7, golden cases gain a reviewed `activity.yaml` between `input.json`
   and `expected.yaml`, so an interpreter bug and an exporter bug fail
   different checks.

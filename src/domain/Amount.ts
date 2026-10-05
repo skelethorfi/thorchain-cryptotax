@@ -1,4 +1,4 @@
-// An amount in an asset's base units, exact (docs/specs/std-tx.md). No floats: it is formatted only when
+// An amount in an asset's base units, exact (docs/specs/activity.md). No floats: it is formatted only when
 // a row is written.
 export interface Amount {
     base: bigint;

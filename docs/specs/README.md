@@ -6,4 +6,4 @@
 - [Loans](./loans.md)
 - [Rujira](./rujira.md)
 - [Source data snapshots](./snapshots.md)
-- [Standard transaction (StdTx)](./std-tx.md)
+- [Activity](./activity.md)
