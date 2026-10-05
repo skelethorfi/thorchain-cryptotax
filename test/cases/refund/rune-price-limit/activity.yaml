@@ -1,0 +1,41 @@
+id: midgard/refund.0000000201A175A71801B21A5D4A71EFB3B1AC5FE4E1AD724F128E438ECE0B77
+protocol: thorchain
+kind: refund
+status: success
+time: 2026-10-01T21:54:13.796Z
+txids:
+  in:
+    - 0000000201A175A71801B21A5D4A71EFB3B1AC5FE4E1AD724F128E438ECE0B77
+  out: []
+memo: =:BTC~BTC:thor17hwqt302e5f2xm4h95ma8wuggqkvfzgvsnh5z9:1679463/1/1
+legs:
+  - direction: out
+    wallet: thor17hwqt302e5f2xm4h95ma8wuggqkvfzgvsnh5z9
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: principal
+    basis: observed
+    amount: "1840.58501519"
+    decimals: 8
+  - direction: in
+    wallet: thor17hwqt302e5f2xm4h95ma8wuggqkvfzgvsnh5z9
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: returned
+    basis: observed
+    amount: "1840.58501519"
+    decimals: 8
+  - direction: out
+    wallet: thor17hwqt302e5f2xm4h95ma8wuggqkvfzgvsnh5z9
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: gas
+    basis: default
+    amount: "0.02"
+    decimals: 8
+prices: []
+details:
+  reason: emit asset 1679319 less than price limit 1679463
