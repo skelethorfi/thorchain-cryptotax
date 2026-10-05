@@ -62,10 +62,10 @@ lists/midgard/<wallet>.0.json                      the record keys one fetch of 
 | `viewblock` | a tx | its hash |
 | `tcy` | a distribution | `<wallet>.<date>` (one a day; several wallets are paid on the same day) |
 
-An action or tx is shared: a swap between two of my wallets is stored once, and
+An action or tx is shared: a swap between two wallets is stored once, and
 both wallets' lists point at it. A TCY distribution belongs to one wallet, so
-its key includes the wallet. On the FY26 data, 12 txids have more than one
-action (e.g. a send and a swap); type and txid tell them apart, and only
+its key includes the wallet. One txid can have more than one action (e.g. a
+send and a swap); type and txid tell them apart, and only
 contract actions need their event. If two records of one wallet fetch ever
 share a key, the run stops rather than merge them.
 
