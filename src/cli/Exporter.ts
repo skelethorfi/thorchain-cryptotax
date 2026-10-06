@@ -159,7 +159,7 @@ export class Exporter {
     // Writes the CSV files that csvFiles lays out
     saveToCsv(txs: CryptoTaxTransaction[], outputPath: string) {
         const ranges = generateDateRanges(this.config.fromDate, this.config.toDate, this.config.frequency);
-        const {files, exported, warnings} = csvFiles(txs, ranges, this.config.wallets);
+        const {files, exported, warnings} = csvFiles(txs, ranges, this.config.wallets, this.config.timezone);
         warnings.forEach(warning => console.warn(`WARN: ${warning}`));
         files.forEach(file => writeCsv(path.join(outputPath, file.name), file.rows));
         console.log(`Total exported: ${exported}`);

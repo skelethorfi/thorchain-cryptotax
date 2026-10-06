@@ -16,6 +16,16 @@ describe('TaxConfig', () => {
         });
     });
 
+    test('with a timezone, the default toDate is today\'s date there', () => {
+        const result = TaxConfig.applyDefaults({timezone: 'Australia/Melbourne'}, new Date('2026-06-30T23:30:00.000Z'));
+
+        expect(result.toDate).toBe('2026-07-01');
+    });
+
+    test('an unknown timezone is an error', () => {
+        expect(() => TaxConfig.applyDefaults({timezone: 'Melbourne'}, new Date())).toThrow('Unknown timezone: Melbourne');
+    });
+
     test('applyDefaults with populated config', () => {
         const config = {
             fromDate: '2020-01-01',

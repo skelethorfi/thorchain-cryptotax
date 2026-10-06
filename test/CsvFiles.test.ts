@@ -15,6 +15,29 @@ describe('CSV file layout', () => {
         expect(isInRange(new Date('2025-08-01T00:00:00.000Z'), july)).toBe(false);
     });
 
+    test('with a timezone, a period is made of that zone\'s calendar days', () => {
+        const fy = {from: '2024-07-01', to: '2025-06-30'};
+        // Melbourne is UTC+10 in June: the year ends at 14:00 UTC on 30 June
+        expect(isInRange(new Date('2025-06-30T13:59:59.999Z'), fy, 'Australia/Melbourne')).toBe(true);
+        expect(isInRange(new Date('2025-06-30T14:00:00.000Z'), fy, 'Australia/Melbourne')).toBe(false);
+        expect(isInRange(new Date('2024-06-30T14:00:00.000Z'), fy, 'Australia/Melbourne')).toBe(true);
+        expect(isInRange(new Date('2024-06-30T13:59:59.999Z'), fy, 'Australia/Melbourne')).toBe(false);
+        // and UTC+11 in December (daylight saving): a calendar year ends at 13:00 UTC on 31 December
+        const year = {from: '2025-01-01', to: '2025-12-31'};
+        expect(isInRange(new Date('2025-12-31T12:59:59.999Z'), year, 'Australia/Melbourne')).toBe(true);
+        expect(isInRange(new Date('2025-12-31T13:00:00.000Z'), year, 'Australia/Melbourne')).toBe(false);
+    });
+
+    test('a row after local midnight on 30 June is in the next financial year\'s files', () => {
+        const fys = [{from: '2024-07-01', to: '2025-06-30'}, {from: '2025-07-01', to: '2026-06-30'}];
+        const {files} = csvFiles([row('2025-06-30T19:30:00.000Z')], fys, wallets, 'Australia/Melbourne');
+        expect(names(files).filter(name => !name.endsWith('(0)'))).toEqual([
+            'all.csv (1)',
+            'all-2025-07-01_2026-06-30.csv (1)',
+            '2025-07-01_2026-06-30_THOR_11111_Main.csv (1)',
+        ]);
+    });
+
     test('a row late on a month-end day is in that month\'s files', () => {
         const rows = [row('2025-07-31T18:00:00.000Z'), row('2025-08-01T01:00:00.000Z')];
         const {files, exported} = csvFiles(rows, [july, {from: '2025-08-01', to: '2025-08-31'}], wallets);

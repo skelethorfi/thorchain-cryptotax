@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { generateDateRanges } from "../src/utils/DateRange";
+import { dateIn, generateDateRanges, nextDay, startOfDay } from "../src/utils/DateRange";
 
 describe("generateDateRanges", () => {
     test("should throw if no fromDate is provided", () => {
@@ -93,5 +93,27 @@ describe("generateDateRanges", () => {
             { from: "2022-05-10", to: "2023-05-09" },
             { from: "2023-05-10", to: "2023-07-05" } // partial final period
         ]);
+    });
+});
+
+describe("time zones", () => {
+    test("startOfDay gives local midnight, in or out of daylight saving", () => {
+        expect(new Date(startOfDay("2025-07-01")).toISOString()).toBe("2025-07-01T00:00:00.000Z");
+        expect(new Date(startOfDay("2025-07-01", "Australia/Melbourne")).toISOString()).toBe("2025-06-30T14:00:00.000Z");
+        expect(new Date(startOfDay("2026-01-01", "Australia/Melbourne")).toISOString()).toBe("2025-12-31T13:00:00.000Z");
+        // the days daylight saving starts and ends in Melbourne (the change is at 2 or 3 am)
+        expect(new Date(startOfDay("2025-10-05", "Australia/Melbourne")).toISOString()).toBe("2025-10-04T14:00:00.000Z");
+        expect(new Date(startOfDay("2026-04-05", "Australia/Melbourne")).toISOString()).toBe("2026-04-04T13:00:00.000Z");
+    });
+
+    test("nextDay crosses month and year ends", () => {
+        expect(nextDay("2025-06-30")).toBe("2025-07-01");
+        expect(nextDay("2024-02-28")).toBe("2024-02-29");
+        expect(nextDay("2025-12-31")).toBe("2026-01-01");
+    });
+
+    test("dateIn gives the calendar date in the zone", () => {
+        expect(dateIn(new Date("2025-06-30T19:30:00.000Z"))).toBe("2025-06-30");
+        expect(dateIn(new Date("2025-06-30T19:30:00.000Z"), "Australia/Melbourne")).toBe("2025-07-01");
     });
 });

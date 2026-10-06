@@ -2,9 +2,10 @@ import {ITaxConfig} from "./ITaxConfig";
 import path from "path";
 import fs from "fs-extra";
 import toml from "js-toml";
+import {checkTimeZone, dateIn} from "../utils/DateRange";
 
 export class TaxConfig {
-    // today: the default toDate (its UTC date)
+    // today: the default toDate (its date in the config's timezone)
     static load(filename: string, today: Date): ITaxConfig {
         const config = this.renameDeprecated(this.loadConfigFile(filename));
         return this.resolvePaths(this.applyDefaults(config, today), path.dirname(path.resolve(filename)));
@@ -56,7 +57,11 @@ export class TaxConfig {
     }
 
     static applyDefaults(config: Partial<ITaxConfig>, today: Date): ITaxConfig {
-        const dateToday = today.toISOString().substring(0, 10);
+        if (config.timezone !== undefined) {
+            checkTimeZone(config.timezone);
+        }
+
+        const dateToday = dateIn(today, config.timezone);
         const defaults = {
             outputPath: 'output',
             unsupportedActionsPath: 'unsupported-actions',
