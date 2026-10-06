@@ -30,10 +30,11 @@ async function main() {
         throw new Error('must specify config file');
     }
 
-    const timestamp = format(new Date(), 'yyyy-MM-dd_HH-mm-ss');
+    const now = new Date();
+    const timestamp = format(now, 'yyyy-MM-dd_HH-mm-ss');
 
     // Read config
-    const exporter = new Exporter(configFile, {offline, fetch, replay});
+    const exporter = new Exporter(configFile, {offline, fetch, replay, today: now});
 
     const outputPath = path.join(exporter.config.outputPath, timestamp);
     const storePath = exporter.config.storePath;

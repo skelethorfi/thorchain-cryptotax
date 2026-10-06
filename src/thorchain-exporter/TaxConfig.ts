@@ -4,9 +4,10 @@ import fs from "fs-extra";
 import toml from "js-toml";
 
 export class TaxConfig {
-    static load(filename: string): ITaxConfig {
+    // today: the default toDate (its UTC date)
+    static load(filename: string, today: Date): ITaxConfig {
         const config = this.renameDeprecated(this.loadConfigFile(filename));
-        return this.resolvePaths(this.applyDefaults(config), path.dirname(path.resolve(filename)));
+        return this.resolvePaths(this.applyDefaults(config, today), path.dirname(path.resolve(filename)));
     }
 
     // Relative paths in the config are relative to the config file's folder, so a config
@@ -54,8 +55,8 @@ export class TaxConfig {
         return config;
     }
 
-    static applyDefaults(config: Partial<ITaxConfig>): ITaxConfig {
-        const dateToday = new Date().toISOString().substring(0, 10);
+    static applyDefaults(config: Partial<ITaxConfig>, today: Date): ITaxConfig {
+        const dateToday = today.toISOString().substring(0, 10);
         const defaults = {
             outputPath: 'output',
             unsupportedActionsPath: 'unsupported-actions',
