@@ -27,9 +27,6 @@ frequency = "yearly"
 # Optional: path to output/ directory
 # outputPath = "/some/path/output"
 
-# Optional: path to unsupported-actions/ directory
-# unsupportedActionsPath = "/some/path/unsupported-actions"
-
 # Optional: path to the store of downloaded data (default: store/ next to this config).
 # Several configs (e.g. one per tax year) can share one store.
 # storePath = "/some/path/store"
