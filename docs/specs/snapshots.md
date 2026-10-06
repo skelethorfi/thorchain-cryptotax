@@ -15,7 +15,7 @@ picks the right version of each record, and lists what it used.
 
 ## The store
 
-`src/cache/RecordStore.ts`, under the config's `storePath` (default `store/`
+`src/sources/store/RecordStore.ts`, under the config's `storePath` (default `store/`
 next to the config, ignored by git in this repo). Several configs, e.g. one
 per tax year, can share one store, because copies are only ever added:
 
@@ -127,7 +127,7 @@ run.
 
 Each fetch is retried after a transient error (HTTP 5xx or 429, a connection
 reset, a timeout, a DNS failure), waiting 5 s, 20 s and then 60 s
-(`src/utils/Retry.ts`). Requests to Midgard, THORNode and the TCY API go
+(`src/sources/Retry.ts`). Requests to Midgard, THORNode and the TCY API go
 through one client (`src/sources/http.ts`): at most one per second, and one
 that hangs fails after 60 s. A run that
 still fails keeps what it stored so far, and can be run again.

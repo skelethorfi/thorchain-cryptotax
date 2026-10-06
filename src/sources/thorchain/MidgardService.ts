@@ -7,7 +7,7 @@ import {http} from "../http";
 
 // https://github.com/xchainjs/xchainjs-lib/tree/master/packages/xchain-midgard
 // midgard api: https://midgard.thorswap.net/v2/doc
-// midgard swagger json: https://midgard.thorchain.info/v2/swagger.json
+// midgard swagger json: https://midgard.thorchain.info/v2/swagger.json (a copy: docs/reference/midgard-api-2.32.9.json)
 
 // NOTE:
 // can load balance between 2 like web3tax
