@@ -5,6 +5,9 @@ export interface ITaxConfig {
     fromDate: string;
     toDate: string;
     frequency: 'monthly' | 'yearly' | 'none',
+    // The IANA time zone whose calendar days the periods are made of, e.g. "Europe/London": set it to the
+    // tax software's timezone (docs/specs/periods.md). Default: UTC
+    timezone?: string;
     // No longer used (every run fetches the latest data); a warning is shown if set
     cacheDataSources?: boolean;
     outputPath: string;

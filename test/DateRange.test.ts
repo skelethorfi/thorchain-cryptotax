@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import { generateDateRanges } from "../src/utils/DateRange";
+import { dateIn, generateDateRanges, nextDay, startOfDay } from "../src/utils/DateRange";
 
 describe("generateDateRanges", () => {
     test("should throw if no fromDate is provided", () => {
@@ -93,5 +93,28 @@ describe("generateDateRanges", () => {
             { from: "2022-05-10", to: "2023-05-09" },
             { from: "2023-05-10", to: "2023-07-05" } // partial final period
         ]);
+    });
+});
+
+describe("time zones", () => {
+    test("startOfDay gives local midnight, in or out of daylight saving", () => {
+        expect(new Date(startOfDay("2025-07-01")).toISOString()).toBe("2025-07-01T00:00:00.000Z");
+        expect(new Date(startOfDay("2025-07-01", "Asia/Tokyo")).toISOString()).toBe("2025-06-30T15:00:00.000Z");
+        expect(new Date(startOfDay("2025-07-01", "America/New_York")).toISOString()).toBe("2025-07-01T04:00:00.000Z");
+        expect(new Date(startOfDay("2026-01-01", "America/New_York")).toISOString()).toBe("2026-01-01T05:00:00.000Z");
+        // the days daylight saving starts and ends in New York (the change is at 2 am)
+        expect(new Date(startOfDay("2025-03-09", "America/New_York")).toISOString()).toBe("2025-03-09T05:00:00.000Z");
+        expect(new Date(startOfDay("2025-11-02", "America/New_York")).toISOString()).toBe("2025-11-02T04:00:00.000Z");
+    });
+
+    test("nextDay crosses month and year ends", () => {
+        expect(nextDay("2025-06-30")).toBe("2025-07-01");
+        expect(nextDay("2024-02-28")).toBe("2024-02-29");
+        expect(nextDay("2025-12-31")).toBe("2026-01-01");
+    });
+
+    test("dateIn gives the calendar date in the zone", () => {
+        expect(dateIn(new Date("2025-06-30T19:30:00.000Z"))).toBe("2025-06-30");
+        expect(dateIn(new Date("2025-06-30T19:30:00.000Z"), "Asia/Tokyo")).toBe("2025-07-01");
     });
 });
