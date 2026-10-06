@@ -1,4 +1,4 @@
-import {ProtocolId} from "../protocols/Protocol";
+import {ProtocolId} from "./Protocol";
 import {Amount} from "./Amount";
 import {Asset} from "./Asset";
 

@@ -1,5 +1,5 @@
 import {describe, expect, jest, test} from '@jest/globals';
-import {isTransient, withRetry} from '../src/utils/Retry';
+import {isTransient, withRetry} from '../src/sources/Retry';
 
 describe('withRetry', () => {
     test('retries a transient error, then succeeds', async () => {

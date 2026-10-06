@@ -1,5 +1,5 @@
 import {Activity} from "../../domain/Activity";
-import {CryptoTaxTransaction} from "../../cryptotax";
+import {CryptoTaxTransaction} from "./csv";
 import {bondRows} from "./bond";
 import {swapRows} from "./swap";
 import {refundRows} from "./refund";
@@ -8,7 +8,7 @@ import {runePoolRows, switchRows} from "./switch";
 import {loanOpenRows, loanRepayRows} from "./loan";
 import {tcyClaimRows, tcyDistributionRows, tcyStakeRows, thornameRows} from "./tcy";
 import {rujiraStakeRows, rujiraTradeRows} from "./rujira";
-import {AssetNamesConfig, getProtocol, Protocol, withAssetNames} from "../../protocols/Protocol";
+import {AssetNamesConfig, getProtocol, Protocol, withAssetNames} from "../../domain/Protocol";
 
 // The tax choices the Summ rows depend on, from the config. Today: how assets are named
 // (docs/specs/assets.md).

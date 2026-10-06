@@ -1,6 +1,6 @@
 import {describe, expect, test} from '@jest/globals';
-import {getInboundFee} from '../src/cryptotax-thorchain/ThorchainUtils';
-import {MAYA} from '../src/protocols/Protocol';
+import {getInboundFee} from '../src/export/summ/ThorchainUtils';
+import {MAYA} from '../src/domain/Protocol';
 
 const thornode = (id: string, asset: string, amount: string) => ({tx: {id, gas: [{asset, amount}]}} as any);
 

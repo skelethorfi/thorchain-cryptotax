@@ -1,9 +1,9 @@
 import { runBundle } from '../src/pipeline/run';
 import { Action, Transaction } from '@xchainjs/xchain-midgard';
 import { describe, expect, test } from '@jest/globals';
-import { CryptoTaxTransactionType } from '../src/cryptotax';
-import { toMidgardNanoTimestamp } from '../src/cryptotax-thorchain/MidgardUtils';
-import { MAYA, Protocol, THORCHAIN } from '../src/protocols/Protocol';
+import { CryptoTaxTransactionType } from '../src/export/summ/csv';
+import { toMidgardNanoTimestamp } from '../src/sources/thorchain/MidgardUtils';
+import { MAYA, Protocol, THORCHAIN } from '../src/domain/Protocol';
 
 describe('swap', () => {
     // A swap through the exporter's path: interpreted, then exported as rows. A failure throws.

@@ -1,8 +1,8 @@
 import fs from "fs-extra";
 import path from "path";
 import {Action} from "@xchainjs/xchain-midgard";
-import {Origin, RecordStore} from "./RecordStore";
-import {ListSource, SOURCES} from "./Sources";
+import {Origin, RecordStore} from "../sources/store/RecordStore";
+import {ListSource, SOURCES} from "../sources/store/Sources";
 
 // npm run store -- import <store> <old cache or store>...
 //

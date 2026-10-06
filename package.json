@@ -6,8 +6,8 @@
   "scripts": {
     "test": "jest",
     "export": "ts-node src/full-export.ts wallets-config.toml",
-    "fixture": "ts-node src/fixtures/cli.ts",
-    "store": "ts-node src/cache/cli.ts"
+    "fixture": "ts-node src/cli/fixture.ts",
+    "store": "ts-node src/cli/store.ts"
   },
   "dependencies": {
     "@types/fs-extra": "^11.0.4",

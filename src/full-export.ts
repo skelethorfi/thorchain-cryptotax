@@ -1,7 +1,7 @@
 import * as path from "path";
 import {format} from 'date-fns-tz';
-import {Exporter} from "./thorchain-exporter/Exporter";
-import {oldCacheHint} from "./cache/cli";
+import {Exporter} from "./cli/Exporter";
+import {oldCacheHint} from "./cli/store";
 
 async function main() {
 

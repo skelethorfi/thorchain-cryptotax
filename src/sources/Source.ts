@@ -1,12 +1,12 @@
 import {Action, ActionStatusEnum, ActionTypeEnum} from "@xchainjs/xchain-midgard";
 import {assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
-import {MidgardService} from "../cryptotax-thorchain/MidgardService";
-import {ThornodeService} from "../cryptotax-thorchain/ThornodeService";
-import {CosmosTxService, getCosmosTxIds} from "../cryptotax-thorchain/CosmosTxService";
-import {TcyDistributionService} from "../cryptotax-thorchain/TcyDistributionService";
-import {getActionDate} from "../cryptotax-thorchain/MidgardUtils";
-import {Viewblock} from "../viewblock";
-import {Protocol, THORCHAIN} from "../protocols/Protocol";
+import {MidgardService} from "./thorchain/MidgardService";
+import {ThornodeService} from "./thorchain/ThornodeService";
+import {CosmosTxService, getCosmosTxIds} from "./thorchain/CosmosTxService";
+import {TcyDistributionService} from "./tcy/TcyDistributionService";
+import {getActionDate} from "./thorchain/MidgardUtils";
+import {Viewblock} from "./viewblock";
+import {Protocol, THORCHAIN} from "../domain/Protocol";
 import {RawBundle} from "./RawBundle";
 
 // Lists the raw bundles of one wallet from one API

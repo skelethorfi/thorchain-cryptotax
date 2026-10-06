@@ -1,4 +1,5 @@
 // https://help.cryptotaxcalculator.io/en/articles/5777675-advanced-manual-csv-import
+// Sample file: docs/reference/advanced.csv
 
 import {CryptoTaxTransaction} from "./CryptoTaxTranaction";
 

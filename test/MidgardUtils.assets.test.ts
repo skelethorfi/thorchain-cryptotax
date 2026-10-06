@@ -1,6 +1,6 @@
 import {describe, expect, test} from '@jest/globals';
-import {parseMidgardAsset} from '../src/cryptotax-thorchain/MidgardUtils';
-import {MAYA, THORCHAIN, withAssetNames} from '../src/protocols/Protocol';
+import {parseMidgardAsset} from '../src/sources/thorchain/MidgardUtils';
+import {MAYA, THORCHAIN, withAssetNames} from '../src/domain/Protocol';
 
 describe('parseMidgardAsset names (docs/specs/assets.md)', () => {
     test.each([

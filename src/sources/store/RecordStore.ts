@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import fs from 'fs-extra';
 import * as path from "path";
 import {SnapshotManifest} from "./SnapshotManifest";
-import {withRetry} from "../utils/Retry";
+import {withRetry} from "../Retry";
 
 // Source data is stored one record (an action, a tx) per file, and a record that comes back different is
 // stored again as a new copy, never overwritten. A run picks one copy of each record by rules (the good

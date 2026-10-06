@@ -2,21 +2,21 @@ import fs from "fs-extra";
 import os from "os";
 import path from "path";
 import {Action, Configuration, DefaultApi} from "@xchainjs/xchain-midgard";
-import {ThornodeService} from "../cryptotax-thorchain/ThornodeService";
-import {RecordStore} from "../cache/RecordStore";
-import {CosmosTxService} from "../cryptotax-thorchain/CosmosTxService";
-import {MidgardService} from "../cryptotax-thorchain/MidgardService";
+import {ThornodeService} from "../sources/thorchain/ThornodeService";
+import {RecordStore} from "../sources/store/RecordStore";
+import {CosmosTxService} from "../sources/thorchain/CosmosTxService";
+import {MidgardService} from "../sources/thorchain/MidgardService";
 import {MidgardSource} from "../sources/Source";
 import {http} from "../sources/http";
 import {execFileSync} from "child_process";
-import {Anonymiser, findSurvivors, getTokens} from "./Anonymise";
+import {Anonymiser, findSurvivors, getTokens} from "../fixtures/Anonymise";
 import {
     ACTIVITY_FILE, EXPECTED_FILE, formatRows, GoldenCaseInput, INPUT_FILE, readCaseInput, runCaseLayers, toCaseInput, toPlainActivity,
     writeCaseActivities, writeCaseExpected,
-} from "./GoldenCase";
-import {getPrivateDir, mask, PrivateData} from "./PrivateData";
-import {describeShape, getActionIds, getActionShape, sameShape} from "./Shape";
-import {getProtocol, Protocol} from "../protocols/Protocol";
+} from "../fixtures/GoldenCase";
+import {getPrivateDir, mask, PrivateData} from "../fixtures/PrivateData";
+import {describeShape, getActionIds, getActionShape, sameShape} from "../fixtures/Shape";
+import {getProtocol, Protocol} from "../domain/Protocol";
 
 // Workflow for adding a golden test case without leaking private data:
 //

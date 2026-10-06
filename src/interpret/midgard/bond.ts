@@ -2,8 +2,8 @@ import {Action, BondMetadata} from "@xchainjs/xchain-midgard";
 import {Activity, Leg} from "../../domain/Activity";
 import {parseAmount} from "../../domain/Amount";
 import {toAsset} from "../../domain/Asset";
-import {getActionDate} from "../../cryptotax-thorchain/MidgardUtils";
-import {Protocol} from "../../protocols/Protocol";
+import {getActionDate} from "../../sources/thorchain/MidgardUtils";
+import {Protocol} from "../../domain/Protocol";
 import {getBundleKey, RawBundle} from "../../sources/RawBundle";
 
 // Bond and unbond (docs/specs/activity.md). The wallet sends a MsgDeposit with the BOND or UNBOND memo;

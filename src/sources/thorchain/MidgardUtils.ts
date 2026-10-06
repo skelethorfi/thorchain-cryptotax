@@ -1,6 +1,6 @@
 import {Action} from "@xchainjs/xchain-midgard";
 import {assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
-import { Protocol, THORCHAIN } from "../protocols/Protocol";
+import { Protocol, THORCHAIN } from "../../domain/Protocol";
 
 export function parseMidgardDate(nanoTimestamp: string): Date {
     return new Date(parseInt(nanoTimestamp) / 1000000);

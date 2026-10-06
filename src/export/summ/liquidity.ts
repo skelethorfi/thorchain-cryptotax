@@ -1,9 +1,9 @@
 import {Activity, Leg} from "../../domain/Activity";
 import {formatAmount} from "../../domain/Amount";
-import {CryptoTaxTransaction, CryptoTaxTransactionType} from "../../cryptotax";
-import {parseMidgardAsset} from "../../cryptotax-thorchain/MidgardUtils";
-import {getLpTokenName} from "../../cryptotax-thorchain/ThorchainUtils";
-import {Protocol} from "../../protocols/Protocol";
+import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
+import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
+import {getLpTokenName} from "./ThorchainUtils";
+import {Protocol} from "../../domain/Protocol";
 import {plusSeconds} from "./common";
 
 // Summ needs a wallet for every row; an old deposit can have none

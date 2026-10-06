@@ -1,5 +1,5 @@
 import {describe, expect, test} from '@jest/globals';
-import {formatBlockchain, getProtocol, MAYA, THORCHAIN} from '../src/protocols/Protocol';
+import {formatBlockchain, getProtocol, MAYA, THORCHAIN} from '../src/domain/Protocol';
 
 describe('Protocol', () => {
     test('THORChain amounts are all 1e8', () => {

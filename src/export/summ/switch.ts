@@ -1,8 +1,8 @@
 import {Activity} from "../../domain/Activity";
 import {formatAmount} from "../../domain/Amount";
-import {CryptoTaxTransaction, CryptoTaxTransactionType} from "../../cryptotax";
-import {parseMidgardAsset} from "../../cryptotax-thorchain/MidgardUtils";
-import {formatBlockchain, Protocol} from "../../protocols/Protocol";
+import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
+import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
+import {formatBlockchain, Protocol} from "../../domain/Protocol";
 import {fee, leg, plusSeconds} from "./common";
 
 // A switch is a bridge: the asset leaves its old chain and arrives on THORChain 10 s later

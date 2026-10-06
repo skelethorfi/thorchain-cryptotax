@@ -1,6 +1,6 @@
 import {Activity} from "../../domain/Activity";
-import {CryptoTaxTransaction, CryptoTaxTransactionType} from "../../cryptotax";
-import {Protocol} from "../../protocols/Protocol";
+import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
+import {Protocol} from "../../domain/Protocol";
 import {fee, leg, named} from "./common";
 
 // One staking row: a bond deposits RUNE with the node, an unbond withdraws it

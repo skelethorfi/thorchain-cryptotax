@@ -51,12 +51,12 @@ wallet sent it.
 
 ## The inbound fee
 
-`getInboundFee` (`src/cryptotax-thorchain/ThorchainUtils.ts`) gives the fee
+`getInboundFee` (`src/export/summ/ThorchainUtils.ts`) gives the fee
 for an inbound transaction:
 
 1. **THORNode gas**, when the matching THORNode transaction (by inbound txid)
    has gas: `thornodeTx.tx.gas[0]`, in that gas asset. THORNode is fetched
-   (`getThornodeTxIds`, `src/thorchain-exporter/Exporter.ts`) for:
+   (`getThornodeTxIds`, `src/sources/Source.ts`) for:
    - swaps and switches (including loan opens and repayments, which are swaps):
      the inbound transaction
    - add liquidity and withdraw liquidity: each inbound transaction sent on an

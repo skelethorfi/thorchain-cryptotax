@@ -206,3 +206,4 @@ the related Spam transaction into the market value section for the LP token in C
 - [THORChain Dev Docs - Transaction Memos](https://dev.thorchain.org/concepts/memos.html)
 - [Thornode API docs](https://gateway.liquify.com/chain/thorchain_api/thorchain/doc)
 - [XChainJS docs](https://docs.xchainjs.org)
+- [`docs/reference/`](docs/reference/): a sample of the Summ advanced CSV and the Midgard API spec

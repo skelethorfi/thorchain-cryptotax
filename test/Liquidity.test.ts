@@ -1,7 +1,7 @@
 import {describe, expect, test} from '@jest/globals';
 import {runBundle} from '../src/pipeline/run';
-import {THORCHAIN} from '../src/protocols/Protocol';
-import {toMidgardNanoTimestamp} from '../src/cryptotax-thorchain/MidgardUtils';
+import {THORCHAIN} from '../src/domain/Protocol';
+import {toMidgardNanoTimestamp} from '../src/sources/thorchain/MidgardUtils';
 
 // Midgard reports a savers deposit's coin as the synth, whichever chain it was sent on
 const saversDeposit = (address: string) => ({

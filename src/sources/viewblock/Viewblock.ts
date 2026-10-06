@@ -1,7 +1,7 @@
-import {range} from '../utils/Range';
+import {range} from '../../utils/Range';
 import {ViewblockTx} from './ViewblockTx';
-import {RecordStore} from "../cache/RecordStore";
-import {VIEWBLOCK_LIST} from "../cache/Sources";
+import {RecordStore} from "../store/RecordStore";
+import {VIEWBLOCK_LIST} from "../store/Sources";
 
 export const BASE_URL = 'https://api.viewblock.io';
 export const ORIGIN = 'https://viewblock.io';

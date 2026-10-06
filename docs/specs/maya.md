@@ -44,7 +44,7 @@ as 1e4.
 
 The blockchain value: Summ ignores a blockchain it does not recognise, so a
 wrong value is harmless but loses the hint. `MayaProtocol` is kept in one place
-(`src/protocols`) so it can be corrected once confirmed with a manual CSV
+(`src/domain/Protocol.ts`) so it can be corrected once confirmed with a manual CSV
 upload to Summ.
 
 ## Required behaviour

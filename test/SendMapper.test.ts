@@ -1,6 +1,6 @@
 import {describe, expect, test} from "@jest/globals";
 import fs from 'fs-extra';
-import {SendMapper} from "../src/thorchain-exporter/SendMapper";
+import {SendMapper} from "../src/interpret/viewblock/SendMapper";
 
 function getTestData(filename: string) {
     return fs.readJSONSync(`test/testdata/${filename}.json`);

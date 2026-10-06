@@ -1,6 +1,6 @@
 import {describe, expect, test} from "@jest/globals";
 import {dedupeBundles, getBundleKey, RawBundle} from "../src/sources/RawBundle";
-import {ProtocolId} from "../src/protocols/Protocol";
+import {ProtocolId} from "../src/domain/Protocol";
 
 const action = (txID: string) => ({type: 'swap', date: '1680350400000000000', in: [{address: 'thor1a', coins: [], txID}], out: [], pools: [], metadata: {}});
 

@@ -1,7 +1,7 @@
-import {RecordStore} from '../cache/RecordStore';
-import {tcyList} from '../cache/Sources';
-import { API_URLS } from '../config/apiUrls';
-import {http} from '../sources/http';
+import {RecordStore} from '../store/RecordStore';
+import {tcyList} from '../store/Sources';
+import { API_URLS } from '../../config/apiUrls';
+import {http} from '../http';
 
 const MIDGARD_API_URL = API_URLS.midgard;
 

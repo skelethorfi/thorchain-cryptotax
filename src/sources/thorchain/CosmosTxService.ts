@@ -1,8 +1,8 @@
 import {Action} from "@xchainjs/xchain-midgard";
-import {RecordStore} from "../cache/RecordStore";
-import {COSMOS_TX_RULES} from "../cache/Sources";
-import {API_URLS} from "../config/apiUrls";
-import {http} from "../sources/http";
+import {RecordStore} from "../store/RecordStore";
+import {COSMOS_TX_RULES} from "../store/Sources";
+import {API_URLS} from "../../config/apiUrls";
+import {http} from "../http";
 
 // A THORChain Cosmos tx from THORNode's /cosmos/tx/v1beta1/txs/{hash}, trimmed to what the mappers use.
 // It is the only source of what a wasm contract call paid out and of its gas (docs/specs/rujira.md).
