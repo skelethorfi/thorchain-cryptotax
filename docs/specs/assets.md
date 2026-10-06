@@ -22,12 +22,13 @@ always Summ's name for it (`THORChain`, `Mayachain`), never Midgard's chain id
 
 Why:
 
-- Summ lists THORChain as `THORChain` (integration id `thorchain`), and a
-  row with `THORChain` is attached to it. It does not recognise `THOR`: such
-  a row gets no chain at all. Rows with a blank column have been seen to get
-  the chain from the wallet instead, so `THOR` is worse than leaving it
-  blank. The row's amounts and prices are unaffected; the chain is what
-  Summ's transfer matching and per-chain views use.
+- Summ lists THORChain as `THORChain` (integration id `thorchain`). A test
+  upload of four otherwise identical rows into a THORChain wallet attached
+  `THORChain`, `thorchain` and a blank column to the `thorchain` chain (a
+  blank one is inferred from the wallet), and gave the `THOR` row no chain
+  at all. So `THOR` is worse than leaving the column blank. The row's
+  amounts and prices are unaffected; the chain is what Summ's transfer
+  matching and per-chain views use.
 - A synth is pool-backed exposure to another chain's asset, a different
   holding from that asset and held on a different chain. If both export as
   `BTC`, Summ mixes their balances and cost bases. The prefix says where it
