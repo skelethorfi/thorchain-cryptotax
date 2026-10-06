@@ -1,10 +1,3 @@
-import axios from "axios";
-
-// The public gateways (Liquify, Maya's Midgard, Viewblock) return occasional 502/504s and sometimes hang.
-// A request that hangs fails after this long instead of stalling the run; the xchainjs API clients use
-// axios's defaults.
-axios.defaults.timeout = 60_000;
-
 // ENOTFOUND: the public gateways' DNS has failed for a few seconds at a time
 const TRANSIENT_CODES = ['ECONNABORTED', 'ETIMEDOUT', 'ECONNRESET', 'EAI_AGAIN', 'ENOTFOUND', 'UND_ERR_CONNECT_TIMEOUT'];
 

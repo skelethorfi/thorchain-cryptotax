@@ -1,12 +1,9 @@
 import {RecordStore} from '../cache/RecordStore';
 import {tcyList} from '../cache/Sources';
-import axios from 'axios';
-import axiosThrottle from 'axios-request-throttle';
 import { API_URLS } from '../config/apiUrls';
+import {http} from '../sources/http';
 
 const MIDGARD_API_URL = API_URLS.midgard;
-
-axiosThrottle.use(axios, { requestsPerSecond: 1 });
 
 // Interface for TCY distribution item
 export interface TcyDistributionItem {
@@ -61,7 +58,7 @@ export class TcyDistributionService {
     async getTcyDistribution(address: string): Promise<TcyDistribution> {
         const url = `${this.baseUrl}/v2/tcy/distribution/${address}`;
         const distributions = await this.store.list(this.source, address, async () => {
-            const response = await axios.get(url);
+            const response = await http.get(url);
             return {data: (response.data as TcyDistribution).distributions ?? [], url};
         }, tcyList(address));
 

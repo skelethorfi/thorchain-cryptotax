@@ -1,12 +1,13 @@
 import fs from "fs-extra";
 import os from "os";
 import path from "path";
-import {Action, Configuration, MidgardApi} from "@xchainjs/xchain-midgard";
+import {Action, Configuration, DefaultApi} from "@xchainjs/xchain-midgard";
 import {ThornodeService} from "../cryptotax-thorchain/ThornodeService";
 import {RecordStore} from "../cache/RecordStore";
 import {CosmosTxService} from "../cryptotax-thorchain/CosmosTxService";
 import {MidgardService} from "../cryptotax-thorchain/MidgardService";
 import {MidgardSource} from "../sources/Source";
+import {http} from "../sources/http";
 import {execFileSync} from "child_process";
 import {Anonymiser, findSurvivors, getTokens} from "./Anonymise";
 import {
@@ -58,7 +59,7 @@ function getPublicTokens(): Set<string> {
     files.forEach(file => getTokens(fs.readFileSync(path.join(REPO_DIR, file), 'utf8'), tokens));
     return tokens;
 }
-const midgardFor = (protocol: Protocol) => new MidgardApi(new Configuration({basePath: protocol.midgardUrl}));
+const midgardFor = (protocol: Protocol) => new DefaultApi(new Configuration({basePath: protocol.midgardUrl}), protocol.midgardUrl, http);
 
 async function fetchInput(txid: string, protocol: Protocol, index?: number): Promise<GoldenCaseInput> {
     const response = await midgardFor(protocol).getActions(undefined, txid);
