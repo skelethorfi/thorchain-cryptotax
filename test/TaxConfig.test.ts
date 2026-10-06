@@ -10,7 +10,6 @@ describe('TaxConfig', () => {
 
         expect(result).toEqual({
             outputPath: 'output',
-            unsupportedActionsPath: 'unsupported-actions',
             storePath: 'store',
             toDate: '2026-06-30'
         });
@@ -58,7 +57,6 @@ describe('TaxConfig paths', () => {
         const config = TaxConfig.resolvePaths(TaxConfig.applyDefaults({storePath: 'FY/store'}, new Date()), '/private/tax');
 
         expect(config.outputPath).toBe(path.resolve('/private/tax/output'));
-        expect(config.unsupportedActionsPath).toBe(path.resolve('/private/tax/unsupported-actions'));
         expect(config.storePath).toBe(path.resolve('/private/tax/FY/store'));
     });
 

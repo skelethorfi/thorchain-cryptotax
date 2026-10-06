@@ -17,7 +17,6 @@ export class TaxConfig {
         return {
             ...config,
             outputPath: path.resolve(baseDir, config.outputPath),
-            unsupportedActionsPath: path.resolve(baseDir, config.unsupportedActionsPath),
             storePath: path.resolve(baseDir, config.storePath),
         };
     }
@@ -64,7 +63,6 @@ export class TaxConfig {
         const dateToday = dateIn(today, config.timezone);
         const defaults = {
             outputPath: 'output',
-            unsupportedActionsPath: 'unsupported-actions',
             // The record store (docs/specs/snapshots.md); can be shared by several configs
             storePath: 'store',
             toDate: dateToday

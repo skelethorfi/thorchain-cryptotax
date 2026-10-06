@@ -45,14 +45,16 @@ the repo and pass its path:
 
 `npx ts-node src/full-export.ts ../my-tax/wallets-config.toml`
 
-Relative `outputPath`, `storePath` and `unsupportedActionsPath` values in a config
+Relative `outputPath` and `storePath` values in a config
 are relative to the config file's folder, so the output and cache are written next to
 your config, not into the repo.
 
-Actions the exporter can't map yet are saved under `unsupportedActionsPath`, one file
-per action, named like its store record: `<type>/<type>.<txid>[.<contract type>].json`
-(another protocol's under its own folder, e.g. `maya/`). Runs add to this folder and
-never clear it, so a file from an earlier run may be for an action that is now supported.
+Each run writes a folder under `outputPath` named by its start time, holding `csv/`,
+`snapshots.json` and, when there are any, `unsupported/` and `failures/`. Actions the
+exporter can't map yet are saved in `unsupported/`, one file per action, named like its
+store record: `<type>/<type>.<txid>[.<contract type>].json` (another protocol's under its
+own folder, e.g. `maya/`). So the folder lists exactly what that run could not map.
+`unsupportedActionsPath` is no longer used; a config that sets it gets a warning.
 
 ### Re-running from the cache
 

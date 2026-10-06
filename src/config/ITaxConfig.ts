@@ -11,7 +11,8 @@ export interface ITaxConfig {
     // No longer used (every run fetches the latest data); a warning is shown if set
     cacheDataSources?: boolean;
     outputPath: string;
-    unsupportedActionsPath: string;
+    // No longer used (unsupported actions are saved in each run's folder); a warning is shown if set
+    unsupportedActionsPath?: string;
     // The record store (docs/specs/snapshots.md). Default: store/ next to the config
     storePath: string;
     // Deprecated name of storePath

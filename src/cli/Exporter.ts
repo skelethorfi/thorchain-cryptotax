@@ -49,6 +49,9 @@ export class Exporter {
         const storePath = this.config.storePath;
         this.snapshots = new SnapshotManifest();
         // One store for every source (docs/specs/snapshots.md)
+        if (this.config.unsupportedActionsPath !== undefined) {
+            console.warn('Config: unsupportedActionsPath is no longer used: unsupported actions are saved in each run\'s folder (<run>/unsupported/)');
+        }
         if (this.config.cacheDataSources !== undefined) {
             console.warn('Config: cacheDataSources is no longer used: every run fetches the latest data and keeps what was stored; use --offline to fetch nothing');
         }
@@ -115,7 +118,7 @@ export class Exporter {
         return collectRows(results);
     }
 
-    // Unsupported actions are saved for triage and failures with their error; those, warnings and
+    // Unsupported actions are saved for triage and failures with their error, both in the run's folder; those, warnings and
     // actions to enter by hand are logged
     private handleIssues({bundle, time, rows, issues}: BundleResult, outputPath: string) {
         const date = time.toISOString();
@@ -130,7 +133,7 @@ export class Exporter {
                 console.warn(`${date} ${type}: ${issue.kind === 'manual' ? 'enter by hand: ' : ''}${issue.message}`);
             } else if (issue.kind === 'unsupported') {
                 console.error(`${date} ${type}: unsupported action`);
-                this.saveUnsupported(bundle);
+                this.saveUnsupported(bundle, outputPath);
             } else if (issue.kind === 'failed') {
                 console.error(`${date} ${type}: ${issue.message}`);
                 this.saveFailure(outputPath, bundle.wallet, getBundleSourceName(bundle), time, bundle.data, issue.message);
@@ -138,8 +141,9 @@ export class Exporter {
         }
     }
 
-    private saveUnsupported(bundle: RawBundle) {
-        const filePath = path.join(this.config.unsupportedActionsPath, unsupportedActionFile(bundle));
+    // In the run's folder, so it lists only what this run could not map
+    private saveUnsupported(bundle: RawBundle, outputPath: string) {
+        const filePath = path.join(outputPath, 'unsupported', unsupportedActionFile(bundle));
         fs.outputFileSync(filePath, JSON.stringify(bundle.data, null, 4));
     }
 
@@ -170,7 +174,7 @@ export class Exporter {
     }
 }
 
-// Where an unsupported Midgard action is saved, under unsupportedActionsPath: [<protocol>/]<type>/<record key>.json.
+// Where an unsupported Midgard action is saved, under <run>/unsupported/: [<protocol>/]<type>/<record key>.json.
 // The record key (midgardActionKey) is unique per action, so the several contract actions of one tx each get a
 // file; a '/' in a contract type becomes '_'.
 export function unsupportedActionFile(bundle: RawBundle): string {
