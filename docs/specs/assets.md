@@ -12,8 +12,8 @@ the asset lives:
 | `BTC-BTC`, `ETH-USDC-0X…` | secured asset | THORChain | `BTC`, `USDC` (the L1 asset's name) | `THORChain` |
 | `X/RUJI` | Cosmos denom on THORChain (`x/ruji`), not a synth | THORChain | `RUJI` | `THORChain` |
 
-On Maya the synth prefix is `Maya` (`MayaSynth.BTC.BTC`) and the blockchain is
-Maya's.
+On Maya Protocol the synth prefix is `Maya` (`MayaSynth.BTC.BTC`) and the
+blockchain is Maya Protocol's (`maya.md`).
 
 Every row follows the Blockchain column above, whatever its type: swaps, fees,
 liquidity deposits and withdrawals, and sends alike. A protocol's own chain is
@@ -22,10 +22,11 @@ always its name (`THORChain`, `MayaProtocol`), never Midgard's chain id
 
 Why:
 
-- Summ recognises `THORChain` and attaches the row to its THORChain chain. It
-  does not recognise `THOR`: such a row gets no chain at all, which is worse
-  than a blank column, because for a blank one Summ infers the chain from the
-  wallet. The row's amounts and prices are unaffected; the chain is what
+- Summ lists THORChain as `THORChain` (integration id `thorchain`), and a
+  row with `THORChain` is attached to it. It does not recognise `THOR`: such
+  a row gets no chain at all. Rows with a blank column have been seen to get
+  the chain from the wallet instead, so `THOR` is worse than leaving it
+  blank. The row's amounts and prices are unaffected; the chain is what
   Summ's transfer matching and per-chain views use.
 - A synth is pool-backed exposure to another chain's asset, a different
   holding from that asset and held on a different chain. If both export as

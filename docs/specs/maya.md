@@ -32,7 +32,7 @@ only `maya1` wallets: swaps and liquidity adds are often started from a `thor1`,
 | Native asset decimals | 8 | **10** |
 | Other asset decimals | 8 | 8, except the MAYA token (`MAYA.MAYA` / `MAYA`), which is **4** |
 | Counterparty in `from` / `to` | `thorchain` | `mayaprotocol` |
-| Blockchain value for the native chain | `THORChain` | `MayaProtocol` (Summ has no Maya chain yet; see below) |
+| Blockchain value for the native chain | `THORChain` | `MayaProtocol` (not yet confirmed in Summ, which lists Maya Protocol as `Mayachain`; see below) |
 | LP token | `ThorLP.<pool>` | `MayaLP.<pool>` |
 | Native address prefix | `thor1` | `maya1` |
 | Default inbound gas when node data is missing | 0.02 RUNE (see `fees.md`) | 0.2 CACAO for CACAO inputs (Mayanode `NativeTransactionFee`, `2000000000` in constants and mimir on 2026-10-01; assumed unchanged historically); 0.02 RUNE for RUNE inputs (sent on THORChain); none for other inputs, as Maya node data is not fetched |
@@ -42,10 +42,11 @@ Decimals were checked on 2026-10-01 against live pool depths: Midgard's
 1e10 and pool assets as 1e8, and the MAYA pool only matches when MAYA is read
 as 1e4.
 
-The blockchain value: Summ gives no chain to a row whose blockchain it does
-not recognise (`assets.md`), and it has no Maya chain today, so Maya rows get
-no chain whatever the value. `MayaProtocol` is kept in one place
-(`src/domain/Protocol.ts`) so it can be changed if Summ adds one.
+The blockchain value: Summ lists Maya Protocol as `Mayachain` (integration id
+`mayachain`). Whether it also recognises `MayaProtocol` is not yet confirmed,
+and a value it does not recognise leaves the row with no chain (`assets.md`).
+The value is set in one place (`src/domain/Protocol.ts`), to be changed if a
+Maya Protocol CSV upload shows that Summ does not attach `MayaProtocol`.
 
 ## Required behaviour
 
