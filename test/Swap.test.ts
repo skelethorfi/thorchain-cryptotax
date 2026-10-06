@@ -1,5 +1,5 @@
 import { runBundle } from '../src/pipeline/run';
-import { Action, Transaction, Coin } from '@xchainjs/xchain-midgard';
+import { Action, Transaction } from '@xchainjs/xchain-midgard';
 import { describe, expect, test } from '@jest/globals';
 import { CryptoTaxTransactionType } from '../src/cryptotax';
 import { toMidgardNanoTimestamp } from '../src/cryptotax-thorchain/MidgardUtils';
