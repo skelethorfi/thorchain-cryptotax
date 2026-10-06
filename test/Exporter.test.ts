@@ -1,6 +1,8 @@
 import { describe, expect, test } from '@jest/globals';
 import { ActionTypeEnum } from '@xchainjs/xchain-midgard';
 import { getThornodeTxIds, shouldIncludeAction } from '../src/sources/Source';
+import { unsupportedActionFile } from '../src/cli/Exporter';
+import { RawBundle } from '../src/sources/RawBundle';
 
 describe('Exporter thornode fetch wiring', () => {
     const inbound = (txID: string, asset?: string) => ({ txID, coins: asset ? [{ asset, amount: '1' }] : [] });
@@ -62,5 +64,29 @@ describe('Exporter action status filter', () => {
 
     test('excludes a pending loan open with no output', () => {
         expect(shouldIncludeAction(action('pending', 'loanOpen'))).toBe(false);
+    });
+});
+
+describe('unsupported action files', () => {
+    const txId = 'A'.repeat(64);
+    const contract = (contractType: string) => ({
+        type: 'contract', date: '1700000000000000000', pools: [], in: [{txID: txId, address: 'thor1-user-wallet-11111', coins: []}], out: [],
+        metadata: {contract: {contractType, funds: '', attributes: {}}},
+    });
+    const bundle = (data: any, protocol = 'thorchain') =>
+        ({source: 'midgard', protocol, wallet: '', data, thornodeTxs: [], cosmosTxs: []}) as RawBundle;
+
+    test('the contract actions of one tx each get their own file', () => {
+        expect(unsupportedActionFile(bundle(contract('wasm-rujira-fin/trade')))).toBe(`contract/contract.${txId}.wasm-rujira-fin_trade.json`);
+        expect(unsupportedActionFile(bundle(contract('wasm-rujira-merge/deposit')))).toBe(`contract/contract.${txId}.wasm-rujira-merge_deposit.json`);
+    });
+
+    test('another protocol\'s actions go in its own folder', () => {
+        expect(unsupportedActionFile(bundle(contract('wasm-x/y'), 'maya'))).toBe(`maya/contract/contract.${txId}.wasm-x_y.json`);
+    });
+
+    test('an action without a txid is named by its date', () => {
+        const action = {type: 'donate', date: '1700000000000000000', pools: [], in: [{txID: '', address: '', coins: []}], out: [], metadata: {}};
+        expect(unsupportedActionFile(bundle(action))).toBe('donate/donate.date-1700000000000000000.json');
     });
 });

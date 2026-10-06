@@ -49,6 +49,11 @@ Relative `outputPath`, `storePath` and `unsupportedActionsPath` values in a conf
 are relative to the config file's folder, so the output and cache are written next to
 your config, not into the repo.
 
+Actions the exporter can't map yet are saved under `unsupportedActionsPath`, one file
+per action, named like its store record: `<type>/<type>.<txid>[.<contract type>].json`
+(another protocol's under its own folder, e.g. `maya/`). Runs add to this folder and
+never clear it, so a file from an earlier run may be for an action that is now supported.
+
 ### Re-running from the cache
 
 Downloaded data is kept in the store (`store/` next to your config, or the config's
