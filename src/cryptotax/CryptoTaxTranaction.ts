@@ -14,11 +14,12 @@ export interface CryptoTaxTransaction {
     /**
      * Timestamp (UTC)
      *
+     * Written as ISO 8601 UTC (e.g. 2025-07-01T12:00:00.000Z) when the CSV is rendered.
      * The default format is set as YYYY-MM-DD HH:mm:ss.
      * However, you can also select different time formats by clicking on 'Advanced Options' when importing.
      * (Check [here](https://help.cryptotaxcalculator.io/en/articles/5777675-advanced-custom-csv-import#h_e0d1330f6e) for more details.)
      */
-    timestamp: Date | string;
+    timestamp: Date;
 
     /**
      * Type

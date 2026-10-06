@@ -28,7 +28,7 @@ export function rujiraStakeRows(activity: Activity, protocol: Protocol): CryptoT
     const amount = formatAmount(funds.amount);
     const isLiquid = activity.details.bond === 'liquid';
     const note = isLiquid ? ` for ${formatAmount(parseAmount(activity.details.shares, 8))} shares` : '';
-    const time = activity.time.toISOString();
+    const time = activity.time;
 
     return [{
         walletExchange: funds.wallet,
@@ -40,7 +40,7 @@ export function rujiraStakeRows(activity: Activity, protocol: Protocol): CryptoT
         from: funds.wallet,
         to: protocol.counterparty,
         blockchain: formatBlockchain(protocol.nativeChain),
-        id: `${time}.rujira-${isLiquid ? 'liquid-bond' : 'account-bond'}`,
+        id: `${time.toISOString()}.rujira-${isLiquid ? 'liquid-bond' : 'account-bond'}`,
         description: `1/1 - Rujira ${isLiquid ? 'Liquid bond' : 'Account bond'} ${amount} ${displayCurrency}${note}; ${funds.txid ?? ''}`,
     }];
 }
@@ -60,7 +60,7 @@ export function rujiraTradeRows(activity: Activity, protocol: Protocol): CryptoT
     const input = {...name(sent, protocol), amount: formatAmount({...sent.amount, base: sent.amount.base - (returned?.amount.base ?? 0n)})};
     const output = {...name(received, protocol), amount: formatAmount(received.amount)};
     const description = `Rujira ${label} ${input.amount} ${input.displayCurrency} to ${output.amount} ${output.displayCurrency}; ${sent.txid ?? ''}`;
-    const time = activity.time.toISOString();
+    const time = activity.time;
     const blockchain = formatBlockchain(protocol.nativeChain);
 
     return [
@@ -76,7 +76,7 @@ export function rujiraTradeRows(activity: Activity, protocol: Protocol): CryptoT
             from: sent.wallet,
             to: protocol.counterparty,
             blockchain,
-            id: `${time}.rujira-${idSuffix}.bridge-trade-out`,
+            id: `${time.toISOString()}.rujira-${idSuffix}.bridge-trade-out`,
             description: `1/2 - ${description}`,
         },
         {
@@ -88,7 +88,7 @@ export function rujiraTradeRows(activity: Activity, protocol: Protocol): CryptoT
             from: protocol.counterparty,
             to: sent.wallet,
             blockchain,
-            id: `${time}.rujira-${idSuffix}.bridge-trade-in`,
+            id: `${time.toISOString()}.rujira-${idSuffix}.bridge-trade-in`,
             description: `2/2 - ${description}`,
         },
     ];

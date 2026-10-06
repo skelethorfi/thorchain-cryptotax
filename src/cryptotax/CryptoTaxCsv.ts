@@ -26,8 +26,12 @@ function createHeader(): string {
 
 export function txToCsv(tx: CryptoTaxTransaction): string {
     return csvMapping
-        .map((column) => csvField((tx as any)[column.field] ?? ''))
+        .map((column) => csvField(formatValue((tx as any)[column.field])))
         .join(',');
+}
+
+function formatValue(value: Date | string | undefined): string {
+    return value instanceof Date ? value.toISOString() : value ?? '';
 }
 
 // Newlines become '; ' so every row stays on one line. A field with a comma or a double quote is

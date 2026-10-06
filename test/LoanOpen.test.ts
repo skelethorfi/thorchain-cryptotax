@@ -11,7 +11,7 @@ describe('LoanOpen', () => {
 
         expect(txs[0]).toStrictEqual({
             walletExchange: 'bc1-user-wallet-aaaaa',
-            timestamp: '2020-12-31T13:00:00.000Z',
+            timestamp: new Date('2020-12-31T13:00:00.000Z'),
             type: 'collateral-deposit',
             baseCurrency: 'BTC',
             baseAmount: '1.23',
@@ -27,7 +27,7 @@ describe('LoanOpen', () => {
 
         expect(txs[1]).toStrictEqual({
             walletExchange: 'thor1-user-wallet-11111',
-            timestamp: '2020-12-31T13:00:00.000Z',
+            timestamp: new Date('2020-12-31T13:00:00.000Z'),
             type: 'loan',
             baseCurrency: 'RUNE',
             baseAmount: '4000',
@@ -48,7 +48,7 @@ describe('LoanOpen', () => {
 
         expect(txs[0]).toStrictEqual({
             walletExchange: 'bc1-user-wallet-aaaaa',
-            timestamp: '2020-12-31T13:00:00.000Z',
+            timestamp: new Date('2020-12-31T13:00:00.000Z'),
             type: 'collateral-deposit',
             baseCurrency: 'BTC',
             baseAmount: '1.23',
@@ -64,7 +64,7 @@ describe('LoanOpen', () => {
 
         expect(txs[1]).toStrictEqual({
             walletExchange: 'thor1-user-wallet-11111',
-            timestamp: '2020-12-31T13:00:00.000Z',
+            timestamp: new Date('2020-12-31T13:00:00.000Z'),
             type: 'loan',
             baseCurrency: 'RUNE',
             baseAmount: '4000',

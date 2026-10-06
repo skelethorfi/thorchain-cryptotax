@@ -51,6 +51,6 @@ export function referencePrice(activity: Activity, source: string): Pick<CryptoT
     return {referencePricePerUnit: usd || undefined, referencePriceCurrency: usd ? 'USD' : undefined};
 }
 
-export function plusSeconds(time: Date, seconds: number): string {
-    return new Date(time.getTime() + seconds * 1000).toISOString();
+export function plusSeconds(time: Date, seconds: number): Date {
+    return new Date(time.getTime() + seconds * 1000);
 }

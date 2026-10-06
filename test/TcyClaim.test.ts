@@ -12,7 +12,7 @@ describe('TcyClaim', () => {
         expect(result).toHaveLength(1);
         expect(result[0]).toStrictEqual({
             walletExchange: 'thor1-user-wallet-11111',
-            timestamp: '2020-12-31T13:00:00.000Z',
+            timestamp: new Date('2020-12-31T13:00:00.000Z'),
             type: CryptoTaxTransactionType.Receive,
             baseCurrency: 'TCY',
             baseAmount: '9999.5555',

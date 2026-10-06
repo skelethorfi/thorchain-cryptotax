@@ -19,7 +19,7 @@ export function switchRows(activity: Activity, protocol: Protocol): CryptoTaxTra
     return [
         {
             walletExchange: sent.wallet,
-            timestamp: activity.time.toISOString(),
+            timestamp: activity.time,
             type: CryptoTaxTransactionType.BridgeOut,
             baseCurrency: input.currency,
             baseAmount: formatAmount(sent.amount),
@@ -63,7 +63,7 @@ export function runePoolRows(activity: Activity, protocol: Protocol): CryptoTaxT
     if (isDeposit) {
         return [
             {
-                walletExchange: wallet, timestamp: activity.time.toISOString(), type: CryptoTaxTransactionType.AddLiquidity,
+                walletExchange: wallet, timestamp: activity.time, type: CryptoTaxTransactionType.AddLiquidity,
                 baseCurrency: currency, baseAmount: amount, ...fee(activity, protocol), from: wallet, to: protocol.counterparty,
                 blockchain: protocol.blockchain, id: `${idPrefix}.add-liquidity`, description: `1/2 - Deposit ${amount} ${currency} to ${RUNEPOOL}; ${txId}`,
             },
@@ -77,7 +77,7 @@ export function runePoolRows(activity: Activity, protocol: Protocol): CryptoTaxT
 
     return [
         {
-            walletExchange: wallet, timestamp: activity.time.toISOString(), type: CryptoTaxTransactionType.ReturnLpToken,
+            walletExchange: wallet, timestamp: activity.time, type: CryptoTaxTransactionType.ReturnLpToken,
             baseCurrency: token, baseAmount: formatAmount(position.amount), ...fee(activity, protocol), from: wallet, to: protocol.counterparty,
             blockchain: protocol.blockchain, id: `${idPrefix}.return-lp-token`, description: `1/2 - Return LP token to ${RUNEPOOL}; ${txId}`,
         },

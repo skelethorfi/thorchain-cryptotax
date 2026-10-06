@@ -11,7 +11,7 @@ export function bondRows(activity: Activity, protocol: Protocol): CryptoTaxTrans
 
     return [{
         walletExchange: principal.wallet,
-        timestamp: activity.time.toISOString(),
+        timestamp: activity.time,
         type: isBond ? CryptoTaxTransactionType.StakingDeposit : CryptoTaxTransactionType.StakingWithdrawal,
         baseCurrency: currency,
         baseAmount: amount,

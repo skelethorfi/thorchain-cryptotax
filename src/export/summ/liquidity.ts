@@ -48,7 +48,7 @@ export function addLiquidityRows(activity: Activity, protocol: Protocol): Crypto
 
         return {
             walletExchange: from,
-            timestamp: activity.time.toISOString(),
+            timestamp: activity.time,
             type: CryptoTaxTransactionType.AddLiquidity,
             baseCurrency: currency,
             baseAmount: formatAmount(deposit.amount),
@@ -126,7 +126,7 @@ export function withdrawRows(activity: Activity, protocol: Protocol): CryptoTaxT
     return [
         {
             walletExchange: position.wallet,
-            timestamp: activity.time.toISOString(),
+            timestamp: activity.time,
             type: CryptoTaxTransactionType.ReturnLpToken,
             baseCurrency: lpToken,
             baseAmount: formatAmount(position.amount),

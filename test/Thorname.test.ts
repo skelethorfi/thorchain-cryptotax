@@ -12,7 +12,7 @@ describe('Thorname', () => {
         expect(result).toHaveLength(1);
         expect(result[0]).toStrictEqual({
             walletExchange: 'thor1-user-wallet-11111',
-            timestamp: '2020-12-31T13:00:00.000Z',
+            timestamp: new Date('2020-12-31T13:00:00.000Z'),
             type: CryptoTaxTransactionType.Expense,
             baseCurrency: 'RUNE',
             baseAmount: '50',
@@ -36,7 +36,7 @@ describe('Thorname', () => {
         expect(result).toHaveLength(1);
         expect(result[0]).toStrictEqual({
             walletExchange: 'thor1-user-wallet-11111',
-            timestamp: '2020-12-31T13:00:00.000Z',
+            timestamp: new Date('2020-12-31T13:00:00.000Z'),
             type: CryptoTaxTransactionType.Expense,
             baseCurrency: '',
             baseAmount: '',
@@ -62,7 +62,7 @@ describe('Thorname', () => {
         expect(result).toHaveLength(1);
         expect(result[0]).toStrictEqual({
             walletExchange: 'thor1-owner-fallback-22222',
-            timestamp: '2020-12-31T13:00:00.000Z',
+            timestamp: new Date('2020-12-31T13:00:00.000Z'),
             type: CryptoTaxTransactionType.Expense,
             baseCurrency: '',
             baseAmount: '',

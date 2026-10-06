@@ -7,10 +7,5 @@ export * from './CryptoTaxTranaction';
 export * from './CryptoTaxTransactionType';
 
 export function ctcSortDesc(txs: CryptoTaxTransaction[]): CryptoTaxTransaction[] {
-    return txs.sort((a, b) => {
-        return (
-            (b.timestamp instanceof Date ? b.timestamp : new Date(b.timestamp)).getTime() -
-            (a.timestamp instanceof Date ? a.timestamp : new Date(a.timestamp)).getTime()
-        );
-    });
+    return txs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 }
