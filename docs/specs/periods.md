@@ -15,7 +15,8 @@ layout is `csvFiles` in `src/export/summ/files.ts`.
 - Daylight saving is followed: in New York a period ending 30 June ends at
   04:00 UTC on 1 July (UTC-4), one ending 31 December at 05:00 UTC on
   1 January (UTC-5).
-- When `toDate` is left out it is today's date in that timezone.
+- When `toDate` is left out it is today's date in that timezone (UTC
+  without the key).
 - An unknown timezone name stops the run before anything is fetched.
 - File names keep the period's dates (`2025-07-01_2026-06-30_…`); the
   timezone does not appear in them.
