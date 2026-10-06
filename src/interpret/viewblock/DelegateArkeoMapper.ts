@@ -1,8 +1,8 @@
 import {AnyAsset, assetFromStringEx} from "@xchainjs/xchain-util";
 import {BaseMapper} from "./BaseMapper";
-import {ViewblockCoin, ViewblockEvent, ViewblockEventSend, ViewblockTx} from "../viewblock";
-import {baseToAssetAmountString} from "../utils/Amount";
-import {CryptoTaxTransaction, CryptoTaxTransactionType} from "../cryptotax";
+import {ViewblockCoin, ViewblockEvent, ViewblockEventSend, ViewblockTx} from "../../sources/viewblock";
+import {baseToAssetAmountString} from "../../utils/Amount";
+import {CryptoTaxTransaction, CryptoTaxTransactionType} from "../../export/summ/csv";
 import assert from "assert";
 
 export class DelegateArkeoMapper extends BaseMapper {

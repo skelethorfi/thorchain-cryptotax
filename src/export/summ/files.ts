@@ -1,5 +1,5 @@
-import {CryptoTaxTransaction} from "../../cryptotax";
-import {IWallet} from "../../thorchain-exporter/IWallet";
+import {CryptoTaxTransaction} from "./csv";
+import {IWallet} from "../../config/IWallet";
 import {DateRange} from "../../utils/DateRange";
 
 export interface CsvFile {

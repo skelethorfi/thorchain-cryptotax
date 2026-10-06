@@ -1,12 +1,12 @@
 import {Action} from "@xchainjs/xchain-midgard";
 import {TxStatusResponse} from "@xchainjs/xchain-thornode";
-import {ViewblockTx} from "../viewblock";
-import {getDistributionDate, TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService";
-import {CosmosTx} from "../cryptotax-thorchain/CosmosTxService";
-import {getActionDate} from "../cryptotax-thorchain/MidgardUtils";
-import {BaseMapper} from "../thorchain-exporter/BaseMapper";
-import {ProtocolId} from "../protocols/Protocol";
-import {midgardActionKey, tcyList, VIEWBLOCK_LIST} from "../cache/Sources";
+import {ViewblockTx} from "./viewblock";
+import {getDistributionDate, TcyDistributionItem} from "./tcy/TcyDistributionService";
+import {CosmosTx} from "./thorchain/CosmosTxService";
+import {getActionDate} from "./thorchain/MidgardUtils";
+import {BaseMapper} from "../interpret/viewblock/BaseMapper";
+import {ProtocolId} from "../domain/Protocol";
+import {midgardActionKey, tcyList, VIEWBLOCK_LIST} from "./store/Sources";
 
 export type BundleSource = 'midgard' | 'viewblock' | 'tcy';
 

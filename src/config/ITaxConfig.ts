@@ -1,5 +1,5 @@
 import {IWallet} from "./IWallet";
-import {AssetNamesConfig, ProtocolId} from "../protocols/Protocol";
+import {AssetNamesConfig, ProtocolId} from "../domain/Protocol";
 
 export interface ITaxConfig {
     fromDate: string;

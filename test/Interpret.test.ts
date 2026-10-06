@@ -1,7 +1,7 @@
 import {describe, expect, test} from "@jest/globals";
 import {interpret} from "../src/interpret/registry";
 import {RawBundle} from "../src/sources/RawBundle";
-import {MAYA, THORCHAIN} from "../src/protocols/Protocol";
+import {MAYA, THORCHAIN} from "../src/domain/Protocol";
 import {readCaseInput, toBundle} from "../src/fixtures/GoldenCase";
 
 const midgardBundle = (action: any, protocol = THORCHAIN): RawBundle =>

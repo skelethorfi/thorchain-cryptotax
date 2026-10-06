@@ -3,9 +3,9 @@ import {Activity, Leg} from "../../domain/Activity";
 import {parseAmount} from "../../domain/Amount";
 import {Asset, toAsset} from "../../domain/Asset";
 import {Issue} from "../../domain/Issue";
-import {CosmosTx} from "../../cryptotax-thorchain/CosmosTxService";
-import {getActionDate} from "../../cryptotax-thorchain/MidgardUtils";
-import {Protocol} from "../../protocols/Protocol";
+import {CosmosTx} from "../../sources/thorchain/CosmosTxService";
+import {getActionDate} from "../../sources/thorchain/MidgardUtils";
+import {Protocol} from "../../domain/Protocol";
 import {getBundleKey, RawBundle} from "../../sources/RawBundle";
 import {getTxids} from "./bond";
 

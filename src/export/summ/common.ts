@@ -1,8 +1,8 @@
 import {Activity, Leg} from "../../domain/Activity";
 import {Amount, formatAmount} from "../../domain/Amount";
-import {CryptoTaxTransaction} from "../../cryptotax";
-import {parseMidgardAsset} from "../../cryptotax-thorchain/MidgardUtils";
-import {formatBlockchain, Protocol} from "../../protocols/Protocol";
+import {CryptoTaxTransaction} from "./csv";
+import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
+import {formatBlockchain, Protocol} from "../../domain/Protocol";
 
 export function leg(activity: Activity, role: Leg['role'], direction?: Leg['direction']): Leg {
     const found = findLeg(activity, role, direction);

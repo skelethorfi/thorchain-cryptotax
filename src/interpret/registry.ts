@@ -1,9 +1,9 @@
 import {Action, ActionTypeEnum as ActionType} from "@xchainjs/xchain-midgard";
-import {CryptoTaxTransaction} from "../cryptotax";
+import {CryptoTaxTransaction} from "../export/summ/csv";
 import {Issue} from "../domain/Issue";
 import {RawBundle} from "../sources/RawBundle";
-import {Protocol, THORCHAIN} from "../protocols/Protocol";
-import {ViewblockTx} from "../viewblock";
+import {Protocol, THORCHAIN} from "../domain/Protocol";
+import {ViewblockTx} from "../sources/viewblock";
 import {interpretBond} from "./midgard/bond";
 import {interpretSwap} from "./midgard/swap";
 import {interpretRefund} from "./midgard/refund";
@@ -13,8 +13,8 @@ import {interpretLoanOpen, interpretLoanRepay} from "./midgard/loan";
 import {interpretTcyClaim, interpretTcyDistribution, interpretTcyStake, interpretThorname} from "./midgard/tcy";
 import {Activity} from "../domain/Activity";
 import {interpretRujira, RUJIRA_CONTRACT_TYPES} from "./midgard/rujira";
-import {SendMapper} from "../thorchain-exporter/SendMapper";
-import {DelegateArkeoMapper} from "../thorchain-exporter/DelegateArkeoMapper";
+import {SendMapper} from "./viewblock/SendMapper";
+import {DelegateArkeoMapper} from "./viewblock/DelegateArkeoMapper";
 
 // A ported action type gives activities, which an exporter turns into rows; the rest still give rows
 export interface Interpretation {

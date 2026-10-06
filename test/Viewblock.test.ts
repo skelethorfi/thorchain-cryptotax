@@ -2,9 +2,9 @@ import {describe, expect, jest, test} from '@jest/globals';
 import fs from 'fs-extra';
 import os from 'os';
 import path from 'path';
-import {Viewblock} from '../src/viewblock';
-import {withoutCurrentValues} from '../src/cache/Sources';
-import {RecordStore} from '../src/cache/RecordStore';
+import {Viewblock} from '../src/sources/viewblock';
+import {withoutCurrentValues} from '../src/sources/store/Sources';
+import {RecordStore} from '../src/sources/store/RecordStore';
 
 describe('Viewblock', () => {
     test('caches an empty result so offline runs can replay it', async () => {

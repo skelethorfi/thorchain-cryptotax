@@ -1,6 +1,6 @@
 import {describe, expect, test} from "@jest/globals";
 import fs from 'fs-extra';
-import {DelegateArkeoMapper} from "../src/thorchain-exporter/DelegateArkeoMapper";
+import {DelegateArkeoMapper} from "../src/interpret/viewblock/DelegateArkeoMapper";
 
 function getTestData(filename: string) {
     return fs.readJSONSync(`test/testdata/${filename}.json`);

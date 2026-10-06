@@ -2,9 +2,9 @@ import {Action} from "@xchainjs/xchain-midgard";
 import {Activity, Leg} from "../../domain/Activity";
 import {formatAmount, parseAmount} from "../../domain/Amount";
 import {toAsset} from "../../domain/Asset";
-import {getActionDate} from "../../cryptotax-thorchain/MidgardUtils";
-import {getDistributionDate, TcyDistributionItem} from "../../cryptotax-thorchain/TcyDistributionService";
-import {Protocol} from "../../protocols/Protocol";
+import {getActionDate} from "../../sources/thorchain/MidgardUtils";
+import {getDistributionDate, TcyDistributionItem} from "../../sources/tcy/TcyDistributionService";
+import {Protocol} from "../../domain/Protocol";
 import {getBundleKey, RawBundle} from "../../sources/RawBundle";
 import {getTxids, nativeGas} from "./bond";
 

@@ -2,10 +2,10 @@ import {describe, expect, jest, test} from '@jest/globals';
 import fs from 'fs-extra';
 import os from 'os';
 import path from 'path';
-import {RecordStore} from '../src/cache/RecordStore';
-import {importCache} from '../src/cache/cli';
-import {MidgardService} from '../src/cryptotax-thorchain/MidgardService';
-import {ThornodeService} from '../src/cryptotax-thorchain/ThornodeService';
+import {RecordStore} from '../src/sources/store/RecordStore';
+import {importCache} from '../src/cli/store';
+import {MidgardService} from '../src/sources/thorchain/MidgardService';
+import {ThornodeService} from '../src/sources/thorchain/ThornodeService';
 
 const action = (txID: string, extra: any = {}) => ({type: 'addLiquidity', status: 'success', date: '1', height: '1', in: [{txID, address: 'w', coins: []}], out: [], pools: [], metadata: {}, ...extra});
 
@@ -51,7 +51,7 @@ describe('store import', () => {
 
 describe('TCY records', () => {
     test("two wallets paid on the same day keep their own distributions", async () => {
-        const {TcyDistributionService} = await import('../src/cryptotax-thorchain/TcyDistributionService');
+        const {TcyDistributionService} = await import('../src/sources/tcy/TcyDistributionService');
         const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-tcy-'));
         fs.outputJsonSync(path.join(dir, 'cache', 'tcy', 'tcy_distribution_w1.json'), {distributions: [{date: '1', amount: '10', price: '1'}]});
         fs.outputJsonSync(path.join(dir, 'cache', 'tcy', 'tcy_distribution_w2.json'), {distributions: [{date: '1', amount: '99', price: '1'}]});
@@ -65,7 +65,7 @@ describe('TCY records', () => {
 
 describe('midgardActionKey', () => {
     test('tells genesisTx placeholders apart by pool and depositing addresses', async () => {
-        const {midgardActionKey} = await import('../src/cache/Sources');
+        const {midgardActionKey} = await import('../src/sources/store/Sources');
         const genesis = (pool: string, addresses: string[]) => ({...action('genesisTx'), pools: [pool], in: addresses.map(address => ({address, txID: 'genesisTx', coins: []}))}) as any;
 
         const keys = [genesis('BNB.BUSD', ['thor1a', 'bnb1a']), genesis('BNB.BUSD', ['', 'bnb1a']), genesis('BTC.BTC', ['thor1a', 'bc1a'])].map(midgardActionKey);
@@ -96,7 +96,7 @@ describe('store import from the folder-per-record layout', () => {
 
 describe('oldCacheHint', () => {
     test('suggests importing an old cache next to the config, or in the store folder, while the store is empty', async () => {
-        const {oldCacheHint} = await import('../src/cache/cli');
+        const {oldCacheHint} = await import('../src/cli/store');
         const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-hint-'));
         fs.outputJsonSync(path.join(dir, 'cache', 'midgard', 'w.json'), []);
 

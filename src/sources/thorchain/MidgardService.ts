@@ -1,9 +1,9 @@
-import {RecordStore} from "../cache/RecordStore";
-import {MIDGARD_LIST} from "../cache/Sources";
+import {RecordStore} from "../store/RecordStore";
+import {MIDGARD_LIST} from "../store/Sources";
 import {Action, Configuration, DefaultApi} from '@xchainjs/xchain-midgard';
 import assert from "assert";
-import {API_URLS} from "../config/apiUrls";
-import {http} from "../sources/http";
+import {API_URLS} from "../../config/apiUrls";
+import {http} from "../http";
 
 // https://github.com/xchainjs/xchainjs-lib/tree/master/packages/xchain-midgard
 // midgard api: https://midgard.thorswap.net/v2/doc

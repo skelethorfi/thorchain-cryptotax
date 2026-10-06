@@ -1,7 +1,7 @@
 import {Activity} from "../../domain/Activity";
 import {formatAmount} from "../../domain/Amount";
-import {CryptoTaxTransaction, CryptoTaxTransactionType} from "../../cryptotax";
-import {formatBlockchain, Protocol} from "../../protocols/Protocol";
+import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
+import {formatBlockchain, Protocol} from "../../domain/Protocol";
 import {fee, findLeg, leg, named} from "./common";
 
 // A refund (docs/specs/fees.md): the send is a failed-out carrying the inbound fee, as Summ counts only a

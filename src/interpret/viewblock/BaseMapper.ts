@@ -1,7 +1,7 @@
-import {ViewblockEvent, ViewblockEventSend, ViewblockTx} from "../viewblock";
-import {CryptoTaxTransaction, CryptoTaxTransactionType} from "../cryptotax";
+import {ViewblockEvent, ViewblockEventSend, ViewblockTx} from "../../sources/viewblock";
+import {CryptoTaxTransaction, CryptoTaxTransactionType} from "../../export/summ/csv";
 import assert from "assert";
-import {TypeMsgSends, ViewblockMsg, ViewblockTxV2} from "../viewblock";
+import {TypeMsgSends, ViewblockMsg, ViewblockTxV2} from "../../sources/viewblock";
 
 // 0.02 RUNE
 const DEFAULT_RUNE_GAS = '2000000';

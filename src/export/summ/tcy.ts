@@ -1,8 +1,8 @@
 import {Activity} from "../../domain/Activity";
 import {formatAmount} from "../../domain/Amount";
-import {CryptoTaxTransaction, CryptoTaxTransactionType} from "../../cryptotax";
-import {parseMidgardAsset} from "../../cryptotax-thorchain/MidgardUtils";
-import {Protocol} from "../../protocols/Protocol";
+import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
+import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
+import {Protocol} from "../../domain/Protocol";
 import {findLeg, leg} from "./common";
 
 // The fee columns from the gas leg, or no fee columns at all when there is none (as these rows always had)

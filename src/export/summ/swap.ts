@@ -1,6 +1,6 @@
 import {Activity} from "../../domain/Activity";
-import {CryptoTaxTransaction, CryptoTaxTransactionType} from "../../cryptotax";
-import {Protocol} from "../../protocols/Protocol";
+import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
+import {Protocol} from "../../domain/Protocol";
 import {fee, findLeg, leg, legBlockchain, named, plusSeconds, referencePrice} from "./common";
 
 // A cross-chain trade: the trade-out on the sending wallet carries the fee; the trade-in on the receiving

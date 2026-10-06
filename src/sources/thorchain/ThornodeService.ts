@@ -1,8 +1,8 @@
 import {Configuration, TransactionsApi, TxStatusResponse} from "@xchainjs/xchain-thornode";
-import {RecordStore} from "../cache/RecordStore";
-import {THORNODE_RULES} from "../cache/Sources";
-import {API_URLS} from "../config/apiUrls";
-import {http} from "../sources/http";
+import {RecordStore} from "../store/RecordStore";
+import {THORNODE_RULES} from "../store/Sources";
+import {API_URLS} from "../../config/apiUrls";
+import {http} from "../http";
 
 // Seems like not all transactions may be on the latest API URL
 // Following how THORChain Explorer handles it - https://github.com/thorchain/thorchain-explorer-v2/blob/main/api/thornode.api.js

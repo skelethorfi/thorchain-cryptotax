@@ -3,7 +3,7 @@ import {assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
 import {Leg} from "../../domain/Activity";
 import {parseAmount} from "../../domain/Amount";
 import {toAsset} from "../../domain/Asset";
-import {Protocol, THORCHAIN} from "../../protocols/Protocol";
+import {Protocol, THORCHAIN} from "../../domain/Protocol";
 
 // The gas the wallet paid to send its inbound transaction (docs/specs/fees.md):
 // 1. THORNode's gas for the tx (observed);

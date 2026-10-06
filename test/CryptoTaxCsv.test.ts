@@ -1,5 +1,5 @@
 import {describe, expect, test} from '@jest/globals';
-import {csvField, renderCsv} from '../src/cryptotax';
+import {csvField, renderCsv} from '../src/export/summ/csv';
 
 const row = (time: string, description = '') => ({timestamp: new Date(time), type: 'fee', baseCurrency: 'RUNE', baseAmount: '1', description} as any);
 

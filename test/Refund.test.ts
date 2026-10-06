@@ -1,7 +1,7 @@
 import {describe, expect, test} from '@jest/globals';
 import {runBundle} from '../src/pipeline/run';
-import {THORCHAIN} from '../src/protocols/Protocol';
-import {toMidgardNanoTimestamp} from '../src/cryptotax-thorchain/MidgardUtils';
+import {THORCHAIN} from '../src/domain/Protocol';
+import {toMidgardNanoTimestamp} from '../src/sources/thorchain/MidgardUtils';
 
 const refund = (networkFees: {asset: string, amount: string}[]) => ({
     date: toMidgardNanoTimestamp(new Date('2023-03-22T00:00:00Z')),

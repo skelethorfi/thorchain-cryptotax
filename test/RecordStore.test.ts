@@ -2,9 +2,9 @@ import {describe, expect, jest, test} from '@jest/globals';
 import fs from 'fs-extra';
 import os from 'os';
 import path from 'path';
-import {chooseCopy, Copy, RecordRules, RecordStore, sha256, StoreMissError} from '../src/cache/RecordStore';
-import {SnapshotManifest} from '../src/cache/SnapshotManifest';
-import {THORNODE_RULES} from '../src/cache/Sources';
+import {chooseCopy, Copy, RecordRules, RecordStore, sha256, StoreMissError} from '../src/sources/store/RecordStore';
+import {SnapshotManifest} from '../src/sources/store/SnapshotManifest';
+import {THORNODE_RULES} from '../src/sources/store/Sources';
 
 const makeDir = () => fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-store-'));
 const fetching = <T>(data: T) => jest.fn(async () => ({data, url: 'https://source/x'}));
@@ -190,7 +190,7 @@ describe('Layout', () => {
     });
 
     test('names decode back to keys, and are safe as file names', async () => {
-        const {encodeName, decodeName} = await import('../src/cache/RecordStore');
+        const {encodeName, decodeName} = await import('../src/sources/store/RecordStore');
         const key = 'contract.CFB6.wasm-rujira-fin/trade';
 
         expect(encodeName(key)).toBe('contract.CFB6.wasm-rujira-fin%2Ftrade');

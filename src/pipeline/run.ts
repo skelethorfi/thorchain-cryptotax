@@ -1,9 +1,9 @@
-import {CryptoTaxTransaction} from "../cryptotax";
+import {CryptoTaxTransaction} from "../export/summ/csv";
 import {Activity} from "../domain/Activity";
 import {Issue} from "../domain/Issue";
 import {exportSumm, Treatment} from "../export/summ";
 import {interpret} from "../interpret/registry";
-import {Protocol} from "../protocols/Protocol";
+import {Protocol} from "../domain/Protocol";
 import {getBundleDate, RawBundle} from "../sources/RawBundle";
 
 // One bundle, interpreted and exported. Pure: the shell logs the issues and writes the files.

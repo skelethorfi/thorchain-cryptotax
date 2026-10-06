@@ -1,5 +1,5 @@
 import {describe, expect, jest, test} from "@jest/globals";
-import {TaxConfig} from "../src/thorchain-exporter/TaxConfig";
+import {TaxConfig} from "../src/config/TaxConfig";
 import fs from "fs-extra";
 import os from "os";
 import path from "path";

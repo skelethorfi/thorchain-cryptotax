@@ -1,8 +1,8 @@
 import {Activity} from "../../domain/Activity";
 import {formatAmount} from "../../domain/Amount";
-import {CryptoTaxTransaction, CryptoTaxTransactionType} from "../../cryptotax";
-import {parseMidgardAsset} from "../../cryptotax-thorchain/MidgardUtils";
-import {formatBlockchain, Protocol} from "../../protocols/Protocol";
+import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
+import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
+import {formatBlockchain, Protocol} from "../../domain/Protocol";
 import {fee, findLeg, leg} from "./common";
 
 // A loan open (docs/specs/loans.md): the collateral deposit carries the fee; the loan received has none
