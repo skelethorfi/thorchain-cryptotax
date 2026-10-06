@@ -18,6 +18,7 @@ import {dedupeBundles, getBundleSourceName, RawBundle} from "../sources/RawBundl
 import {BundleResult, collectRows, runBundle} from "../pipeline/run";
 import {csvFiles} from "../export/summ/files";
 import {Action} from "@xchainjs/xchain-midgard";
+import {midgardActionKey} from "../sources/store/Sources";
 
 export interface ExportOptions {
     // Only read cached snapshots; fail on anything not cached
@@ -129,7 +130,7 @@ export class Exporter {
                 console.warn(`${date} ${type}: ${issue.kind === 'manual' ? 'enter by hand: ' : ''}${issue.message}`);
             } else if (issue.kind === 'unsupported') {
                 console.error(`${date} ${type}: unsupported action`);
-                this.saveUnsupported(bundle, time);
+                this.saveUnsupported(bundle);
             } else if (issue.kind === 'failed') {
                 console.error(`${date} ${type}: ${issue.message}`);
                 this.saveFailure(outputPath, bundle.wallet, getBundleSourceName(bundle), time, bundle.data, issue.message);
@@ -137,13 +138,9 @@ export class Exporter {
         }
     }
 
-    private saveUnsupported(bundle: RawBundle, date: Date) {
-        const action = bundle.data as Action;
-        const txId = action.in?.[0]?.txID;
-        const filename = (txId ? txId : date.toISOString()) + '.json';
-        const protocolDir = bundle.protocol === THORCHAIN.id ? '' : bundle.protocol;
-        const filePath = path.join(this.config.unsupportedActionsPath, protocolDir, action.type, filename);
-        fs.outputFileSync(filePath, JSON.stringify(action, null, 4));
+    private saveUnsupported(bundle: RawBundle) {
+        const filePath = path.join(this.config.unsupportedActionsPath, unsupportedActionFile(bundle));
+        fs.outputFileSync(filePath, JSON.stringify(bundle.data, null, 4));
     }
 
     // Midgard actions are mapped with their protocol's asset-name settings; Viewblock sends and TCY
@@ -171,4 +168,13 @@ export class Exporter {
         const timestamp = format(date, 'yyyy-MM-dd_HHmm_ssSSS');
         fs.writeJsonSync(path.join(failureDir, `${timestamp}.json`), { ERROR_MESSAGE: errorMessage, ...data }, { spaces: 4});
     }
+}
+
+// Where an unsupported Midgard action is saved, under unsupportedActionsPath: [<protocol>/]<type>/<record key>.json.
+// The record key (midgardActionKey) is unique per action, so the several contract actions of one tx each get a
+// file; a '/' in a contract type becomes '_'.
+export function unsupportedActionFile(bundle: RawBundle): string {
+    const action = bundle.data as Action;
+    const protocolDir = bundle.protocol === THORCHAIN.id ? '' : bundle.protocol;
+    return path.join(protocolDir, action.type, midgardActionKey(action).replace(/[\\/:*?"<>|]/g, '_') + '.json');
 }
