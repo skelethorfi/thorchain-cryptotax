@@ -117,3 +117,51 @@ export function generateDateRanges(
 
     return ranges;
 }
+
+// The instant a calendar day (YYYY-MM-DD) starts in an IANA time zone, e.g. 'Europe/London', in ms
+export function startOfDay(date: string, timeZone: string = 'UTC'): number {
+    const utcMidnight = new Date(`${date}T00:00:00.000Z`).getTime();
+
+    if (!isIsoDateString(date) || isNaN(utcMidnight)) {
+        throw new Error(`Invalid date: ${date}`);
+    }
+
+    // Local midnight is UTC midnight less the zone's offset; the offset is read again at that instant in
+    // case it differs there (a daylight-saving change between the two)
+    const guess = utcMidnight - offsetMs(utcMidnight, timeZone);
+    return utcMidnight - offsetMs(guess, timeZone);
+}
+
+// The calendar day after a YYYY-MM-DD date
+export function nextDay(date: string): string {
+    return new Date(new Date(`${date}T00:00:00.000Z`).getTime() + 24 * 60 * 60 * 1000).toISOString().substring(0, 10);
+}
+
+// The calendar date (YYYY-MM-DD) of an instant in an IANA time zone
+export function dateIn(time: Date, timeZone: string = 'UTC'): string {
+    const {year, month, day} = zoneParts(time.getTime(), timeZone);
+    return `${year}-${month}-${day}`;
+}
+
+// Throws unless the name is a time zone this runtime knows, e.g. 'UTC' or 'Europe/London'
+export function checkTimeZone(timeZone: string): void {
+    try {
+        new Intl.DateTimeFormat('en-US', {timeZone});
+    } catch {
+        throw new Error(`Unknown timezone: ${timeZone} (use an IANA name such as "Europe/London")`);
+    }
+}
+
+// The zone's offset from UTC at an instant, in ms (+9 h for Asia/Tokyo)
+function offsetMs(time: number, timeZone: string): number {
+    const {year, month, day, hour, minute, second} = zoneParts(time, timeZone);
+    const local = Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second));
+    return local - Math.floor(time / 1000) * 1000;
+}
+
+function zoneParts(time: number, timeZone: string): Record<string, string> {
+    const format = new Intl.DateTimeFormat('en-US', {
+        timeZone, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit',
+    });
+    return Object.fromEntries(format.formatToParts(new Date(time)).map(part => [part.type, part.value]));
+}

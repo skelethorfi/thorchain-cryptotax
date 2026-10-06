@@ -1,13 +1,11 @@
 import {CryptoTaxTransaction} from "./csv";
 import {IWallet} from "../../config/IWallet";
-import {DateRange} from "../../utils/DateRange";
+import {DateRange, nextDay, startOfDay} from "../../utils/DateRange";
 
 export interface CsvFile {
     name: string;
     rows: CryptoTaxTransaction[];
 }
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 // Which rows go in which CSV file, and how many rows the wallet files hold. Pure: the shell writes the
 // files (an empty file is not written) and logs the warnings.
@@ -17,8 +15,9 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 //                                 the period's rows of one wallet, for Summ to import
 //   <from>_<to>_THOR_thorchain_swaps.csv
 //                                 the period's rows of the 'thorchain' wallet (each from or to it)
-// Throws when a row in a period lands in no wallet file.
-export function csvFiles(rows: CryptoTaxTransaction[], ranges: DateRange[], wallets: IWallet[]): {files: CsvFile[]; exported: number; warnings: string[]} {
+// A period's days are calendar days in timeZone (docs/specs/periods.md). Throws when a row in a period lands
+// in no wallet file.
+export function csvFiles(rows: CryptoTaxTransaction[], ranges: DateRange[], wallets: IWallet[], timeZone: string = 'UTC'): {files: CsvFile[]; exported: number; warnings: string[]} {
     const warnings: string[] = [];
     const files: CsvFile[] = [{name: 'all.csv', rows}];
     const walletExchanges = getUniqueWalletExchanges(rows, warnings);
@@ -26,7 +25,7 @@ export function csvFiles(rows: CryptoTaxTransaction[], ranges: DateRange[], wall
     let count = 0;
 
     for (const range of ranges) {
-        const rangeRows = rows.filter(row => isInRange(row.timestamp, range));
+        const rangeRows = rows.filter(row => isInRange(row.timestamp, range, timeZone));
         expectedExportCount += rangeRows.length;
         files.push({name: `all-${range.from}_${range.to}.csv`, rows: rangeRows});
 
@@ -58,10 +57,10 @@ export function csvFiles(rows: CryptoTaxTransaction[], ranges: DateRange[], wall
     return {files, exported: count, warnings};
 }
 
-// A period runs from 00:00 UTC on its first day to the end of its last day
-export function isInRange(time: Date, range: DateRange): boolean {
-    const from = new Date(range.from).getTime();
-    const to = new Date(range.to).getTime() + DAY_MS;
+// A period runs from midnight at the start of its first day to midnight at the end of its last day, in timeZone
+export function isInRange(time: Date, range: DateRange, timeZone: string = 'UTC'): boolean {
+    const from = startOfDay(range.from, timeZone);
+    const to = startOfDay(nextDay(range.to), timeZone);
     return time.getTime() >= from && time.getTime() < to;
 }
 
