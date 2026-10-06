@@ -20,7 +20,7 @@ feeCurrency: ""
 feeAmount: ""
 from: mayaprotocol
 to: maya136tmapkujkwewjncdx3jck2amp4y0twh2ypzsq
-blockchain: MayaProtocol
+blockchain: Mayachain
 id: 2025-10-06T01:34:01.409Z.remove-liquidity.CACAO
 description: 4/4 - Remove liquidity CACAO from MayaLP.THOR.RUNE (symmetric); F0090B6558270A00B6D228770C7C13F3B7B4F4A7DAA7F80EBA642D0AA7D67E54
 ---
@@ -43,6 +43,6 @@ feeCurrency: CACAO
 feeAmount: "0.2"
 from: maya136tmapkujkwewjncdx3jck2amp4y0twh2ypzsq
 to: mayaprotocol
-blockchain: MayaProtocol
+blockchain: Mayachain
 id: 2025-10-06T01:34:01.409Z.return-lp-token
 description: 1/4 - Return LP token to MayaLP.THOR.RUNE (symmetric); F0090B6558270A00B6D228770C7C13F3B7B4F4A7DAA7F80EBA642D0AA7D67E54

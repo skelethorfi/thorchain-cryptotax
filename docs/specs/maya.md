@@ -32,7 +32,7 @@ only `maya1` wallets: swaps and liquidity adds are often started from a `thor1`,
 | Native asset decimals | 8 | **10** |
 | Other asset decimals | 8 | 8, except the MAYA token (`MAYA.MAYA` / `MAYA`), which is **4** |
 | Counterparty in `from` / `to` | `thorchain` | `mayaprotocol` |
-| Blockchain value for the native chain | `THORChain` | `MayaProtocol` (not yet confirmed in Summ, which lists Maya Protocol as `Mayachain`; see below) |
+| Blockchain value for the native chain | `THORChain` | `Mayachain` (Summ's name; Summ has no Maya Protocol chain to attach rows to; see below) |
 | LP token | `ThorLP.<pool>` | `MayaLP.<pool>` |
 | Native address prefix | `thor1` | `maya1` |
 | Default inbound gas when node data is missing | 0.02 RUNE (see `fees.md`) | 0.2 CACAO for CACAO inputs (Mayanode `NativeTransactionFee`, `2000000000` in constants and mimir on 2026-10-01; assumed unchanged historically); 0.02 RUNE for RUNE inputs (sent on THORChain); none for other inputs, as Maya node data is not fetched |
@@ -43,10 +43,13 @@ Decimals were checked on 2026-10-01 against live pool depths: Midgard's
 as 1e4.
 
 The blockchain value: Summ lists Maya Protocol as `Mayachain` (integration id
-`mayachain`). Whether it also recognises `MayaProtocol` is not yet confirmed,
-and a value it does not recognise leaves the row with no chain (`assets.md`).
-The value is set in one place (`src/domain/Protocol.ts`), to be changed if a
-Maya Protocol CSV upload shows that Summ does not attach `MayaProtocol`.
+`mayachain`, CSV and API import only). Its blockchains, the chains a row can
+be attached to, include `thorchain` and `kujira` but not Maya Protocol, so a
+Maya Protocol row gets no chain whatever the column says: a test upload with
+`Mayachain`, `mayachain`, `MayaProtocol` and a blank value gave no chain on
+any row. Rows are still identified by their import source (Mayachain). The
+exporter writes `Mayachain`, Summ's own name, which is the likeliest to match
+if Summ adds the chain. It is set in one place (`src/domain/Protocol.ts`).
 
 ## Required behaviour
 
@@ -94,7 +97,7 @@ skipped, as on THORChain.
 ### Blockchain values
 
 As on THORChain, every row uses the protocol's blockchain name for its native
-chain (`MayaProtocol`, and `THORChain` for RUNE), and Midgard's chain id for
+chain (`Mayachain`, and `THORChain` for RUNE), and Midgard's chain id for
 an L1 chain (`KUJI`, `BTC`, …). See `assets.md`.
 
 ## Golden cases

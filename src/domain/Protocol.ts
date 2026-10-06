@@ -56,8 +56,9 @@ export const MAYA: Protocol = {
     id: 'maya',
     counterparty: 'mayaprotocol',
     nativeChain: 'MAYA',
-    // Summ ignores blockchain values it does not recognise; to be confirmed with a manual CSV upload
-    blockchain: 'MayaProtocol',
+    // Summ's name for Maya Protocol. Summ has no Maya Protocol chain to attach a row to (its blockchain
+    // list has none), so no value gives these rows a chain today; this one matches Summ's catalogue.
+    blockchain: 'Mayachain',
     nativeAsset: 'MAYA.CACAO',
     nativeAddressPrefix: 'maya1',
     lpTokenPrefix: 'MayaLP',

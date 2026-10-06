@@ -17,7 +17,7 @@ blockchain is Maya Protocol's (`maya.md`).
 
 Every row follows the Blockchain column above, whatever its type: swaps, fees,
 liquidity deposits and withdrawals, and sends alike. A protocol's own chain is
-always its name (`THORChain`, `MayaProtocol`), never Midgard's chain id
+always Summ's name for it (`THORChain`, `Mayachain`), never Midgard's chain id
 (`THOR`, `MAYA`); an L1 chain keeps Midgard's id (`BTC`, `KUJI`).
 
 Why:
@@ -72,6 +72,8 @@ prices).
 - April 2026 to October 2026: most rows had `THORChain`, but liquidity
   deposit and withdrawal rows and sends kept Midgard's chain id
   (`THOR`, `MAYA`) for a protocol-native asset, so Summ gave them no chain.
+  Maya Protocol's other rows had `MayaProtocol`; all now have `Mayachain`
+  (`maya.md`).
 
 A holding open when its name changes splits into two balances in Summ (the
 old name goes negative). Check positions open across a re-export.
