@@ -68,15 +68,3 @@ export class TcyDistributionService {
         return {address, distributions};
     }
 }
-
-async function test() {
-    const address = ''; // Example address
-    const service = new TcyDistributionService();
-    const distribution = await service.getTcyDistribution(address);
-    console.log(distribution);
-}
-
-if (require.main === module) {
-    console.log('Test: ' + __filename);
-    test();
-}
