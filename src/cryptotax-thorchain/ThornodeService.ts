@@ -38,15 +38,3 @@ export class ThornodeService {
         return {data: tx, url: `${API_URLS.thornode}/thorchain/tx/status/${hash}`};
     }
 }
-
-async function test() {
-    const hash = '';
-    const thornode = new ThornodeService();
-    const tx = await thornode.getTxStatus(hash);
-    console.log(tx);
-}
-
-if (require.main === module) {
-    console.log('Test: ' + __filename);
-    test();
-}

@@ -1,5 +1,4 @@
 import {describe, expect, test} from "@jest/globals";
-import fs from "fs-extra";
 import {interpret} from "../src/interpret/registry";
 import {RawBundle} from "../src/sources/RawBundle";
 import {MAYA, THORCHAIN} from "../src/protocols/Protocol";
@@ -10,12 +9,12 @@ const midgardBundle = (action: any, protocol = THORCHAIN): RawBundle =>
 
 describe('interpret', () => {
     test('returns a failure with the action context instead of throwing', () => {
-        const action = fs.readJSONSync('test/testdata/Switch_KUJI.json');
+        const bundle = toBundle(readCaseInput('test/cases/switch/gaia-kuji'));
 
         // Make the asset string invalid
-        action.in[0].coins[0].asset = 'INVALID';
+        (bundle.data as any).in[0].coins[0].asset = 'INVALID';
 
-        expect(interpret(midgardBundle(action), THORCHAIN)).toStrictEqual({activities: [], rows: [], issues: [{
+        expect(interpret(bundle, THORCHAIN)).toStrictEqual({activities: [], rows: [], issues: [{
             kind: 'failed',
             message: '[Midgard] Failed to parse asset string: "INVALID". type: switch, txid: 0000000000000000000000000000000000000000000000000000000000000000',
         }]});

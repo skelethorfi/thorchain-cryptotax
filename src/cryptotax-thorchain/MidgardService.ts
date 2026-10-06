@@ -64,15 +64,3 @@ export class MidgardService {
         return actions;
     }
 }
-
-async function test() {
-    const address = '';
-    const midgard = new MidgardService();
-    const actions: Action[] = await midgard.getActions(address);
-    console.log(actions.length);
-}
-
-if (require.main === module) {
-    console.log('Test: ' + __filename);
-    test();
-}
