@@ -9,7 +9,7 @@ feeCurrency: CACAO
 feeAmount: "0.2"
 from: maya1s7naj6kzxpudy64zka8h5w7uffnzmhzlue4w3p
 to: mayaprotocol
-blockchain: MayaProtocol
+blockchain: Mayachain
 referencePricePerUnit: "0.19053173093158599"
 referencePriceCurrency: USD
 id: 2025-10-03T02:11:13.439Z.maya.bridge-trade-out

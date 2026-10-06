@@ -7,6 +7,6 @@ feeCurrency: RUNE
 feeAmount: "0.02"
 from: thor1-user-wallet-11111
 to: thor1-user-wallet-22222
-blockchain: THOR
+blockchain: THORChain
 id: 2020-12-31T13:00:00.000Z.send
 description: Send 1.23 Synth DOGE; 0000000000000000000000000000000000000000000000000000000000000000

@@ -408,7 +408,7 @@ describe('swap', () => {
         const result = swap(action, [], MAYA);
 
         expect(result).toHaveLength(2);
-        expect(result[0].blockchain).toBe('MayaProtocol');
+        expect(result[0].blockchain).toBe('Mayachain');
     });
 
     test('Maya: a RUNE input still pays THORChain gas', () => {

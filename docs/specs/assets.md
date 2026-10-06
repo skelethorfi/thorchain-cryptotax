@@ -12,11 +12,23 @@ the asset lives:
 | `BTC-BTC`, `ETH-USDC-0X…` | secured asset | THORChain | `BTC`, `USDC` (the L1 asset's name) | `THORChain` |
 | `X/RUJI` | Cosmos denom on THORChain (`x/ruji`), not a synth | THORChain | `RUJI` | `THORChain` |
 
-On Maya the synth prefix is `Maya` (`MayaSynth.BTC.BTC`) and the blockchain is
-Maya's.
+On Maya Protocol the synth prefix is `Maya` (`MayaSynth.BTC.BTC`) and the
+blockchain is Maya Protocol's (`maya.md`).
+
+Every row follows the Blockchain column above, whatever its type: swaps, fees,
+liquidity deposits and withdrawals, and sends alike. A protocol's own chain is
+always Summ's name for it (`THORChain`, `Mayachain`), never Midgard's chain id
+(`THOR`, `MAYA`); an L1 chain keeps Midgard's id (`BTC`, `KUJI`).
 
 Why:
 
+- Summ lists THORChain as `THORChain` (integration id `thorchain`). A test
+  upload of four otherwise identical rows into a THORChain wallet attached
+  `THORChain`, `thorchain` and a blank column to the `thorchain` chain (a
+  blank one is inferred from the wallet), and gave the `THOR` row no chain
+  at all. So `THOR` is worse than leaving the column blank. The row's
+  amounts and prices are unaffected; the chain is what Summ's transfer
+  matching and per-chain views use.
 - A synth is pool-backed exposure to another chain's asset, a different
   holding from that asset and held on a different chain. If both export as
   `BTC`, Summ mixes their balances and cost bases. The prefix says where it
@@ -57,6 +69,12 @@ prices).
 - April 2026 to October 2026: a synth was `BTC.BTC`, which reads like L1 BTC;
   trade and secured assets had the L1 chain as their blockchain; `x/ruji` was
   `X.RUJI`.
+- Before April 2026 every THORChain row had `THOR` as its blockchain.
+- April 2026 to October 2026: most rows had `THORChain`, but liquidity
+  deposit and withdrawal rows and sends kept Midgard's chain id
+  (`THOR`, `MAYA`) for a protocol-native asset, so Summ gave them no chain.
+  Maya Protocol's other rows had `MayaProtocol`; all now have `Mayachain`
+  (`maya.md`).
 
 A holding open when its name changes splits into two balances in Summ (the
 old name goes negative). Check positions open across a re-export.

@@ -18,7 +18,7 @@ describe('SendMapper', () => {
             {
                 "baseAmount": "1.23",
                 "baseCurrency": "DOGE",
-                "blockchain": "THOR",
+                "blockchain": "THORChain",
                 "description": "Send 1.23 Synth DOGE; 0000000000000000000000000000000000000000000000000000000000000000",
                 "feeAmount": "0.02",
                 "feeCurrency": "RUNE",
@@ -90,7 +90,7 @@ describe('SendMapper', () => {
             {
                 "baseAmount": "0.00000001",
                 "baseCurrency": "RUNE",
-                "blockchain": "THOR",
+                "blockchain": "THORChain",
                 "description": "Send 0.00000001 RUNE; 0000000000000000000000000000000000000000000000000000000000000000",
                 "feeAmount": "0.02",
                 "feeCurrency": "RUNE",
@@ -149,7 +149,7 @@ describe('SendMapper', () => {
             {
                 "baseAmount": "0.00000001",
                 "baseCurrency": "RUNE",
-                "blockchain": "THOR",
+                "blockchain": "THORChain",
                 "description": "Send 0.00000001 RUNE; 0000000000000000000000000000000000000000000000000000000000000000",
                 "feeAmount": "0.02",
                 "feeCurrency": "RUNE",
@@ -172,7 +172,7 @@ describe('SendMapper', () => {
             {
                 "baseAmount": "10000",
                 "baseCurrency": "TCY",
-                "blockchain": "THOR",
+                "blockchain": "THORChain",
                 "description": "Send 10000 TCY; 0000000000000000000000000000000000000000000000000000000000000000",
                 "feeAmount": "0.02",
                 "feeCurrency": "RUNE",

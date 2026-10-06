@@ -3,7 +3,7 @@ import {formatAmount} from "../../domain/Amount";
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
 import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
 import {getLpTokenName} from "./ThorchainUtils";
-import {Protocol} from "../../domain/Protocol";
+import {formatBlockchain, Protocol} from "../../domain/Protocol";
 import {plusSeconds} from "./common";
 
 // Summ needs a wallet for every row; an old deposit can have none
@@ -55,7 +55,7 @@ export function addLiquidityRows(activity: Activity, protocol: Protocol): Crypto
             ...feeFor(activity, deposit, protocol),
             from,
             to: protocol.counterparty,
-            blockchain,
+            blockchain: formatBlockchain(blockchain),
             id: `${idPrefix}.add-liquidity.${currency}`,
             description: `${i + 1}/${total} - Add liquidity ${currency} to ${lpToken} (${symmetry}); ${txId}`,
         };
@@ -115,7 +115,7 @@ export function withdrawRows(activity: Activity, protocol: Protocol): CryptoTaxT
             feeAmount: '',
             from: protocol.counterparty,
             to: out.wallet,
-            blockchain,
+            blockchain: formatBlockchain(blockchain),
             id: `${idPrefix}.remove-liquidity.${currency}`,
             description: `${total - i}/${total} - Remove liquidity ${currency} from ${lpToken} (${symmetry}); ${txId}`,
         };

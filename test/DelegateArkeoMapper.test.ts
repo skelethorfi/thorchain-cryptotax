@@ -18,7 +18,7 @@ describe('DelegateArkeoMapper', () => {
             {
                 "baseAmount": "0.00000001",
                 "baseCurrency": "RUNE",
-                "blockchain": "THOR",
+                "blockchain": "THORChain",
                 "description": "1/1 - DelegateArkeoWallet; 0000000000000000000000000000000000000000000000000000000000000000",
                 "feeAmount": "0.02",
                 "feeCurrency": "RUNE",

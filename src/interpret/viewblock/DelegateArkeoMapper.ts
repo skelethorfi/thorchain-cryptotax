@@ -4,6 +4,7 @@ import {ViewblockCoin, ViewblockEvent, ViewblockEventSend, ViewblockTx} from "..
 import {baseToAssetAmountString} from "../../utils/Amount";
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from "../../export/summ/csv";
 import assert from "assert";
+import {THORCHAIN} from "../../domain/Protocol";
 
 export class DelegateArkeoMapper extends BaseMapper {
     constructor(tx: ViewblockTx, wallet: string) {
@@ -46,7 +47,7 @@ export class DelegateArkeoMapper extends BaseMapper {
         ctcTx.feeAmount = baseToAssetAmountString(event.fee.amount[0].amount);
         ctcTx.from = from;
         ctcTx.to = to;
-        ctcTx.blockchain = 'THOR'; // Sends/receives will only be for thorchain
+        ctcTx.blockchain = THORCHAIN.blockchain; // Sends/receives will only be for thorchain
         ctcTx.id = this.getId(ctcTx.type);
         ctcTx.description = `1/1 - DelegateArkeoWallet; ${this.tx.hash}`;
 
