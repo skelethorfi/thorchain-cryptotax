@@ -37,10 +37,7 @@ export class BaseMapper implements IThorchainMapper {
             throw new Error('only send events are currently supported');
         }
 
-        // outdated
-        // const events = this.tx.extra.events.filter(event => event.name === name);
-
-        // mapping new tx format to old format
+        // Viewblock's v2 tx as a send event
 
         const msgs = this.tx.msgs.filter(msg => TypeMsgSends.includes(msg['@type']));
         assert.equal(msgs.length, 1);
@@ -72,10 +69,6 @@ export class BaseMapper implements IThorchainMapper {
         };
 
         return event;
-    }
-
-    getEvents(name: string): ViewblockEvent[] {
-        return this.tx.extra.events.filter(event => event.name === name);
     }
 
     toCtc(): CryptoTaxTransaction[] {

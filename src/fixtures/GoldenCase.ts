@@ -6,7 +6,6 @@ import {TxStatusResponse} from "@xchainjs/xchain-thornode";
 import {CryptoTaxTransaction} from "../cryptotax";
 import {ViewblockTx} from "../viewblock";
 import {runBundle} from "../pipeline/run";
-import {ITaxConfig} from "../thorchain-exporter/ITaxConfig";
 import {TcyDistributionItem} from "../cryptotax-thorchain/TcyDistributionService";
 import {getProtocol, ProtocolId} from "../protocols/Protocol";
 import {CosmosTx} from "../cryptotax-thorchain/CosmosTxService";

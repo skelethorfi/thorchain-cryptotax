@@ -1,26 +1,8 @@
 import { TxStatusResponse } from '@xchainjs/xchain-thornode';
 import { parseMidgardAsset, parseMidgardPool } from './MidgardUtils';
-import { baseToAssetAmountString } from '../utils/Amount';
 import { inboundGas } from '../interpret/midgard/gas';
 import { formatAmount } from '../domain/Amount';
-import { formatBlockchain, Protocol, THORCHAIN } from '../protocols/Protocol';
-
-export function getDefaultRuneGas(): string {
-    return '2000000';
-}
-
-// THORChain's native transaction fee, paid on any transaction sent from a THORChain wallet
-// (MsgDeposit/MsgSend). See docs/specs/fees.md.
-export function getNativeRuneFee(): { feeCurrency: string; feeAmount: string } {
-    return {
-        feeCurrency: 'RUNE',
-        feeAmount: baseToAssetAmountString(getDefaultRuneGas()),
-    };
-}
-
-export function formatBlockchainForOutput(blockchain: string): string {
-    return formatBlockchain(blockchain);
-}
+import { Protocol, THORCHAIN } from '../protocols/Protocol';
 
 // The fee columns for an inbound transaction: its gas leg, named for the CSV (docs/specs/fees.md)
 export function getInboundFee(

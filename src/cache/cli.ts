@@ -54,7 +54,7 @@ export function importCache(store: RecordStore, cacheRoot: string): {[source: st
             addList(wallet, keys, origin);
         }
 
-        importStore(cacheRoot, source, definition, count, add, addList);
+        importStore(cacheRoot, source, definition, add, addList);
     }
 
     return counts;
@@ -92,7 +92,7 @@ function importItems(definition: ListSource, wallet: string, all: any[], count: 
 
 // A store, in either layout. A record's key is recomputed from its data where the source has a keyOf, so
 // a store made with older keys gets today's.
-function importStore(root: string, source: string, definition: ListSource | {kind: 'record'}, count: Counts,
+function importStore(root: string, source: string, definition: ListSource | {kind: 'record'},
                      add: (key: string, data: any, wallet: string, origin: Origin) => void,
                      addList: (wallet: string, keys: string[], origin: Origin) => void) {
     const keyOf = definition.kind === 'list' ? definition.options('').keyOf : undefined;
