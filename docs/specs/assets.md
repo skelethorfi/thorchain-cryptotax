@@ -15,8 +15,18 @@ the asset lives:
 On Maya the synth prefix is `Maya` (`MayaSynth.BTC.BTC`) and the blockchain is
 Maya's.
 
+Every row follows the Blockchain column above, whatever its type: swaps, fees,
+liquidity deposits and withdrawals, and sends alike. A protocol's own chain is
+always its name (`THORChain`, `MayaProtocol`), never Midgard's chain id
+(`THOR`, `MAYA`); an L1 chain keeps Midgard's id (`BTC`, `KUJI`).
+
 Why:
 
+- Summ recognises `THORChain` and attaches the row to its THORChain chain. It
+  does not recognise `THOR`: such a row gets no chain at all, which is worse
+  than a blank column, because for a blank one Summ infers the chain from the
+  wallet. The row's amounts and prices are unaffected; the chain is what
+  Summ's transfer matching and per-chain views use.
 - A synth is pool-backed exposure to another chain's asset, a different
   holding from that asset and held on a different chain. If both export as
   `BTC`, Summ mixes their balances and cost bases. The prefix says where it
@@ -57,6 +67,10 @@ prices).
 - April 2026 to October 2026: a synth was `BTC.BTC`, which reads like L1 BTC;
   trade and secured assets had the L1 chain as their blockchain; `x/ruji` was
   `X.RUJI`.
+- Before April 2026 every THORChain row had `THOR` as its blockchain.
+- April 2026 to October 2026: most rows had `THORChain`, but liquidity
+  deposit and withdrawal rows and sends kept Midgard's chain id
+  (`THOR`, `MAYA`) for a protocol-native asset, so Summ gave them no chain.
 
 A holding open when its name changes splits into two balances in Summ (the
 old name goes negative). Check positions open across a re-export.

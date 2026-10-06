@@ -32,7 +32,7 @@ only `maya1` wallets: swaps and liquidity adds are often started from a `thor1`,
 | Native asset decimals | 8 | **10** |
 | Other asset decimals | 8 | 8, except the MAYA token (`MAYA.MAYA` / `MAYA`), which is **4** |
 | Counterparty in `from` / `to` | `thorchain` | `mayaprotocol` |
-| Blockchain value for the native chain | `THORChain` | `MayaProtocol` (to be confirmed in Summ; see below) |
+| Blockchain value for the native chain | `THORChain` | `MayaProtocol` (Summ has no Maya chain yet; see below) |
 | LP token | `ThorLP.<pool>` | `MayaLP.<pool>` |
 | Native address prefix | `thor1` | `maya1` |
 | Default inbound gas when node data is missing | 0.02 RUNE (see `fees.md`) | 0.2 CACAO for CACAO inputs (Mayanode `NativeTransactionFee`, `2000000000` in constants and mimir on 2026-10-01; assumed unchanged historically); 0.02 RUNE for RUNE inputs (sent on THORChain); none for other inputs, as Maya node data is not fetched |
@@ -42,10 +42,10 @@ Decimals were checked on 2026-10-01 against live pool depths: Midgard's
 1e10 and pool assets as 1e8, and the MAYA pool only matches when MAYA is read
 as 1e4.
 
-The blockchain value: Summ ignores a blockchain it does not recognise, so a
-wrong value is harmless but loses the hint. `MayaProtocol` is kept in one place
-(`src/domain/Protocol.ts`) so it can be corrected once confirmed with a manual CSV
-upload to Summ.
+The blockchain value: Summ gives no chain to a row whose blockchain it does
+not recognise (`assets.md`), and it has no Maya chain today, so Maya rows get
+no chain whatever the value. `MayaProtocol` is kept in one place
+(`src/domain/Protocol.ts`) so it can be changed if Summ adds one.
 
 ## Required behaviour
 
@@ -92,9 +92,9 @@ skipped, as on THORChain.
 
 ### Blockchain values
 
-As on THORChain, swap rows use the protocol's blockchain name for its native
-chain (`MayaProtocol`), while liquidity deposit and withdrawal rows use the
-Midgard chain id (`MAYA`, `THOR`, `KUJI`, …).
+As on THORChain, every row uses the protocol's blockchain name for its native
+chain (`MayaProtocol`, and `THORChain` for RUNE), and Midgard's chain id for
+an L1 chain (`KUJI`, `BTC`, …). See `assets.md`.
 
 ## Golden cases
 

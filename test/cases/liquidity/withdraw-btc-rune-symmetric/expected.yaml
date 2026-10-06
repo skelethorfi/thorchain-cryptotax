@@ -20,7 +20,7 @@ feeCurrency: ""
 feeAmount: ""
 from: thorchain
 to: thor1ef95h5r7xcvahpw480pacslhutw6t6770phu0z
-blockchain: THOR
+blockchain: THORChain
 id: 2022-04-08T16:32:51.962Z.remove-liquidity.RUNE
 description: 4/4 - Remove liquidity RUNE from ThorLP.BTC.BTC (symmetric); 3C909D763AC1102872E14FE402D04354AE0691E76D24844E6AB86E05F184B0C6
 ---
