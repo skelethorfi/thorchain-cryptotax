@@ -1,12 +1,9 @@
 import {RecordStore} from "../cache/RecordStore";
 import {MIDGARD_LIST} from "../cache/Sources";
-import {Action, Configuration, MidgardApi} from '@xchainjs/xchain-midgard';
+import {Action, Configuration, DefaultApi} from '@xchainjs/xchain-midgard';
 import assert from "assert";
-import axios from "axios";
-import axiosThrottle from 'axios-request-throttle';
 import {API_URLS} from "../config/apiUrls";
-
-axiosThrottle.use(axios, { requestsPerSecond: 1 });
+import {http} from "../sources/http";
 
 // https://github.com/xchainjs/xchainjs-lib/tree/master/packages/xchain-midgard
 // midgard api: https://midgard.thorswap.net/v2/doc
@@ -18,12 +15,12 @@ axiosThrottle.use(axios, { requestsPerSecond: 1 });
 // MIDGARD_URL_B: "https://midgard.thorswap.net/v2/actions?limit=50&address={WALLETS}&offset={OFFSET}"
 
 export class MidgardService {
-    api: MidgardApi;
+    api: DefaultApi;
 
     // source: the store folder, e.g. 'midgard' or 'maya-midgard'
     constructor(private store: RecordStore = new RecordStore('_cache'), private source: string = 'midgard',
                 private basePath: string = API_URLS.midgard) {
-        this.api = new MidgardApi(new Configuration({basePath}));
+        this.api = new DefaultApi(new Configuration({basePath}), basePath, http);
     }
 
     async getActions(address: string): Promise<Action[]> {

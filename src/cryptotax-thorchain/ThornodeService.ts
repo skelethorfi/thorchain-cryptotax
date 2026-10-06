@@ -1,21 +1,19 @@
 import {Configuration, TransactionsApi, TxStatusResponse} from "@xchainjs/xchain-thornode";
-import axios from "axios";
-import axiosThrottle from 'axios-request-throttle';
 import {RecordStore} from "../cache/RecordStore";
 import {THORNODE_RULES} from "../cache/Sources";
 import {API_URLS} from "../config/apiUrls";
+import {http} from "../sources/http";
 
 // Seems like not all transactions may be on the latest API URL
 // Following how THORChain Explorer handles it - https://github.com/thorchain/thorchain-explorer-v2/blob/main/api/thornode.api.js
-axiosThrottle.use(axios, { requestsPerSecond: 1 });
 
 export class ThornodeService {
     api: TransactionsApi;
     archive: TransactionsApi;
 
     constructor(private store: RecordStore = new RecordStore('_cache'), private source: string = 'thornode') {
-        this.api = new TransactionsApi(new Configuration({basePath: API_URLS.thornode}));
-        this.archive = new TransactionsApi(new Configuration({basePath: API_URLS.thornodeArchive}));
+        this.api = new TransactionsApi(new Configuration({basePath: API_URLS.thornode}), API_URLS.thornode, http);
+        this.archive = new TransactionsApi(new Configuration({basePath: API_URLS.thornodeArchive}), API_URLS.thornodeArchive, http);
     }
 
     // date: of the action the tx belongs to; a tx status has no date of its own to be filed by

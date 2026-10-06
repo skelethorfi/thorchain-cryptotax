@@ -127,7 +127,9 @@ run.
 
 Each fetch is retried after a transient error (HTTP 5xx or 429, a connection
 reset, a timeout, a DNS failure), waiting 5 s, 20 s and then 60 s
-(`src/utils/Retry.ts`), and a request that hangs fails after 60 s. A run that
+(`src/utils/Retry.ts`). Requests to Midgard, THORNode and the TCY API go
+through one client (`src/sources/http.ts`): at most one per second, and one
+that hangs fails after 60 s. A run that
 still fails keeps what it stored so far, and can be run again.
 
 ### Config names
