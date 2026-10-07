@@ -12,8 +12,8 @@ to: thorchain
 blockchain: THORChain
 referencePricePerUnit: "0.3612794057368309"
 referencePriceCurrency: USD
-id: 2025-05-19T06:16:37.730Z.thorchain.bridge-trade-out
 description: 1/2 - Swap 50000 TCY to 9716.00781339 RUNE; A46848A2984FB8738BE9B41EB9C8ADA22854BE22F0DAF99B630184C7A172372D
+id: 2025-05-19T06:16:37.730Z.trade-out.0542bd7c9d97
 ---
 walletExchange: thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j
 timestamp: 2025-05-19T06:16:47.730Z
@@ -25,5 +25,5 @@ to: thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j
 blockchain: THORChain
 referencePricePerUnit: "1.7703625161270882"
 referencePriceCurrency: USD
-id: 2025-05-19T06:16:37.730Z.thorchain.bridge-trade-in
 description: 2/2 - Swap 50000 TCY to 9716.00781339 RUNE; A46848A2984FB8738BE9B41EB9C8ADA22854BE22F0DAF99B630184C7A172372D
+id: 2025-05-19T06:16:37.730Z.trade-in.db9b29b3aaac

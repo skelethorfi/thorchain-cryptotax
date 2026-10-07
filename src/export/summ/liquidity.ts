@@ -39,7 +39,6 @@ export function addLiquidityRows(activity: Activity, protocol: Protocol): Crypto
     const symmetry = describe(activity, deposits.length);
     const total = deposits.length + 2;
     const txId = deposits[0].txid ?? '';
-    const idPrefix = activity.time.toISOString();
     const receiver = position.wallet || MISSING_ADDRESS;
 
     const rows: CryptoTaxTransaction[] = deposits.map((deposit, i) => {
@@ -56,7 +55,7 @@ export function addLiquidityRows(activity: Activity, protocol: Protocol): Crypto
             from,
             to: protocol.counterparty,
             blockchain: formatBlockchain(blockchain),
-            id: `${idPrefix}.add-liquidity.${currency}`,
+            trace: {role: 'add', asset: deposit.asset.notation},
             description: `${i + 1}/${total} - Add liquidity ${currency} to ${lpToken} (${symmetry}); ${txId}`,
         };
     });
@@ -71,7 +70,7 @@ export function addLiquidityRows(activity: Activity, protocol: Protocol): Crypto
         from: protocol.counterparty,
         to: receiver,
         blockchain: protocol.blockchain,
-        id: `${idPrefix}.receive-lp-token`,
+        trace: {role: 'lp-in'},
         description: `${total - 1}/${total} - Receive LP token from ${lpToken} (${symmetry}); ${txId}`,
     }, {
         walletExchange: receiver,
@@ -81,7 +80,7 @@ export function addLiquidityRows(activity: Activity, protocol: Protocol): Crypto
         baseAmount: quote.amount,
         from: protocol.counterparty,
         to: receiver,
-        id: `${idPrefix}.spam`,
+        trace: {role: 'price-helper'},
         description: `${total}/${total} - Dummy transaction to get market price to then manually apply to the receive LP token transaction ${lpToken} (${symmetry}); ${txId}`,
     });
 
@@ -99,7 +98,6 @@ export function withdrawRows(activity: Activity, protocol: Protocol): CryptoTaxT
     const symmetry = describe(activity, paidOut.length);
     const total = paidOut.length + 2;
     const txId = position.txid ?? '';
-    const idPrefix = activity.time.toISOString();
 
     const removals: CryptoTaxTransaction[] = ordered.map((out, i) => {
         const {blockchain, currency} = parseMidgardAsset(out.asset.notation, protocol);
@@ -116,7 +114,7 @@ export function withdrawRows(activity: Activity, protocol: Protocol): CryptoTaxT
             from: protocol.counterparty,
             to: out.wallet,
             blockchain: formatBlockchain(blockchain),
-            id: `${idPrefix}.remove-liquidity.${currency}`,
+            trace: {role: 'remove', asset: out.asset.notation},
             description: `${total - i}/${total} - Remove liquidity ${currency} from ${lpToken} (${symmetry}); ${txId}`,
         };
     });
@@ -134,7 +132,7 @@ export function withdrawRows(activity: Activity, protocol: Protocol): CryptoTaxT
             from: position.wallet,
             to: protocol.counterparty,
             blockchain: protocol.blockchain,
-            id: `${idPrefix}.return-lp-token`,
+            trace: {role: 'lp-out'},
             description: `1/${total} - Return LP token to ${lpToken} (${symmetry}); ${txId}`,
         },
         {
@@ -145,7 +143,7 @@ export function withdrawRows(activity: Activity, protocol: Protocol): CryptoTaxT
             baseAmount: quote.amount,
             from: position.wallet,
             to: protocol.counterparty,
-            id: `${idPrefix}.spam`,
+            trace: {role: 'price-helper'},
             description: `2/${total} - Dummy transaction to get market price to then manually apply to the return LP token transaction ${lpToken} (${symmetry}); ${txId}`,
         },
         ...removals,

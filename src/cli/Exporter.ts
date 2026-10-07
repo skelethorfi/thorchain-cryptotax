@@ -1,7 +1,7 @@
 import {Viewblock} from "../sources/viewblock";
 import fs from "fs-extra";
 import {format} from 'date-fns-tz';
-import {CryptoTaxTransaction, writeCsv} from "../export/summ/csv";
+import {CryptoTaxTransaction, renderRowIds, ROW_IDS_FILE, writeCsv} from "../export/summ/csv";
 import {MidgardService} from "../sources/thorchain/MidgardService";
 import {ThornodeService} from "../sources/thorchain/ThornodeService";
 import {CosmosTxService} from "../sources/thorchain/CosmosTxService";
@@ -220,6 +220,8 @@ export class Exporter {
         const {files, exported, warnings} = csvFiles(txs, ranges, this.config.wallets, this.config.timezone);
         warnings.forEach(warning => this.report.warn(`WARN: ${warning}`));
         files.forEach(file => writeCsv(path.join(outputPath, file.name), file.rows));
+        // Next to csv/, so it is not uploaded: it names wallets and records
+        fs.outputFileSync(path.join(path.dirname(outputPath), ROW_IDS_FILE), renderRowIds(files[0].rows));
         this.report.info(`Total exported: ${exported}`);
     }
 

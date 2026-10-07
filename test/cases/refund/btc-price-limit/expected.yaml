@@ -8,8 +8,8 @@ feeAmount: "0.0000166"
 from: bc1qkk788zfqyh7pgjke63xpg5zrlf27q359ke3x5p
 to: thorchain
 blockchain: BTC
-id: 2026-10-01T16:32:12.565Z.refund
 description: "refund (B8E65083589682E5F08EA61CB7502BB297AA7DE16D9F4FB25879272E873AD793): emit asset 1203549 less than price limit 1203965"
+id: 2026-10-01T16:32:12.565Z.failed-out.cc4280490225
 ---
 walletExchange: bc1qkk788zfqyh7pgjke63xpg5zrlf27q359ke3x5p
 timestamp: 2026-10-01T16:32:12.565Z
@@ -19,5 +19,5 @@ baseAmount: "0.00003735"
 from: bc1qkk788zfqyh7pgjke63xpg5zrlf27q359ke3x5p
 to: thorchain
 blockchain: BTC
-id: 2026-10-01T16:32:12.565Z.refund-fee
 description: "refund (B8E65083589682E5F08EA61CB7502BB297AA7DE16D9F4FB25879272E873AD793): kept by thorchain, 0.0120779 BTC sent, 0.01204055 BTC returned in 9FFC5E65343D05E872C047BB5A381807ED602A8561AE6E23292F9ED97DF78D46"
+id: 2026-10-01T16:32:12.565Z.kept.27075ec046e2

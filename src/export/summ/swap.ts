@@ -17,7 +17,6 @@ export function swapRows(activity: Activity, protocol: Protocol): CryptoTaxTrans
     const swap = `Swap ${input.amount} ${synth(sent.asset.notation)}${input.displayCurrency} to ${output.amount} ${synth(received.asset.notation)}${output.displayCurrency}`;
     const returnedNote = returned ? ` (${named(returned, protocol).amount} ${input.displayCurrency} returned unfilled)` : '';
     const txId = activity.txids.in[0] ?? '';
-    const idPrefix = `${activity.time.toISOString()}.${protocol.id}`;
 
     return [
         {
@@ -33,7 +32,7 @@ export function swapRows(activity: Activity, protocol: Protocol): CryptoTaxTrans
             to: protocol.counterparty,
             blockchain: legBlockchain(sent, protocol),
             ...referencePrice(activity, 'midgard:swap.inPriceUSD'),
-            id: `${idPrefix}.bridge-trade-out`,
+            trace: {role: 'trade-out'},
             description: `1/2 - ${swap}${returnedNote}; ${txId}`,
         },
         {
@@ -46,7 +45,7 @@ export function swapRows(activity: Activity, protocol: Protocol): CryptoTaxTrans
             to: received.wallet,
             blockchain: legBlockchain(received, protocol),
             ...referencePrice(activity, 'midgard:swap.outPriceUSD'),
-            id: `${idPrefix}.bridge-trade-in`,
+            trace: {role: 'trade-in'},
             description: `2/2 - ${swap}; ${txId}`,
         },
     ];

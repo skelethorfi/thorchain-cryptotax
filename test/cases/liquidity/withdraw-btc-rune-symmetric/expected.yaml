@@ -8,8 +8,8 @@ feeAmount: ""
 from: thorchain
 to: bc1qn20y0larf5nq26a0hwjmz5e447s5r2t9cgcwxh
 blockchain: BTC
-id: 2022-04-08T16:32:51.962Z.remove-liquidity.BTC
 description: 3/4 - Remove liquidity BTC from ThorLP.BTC.BTC (symmetric); 3C909D763AC1102872E14FE402D04354AE0691E76D24844E6AB86E05F184B0C6
+id: 2022-04-08T16:32:51.962Z.remove.5eb3f9162bb6
 ---
 walletExchange: thor1ef95h5r7xcvahpw480pacslhutw6t6770phu0z
 timestamp: 2022-04-08T16:33:11.962Z
@@ -21,8 +21,8 @@ feeAmount: ""
 from: thorchain
 to: thor1ef95h5r7xcvahpw480pacslhutw6t6770phu0z
 blockchain: THORChain
-id: 2022-04-08T16:32:51.962Z.remove-liquidity.RUNE
 description: 4/4 - Remove liquidity RUNE from ThorLP.BTC.BTC (symmetric); 3C909D763AC1102872E14FE402D04354AE0691E76D24844E6AB86E05F184B0C6
+id: 2022-04-08T16:32:51.962Z.remove.bf6523f7929d
 ---
 walletExchange: thor1ef95h5r7xcvahpw480pacslhutw6t6770phu0z
 timestamp: 2022-04-08T16:33:01.962Z
@@ -31,8 +31,8 @@ baseCurrency: RUNE
 baseAmount: "10542.77310544"
 from: thor1ef95h5r7xcvahpw480pacslhutw6t6770phu0z
 to: thorchain
-id: 2022-04-08T16:32:51.962Z.spam
 description: 2/4 - Dummy transaction to get market price to then manually apply to the return LP token transaction ThorLP.BTC.BTC (symmetric); 3C909D763AC1102872E14FE402D04354AE0691E76D24844E6AB86E05F184B0C6
+id: 2022-04-08T16:32:51.962Z.price-helper.eb63fced6dd4
 ---
 walletExchange: thor1ef95h5r7xcvahpw480pacslhutw6t6770phu0z
 timestamp: 2022-04-08T16:32:51.962Z
@@ -44,5 +44,5 @@ feeAmount: "0.02"
 from: thor1ef95h5r7xcvahpw480pacslhutw6t6770phu0z
 to: thorchain
 blockchain: THORChain
-id: 2022-04-08T16:32:51.962Z.return-lp-token
 description: 1/4 - Return LP token to ThorLP.BTC.BTC (symmetric); 3C909D763AC1102872E14FE402D04354AE0691E76D24844E6AB86E05F184B0C6
+id: 2022-04-08T16:32:51.962Z.lp-out.c7801c380988

@@ -24,7 +24,7 @@ export function refundRows(activity: Activity, protocol: Protocol): CryptoTaxTra
         from: sent.wallet,
         to: protocol.counterparty,
         blockchain: formatBlockchain(blockchain),
-        id: `${time.toISOString()}.refund`,
+        trace: {role: 'failed-out'},
         description: `refund (${txId}): ${activity.details.reason}`,
     }];
 
@@ -42,7 +42,7 @@ export function refundRows(activity: Activity, protocol: Protocol): CryptoTaxTra
             from: sent.wallet,
             to: protocol.counterparty,
             blockchain: formatBlockchain(blockchain),
-            id: `${time.toISOString()}.refund-${stuck ? 'lost' : 'fee'}`,
+            trace: {role: 'kept'},
             description: stuck
                 ? `refund (${txId}): never paid out (still pending), ${sentAmount} ${currency} sent, ${returnedNote}`
                 : `refund (${txId}): kept by ${protocol.counterparty}, ${sentAmount} ${currency} sent, ${returnedNote}`,

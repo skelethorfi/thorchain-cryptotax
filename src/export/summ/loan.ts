@@ -25,7 +25,7 @@ export function loanOpenRows(activity: Activity, protocol: Protocol): CryptoTaxT
             from: collateral.wallet,
             to: protocol.counterparty,
             blockchain: formatBlockchain(input.blockchain),
-            id: `${time.toISOString()}.collateral-deposit`,
+            trace: {role: 'collateral-deposit'},
             description: `1/2 - ${description}`,
         },
         {
@@ -37,7 +37,7 @@ export function loanOpenRows(activity: Activity, protocol: Protocol): CryptoTaxT
             from: protocol.counterparty,
             to: loan.wallet,
             blockchain: formatBlockchain(output.blockchain),
-            id: `${time.toISOString()}.loan`,
+            trace: {role: 'loan'},
             description: `2/2 - ${description}`,
         },
     ];
@@ -62,7 +62,7 @@ export function loanRepayRows(activity: Activity, protocol: Protocol): CryptoTax
         from: repayment.wallet,
         to: protocol.counterparty,
         blockchain: formatBlockchain(input.blockchain),
-        id: `${time.toISOString()}.loan-repayment`,
+        trace: {role: 'repay'},
         description: `1/${collateralBack ? '2' : '1'} - LoanRepayment deposit ${input.currency} to repay ${collateral} loan. ${closure}; ${txId}`,
     }];
 
@@ -78,7 +78,7 @@ export function loanRepayRows(activity: Activity, protocol: Protocol): CryptoTax
             from: protocol.counterparty,
             to: collateralBack.wallet,
             blockchain: formatBlockchain(output.blockchain),
-            id: `${time.toISOString()}.collateral-withdrawal`,
+            trace: {role: 'collateral-withdrawal'},
             description: `2/2 - LoanRepayment deposit ${input.currency} to repay ${collateral} loan. Closed loan; ${txId}`,
         });
     }

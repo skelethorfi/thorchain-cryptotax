@@ -109,6 +109,10 @@ export interface CryptoTaxTransaction {
      */
     description?: string;
 
+    // Not a CSV column: what the row's ID is made from (docs/specs/periods.md, Row IDs). A mapper sets the role
+    // (and the leg's asset when one action has several rows of a role); exportSumm adds the record.
+    trace?: RowTrace;
+
     /**
      * Reference Price Per Unit (Optional)
      * The price per unit of the 'Base Currency'. If left blank, the price defaults to market price.
@@ -125,4 +129,13 @@ export interface CryptoTaxTransaction {
      * - If left blank but with Reference Price Per Unit filled, this defaults to USD.
      */
     referencePriceCurrency?: 'AUD' | 'USD';
+}
+
+export interface RowTrace {
+    // The store record of the action, e.g. 'midgard/swap.<txid>'
+    record?: string;
+    // What the row is in the action, e.g. 'trade-out', 'add', 'price-helper'
+    role: string;
+    // The leg's asset as the source names it, e.g. 'BTC.BTC', when the action has a row of this role per asset
+    asset?: string;
 }

@@ -8,8 +8,8 @@ feeAmount: ""
 from: bc1-user-wallet-aaaaa
 to: thorchain
 blockchain: BTC
-id: 2020-12-31T13:00:00.000Z.collateral-deposit
 description: 1/2 - LoanOpen deposit BTC to borrow RUNE; 0000000000000000000000000000000000000000000000000000000000000000
+id: 2020-12-31T13:00:00.000Z.collateral-deposit.413e5c7d3f2f
 ---
 walletExchange: thor1-user-wallet-11111
 timestamp: 2020-12-31T13:00:00.000Z
@@ -19,5 +19,5 @@ baseAmount: "4000"
 from: thorchain
 to: thor1-user-wallet-11111
 blockchain: THORChain
-id: 2020-12-31T13:00:00.000Z.loan
 description: 2/2 - LoanOpen deposit BTC to borrow RUNE; 0000000000000000000000000000000000000000000000000000000000000000
+id: 2020-12-31T13:00:00.000Z.loan.c986a014e2d4

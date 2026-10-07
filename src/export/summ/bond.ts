@@ -19,7 +19,7 @@ export function bondRows(activity: Activity, protocol: Protocol): CryptoTaxTrans
         from: isBond ? principal.wallet : protocol.counterparty,
         to: isBond ? protocol.counterparty : principal.wallet,
         blockchain: protocol.blockchain,
-        id: `${activity.time.toISOString()}.${activity.kind}`,
+        trace: {role: activity.kind},
         description: `1/1 - ${isBond ? 'Bond' : 'Unbond'} ${amount} ${displayCurrency} ${isBond ? 'to' : 'from'} ${activity.details.node}; ${activity.txids.in[0] ?? ''}`,
     }];
 }

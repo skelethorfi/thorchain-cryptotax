@@ -12,8 +12,8 @@ to: thorchain
 blockchain: DOGE
 referencePricePerUnit: "0.16062196514599122"
 referencePriceCurrency: USD
-id: 2024-06-06T23:16:56.359Z.thorchain.bridge-trade-out
 description: 1/2 - Swap 102.07047 DOGE to 2.700208 RUNE; BA6C60ED809F3CFED3CCB9E119A582024520A8D23C64B487AD0A44C83D3054EF
+id: 2024-06-06T23:16:56.359Z.trade-out.a24ab5320185
 ---
 walletExchange: thor16tfxw0z2nj2aqatrxfjaadw02j9mpzgndsehj6
 timestamp: 2024-06-06T23:17:06.359Z
@@ -25,5 +25,5 @@ to: thor16tfxw0z2nj2aqatrxfjaadw02j9mpzgndsehj6
 blockchain: THORChain
 referencePricePerUnit: "6.027024207031798"
 referencePriceCurrency: USD
-id: 2024-06-06T23:16:56.359Z.thorchain.bridge-trade-in
 description: 2/2 - Swap 102.07047 DOGE to 2.700208 RUNE; BA6C60ED809F3CFED3CCB9E119A582024520A8D23C64B487AD0A44C83D3054EF
+id: 2024-06-06T23:16:56.359Z.trade-in.b74f594b65a9

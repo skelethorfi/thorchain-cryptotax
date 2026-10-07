@@ -12,8 +12,8 @@ to: thorchain
 blockchain: THORChain
 referencePricePerUnit: "1.1146313541194603"
 referencePriceCurrency: USD
-id: 2023-05-24T10:15:31.478Z.thorchain.bridge-trade-out
 description: 1/2 - Swap 9985.25539977 RUNE to 6.10188379 ETH; 197E79C4AF5647087738DAA5D314F37C0435A455F804B4FA0AB4F72B087D70AB
+id: 2023-05-24T10:15:31.478Z.trade-out.5bf6dd94e146
 ---
 walletExchange: "0x5225c3548a8d143d68c4b266218c1f92add08ac4"
 timestamp: 2023-05-24T10:15:41.478Z
@@ -25,5 +25,5 @@ to: "0x5225c3548a8d143d68c4b266218c1f92add08ac4"
 blockchain: ETH
 referencePricePerUnit: "1822.2074678384636"
 referencePriceCurrency: USD
-id: 2023-05-24T10:15:31.478Z.thorchain.bridge-trade-in
 description: 2/2 - Swap 9985.25539977 RUNE to 6.10188379 ETH; 197E79C4AF5647087738DAA5D314F37C0435A455F804B4FA0AB4F72B087D70AB
+id: 2023-05-24T10:15:31.478Z.trade-in.9826aa355dfa

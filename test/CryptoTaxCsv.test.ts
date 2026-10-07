@@ -1,5 +1,5 @@
 import {describe, expect, test} from '@jest/globals';
-import {assignRowIds, csvField, renderCsv} from '../src/export/summ/csv';
+import {assignRowIds, csvField, renderCsv, rowId} from '../src/export/summ/csv';
 
 const row = (time: string, description = '') => ({timestamp: new Date(time), type: 'fee', baseCurrency: 'RUNE', baseAmount: '1', description} as any);
 
@@ -33,25 +33,30 @@ describe('CSV rendering', () => {
 });
 
 describe('row IDs', () => {
-    test("keep the mapper's ID, so a row's ID does not depend on the rows around it", () => {
-        const a = {...row('2021-01-01T00:00:00.000Z', 'a'), id: '2021-01-01T00:00:00.000Z.send'};
-        const b = {...row('2021-01-02T00:00:00.000Z', 'b'), id: '2021-01-02T00:00:00.000Z.send'};
-        const earlier = {...row('2020-06-01T00:00:00.000Z', 'earlier'), id: '2020-06-01T00:00:00.000Z.send'};
+    const time = new Date('2021-01-01T00:00:00.000Z');
+    const trace = {record: 'midgard/swap.ABC', role: 'trade-out', asset: 'BTC.BTC'};
 
-        expect(assignRowIds([a, b]).map(r => r.id)).toEqual(assignRowIds([earlier, a, b]).slice(1).map(r => r.id));
+    test('<action time>.<role>.<12 hex of the identity>, the same on every call', () => {
+        expect(rowId(time, 'thor1a', trace)).toMatch(/^2021-01-01T00:00:00\.000Z\.trade-out\.[0-9a-f]{12}$/);
+        expect(rowId(time, 'thor1a', trace)).toBe(rowId(time, 'thor1a', {...trace}));
     });
 
-    test('a second row with the same ID gets .2, by content, whatever the order the rows come in', () => {
-        const x = {...row('2021-01-01T00:00:00.000Z', 'swap from wallet 1'), id: 'T.bridge-trade-out'};
-        const y = {...row('2021-01-01T00:00:00.000Z', 'swap from wallet 2'), id: 'T.bridge-trade-out'};
-        const ids = (rows: any[]) => Object.fromEntries(assignRowIds(rows).map(r => [r.description, r.id]));
-
-        expect(ids([x, y])).toEqual({'swap from wallet 1': 'T.bridge-trade-out', 'swap from wallet 2': 'T.bridge-trade-out.2'});
-        expect(ids([y, x])).toEqual(ids([x, y]));
-        expect(x.id).toBe('T.bridge-trade-out');
+    test('differs by record, wallet, role and asset', () => {
+        const ids = [
+            rowId(time, 'thor1a', trace),
+            rowId(time, 'thor1a', {...trace, record: 'midgard/swap.ABD'}),
+            rowId(time, 'thor1b', trace),
+            rowId(time, 'thor1a', {...trace, role: 'trade-in'}),
+            rowId(time, 'thor1a', {...trace, asset: 'ETH.ETH'}),
+        ];
+        expect(new Set(ids).size).toBe(ids.length);
     });
 
-    test('a row without one is given its time and type', () => {
-        expect(assignRowIds([row('2021-01-01T00:00:00.000Z')])[0].id).toBe('2021-01-01T00:00:00.000Z.fee');
+    test('two rows with one ID, or a row without one, is an error', () => {
+        const a = {...row('2021-01-01T00:00:00.000Z'), id: 'X', trace};
+
+        expect(assignRowIds([a, {...a, id: 'Y'}])).toHaveLength(2);
+        expect(() => assignRowIds([a, {...a}])).toThrow('Two rows with the ID X (midgard/swap.ABC, trade-out)');
+        expect(() => assignRowIds([row('2021-01-01T00:00:00.000Z')])).toThrow('Row without an ID');
     });
 });

@@ -37,21 +37,43 @@ by its own timestamp.
 
 ## Row IDs
 
-Each row's `ID` column depends only on the action it comes from: the action's
-time and the row's role, e.g. `2023-01-06T21:53:15.332Z.refund-lost` or
-`<time>.thorchain.bridge-trade-out`. A row has the same ID in every file it is
-in (`all.csv`, the period's `all-…` file, its wallet's file) and in every run,
-so a row in Summ (which shows the ID as the "Tx Hash") is found in the CSVs by
-searching for its ID, and re-exporting a year does not change the IDs of rows
-that did not change. When two rows would get the same ID (two actions in one
-block), the second and later get `.2`, `.3`, …, in the order of the rows'
-contents. A row with no ID from its mapper gets `<time>.<type>`.
+Each row's `ID` column says what the row is, never its amounts or wording:
 
-Before October 2026 the ID was `<file>:<n>`, numbered from the oldest row in
-the file, so one added row renumbered every newer row.
+    <action time>.<role>.<hash>
+    2023-01-06T21:53:15.332Z.kept.1c69b789c6c0
+
+- **Action time**: the action's own time (UTC), so the rows of one action
+  sort together, also when a row's timestamp is offset (the LP token and
+  price-helper rows are 10 and 20 seconds later).
+- **Role**: what the row is in the action, one of `trade-out`, `trade-in`,
+  `bridge-out`, `bridge-in`, `add`, `remove`, `lp-in`, `lp-out`,
+  `price-helper`, `failed-out`, `kept` (what a refund did not return, as
+  `Fee` or `Lost`), `send`, `receive`, `bond`, `unbond`, `stake`, `unstake`,
+  `claim`, `income`, `name-fee`, `loan`, `repay`, `collateral-deposit`,
+  `collateral-withdrawal`.
+- **Hash**: the first 12 hex digits of SHA-256 over `v1|<record>|<wallet>|
+  <role>|<asset>`: the action's store record key (source, type, txid, and
+  the contract event or members where they tell actions apart,
+  `snapshots.md`), the row's wallet, the role, and the leg's asset as the
+  source names it (`BTC.BTC`) when an action has a row of the role per
+  asset. Twelve hex digits only have to tell apart the rows that share a
+  time and role.
+
+A row has the same ID in every file it is in and in every run. Summ shows it
+as the "Tx Hash", and keeps it on each leg, so a row in Summ is traced back by
+its ID: each run writes `row-ids.csv` next to `csv/` (not uploaded), with each
+ID's timestamp, type, wallet, record, role and asset. An ID changes only when
+what the row is changes (e.g. a mapper fix splits a row); `v1` changes if the
+format ever does. Two rows with one ID are a mapper bug, and stop the run.
+
+Summ is not known to de-duplicate on the ID when a file is uploaded again, so
+nothing relies on it.
 
 ## History
 
+- Before October 2026 the ID was `<file>:<n>`, numbered from the oldest row in
+  the file, so one added row renumbered every newer row; then briefly
+  `<action time>.<mapper's name>` with `.2` for a repeat.
 - Before October 2026, periods ended at 00:00 UTC on their last day, so a
   row later that day was in no period file (only in `all.csv`).
 - October 2026: periods include their whole last day (UTC), and the

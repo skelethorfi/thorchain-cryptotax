@@ -12,8 +12,8 @@ to: mayaprotocol
 blockchain: Mayachain
 referencePricePerUnit: "0.17493195023737712"
 referencePriceCurrency: USD
-id: 2025-10-22T05:31:32.329Z.maya.bridge-trade-out
 description: 1/2 - Swap 1300 CACAO to 268.53234636 RUNE; 2A97C214BB0AA5F9052E632B0966080148F1ABFF8089A66428D0C2E286C67DAD
+id: 2025-10-22T05:31:32.329Z.trade-out.d0c7115201a7
 ---
 walletExchange: thor1e0f53kfv9fghpxz8vrupl4kgulzg5cyapytl9g
 timestamp: 2025-10-22T05:31:42.329Z
@@ -25,5 +25,5 @@ to: thor1e0f53kfv9fghpxz8vrupl4kgulzg5cyapytl9g
 blockchain: THORChain
 referencePricePerUnit: "0.8425718692950063"
 referencePriceCurrency: USD
-id: 2025-10-22T05:31:32.329Z.maya.bridge-trade-in
 description: 2/2 - Swap 1300 CACAO to 268.53234636 RUNE; 2A97C214BB0AA5F9052E632B0966080148F1ABFF8089A66428D0C2E286C67DAD
+id: 2025-10-22T05:31:32.329Z.trade-in.8276df2740c1

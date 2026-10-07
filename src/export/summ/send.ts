@@ -28,7 +28,7 @@ export function sendRows(activity: Activity, protocol: Protocol): CryptoTaxTrans
         from: activity.details.from,
         to: activity.details.to,
         blockchain: protocol.blockchain,
-        id: `${activity.time.toISOString()}.${type}`,
+        trace: {role: isSend ? 'send' : 'receive'},
         description,
     }];
 }

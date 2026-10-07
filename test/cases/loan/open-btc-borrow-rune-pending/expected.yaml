@@ -8,8 +8,8 @@ feeAmount: ""
 from: bc1qzjvp0aqx8vt6hw06zpc2fhr2xxcujac32nrvu8
 to: thorchain
 blockchain: BTC
-id: 2024-02-20T19:01:15.710Z.collateral-deposit
 description: 1/2 - LoanOpen deposit BTC to borrow RUNE; 005959124F7D1AD405A406FD7029078C1FA45F9B827FCC85F15A3992245B8C61
+id: 2024-02-20T19:01:15.710Z.collateral-deposit.33816489dae4
 ---
 walletExchange: thor1hhjupkzy3t6ccelhz7qw8epyx4rm8a06nlm5ce
 timestamp: 2024-02-20T19:01:15.710Z
@@ -19,5 +19,5 @@ baseAmount: "644.53740577"
 from: thorchain
 to: thor1hhjupkzy3t6ccelhz7qw8epyx4rm8a06nlm5ce
 blockchain: THORChain
-id: 2024-02-20T19:01:15.710Z.loan
 description: 2/2 - LoanOpen deposit BTC to borrow RUNE; 005959124F7D1AD405A406FD7029078C1FA45F9B827FCC85F15A3992245B8C61
+id: 2024-02-20T19:01:15.710Z.loan.b85ce287d412
