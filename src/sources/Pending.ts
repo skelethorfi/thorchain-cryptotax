@@ -20,4 +20,6 @@ export interface NotFinal {
     key: string;
     action: Action;
     exported: boolean;
+    // A successful action of the same inbound txid that accounts for it (e.g. a savers deposit's add)
+    coveredBy?: string;
 }

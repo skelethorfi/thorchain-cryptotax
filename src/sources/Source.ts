@@ -64,21 +64,29 @@ export function shouldIncludeAction(action: Action): boolean {
 }
 
 // Midgard actions of one protocol. Only THORChain actions get their THORNode and Cosmos txs.
-// notFinal: collects every action whose status is not 'success', exported or not, for the run summary
+// notFinal: collects every action whose status is not 'success', exported or not, for the run summary.
+// stuckBefore: an action still pending from before this date is stuck (docs/specs/pending.md)
 export class MidgardSource implements Source {
     constructor(private protocol: Protocol, private midgard: MidgardService, private thornode: ThornodeService,
-                private cosmosTxs: CosmosTxService, private notFinal: NotFinal[] = []) {
+                private cosmosTxs: CosmosTxService, private notFinal: NotFinal[] = [], private stuckBefore?: Date) {
     }
 
     async bundlesFor(wallet: string): Promise<RawBundle[]> {
+        const actions = await this.midgard.getActions(wallet);
+        const keyOf = (action: Action) => getBundleKey({source: 'midgard', protocol: this.protocol.id, wallet, data: action, thornodeTxs: [], cosmosTxs: []});
+        // Successful actions by inbound txid; a send is left out, as it is how the wallet paid, not what it got
+        const settled = new Map(actions
+            .filter(action => action.status === ActionStatusEnum.Success && action.type !== ActionTypeEnum.Send && action.in[0]?.txID)
+            .map(action => [action.in[0].txID, keyOf(action)]));
         const bundles: RawBundle[] = [];
 
-        for (const action of await this.midgard.getActions(wallet)) {
-            const included = shouldIncludeAction(action);
+        for (const action of actions) {
+            let included = shouldIncludeAction(action);
 
             if (action.status !== ActionStatusEnum.Success) {
-                const key = getBundleKey({source: 'midgard', protocol: this.protocol.id, wallet, data: action, thornodeTxs: [], cosmosTxs: []});
-                this.notFinal.push({key, action, exported: included});
+                const coveredBy = settled.get(action.in[0]?.txID ?? '');
+                included ||= !coveredBy && this.isStuckRefund(action);
+                this.notFinal.push({key: keyOf(action), action, exported: included, ...(coveredBy ? {coveredBy} : {})});
             }
 
             if (included) {
@@ -87,6 +95,12 @@ export class MidgardSource implements Source {
         }
 
         return bundles;
+    }
+
+    // A refund still pending past the cut-off will not be paid out: it is exported, and what was not returned is
+    // lost (docs/specs/pending.md)
+    private isStuckRefund(action: Action): boolean {
+        return action.type === ActionTypeEnum.Refund && !!this.stuckBefore && getActionDate(action) < this.stuckBefore;
     }
 
     // The bundle of one action; the fixture tool uses this for an action it looked up by txid

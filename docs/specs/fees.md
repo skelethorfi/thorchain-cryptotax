@@ -158,8 +158,8 @@ outbound fee is deducted.
 **Not exported.**
 
 - A refund Midgard still reports as `pending` (nothing has been returned) is
-  skipped by the exporter, as before. If the outbound never happens, the
-  whole amount sent is lost and no row records it. Check those by hand.
+  not exported while it may still be paid out. Once stuck (`pending.md`), it
+  is exported with what was not returned as `Lost` instead of `Fee`.
 - A partially filled swap's refund (see Partially filled swaps).
 - Old L1 refunds for which THORNode has no record of the inbound: the
   `FailedOut` fee is blank, per the inbound fee rule.
