@@ -56,7 +56,7 @@ lists/midgard/<wallet>.0.json                      the record keys one fetch of 
 
 | Source | Record | Key |
 | --- | --- | --- |
-| `midgard`, `maya-midgard` | an action | `<type>.<first txid>`; a contract action adds its event (one wasm call gives several); `<type>.date-<date>` with no txid |
+| `midgard`, `maya-midgard` | an action | `<type>.<first txid>`; a contract action adds its event (one wasm call gives several); `<type>.date-<date>` with no txid; an action one tx gave to several members adds their addresses (`<type>.<txid>.<addresses>` for Maya's `donate:` adds, `<type>.genesisTx.<pool>.<addresses>` for old Midgard's placeholders) |
 | `thornode` | a tx status | txid |
 | `thornode-cosmos` | a Cosmos tx (contract calls) | txid |
 | `viewblock` | a tx | its hash |
@@ -68,6 +68,14 @@ its key includes the wallet. One txid can have more than one action (e.g. a
 send and a swap); type and txid tell them apart, and only
 contract actions need their event. If two records of one wallet fetch ever
 share a key, the run stops rather than merge them.
+
+Type and txid are unique within one wallet's actions, but not across wallets:
+one tx can give each of many members an action (Maya made LP positions for
+many members in one `donate:` tx). Their keys add the members' addresses.
+For a shape not known yet, the store checks a fetched action against the
+stored copy: if they have no address in common, it is another member's
+record under the same key, so the run stops with an error instead of storing
+it as a new version (which a run would then use in place of the first).
 
 - A fetched record is stored only if it differs from its latest copy. Nothing
   is overwritten or deleted.

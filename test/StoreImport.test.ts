@@ -73,6 +73,16 @@ describe('midgardActionKey', () => {
         expect(new Set(keys).size).toBe(3);
         expect(keys[1]).toBe('addLiquidity.genesisTx.BNB.BUSD.-+bnb1a');
     });
+
+    test("tells Maya's donate adds apart by member: one tx gave each member a position", async () => {
+        const {midgardActionKey} = await import('../src/sources/store/Sources');
+        const donate = (addresses: string[]) => ({...action('T'), metadata: {addLiquidity: {memo: 'donate:thor.rune'}},
+            in: addresses.map((address, i) => ({address, txID: i === 0 ? 'T' : '', coins: []}))}) as any;
+
+        expect(midgardActionKey(donate(['maya1a', 'thor1a']))).toBe('addLiquidity.T.maya1a+thor1a');
+        expect(midgardActionKey(donate(['maya1b', 'thor1b']))).toBe('addLiquidity.T.maya1b+thor1b');
+        expect(midgardActionKey(action('T') as any)).toBe('addLiquidity.T');
+    });
 });
 
 describe('store import from the folder-per-record layout', () => {

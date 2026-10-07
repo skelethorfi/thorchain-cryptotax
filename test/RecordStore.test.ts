@@ -130,6 +130,28 @@ describe('fetch modes', () => {
         expect(fetchB).toHaveBeenCalledTimes(1);
     });
 
+    test('a record stored under a key it no longer gets is not missing once the latest list has its new key', async () => {
+        const root = makeDir();
+        const fetch = (items: Tx[], keyOf: (tx: Tx) => string) => new RecordStore(root).list('midgard', 'w', fetching(items), {keyOf, rules: RULES});
+        await fetch([{id: 'a'}, {id: 'b'}], tx => tx.id);
+
+        const used = await fetch([{id: 'a'}, {id: 'b'}], tx => tx.id === 'b' ? 'b.member' : tx.id);
+        expect(used).toEqual([{id: 'a'}, {id: 'b'}]);
+    });
+
+    test("a fetched record of other members under a stored key is an error, not a new copy", async () => {
+        const root = makeDir();
+        const rules: RecordRules<{id: string, in: string[], n?: number}> = {membersOf: tx => tx.in};
+        const list = (items: any[]) => new RecordStore(root).list('midgard', 'w', fetching(items), {keyOf: tx => tx.id, rules});
+        await list([{id: 'k', in: ['maya1a', 'thor1a']}]);
+
+        await expect(list([{id: 'k', in: ['maya1b', 'thor1b']}])).rejects.toThrow('belongs to other addresses than the stored copy');
+        expect(new RecordStore(root).copies('midgard', 'k')).toHaveLength(1);
+        // A revision of the same member's record is a new copy, whatever the case of its addresses
+        await list([{id: 'k', in: ['MAYA1A', 'thor1a'], n: 2}]);
+        expect(new RecordStore(root).copies('midgard', 'k')).toHaveLength(2);
+    });
+
     test('offline, a pending record is not fetched again', async () => {
         const root = makeDir();
         await new RecordStore(root).record('thornode', 'p', fetching<Tx>({id: 'p', status: 'pending'}), RULES);
