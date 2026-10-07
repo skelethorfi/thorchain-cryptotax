@@ -9,7 +9,7 @@ import {Asset} from "./Asset";
 // exporter has to handle a kind before it can be emitted.
 export type ActivityKind = 'bond' | 'unbond' | 'swap' | 'refund' | 'lp.add' | 'lp.withdraw' | 'savers.add' | 'savers.withdraw'
     | 'switch' | 'runepool.deposit' | 'runepool.withdraw' | 'loan.open' | 'loan.repay'
-    | 'tcy.claim' | 'tcy.stake' | 'tcy.unstake' | 'tcy.distribution' | 'thorname'
+    | 'send' | 'tcy.claim' | 'tcy.stake' | 'tcy.unstake' | 'tcy.distribution' | 'thorname'
     | 'rujira.stake' | 'rujira.fin.trade' | 'rujira.merge.deposit' | 'rujira.merge.withdraw';
 
 export type ActivityStatus = 'success' | 'pending' | 'failed';

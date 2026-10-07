@@ -5,7 +5,7 @@ export type IssueKind =
     | 'unsupported'
     // The interpreter threw: no rows, and the action is saved with the error
     | 'failed'
-    // Listed but deliberately not mapped (e.g. Midgard sends, which come from Viewblock until row 6)
+    // Listed but deliberately not mapped (e.g. Maya sends)
     | 'ignored'
     // Mapped, but something in the source data looks wrong
     | 'warning'

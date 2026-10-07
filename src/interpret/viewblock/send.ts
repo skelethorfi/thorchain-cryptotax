@@ -1,0 +1,36 @@
+import {Activity} from "../../domain/Activity";
+import {Issue} from "../../domain/Issue";
+import {Protocol} from "../../domain/Protocol";
+import {getBundleKey, RawBundle} from "../../sources/RawBundle";
+import {MSG_SEND_TYPES, ViewblockTx} from "../../sources/viewblock";
+import {sendActivity} from "../midgard/send";
+
+// A Viewblock send, for sends before 2022-04 that Midgard does not list (docs/specs/sends.md). The coin is
+// the tx's input; a failed tx moved nothing.
+export function interpretViewblockSend(bundle: RawBundle, protocol: Protocol): {activities: Activity[]; issues: Issue[]} {
+    const tx = bundle.data as ViewblockTx;
+
+    if (tx.code !== 0) {
+        return {activities: [], issues: [{kind: 'ignored', message: `failed Viewblock send (code ${tx.code})`}]};
+    }
+
+    const msgs = tx.msgs.filter(msg => MSG_SEND_TYPES.includes(msg['@type']));
+
+    if (msgs.length !== 1 || msgs[0].amount.length !== 1) {
+        throw new Error(`a Viewblock send with ${msgs.length} send messages`);
+    }
+
+    return {
+        activities: [sendActivity({
+            id: getBundleKey(bundle),
+            time: new Date(tx.timestamp),
+            txid: tx.hash,
+            from: msgs[0].from_address,
+            to: msgs[0].to_address,
+            asset: tx.input.asset,
+            amount: msgs[0].amount[0].amount,
+            memo: tx.memo ?? '',
+        }, bundle.wallet, protocol)],
+        issues: [],
+    };
+}

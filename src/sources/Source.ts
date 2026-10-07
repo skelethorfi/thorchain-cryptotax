@@ -97,13 +97,18 @@ export class MidgardSource implements Source {
     }
 }
 
-// THORChain sends (Viewblock), until row 6 replaces them with Midgard sends
+// Viewblock's txs of a THORChain wallet, for the sends Midgard does not list (docs/specs/sends.md);
+// selectSends keeps those
 export class ViewblockSource implements Source {
     constructor(private viewblock: Viewblock) {
     }
 
     async bundlesFor(wallet: string): Promise<RawBundle[]> {
-        const txs = await this.viewblock.getAllTxs({address: wallet, network: 'mainnet'});
+        if (!wallet.toLowerCase().startsWith('thor1')) {
+            return [];
+        }
+
+        const txs = await this.viewblock.getTxs(wallet);
         return txs.map(tx => ({source: 'viewblock', protocol: THORCHAIN.id, wallet, data: tx, thornodeTxs: [], cosmosTxs: []}));
     }
 }

@@ -3,7 +3,6 @@ import {CryptoTaxTransaction} from "../export/summ/csv";
 import {Issue} from "../domain/Issue";
 import {RawBundle} from "../sources/RawBundle";
 import {Protocol, THORCHAIN} from "../domain/Protocol";
-import {ViewblockTx} from "../sources/viewblock";
 import {interpretBond} from "./midgard/bond";
 import {interpretSwap} from "./midgard/swap";
 import {interpretRefund} from "./midgard/refund";
@@ -13,8 +12,8 @@ import {interpretLoanOpen, interpretLoanRepay} from "./midgard/loan";
 import {interpretTcyClaim, interpretTcyDistribution, interpretTcyStake, interpretThorname} from "./midgard/tcy";
 import {Activity} from "../domain/Activity";
 import {interpretRujira, RUJIRA_CONTRACT_TYPES} from "./midgard/rujira";
-import {SendMapper} from "./viewblock/SendMapper";
-import {DelegateArkeoMapper} from "./viewblock/DelegateArkeoMapper";
+import {interpretSend} from "./midgard/send";
+import {interpretViewblockSend} from "./viewblock/send";
 
 // A ported action type gives activities, which an exporter turns into rows; the rest still give rows
 export interface Interpretation {
@@ -26,7 +25,6 @@ export interface Interpretation {
 // Turns one bundle into rows. Pure: no network, files, clock or logging; problems are returned as issues.
 export type Interpreter = (bundle: RawBundle, protocol: Protocol) => Interpretation;
 
-const rows = (rows: CryptoTaxTransaction[]): Interpretation => ({activities: [], rows, issues: []});
 const activity = (interpreter: (bundle: RawBundle, protocol: Protocol) => Activity): Interpreter => (bundle, protocol) =>
     ({activities: [interpreter(bundle, protocol)], rows: [], issues: []});
 
@@ -51,12 +49,13 @@ const REGISTRY: Record<string, Interpreter> = {
     'midgard/tcy_claim': activity(interpretTcyClaim),
     'midgard/tcy_stake': activity(interpretTcyStake),
     'midgard/tcy_unstake': activity(interpretTcyStake),
-    [`midgard/${ActionType.Send}`]: ignore('Midgard send: sends come from Viewblock'),
+    // Maya sends (MAYA, CACAO) are not mapped yet (docs/specs/maya.md)
+    [`midgard/${ActionType.Send}`]: (bundle, protocol) => protocol.id === THORCHAIN.id
+        ? {rows: [], ...interpretSend(bundle, protocol)}
+        : ignore('Maya send')(bundle, protocol),
     ...Object.fromEntries(RUJIRA_CONTRACT_TYPES.map(type => [`midgard/contract/${type}`, rujira])),
-    'viewblock/send': bundle => rows(new SendMapper(bundle.data as ViewblockTx, bundle.wallet).toCtc()),
-    'viewblock/send/delegate-arkeo': bundle => rows(new DelegateArkeoMapper(bundle.data as ViewblockTx, bundle.wallet).toCtc()),
-    // Only sends are taken from Viewblock; every other action comes from Midgard
-    'viewblock/other': ignore('Viewblock tx other than a send'),
+    // Viewblock gives only sends from before 2022-04 that Midgard does not list (docs/specs/sends.md)
+    'viewblock/send': (bundle, protocol) => ({rows: [], ...interpretViewblockSend(bundle, protocol)}),
     'tcy/distribution': activity(interpretTcyDistribution),
 };
 
@@ -81,15 +80,8 @@ export function getBundleType(bundle: RawBundle): {type: string; subtype?: strin
 
             return {type: action.type};
         }
-        case 'viewblock': {
-            const tx = bundle.data as ViewblockTx;
-
-            if (!tx.types.includes('send')) {
-                return {type: 'other'};
-            }
-
-            return {type: 'send', subtype: (tx.memo || '').startsWith('delegate:arkeo:') ? 'delegate-arkeo' : undefined};
-        }
+        case 'viewblock':
+            return {type: 'send'};
         case 'tcy':
             return {type: 'distribution'};
     }

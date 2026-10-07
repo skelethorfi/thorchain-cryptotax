@@ -1,0 +1,12 @@
+walletExchange: thor1uz4fpyd5f5d6p9pzk8lxyj4qxnwq6f9utg0e7k
+timestamp: 2026-10-07T06:39:57.511Z
+type: send
+baseCurrency: RUNE
+baseAmount: "1627.98"
+feeCurrency: RUNE
+feeAmount: "0.02"
+from: thor1uz4fpyd5f5d6p9pzk8lxyj4qxnwq6f9utg0e7k
+to: thor1t60f02r8jvzjrhtnjgfj4ne6rs5wjnejwmj7fh
+blockchain: THORChain
+id: 2026-10-07T06:39:57.511Z.send
+description: Send 1627.98 RUNE; A14AEC9C15DE74141C3674E99EE45157F8D24F6B55FB359F9094D0E3F176B53D
