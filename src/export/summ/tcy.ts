@@ -70,7 +70,7 @@ export function thornameRows(activity: Activity, protocol: Protocol): CryptoTaxT
         from: wallet,
         to: protocol.counterparty,
         blockchain: protocol.blockchain,
-        trace: legTrace(gas),
+        trace: legTrace(paid ?? gas),
         description: paid ? `1/1 - Register/fund Thorname with ${amount} RUNE; ${gas.txid ?? ''}` : `1/1 - Update Thorname; ${gas.txid ?? ''}`,
     }];
 }

@@ -45,15 +45,17 @@ Each row's `ID` column says what the row is, never its amounts or wording:
 - **Action time**: the action's own time (UTC), so the rows of one action
   sort together, also when a row's timestamp is offset (the LP token and
   price-helper rows are 10 and 20 seconds later).
-- **Role**: what moved, not how the row is exported. A row that records one
-  of the action's legs is named by that leg: `out` or `in` for what was sent
-  or received, otherwise the leg's own role (`reward`, `gas`). A row that
-  records no single leg is `price-helper` (the market-price row of an LP add
-  or withdraw) or `not-returned` (what a refund did not return, exported as `Fee` or
-  `Lost`). So a change of treatment, e.g. a swap exported as a bridge instead
-  of a trade, a refund's remainder as `Lost` instead of `Fee`, or another
-  naming of trade assets, changes the row's type or currency but not its ID;
-  a row that only one treatment has simply appears or goes.
+- **Role**: what moved, not how the row is exported. A row is named by the
+  leg in its base columns: `out` or `in` for what the wallet sent or
+  received, `reward` for income the protocol paid (e.g. a TCY distribution),
+  `gas` when the network fee is all the row records (a THORName update). A
+  row that records no single leg is `price-helper` (the market-price row of
+  an LP add or withdraw) or `unreturned` (what a refund did not give back,
+  exported as `Fee` or `Lost`). So a change of treatment, e.g. a swap exported
+  as a bridge instead of a trade, a refund's remainder as `Lost` instead of
+  `Fee`, or another naming of trade assets, changes the row's type or
+  currency but not its ID; a row that only one treatment has simply appears
+  or goes.
 - **Hash**: the first 12 hex digits of SHA-256 over `v1|<record>|<wallet>|
   <role>|<asset>`: the action's store record key (source, type, txid, and
   the contract event or members where they tell actions apart,

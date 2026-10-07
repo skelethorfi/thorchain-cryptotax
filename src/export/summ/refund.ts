@@ -42,7 +42,7 @@ export function refundRows(activity: Activity, protocol: Protocol): CryptoTaxTra
             from: sent.wallet,
             to: protocol.counterparty,
             blockchain: formatBlockchain(blockchain),
-            trace: {role: 'not-returned', asset: sent.asset.notation},
+            trace: {role: 'unreturned', asset: sent.asset.notation},
             description: stuck
                 ? `refund (${txId}): never paid out (still pending), ${sentAmount} ${currency} sent, ${returnedNote}`
                 : `refund (${txId}): kept by ${protocol.counterparty}, ${sentAmount} ${currency} sent, ${returnedNote}`,
