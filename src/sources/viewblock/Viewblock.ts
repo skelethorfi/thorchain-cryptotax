@@ -1,128 +1,46 @@
-import {range} from '../../utils/Range';
-import {ViewblockTx} from './ViewblockTx';
+import {http} from "../http";
 import {RecordStore} from "../store/RecordStore";
 import {VIEWBLOCK_LIST} from "../store/Sources";
+import {ViewblockTx} from "./ViewblockTx";
 
-export const BASE_URL = 'https://api.viewblock.io';
-export const ORIGIN = 'https://viewblock.io';
+// Viewblock's THORChain API, used only for sends Midgard does not list, from before 2022-04
+// (docs/specs/sends.md). It is unofficial: it answers requests that carry viewblock.io as their Origin, as
+// its web pages do, and may change without notice.
+const BASE_URL = 'https://api.viewblock.io/thorchain';
+const HEADERS = {Origin: 'https://viewblock.io'};
 
-const makeQuery = (params: { [x: string]: string | number | boolean }) => {
-    const keys = Object.keys(params).filter((k) => params[k]);
-
-    return `${keys.length ? '?' : ''}${keys
-        .map(
-            (key) =>
-                `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`,
-            ''
-        )
-        .join('&')}`;
-};
-
-interface PaginatedQueryTxs {
-    checksums: any;
+interface Page {
     docs: ViewblockTx[];
-    limit: number;
-    page: string;
     pages: number;
     total: number;
-    type: string;
 }
 
 export class Viewblock {
-
-    apiKey?: string;
-
-    constructor(private store: RecordStore = new RecordStore('_cache'), private source: string = 'viewblock') {
+    constructor(private store: RecordStore) {
     }
 
-    async query(path: any, { apiKey, query = {}, network }: any) {
-        const q = makeQuery({ ...query, network });
-        const url = `${BASE_URL}${path}${q}`;
-        const headers: any = {
-            'Content-Type': 'json',
-            Origin: ORIGIN,
-        };
-
-        if (apiKey) {
-            headers['X-APIKEY'] = apiKey;
-        }
-
-        return fetch(url, {
-            headers,
-        }).then((response) => response.json());
+    // Every tx of the address, through the store
+    async getTxs(address: string): Promise<ViewblockTx[]> {
+        const url = `${BASE_URL}/addresses/${address}/txs?network=mainnet`;
+        return this.store.list('viewblock', address, async () => ({data: await this.fetchTxs(url), url}), VIEWBLOCK_LIST);
     }
 
-    async getTxs({
-        address,
-        page,
-        network,
-        type,
-    }: {
-        address: string;
-        page: number;
-        network: string;
-        type?: string;
-    }) {
-        return this.query(`/thorchain/addresses/${address}/txs`, {
-            apiKey: this.apiKey,
-            query: { page, type },
-            network,
-        });
+    private async fetchTxs(url: string): Promise<ViewblockTx[]> {
+        const first = await this.page(url, 1);
+        const txs = [...first.docs];
+
+        for (let page = 2; page <= first.pages; page++) {
+            txs.push(...(await this.page(url, page)).docs);
+        }
+
+        if (txs.length !== first.total) {
+            throw new Error(`Viewblock listed ${txs.length} txs but reports ${first.total}: ${url}`);
+        }
+
+        return txs;
     }
 
-    async getAllTxs({
-        address,
-        network,
-        type,
-    }: {
-        address: string;
-        network: string;
-        type?: string;
-    }): Promise<ViewblockTx[]> {
-        return this.store.list(this.source, address,
-            async () => ({data: await this.fetchAllTxs({address, network, type}), url: `viewblock:${network}:${address}`}),
-            VIEWBLOCK_LIST);
-    }
-
-    private async fetchAllTxs({address, network, type}: {address: string; network: string; type?: string}): Promise<ViewblockTx[]> {
-        let page = await this.getTxs({
-            address,
-            network,
-            type,
-            page: 1,
-        }) as PaginatedQueryTxs;
-
-        const totalPages = page.pages;
-        const total = page.total;
-        let results = page.docs;
-
-        console.log(`Fetching txs for ${address}`);
-        console.log(`Total: ${total}`);
-
-        if (total === 0) {
-            console.log(`[WARN] No transactions for ${address}`);
-            return [];
-        }
-
-        for (const i of range(totalPages - 1, 2)) {
-            console.log(`Page ${i} of ${totalPages}`);
-
-            page = await this.getTxs({
-                address,
-                network,
-                type,
-                page: i,
-            }) as PaginatedQueryTxs;
-
-            results = results.concat(...page.docs);
-        }
-
-        if (total !== results.length) {
-            throw new Error(
-                `num results is ${results.length} but total should be ${total}`
-            );
-        }
-
-        return results;
+    private async page(url: string, page: number): Promise<Page> {
+        return (await http.get<Page>(`${url}&page=${page}`, {headers: HEADERS})).data;
     }
 }

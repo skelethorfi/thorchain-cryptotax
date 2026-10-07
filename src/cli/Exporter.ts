@@ -14,7 +14,7 @@ import {FetchMode, RecordStore} from "../sources/store/RecordStore";
 import {SnapshotManifest} from "../sources/store/SnapshotManifest";
 import {getProtocol, Protocol, THORCHAIN, withAssetNames} from "../domain/Protocol";
 import {MidgardSource, Source, TcySource, ViewblockSource} from "../sources/Source";
-import {dedupeBundles, getBundleSourceName, RawBundle} from "../sources/RawBundle";
+import {dedupeBundles, getBundleSourceName, RawBundle, selectSends, VIEWBLOCK_SENDS_BEFORE} from "../sources/RawBundle";
 import {BundleResult, collectRows, runBundle} from "../pipeline/run";
 import {csvFiles} from "../export/summ/files";
 import {Action} from "@xchainjs/xchain-midgard";
@@ -80,11 +80,12 @@ export class Exporter {
             }));
     }
 
-    // Each source's bundles for the wallet, in this order: Viewblock sends, THORChain Midgard, other
-    // protocols' Midgards (e.g. Maya), TCY distributions
+    // Each source's bundles for the wallet, in this order: Viewblock (only when the run exports a period
+    // before Midgard's send history is complete, docs/specs/sends.md), THORChain Midgard, other protocols'
+    // Midgards (e.g. Maya), TCY distributions
     sources(): Source[] {
         return [
-            new ViewblockSource(this.viewblock),
+            ...(this.config.fromDate < VIEWBLOCK_SENDS_BEFORE ? [new ViewblockSource(this.viewblock)] : []),
             new MidgardSource(this.thorchain, this.midgard, this.thornode, this.cosmosTxs),
             ...this.otherMidgards.map(({protocol, midgard}) => new MidgardSource(protocol, midgard, this.thornode, this.cosmosTxs)),
             new TcySource(this.tcyDistribution),
@@ -107,12 +108,17 @@ export class Exporter {
     // Every row of the bundles; issues are logged, and unsupported and failed actions saved
     getRows(bundles: RawBundle[], outputPath: string): CryptoTaxTransaction[] {
         const unique = dedupeBundles(bundles);
+        const sends = selectSends(unique.bundles);
 
         if (unique.duplicates > 0) {
             console.log(`Skipped ${unique.duplicates} Midgard actions also listed for an earlier wallet`);
         }
 
-        const results = unique.bundles.map(bundle => runBundle(bundle, this.protocolFor(bundle), {assets: this.config.assets}));
+        if (sends.dropped.inbound > 0) {
+            console.log(`Skipped ${sends.dropped.inbound} Midgard sends that are another action's inbound`);
+        }
+
+        const results = sends.bundles.map(bundle => runBundle(bundle, this.protocolFor(bundle), {assets: this.config.assets}));
         results.forEach(result => this.handleIssues(result, outputPath));
 
         return collectRows(results);

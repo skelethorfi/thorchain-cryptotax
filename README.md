@@ -187,8 +187,9 @@ If you found this useful, and it saved you a lot of manual effort, feel free to 
 
 ### Sends/Receives
 
-Sends and receives are fetched using the viewblock.io API.
-This is not a public API, so may change without warning which breaks the tool.
+Sends and receives come from Midgard. Midgard's history of sends is incomplete before April 2022, so a run that
+exports a period starting before then also reads the wallet's txs from the viewblock.io API, which is not a
+public API and may change without warning. See [docs/specs/sends.md](docs/specs/sends.md).
 
 ### Reference Prices
 

@@ -104,6 +104,7 @@ exporter cannot be built until it handles every kind.
 | `runepool.deposit`, `runepool.withdraw` | 8c | the RUNE sent or received (observed); the RUNEPool units received or given up, a `runepool` position (observed); gas: the native fee (default) | — |
 | `loan.open` | 8c | out: principal, the collateral sent (observed; when Midgard shows `THOR.TOR`, the THORNode tx's coin), followed by its gas leg; in: principal, the amount borrowed, paid to the memo's destination (observed). `loans.md` says which pending loan opens count | — |
 | `loan.repay` | 8c | out: principal, the repayment (observed), followed by its gas leg; in: principal, the collateral paid back when the loan closes (observed, one output) | `collateral`: the memo's collateral asset |
+| `send` | row 6 | from the side of the wallet that listed it (`sends.md`): the sender's out: principal, the coin sent (observed), and out: gas, 0.02 RUNE (default); or the receiver's in: principal (observed). Midgard sends, and Viewblock sends from before 2022-04 that Midgard does not list | `from`, `to`; `purpose: delegate-arkeo` for an Arkeo delegation |
 | `tcy.claim` | 8d | in: principal, the TCY claimed (observed); gas: the native fee (default), only when the claim was sent from the same THORChain wallet | `claimedFor`: the address that held the claim |
 | `tcy.stake`, `tcy.unstake` | 8d | the TCY sent or received (observed); gas: the native fee (default) | — |
 | `tcy.distribution` | 8d | in: reward, the RUNE paid to the wallet it was listed for (observed). Price: the RUNE price the TCY API gives (`midgard:tcy.distribution.price`) | — |
@@ -115,8 +116,7 @@ exporter cannot be built until it handles every kind.
 Every Midgard action type the exporter maps has a kind. Maya actions go
 through the same interpreters with Maya's protocol values (decimals, native
 asset and fee, address prefix, chain); only a tx sent on THORChain inside a
-Maya action pays THORChain's fee. Viewblock sends stay on the old path until
-Midgard sends replace them (backlog row 6).
+Maya action pays THORChain's fee. Maya sends are not mapped yet.
 
 ## Example
 

@@ -1,0 +1,24 @@
+id: midgard/send.A14AEC9C15DE74141C3674E99EE45157F8D24F6B55FB359F9094D0E3F176B53D
+protocol: thorchain
+kind: send
+status: success
+time: 2026-10-07T06:39:57.511Z
+txids:
+  in:
+    - A14AEC9C15DE74141C3674E99EE45157F8D24F6B55FB359F9094D0E3F176B53D
+  out: []
+legs:
+  - direction: in
+    wallet: thor1t60f02r8jvzjrhtnjgfj4ne6rs5wjnejwmj7fh
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: principal
+    basis: observed
+    txid: A14AEC9C15DE74141C3674E99EE45157F8D24F6B55FB359F9094D0E3F176B53D
+    amount: "1627.98"
+    decimals: 8
+prices: []
+details:
+  from: thor1uz4fpyd5f5d6p9pzk8lxyj4qxnwq6f9utg0e7k
+  to: thor1t60f02r8jvzjrhtnjgfj4ne6rs5wjnejwmj7fh

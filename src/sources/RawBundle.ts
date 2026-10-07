@@ -4,8 +4,7 @@ import {ViewblockTx} from "./viewblock";
 import {getDistributionDate, TcyDistributionItem} from "./tcy/TcyDistributionService";
 import {CosmosTx} from "./thorchain/CosmosTxService";
 import {getActionDate} from "./thorchain/MidgardUtils";
-import {BaseMapper} from "../interpret/viewblock/BaseMapper";
-import {ProtocolId} from "../domain/Protocol";
+import {ProtocolId, THORCHAIN} from "../domain/Protocol";
 import {midgardActionKey, tcyList, VIEWBLOCK_LIST} from "./store/Sources";
 
 export type BundleSource = 'midgard' | 'viewblock' | 'tcy';
@@ -31,7 +30,7 @@ export function getBundleDate(bundle: RawBundle): Date {
         case 'midgard':
             return getActionDate(bundle.data as Action);
         case 'viewblock':
-            return new BaseMapper(bundle.data as ViewblockTx, bundle.wallet).datetime;
+            return new Date((bundle.data as ViewblockTx).timestamp);
         case 'tcy':
             return getDistributionDate(bundle.data as TcyDistributionItem);
     }
@@ -56,12 +55,12 @@ export function getBundleKey(bundle: RawBundle): string {
 }
 
 // A Midgard action listed for several wallets (e.g. a swap from one to another) is mapped once, from the
-// first wallet's listing; it maps the same whichever wallet listed it. Viewblock sends and TCY
+// first wallet's listing; it maps the same whichever wallet listed it. Sends (Midgard and Viewblock) and TCY
 // distributions are mapped from the listing wallet's side, so every wallet's copy is kept.
 export function dedupeBundles(bundles: RawBundle[]): {bundles: RawBundle[]; duplicates: number} {
     const seen = new Set<string>();
     const unique = bundles.filter(bundle => {
-        if (bundle.source !== 'midgard') {
+        if (bundle.source !== 'midgard' || isMidgardSend(bundle)) {
             return true;
         }
 
@@ -72,4 +71,42 @@ export function dedupeBundles(bundles: RawBundle[]): {bundles: RawBundle[]; dupl
     });
 
     return {bundles: unique, duplicates: bundles.length - unique.length};
+}
+
+// Sends before this come from Viewblock too, as Midgard's history is incomplete (docs/specs/sends.md)
+export const VIEWBLOCK_SENDS_BEFORE = '2022-04-01';
+
+// The sends that give rows (docs/specs/sends.md): a Midgard send that is the inbound of another THORChain
+// action (a swap or TCY unstake sent by MsgSend) is dropped, as that action gives the rows; of Viewblock's
+// txs, only sends from before VIEWBLOCK_SENDS_BEFORE that Midgard does not list are kept.
+export function selectSends(bundles: RawBundle[]): {bundles: RawBundle[]; dropped: {inbound: number; viewblock: number}} {
+    const thorchain = bundles.filter(bundle => bundle.source === 'midgard' && bundle.protocol === THORCHAIN.id);
+    const inboundTxids = (sends: boolean) => new Set(thorchain
+        .filter(bundle => isMidgardSend(bundle) === sends)
+        .flatMap(bundle => (bundle.data as Action).in.map(tx => tx.txID?.toUpperCase()))
+        .filter(Boolean));
+    const actionInbounds = inboundTxids(false);
+    const listed = new Set([...actionInbounds, ...inboundTxids(true)]);
+    const cutoff = new Date(`${VIEWBLOCK_SENDS_BEFORE}T00:00:00Z`).getTime();
+
+    const isInbound = (bundle: RawBundle) => bundle.protocol === THORCHAIN.id && isMidgardSend(bundle)
+        && actionInbounds.has((bundle.data as Action).in[0]?.txID?.toUpperCase());
+    const isViewblockGap = (bundle: RawBundle) => {
+        const tx = bundle.data as ViewblockTx;
+        return tx.types.includes('send') && tx.timestamp < cutoff && !listed.has(tx.hash.toUpperCase());
+    };
+
+    const kept = bundles.filter(bundle => bundle.source === 'viewblock' ? isViewblockGap(bundle) : !isInbound(bundle));
+
+    return {
+        bundles: kept,
+        dropped: {
+            inbound: bundles.filter(isInbound).length,
+            viewblock: bundles.filter(bundle => bundle.source === 'viewblock').length - kept.filter(bundle => bundle.source === 'viewblock').length,
+        },
+    };
+}
+
+function isMidgardSend(bundle: RawBundle): boolean {
+    return bundle.source === 'midgard' && (bundle.data as Action).type === 'send';
 }

@@ -1,8 +1,8 @@
 walletExchange: thor1-user-wallet-11111
-type: send
 timestamp: 2020-12-31T13:00:00.000Z
+type: send
+baseCurrency: ThorSynth.DOGE.DOGE
 baseAmount: "1.23"
-baseCurrency: DOGE
 feeCurrency: RUNE
 feeAmount: "0.02"
 from: thor1-user-wallet-11111
