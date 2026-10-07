@@ -166,7 +166,7 @@ year's record (e.g. `filed.json`) and commit it with the store, so the filed
 output can always be replayed. Several years' configs may share one store,
 because copies are only ever added.
 
-## Not done
+## Comparing two runs
 
-- A row-level diff between two runs, showing which record change explains
-  each differing row.
+`npm run diff -- <old run> <new run>` compares their rows and tags each
+differing row with the record changes that explain it (`run-diff.md`).
