@@ -49,7 +49,7 @@ Each row's `ID` column says what the row is, never its amounts or wording:
   of the action's legs is named by that leg: `out` or `in` for what was sent
   or received, otherwise the leg's own role (`reward`, `gas`). A row that
   records no single leg is `price-helper` (the market-price row of an LP add
-  or withdraw) or `kept` (what a refund did not return, exported as `Fee` or
+  or withdraw) or `not-returned` (what a refund did not return, exported as `Fee` or
   `Lost`). So a change of treatment, e.g. a swap exported as a bridge instead
   of a trade, a refund's remainder as `Lost` instead of `Fee`, or another
   naming of trade assets, changes the row's type or currency but not its ID;

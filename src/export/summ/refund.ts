@@ -10,7 +10,7 @@ import {fee, findLeg, leg, legTrace, named} from "./common";
 export function refundRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
     const sent = leg(activity, 'principal', 'out');
     const returnedAmount = {...sent.amount, base: findLeg(activity, 'returned')?.amount.base ?? 0n};
-    const kept = {...sent.amount, base: sent.amount.base - returnedAmount.base};
+    const notReturned = {...sent.amount, base: sent.amount.base - returnedAmount.base};
     const {blockchain, currency, amount: sentAmount} = named(sent, protocol);
     const txId = activity.txids.in[0] ?? '';
     const time = activity.time;
@@ -28,7 +28,7 @@ export function refundRows(activity: Activity, protocol: Protocol): CryptoTaxTra
         description: `refund (${txId}): ${activity.details.reason}`,
     }];
 
-    if (kept.base > 0n) {
+    if (notReturned.base > 0n) {
         const returnTxId = activity.txids.out[0];
         const returnedNote = `${formatAmount(returnedAmount)} ${currency} returned` + (returnTxId ? ` in ${returnTxId}` : '');
         const stuck = activity.status === 'pending';
@@ -38,11 +38,11 @@ export function refundRows(activity: Activity, protocol: Protocol): CryptoTaxTra
             timestamp: time,
             type: stuck ? CryptoTaxTransactionType.Lost : CryptoTaxTransactionType.Fee,
             baseCurrency: currency,
-            baseAmount: formatAmount(kept),
+            baseAmount: formatAmount(notReturned),
             from: sent.wallet,
             to: protocol.counterparty,
             blockchain: formatBlockchain(blockchain),
-            trace: {role: 'kept', asset: sent.asset.notation},
+            trace: {role: 'not-returned', asset: sent.asset.notation},
             description: stuck
                 ? `refund (${txId}): never paid out (still pending), ${sentAmount} ${currency} sent, ${returnedNote}`
                 : `refund (${txId}): kept by ${protocol.counterparty}, ${sentAmount} ${currency} sent, ${returnedNote}`,
