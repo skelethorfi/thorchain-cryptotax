@@ -100,8 +100,8 @@ export class Exporter {
     sources(): Source[] {
         return [
             ...(this.config.fromDate < VIEWBLOCK_SENDS_BEFORE ? [new ViewblockSource(this.viewblock)] : []),
-            new MidgardSource(this.thorchain, this.midgard, this.thornode, this.cosmosTxs, this.notFinal),
-            ...this.otherMidgards.map(({protocol, midgard}) => new MidgardSource(protocol, midgard, this.thornode, this.cosmosTxs, this.notFinal)),
+            new MidgardSource(this.thorchain, this.midgard, this.thornode, this.cosmosTxs, this.notFinal, this.stuckBefore()),
+            ...this.otherMidgards.map(({protocol, midgard}) => new MidgardSource(protocol, midgard, this.thornode, this.cosmosTxs, this.notFinal, this.stuckBefore())),
             new TcySource(this.tcyDistribution),
         ];
     }
@@ -141,6 +141,11 @@ export class Exporter {
         return collectRows(results);
     }
 
+    // An action still pending from before this date is stuck
+    private stuckBefore(): Date {
+        return new Date(this.today.getTime() - this.config.pendingStuckDays * 86400_000);
+    }
+
     // Every action that is not final, once, oldest first, with its age and whether it was exported
     // (docs/specs/pending.md)
     private reportNotFinal() {
@@ -155,7 +160,8 @@ export class Exporter {
 
         const count = (age: PendingAge) => ages.filter(a => a === age).length;
         const exported = items.filter(item => item.exported).length;
-        this.report.info(`Not final: ${items.length} Midgard actions (${count('recent')} recent, ${count('waiting')} waiting, ${count('stuck')} stuck); ${exported} exported, ${items.length - exported} not`);
+        const covered = items.filter(item => item.coveredBy).length;
+        this.report.info(`Not final: ${items.length} Midgard actions (${count('recent')} recent, ${count('waiting')} waiting, ${count('stuck')} stuck); ${exported} exported, ${covered} covered by a successful action, ${items.length - exported - covered} not exported`);
 
         items.forEach((item, i) => {
             const {action} = item;
@@ -163,7 +169,7 @@ export class Exporter {
             const txType = (action.metadata?.swap as any)?.txType;
             const type = txType ? `${action.type} (${txType})` : action.type;
             const days = Math.floor(ageInDays(date, this.today));
-            this.report.issue('notFinal', `${date.toISOString()} ${type}: ${action.status}, ${days} days old, ${ages[i]}; ${item.exported ? 'exported' : 'not exported'}`, item.key);
+            this.report.issue('notFinal', `${date.toISOString()} ${type}: ${action.status}, ${days} days old, ${ages[i]}; ${item.coveredBy ? `covered by ${item.coveredBy}` : item.exported ? 'exported' : 'not exported'}`, item.key);
         });
     }
 

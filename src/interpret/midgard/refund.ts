@@ -10,7 +10,7 @@ import {getTxids} from "./bond";
 import {inboundGas} from "./gas";
 
 // A refund (docs/specs/fees.md): the wallet sent an amount in, and the protocol returned all or part of
-// it. Two refunds are not the wallet's own and give no activity: the refund of an affiliate's cut, which
+// it, or, for a stuck one still pending, nothing yet (docs/specs/pending.md). Two refunds are not the wallet's own and give no activity: the refund of an affiliate's cut, which
 // the wallet never sent, and the refund for the unfilled part of a partially filled swap, which the swap
 // with the same txid already accounts for.
 export function interpretRefund(bundle: RawBundle, protocol: Protocol): {activities: Activity[]; issues: Issue[]} {
@@ -44,6 +44,10 @@ export function interpretRefund(bundle: RawBundle, protocol: Protocol): {activit
     ];
     const gas = inboundGas(input.txID ?? '', bundle.thornodeTxs, input.address, inputCoin.asset, protocol);
     const reason = ((action.metadata.refund as any)?.reason ?? '').replace(/[\n\t]/g, ' ').trim();
+    // The source exports a pending refund only once it is stuck (docs/specs/pending.md)
+    const issues: Issue[] = action.status === 'pending'
+        ? [{kind: 'warning', message: 'refund still pending past the cut-off: what was not returned is exported as lost; check it never came back'}]
+        : [];
 
     return {
         activities: [{
@@ -58,6 +62,6 @@ export function interpretRefund(bundle: RawBundle, protocol: Protocol): {activit
             prices: [],
             details: {reason},
         }],
-        issues: [],
+        issues,
     };
 }
