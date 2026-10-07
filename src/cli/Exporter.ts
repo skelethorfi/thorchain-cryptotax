@@ -14,6 +14,8 @@ import {FetchMode, RecordStore} from "../sources/store/RecordStore";
 import {SnapshotManifest} from "../sources/store/SnapshotManifest";
 import {getProtocol, Protocol, THORCHAIN, withAssetNames} from "../domain/Protocol";
 import {MidgardSource, Source, TcySource, ViewblockSource} from "../sources/Source";
+import {ageInDays, NotFinal, PendingAge, pendingAge} from "../sources/Pending";
+import {getActionDate} from "../sources/thorchain/MidgardUtils";
 import {ACTION_MEMO_WARNING, actionMemoSummary} from "../interpret/midgard/send";
 import {RunSummary} from "./RunSummary";
 import {dedupeBundles, getBundleKey, getBundleSourceName, RawBundle, selectSends, VIEWBLOCK_SENDS_BEFORE} from "../sources/RawBundle";
@@ -49,9 +51,13 @@ export class Exporter {
     report = new RunSummary();
     // Warnings for the end of the run, set by getRows
     endWarnings: string[] = [];
+    // Midgard actions whose status is not 'success', filled by the Midgard sources
+    notFinal: NotFinal[] = [];
+    private readonly today: Date;
 
     constructor(filename: string, options: ExportOptions = {}) {
-        this.config = TaxConfig.load(filename, options.today ?? new Date());
+        this.today = options.today ?? new Date();
+        this.config = TaxConfig.load(filename, this.today);
         const storePath = this.config.storePath;
         this.snapshots = new SnapshotManifest();
         // One store for every source (docs/specs/snapshots.md)
@@ -94,8 +100,8 @@ export class Exporter {
     sources(): Source[] {
         return [
             ...(this.config.fromDate < VIEWBLOCK_SENDS_BEFORE ? [new ViewblockSource(this.viewblock)] : []),
-            new MidgardSource(this.thorchain, this.midgard, this.thornode, this.cosmosTxs),
-            ...this.otherMidgards.map(({protocol, midgard}) => new MidgardSource(protocol, midgard, this.thornode, this.cosmosTxs)),
+            new MidgardSource(this.thorchain, this.midgard, this.thornode, this.cosmosTxs, this.notFinal),
+            ...this.otherMidgards.map(({protocol, midgard}) => new MidgardSource(protocol, midgard, this.thornode, this.cosmosTxs, this.notFinal)),
             new TcySource(this.tcyDistribution),
         ];
     }
@@ -115,6 +121,7 @@ export class Exporter {
 
     // Every row of the bundles; issues are logged, and unsupported and failed actions saved
     getRows(bundles: RawBundle[], outputPath: string): CryptoTaxTransaction[] {
+        this.reportNotFinal();
         const unique = dedupeBundles(bundles);
         const sends = selectSends(unique.bundles);
 
@@ -132,6 +139,32 @@ export class Exporter {
         this.endWarnings = [actionMemoSummary(actionMemos, this.config.protocols ?? ['thorchain'])].filter((line): line is string => !!line);
 
         return collectRows(results);
+    }
+
+    // Every action that is not final, once, oldest first, with its age and whether it was exported
+    // (docs/specs/pending.md)
+    private reportNotFinal() {
+        const byKey = new Map(this.notFinal.map(item => [item.key, item]));
+        const items = [...byKey.values()].sort((a, b) => getActionDate(a.action).getTime() - getActionDate(b.action).getTime());
+
+        if (items.length === 0) {
+            return;
+        }
+
+        const ages = items.map(item => pendingAge(getActionDate(item.action), this.today, this.config.pendingGraceDays, this.config.pendingStuckDays));
+
+        const count = (age: PendingAge) => ages.filter(a => a === age).length;
+        const exported = items.filter(item => item.exported).length;
+        this.report.info(`Not final: ${items.length} Midgard actions (${count('recent')} recent, ${count('waiting')} waiting, ${count('stuck')} stuck); ${exported} exported, ${items.length - exported} not`);
+
+        items.forEach((item, i) => {
+            const {action} = item;
+            const date = getActionDate(action);
+            const txType = (action.metadata?.swap as any)?.txType;
+            const type = txType ? `${action.type} (${txType})` : action.type;
+            const days = Math.floor(ageInDays(date, this.today));
+            this.report.issue('notFinal', `${date.toISOString()} ${type}: ${action.status}, ${days} days old, ${ages[i]}; ${item.exported ? 'exported' : 'not exported'}`, item.key);
+        });
     }
 
     // Unsupported actions are saved for triage and failures with their error, both in the run's folder; those, warnings and

@@ -12,6 +12,7 @@ describe('TaxConfig', () => {
             outputPath: 'output',
             storePath: 'store',
             pendingStuckDays: 30,
+            pendingGraceDays: 3,
             toDate: '2026-06-30'
         });
     });
@@ -26,10 +27,11 @@ describe('TaxConfig', () => {
         expect(() => TaxConfig.applyDefaults({timezone: 'Nowhere/City'}, new Date())).toThrow('Unknown timezone: Nowhere/City');
     });
 
-    test('pendingStuckDays must be a number of days, 0 or more', () => {
+    test('pendingStuckDays and pendingGraceDays must be a number of days, 0 or more', () => {
         expect(() => TaxConfig.applyDefaults({pendingStuckDays: -1}, new Date())).toThrow('pendingStuckDays must be a number of days');
         expect(() => TaxConfig.applyDefaults({pendingStuckDays: '30' as any}, new Date())).toThrow('pendingStuckDays must be a number of days');
         expect(TaxConfig.applyDefaults({pendingStuckDays: 0}, new Date()).pendingStuckDays).toBe(0);
+        expect(() => TaxConfig.applyDefaults({pendingGraceDays: -2}, new Date())).toThrow('pendingGraceDays must be a number of days');
     });
 
     test('applyDefaults with populated config', () => {
@@ -42,6 +44,7 @@ describe('TaxConfig', () => {
             unsupportedActionsPath: 'custom-unsupported-actions',
             storePath: 'custom-store',
             pendingStuckDays: 90,
+            pendingGraceDays: 5,
             wallets: []
         };
 
@@ -56,6 +59,7 @@ describe('TaxConfig', () => {
             unsupportedActionsPath: 'custom-unsupported-actions',
             storePath: 'custom-store',
             pendingStuckDays: 90,
+            pendingGraceDays: 5,
             wallets: []
         });
     });

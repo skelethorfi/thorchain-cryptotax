@@ -4,6 +4,7 @@
 - [Test fixtures (golden cases)](./fixtures.md)
 - [Maya Protocol](./maya.md)
 - [Loans](./loans.md)
+- [Actions that are not final](./pending.md)
 - [Rujira](./rujira.md)
 - [Source data snapshots](./snapshots.md)
 - [Run diff](./run-diff.md)

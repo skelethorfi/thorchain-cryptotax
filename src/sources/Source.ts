@@ -7,7 +7,8 @@ import {TcyDistributionService} from "./tcy/TcyDistributionService";
 import {getActionDate} from "./thorchain/MidgardUtils";
 import {Viewblock} from "./viewblock";
 import {Protocol, THORCHAIN} from "../domain/Protocol";
-import {RawBundle} from "./RawBundle";
+import {getBundleKey, RawBundle} from "./RawBundle";
+import {NotFinal} from "./Pending";
 
 // Lists the raw bundles of one wallet from one API
 export interface Source {
@@ -63,17 +64,26 @@ export function shouldIncludeAction(action: Action): boolean {
 }
 
 // Midgard actions of one protocol. Only THORChain actions get their THORNode and Cosmos txs.
+// notFinal: collects every action whose status is not 'success', exported or not, for the run summary
 export class MidgardSource implements Source {
     constructor(private protocol: Protocol, private midgard: MidgardService, private thornode: ThornodeService,
-                private cosmosTxs: CosmosTxService) {
+                private cosmosTxs: CosmosTxService, private notFinal: NotFinal[] = []) {
     }
 
     async bundlesFor(wallet: string): Promise<RawBundle[]> {
-        const actions = (await this.midgard.getActions(wallet)).filter(shouldIncludeAction);
         const bundles: RawBundle[] = [];
 
-        for (const action of actions) {
-            bundles.push(await this.bundle(action, wallet));
+        for (const action of await this.midgard.getActions(wallet)) {
+            const included = shouldIncludeAction(action);
+
+            if (action.status !== ActionStatusEnum.Success) {
+                const key = getBundleKey({source: 'midgard', protocol: this.protocol.id, wallet, data: action, thornodeTxs: [], cosmosTxs: []});
+                this.notFinal.push({key, action, exported: included});
+            }
+
+            if (included) {
+                bundles.push(await this.bundle(action, wallet));
+            }
         }
 
         return bundles;
