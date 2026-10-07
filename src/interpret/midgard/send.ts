@@ -24,6 +24,24 @@ export interface Send {
 
 const ARKEO_DELEGATION = 'delegate:arkeo:';
 
+export const ACTION_MEMO_WARNING = 'exported as a send, but its memo asks for an action no listed action matches';
+
+// The run summary's line for the sends that warned of an action memo: RUNE sent to Maya's vault (e.g. a Maya
+// swap) is one, unless the config lists Maya's actions
+export function actionMemoSummary(count: number, protocols: string[]): string | undefined {
+    if (count === 0) {
+        return undefined;
+    }
+
+    const sends = count === 1
+        ? '1 send carries a memo for an action (swap, add, …) that no listed action matches, so it is exported as a send'
+        : `${count} sends carry a memo for an action (swap, add, …) that no listed action matches, so they are exported as sends`;
+
+    return protocols.includes('maya')
+        ? `WARN: ${sends}; Maya's actions are listed too, so check each (warnings above)`
+        : `WARN: ${sends}. Maya swaps and adds look like this: add "maya" to protocols in the config to export them as swaps and adds`;
+}
+
 // A memo that asks THORChain or Maya to do something (swap, add, withdraw, trade, loan, name, bond, TCY), as
 // opposed to a note such as an exchange's deposit id
 const ACTION_MEMO = /^(=|swap|s|\+|add|a|-|wd|withdraw|loan[+-]|\$[+-]|trade[+-]|secure[+-]|pool[+-]|~|n|name|bond|unbond|tcy[+-]?)(:|$)/i;
@@ -79,10 +97,8 @@ export function interpretSend(bundle: RawBundle, protocol: Protocol): {activitie
     };
 
     // selectSends has dropped the sends another listed action explains; one with an action memo left over was
-    // most likely received by a protocol whose actions this run does not list
-    const issues: Issue[] = ACTION_MEMO.test(send.memo)
-        ? [{kind: 'warning', message: `exported as a send, but its memo asks for an action no listed action matches (on Maya? add "maya" to protocols): ${send.memo}`}]
-        : [];
+    // most likely received by a protocol whose actions this run does not list (actionMemoSummary)
+    const issues: Issue[] = ACTION_MEMO.test(send.memo) ? [{kind: 'warning', message: `${ACTION_MEMO_WARNING}: ${send.memo}`}] : [];
 
     return {activities: [sendActivity(send, bundle.wallet, protocol)], issues};
 }

@@ -1,5 +1,5 @@
 import {describe, expect, test} from "@jest/globals";
-import {interpretSend} from "../src/interpret/midgard/send";
+import {actionMemoSummary, interpretSend} from "../src/interpret/midgard/send";
 import {RawBundle} from "../src/sources/RawBundle";
 import {THORCHAIN} from "../src/domain/Protocol";
 
@@ -24,5 +24,20 @@ describe('interpretSend', () => {
 
     test.each(['', '101663207', 'test', 'delegate:arkeo:arkeo1x', 'Huma deposit'])("doesn't warn on a note: '%s'", memo => {
         expect(interpretSend(send(memo), THORCHAIN).issues).toStrictEqual([]);
+    });
+});
+
+describe('actionMemoSummary', () => {
+    test('none: no line', () => {
+        expect(actionMemoSummary(0, ['thorchain'])).toBeUndefined();
+    });
+
+    test('without Maya: says to add maya to protocols', () => {
+        expect(actionMemoSummary(2, ['thorchain'])).toBe('WARN: 2 sends carry a memo for an action (swap, add, …) that no listed action matches, so they are exported as sends. ' +
+            'Maya swaps and adds look like this: add "maya" to protocols in the config to export them as swaps and adds');
+    });
+
+    test('with Maya: says to check each', () => {
+        expect(actionMemoSummary(1, ['thorchain', 'maya'])).toBe("WARN: 1 send carries a memo for an action (swap, add, …) that no listed action matches, so it is exported as a send; Maya's actions are listed too, so check each (warnings above)");
     });
 });

@@ -14,6 +14,7 @@ import {FetchMode, RecordStore} from "../sources/store/RecordStore";
 import {SnapshotManifest} from "../sources/store/SnapshotManifest";
 import {getProtocol, Protocol, THORCHAIN, withAssetNames} from "../domain/Protocol";
 import {MidgardSource, Source, TcySource, ViewblockSource} from "../sources/Source";
+import {ACTION_MEMO_WARNING, actionMemoSummary} from "../interpret/midgard/send";
 import {dedupeBundles, getBundleSourceName, RawBundle, selectSends, VIEWBLOCK_SENDS_BEFORE} from "../sources/RawBundle";
 import {BundleResult, collectRows, runBundle} from "../pipeline/run";
 import {csvFiles} from "../export/summ/files";
@@ -43,6 +44,8 @@ export class Exporter {
     thornode: ThornodeService;
     cosmosTxs: CosmosTxService;
     tcyDistribution: TcyDistributionService;
+    // Warnings for the end of the run, set by getRows
+    summary: string[] = [];
 
     constructor(filename: string, options: ExportOptions = {}) {
         this.config = TaxConfig.load(filename, options.today ?? new Date());
@@ -120,6 +123,8 @@ export class Exporter {
 
         const results = sends.bundles.map(bundle => runBundle(bundle, this.protocolFor(bundle), {assets: this.config.assets}));
         results.forEach(result => this.handleIssues(result, outputPath));
+        const actionMemos = results.flatMap(result => result.issues).filter(issue => issue.message.startsWith(ACTION_MEMO_WARNING)).length;
+        this.summary = [actionMemoSummary(actionMemos, this.config.protocols ?? ['thorchain'])].filter((line): line is string => !!line);
 
         return collectRows(results);
     }
