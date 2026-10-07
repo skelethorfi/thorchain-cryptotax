@@ -35,6 +35,10 @@ frequency = "yearly"
 # A run stops fetching a stuck tx again; --refetch-all still does.
 # pendingStuckDays = 30
 
+# Optional: days after its date that an action still pending may yet finalise (default: 3). The run summary
+# lists every action that is not final as recent (younger than this), waiting, or stuck.
+# pendingGraceDays = 3
+
 # List of wallets
 # add a new [[wallets]] entry for each wallet
 # add each wallet that was used in swaps/LP/etc

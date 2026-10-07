@@ -6,11 +6,12 @@ import path from "path";
 
 export const SUMMARY_FILE = 'summary.md';
 
-export type IssueSection = 'manual' | 'warning' | 'unsupported' | 'failed';
+export type IssueSection = 'manual' | 'warning' | 'notFinal' | 'unsupported' | 'failed';
 
 const ISSUE_HEADINGS: {[section in IssueSection]: string} = {
     manual: 'Enter by hand',
     warning: 'Action warnings',
+    notFinal: 'Not final (status not success)',
     unsupported: 'Unsupported actions (saved in unsupported/)',
     failed: 'Failed actions (saved in failures/ with their error)',
 };
@@ -19,7 +20,7 @@ export class RunSummary {
     readonly run: string[] = [];
     readonly counts: string[] = [];
     readonly warnings: string[] = [];
-    readonly issues: {[section in IssueSection]: string[]} = {manual: [], warning: [], unsupported: [], failed: []};
+    readonly issues: {[section in IssueSection]: string[]} = {manual: [], warning: [], notFinal: [], unsupported: [], failed: []};
 
     // How the run ran (config, mode, period)
     about(line: string) {
@@ -41,7 +42,7 @@ export class RunSummary {
     // One action's issue: printed as before, and kept with the action's record key (e.g. midgard/swap.<txid>), so
     // the file says which action it was
     issue(section: IssueSection, line: string, key: string) {
-        (section === 'warning' || section === 'manual' ? console.warn : console.error)(line);
+        (section === 'unsupported' || section === 'failed' ? console.error : console.warn)(line);
         this.issues[section].push(`${line} (${key})`);
     }
 

@@ -17,9 +17,11 @@ export interface ITaxConfig {
     storePath: string;
     // Deprecated name of storePath
     cachePath?: string;
-    // Days after its date that a tx still pending counts as stuck: a default run stops fetching it again
-    // (docs/specs/snapshots.md). Default: 30
+    // Days after its date that an action or tx still pending counts as stuck: a default run stops fetching
+    // it again (docs/specs/snapshots.md, docs/specs/pending.md). Default: 30
     pendingStuckDays: number;
+    // Days after its date that an action still pending may yet finalise (docs/specs/pending.md). Default: 3
+    pendingGraceDays: number;
     wallets: IWallet[];
     // Protocols whose Midgard is queried for every wallet. Default: ["thorchain"]
     protocols?: ProtocolId[];
