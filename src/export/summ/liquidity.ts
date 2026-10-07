@@ -4,7 +4,7 @@ import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
 import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
 import {getLpTokenName} from "./ThorchainUtils";
 import {formatBlockchain, Protocol} from "../../domain/Protocol";
-import {plusSeconds} from "./common";
+import {legTrace, plusSeconds} from "./common";
 
 // Summ needs a wallet for every row; an old deposit can have none
 const MISSING_ADDRESS = 'MISSING-DEPOSIT-ADDRESS';
@@ -55,7 +55,7 @@ export function addLiquidityRows(activity: Activity, protocol: Protocol): Crypto
             from,
             to: protocol.counterparty,
             blockchain: formatBlockchain(blockchain),
-            trace: {role: 'add', asset: deposit.asset.notation},
+            trace: legTrace(deposit),
             description: `${i + 1}/${total} - Add liquidity ${currency} to ${lpToken} (${symmetry}); ${txId}`,
         };
     });
@@ -70,7 +70,7 @@ export function addLiquidityRows(activity: Activity, protocol: Protocol): Crypto
         from: protocol.counterparty,
         to: receiver,
         blockchain: protocol.blockchain,
-        trace: {role: 'lp-in'},
+        trace: legTrace(position),
         description: `${total - 1}/${total} - Receive LP token from ${lpToken} (${symmetry}); ${txId}`,
     }, {
         walletExchange: receiver,
@@ -114,7 +114,7 @@ export function withdrawRows(activity: Activity, protocol: Protocol): CryptoTaxT
             from: protocol.counterparty,
             to: out.wallet,
             blockchain: formatBlockchain(blockchain),
-            trace: {role: 'remove', asset: out.asset.notation},
+            trace: legTrace(out),
             description: `${total - i}/${total} - Remove liquidity ${currency} from ${lpToken} (${symmetry}); ${txId}`,
         };
     });
@@ -132,7 +132,7 @@ export function withdrawRows(activity: Activity, protocol: Protocol): CryptoTaxT
             from: position.wallet,
             to: protocol.counterparty,
             blockchain: protocol.blockchain,
-            trace: {role: 'lp-out'},
+            trace: legTrace(position),
             description: `1/${total} - Return LP token to ${lpToken} (${symmetry}); ${txId}`,
         },
         {

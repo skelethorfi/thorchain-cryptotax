@@ -9,4 +9,4 @@ from: thor1-user-wallet-11111
 to: thor1-user-wallet-22222
 blockchain: THORChain
 description: Send 1.23 Synth DOGE; 0000000000000000000000000000000000000000000000000000000000000000
-id: 2020-12-31T13:00:00.000Z.send.700f98aa7fbb
+id: 2020-12-31T13:00:00.000Z.out.be8d42229830

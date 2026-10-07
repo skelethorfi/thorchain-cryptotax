@@ -3,7 +3,7 @@ import {formatAmount} from "../../domain/Amount";
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
 import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
 import {Protocol} from "../../domain/Protocol";
-import {findLeg, leg} from "./common";
+import {findLeg, leg, legTrace} from "./common";
 
 // The fee columns from the gas leg, or no fee columns at all when there is none (as these rows always had)
 function feeIfAny(activity: Activity, protocol: Protocol): Pick<CryptoTaxTransaction, 'feeCurrency' | 'feeAmount'> {
@@ -26,7 +26,7 @@ export function tcyClaimRows(activity: Activity, protocol: Protocol): CryptoTaxT
         from: protocol.counterparty,
         to: tcy.wallet,
         blockchain: protocol.blockchain,
-        trace: {role: 'claim'},
+        trace: legTrace(tcy),
         description: `1/1 - Claim ${amount} TCY for address ${activity.details.claimedFor}; ${tcy.txid ?? ''}`,
     }];
 }
@@ -47,7 +47,7 @@ export function tcyStakeRows(activity: Activity, protocol: Protocol): CryptoTaxT
         from: isStake ? tcy.wallet : protocol.counterparty,
         to: isStake ? protocol.counterparty : tcy.wallet,
         blockchain: protocol.blockchain,
-        trace: {role: isStake ? 'stake' : 'unstake'},
+        trace: legTrace(tcy),
         description: `1/1 - ${isStake ? 'Stake' : 'Unstake'} ${amount} TCY; ${tcy.txid ?? ''}`,
     }];
 }
@@ -70,7 +70,7 @@ export function thornameRows(activity: Activity, protocol: Protocol): CryptoTaxT
         from: wallet,
         to: protocol.counterparty,
         blockchain: protocol.blockchain,
-        trace: {role: 'name-fee'},
+        trace: legTrace(gas),
         description: paid ? `1/1 - Register/fund Thorname with ${amount} RUNE; ${gas.txid ?? ''}` : `1/1 - Update Thorname; ${gas.txid ?? ''}`,
     }];
 }
@@ -91,7 +91,7 @@ export function tcyDistributionRows(activity: Activity, protocol: Protocol): Cry
         to: reward.wallet,
         blockchain: protocol.blockchain,
         description: `1/1 - Received ${amount} RUNE from TCY staking`,
-        trace: {role: 'income'},
+        trace: legTrace(reward),
         referencePricePerUnit: activity.prices.find(price => price.source === 'midgard:tcy.distribution.price')?.usd,
         referencePriceCurrency: 'USD',
     }];

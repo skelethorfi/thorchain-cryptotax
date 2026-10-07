@@ -3,7 +3,7 @@ import {formatAmount} from "../../domain/Amount";
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
 import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
 import {formatBlockchain, Protocol} from "../../domain/Protocol";
-import {fee, findLeg, leg} from "./common";
+import {fee, findLeg, leg, legTrace} from "./common";
 
 // A loan open (docs/specs/loans.md): the collateral deposit carries the fee; the loan received has none
 export function loanOpenRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
@@ -25,7 +25,7 @@ export function loanOpenRows(activity: Activity, protocol: Protocol): CryptoTaxT
             from: collateral.wallet,
             to: protocol.counterparty,
             blockchain: formatBlockchain(input.blockchain),
-            trace: {role: 'collateral-deposit'},
+            trace: legTrace(collateral),
             description: `1/2 - ${description}`,
         },
         {
@@ -37,7 +37,7 @@ export function loanOpenRows(activity: Activity, protocol: Protocol): CryptoTaxT
             from: protocol.counterparty,
             to: loan.wallet,
             blockchain: formatBlockchain(output.blockchain),
-            trace: {role: 'loan'},
+            trace: legTrace(loan),
             description: `2/2 - ${description}`,
         },
     ];
@@ -62,7 +62,7 @@ export function loanRepayRows(activity: Activity, protocol: Protocol): CryptoTax
         from: repayment.wallet,
         to: protocol.counterparty,
         blockchain: formatBlockchain(input.blockchain),
-        trace: {role: 'repay'},
+        trace: legTrace(repayment),
         description: `1/${collateralBack ? '2' : '1'} - LoanRepayment deposit ${input.currency} to repay ${collateral} loan. ${closure}; ${txId}`,
     }];
 
@@ -78,7 +78,7 @@ export function loanRepayRows(activity: Activity, protocol: Protocol): CryptoTax
             from: protocol.counterparty,
             to: collateralBack.wallet,
             blockchain: formatBlockchain(output.blockchain),
-            trace: {role: 'collateral-withdrawal'},
+            trace: legTrace(collateralBack),
             description: `2/2 - LoanRepayment deposit ${input.currency} to repay ${collateral} loan. Closed loan; ${txId}`,
         });
     }

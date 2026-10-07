@@ -1,7 +1,7 @@
 import {Activity} from "../../domain/Activity";
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
 import {Protocol} from "../../domain/Protocol";
-import {fee, leg, named} from "./common";
+import {fee, leg, legTrace, named} from "./common";
 
 // One staking row: a bond deposits RUNE with the node, an unbond withdraws it
 export function bondRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
@@ -19,7 +19,7 @@ export function bondRows(activity: Activity, protocol: Protocol): CryptoTaxTrans
         from: isBond ? principal.wallet : protocol.counterparty,
         to: isBond ? protocol.counterparty : principal.wallet,
         blockchain: protocol.blockchain,
-        trace: {role: activity.kind},
+        trace: legTrace(principal),
         description: `1/1 - ${isBond ? 'Bond' : 'Unbond'} ${amount} ${displayCurrency} ${isBond ? 'to' : 'from'} ${activity.details.node}; ${activity.txids.in[0] ?? ''}`,
     }];
 }

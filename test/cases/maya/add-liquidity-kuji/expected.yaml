@@ -17,7 +17,7 @@ from: mayaprotocol
 to: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
 blockchain: Mayachain
 description: 3/4 - Receive LP token from MayaLP.KUJI.KUJI (symmetric); 493628E56D76DCB664E14C142C35CB4AA45D5643A0958F250F583A4029D11166
-id: 2023-11-09T06:40:04.262Z.lp-in.fd59859d6a1f
+id: 2023-11-09T06:40:04.262Z.in.cf21b461f0ac
 ---
 walletExchange: kujira1wml3m2tkkdv5z6rdj3l4mp229c2493kaayukp6
 timestamp: 2023-11-09T06:40:04.262Z
@@ -30,7 +30,7 @@ from: kujira1wml3m2tkkdv5z6rdj3l4mp229c2493kaayukp6
 to: mayaprotocol
 blockchain: KUJI
 description: 2/4 - Add liquidity KUJI to MayaLP.KUJI.KUJI (symmetric); 493628E56D76DCB664E14C142C35CB4AA45D5643A0958F250F583A4029D11166
-id: 2023-11-09T06:40:04.262Z.add.3425217b446d
+id: 2023-11-09T06:40:04.262Z.out.a58a6e671a81
 ---
 walletExchange: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
 timestamp: 2023-11-09T06:40:04.262Z
@@ -43,4 +43,4 @@ from: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
 to: mayaprotocol
 blockchain: Mayachain
 description: 1/4 - Add liquidity CACAO to MayaLP.KUJI.KUJI (symmetric); 493628E56D76DCB664E14C142C35CB4AA45D5643A0958F250F583A4029D11166
-id: 2023-11-09T06:40:04.262Z.add.822a8bb1151c
+id: 2023-11-09T06:40:04.262Z.out.cff1d2c9bacb

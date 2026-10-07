@@ -40,24 +40,26 @@ by its own timestamp.
 Each row's `ID` column says what the row is, never its amounts or wording:
 
     <action time>.<role>.<hash>
-    2023-01-06T21:53:15.332Z.kept.1c69b789c6c0
+    2023-05-24T10:15:31.478Z.out.e2c2d9933761
 
 - **Action time**: the action's own time (UTC), so the rows of one action
   sort together, also when a row's timestamp is offset (the LP token and
   price-helper rows are 10 and 20 seconds later).
-- **Role**: what the row is in the action, one of `trade-out`, `trade-in`,
-  `bridge-out`, `bridge-in`, `add`, `remove`, `lp-in`, `lp-out`,
-  `price-helper`, `failed-out`, `kept` (what a refund did not return, as
-  `Fee` or `Lost`), `send`, `receive`, `bond`, `unbond`, `stake`, `unstake`,
-  `claim`, `income`, `name-fee`, `loan`, `repay`, `collateral-deposit`,
-  `collateral-withdrawal`.
+- **Role**: what moved, not how the row is exported. A row that records one
+  of the action's legs is named by that leg: `out` or `in` for what was sent
+  or received, otherwise the leg's own role (`reward`, `gas`). A row that
+  records no single leg is `price-helper` (the market-price row of an LP add
+  or withdraw) or `kept` (what a refund did not return, exported as `Fee` or
+  `Lost`). So a change of treatment, e.g. a swap exported as a bridge instead
+  of a trade, a refund's remainder as `Lost` instead of `Fee`, or another
+  naming of trade assets, changes the row's type or currency but not its ID;
+  a row that only one treatment has simply appears or goes.
 - **Hash**: the first 12 hex digits of SHA-256 over `v1|<record>|<wallet>|
   <role>|<asset>`: the action's store record key (source, type, txid, and
   the contract event or members where they tell actions apart,
   `snapshots.md`), the row's wallet, the role, and the leg's asset as the
-  source names it (`BTC.BTC`) when an action has a row of the role per
-  asset. Twelve hex digits only have to tell apart the rows that share a
-  time and role.
+  source names it (`BTC.BTC`, whatever the CSV calls it). Twelve hex digits
+  only have to tell apart the rows that share a time and role.
 
 A row has the same ID in every file it is in and in every run. Summ shows it
 as the "Tx Hash", and keeps it on each leg, so a row in Summ is traced back by

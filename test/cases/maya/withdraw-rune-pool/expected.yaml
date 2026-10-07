@@ -9,7 +9,7 @@ from: mayaprotocol
 to: thor136tmapkujkwewjncdx3jck2amp4y0twh2nlwxs
 blockchain: THORChain
 description: 3/4 - Remove liquidity RUNE from MayaLP.THOR.RUNE (symmetric); F0090B6558270A00B6D228770C7C13F3B7B4F4A7DAA7F80EBA642D0AA7D67E54
-id: 2025-10-06T01:34:01.409Z.remove.6c5eabae66df
+id: 2025-10-06T01:34:01.409Z.in.cbca83b3103a
 ---
 walletExchange: maya136tmapkujkwewjncdx3jck2amp4y0twh2ypzsq
 timestamp: 2025-10-06T01:34:21.409Z
@@ -22,7 +22,7 @@ from: mayaprotocol
 to: maya136tmapkujkwewjncdx3jck2amp4y0twh2ypzsq
 blockchain: Mayachain
 description: 4/4 - Remove liquidity CACAO from MayaLP.THOR.RUNE (symmetric); F0090B6558270A00B6D228770C7C13F3B7B4F4A7DAA7F80EBA642D0AA7D67E54
-id: 2025-10-06T01:34:01.409Z.remove.f0ecec683a3b
+id: 2025-10-06T01:34:01.409Z.in.8eafe3e25836
 ---
 walletExchange: maya136tmapkujkwewjncdx3jck2amp4y0twh2ypzsq
 timestamp: 2025-10-06T01:34:11.409Z
@@ -45,4 +45,4 @@ from: maya136tmapkujkwewjncdx3jck2amp4y0twh2ypzsq
 to: mayaprotocol
 blockchain: Mayachain
 description: 1/4 - Return LP token to MayaLP.THOR.RUNE (symmetric); F0090B6558270A00B6D228770C7C13F3B7B4F4A7DAA7F80EBA642D0AA7D67E54
-id: 2025-10-06T01:34:01.409Z.lp-out.7200e4f2e056
+id: 2025-10-06T01:34:01.409Z.out.674df63c3b68

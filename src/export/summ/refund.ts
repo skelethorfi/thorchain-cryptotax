@@ -2,7 +2,7 @@ import {Activity} from "../../domain/Activity";
 import {formatAmount} from "../../domain/Amount";
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
 import {formatBlockchain, Protocol} from "../../domain/Protocol";
-import {fee, findLeg, leg, named} from "./common";
+import {fee, findLeg, leg, legTrace, named} from "./common";
 
 // A refund (docs/specs/fees.md): the send is a failed-out carrying the inbound fee, as Summ counts only a
 // failed transaction's fee. What the protocol kept (sent − returned) is a separate fee row, or lost for a
@@ -24,7 +24,7 @@ export function refundRows(activity: Activity, protocol: Protocol): CryptoTaxTra
         from: sent.wallet,
         to: protocol.counterparty,
         blockchain: formatBlockchain(blockchain),
-        trace: {role: 'failed-out'},
+        trace: legTrace(sent),
         description: `refund (${txId}): ${activity.details.reason}`,
     }];
 
@@ -42,7 +42,7 @@ export function refundRows(activity: Activity, protocol: Protocol): CryptoTaxTra
             from: sent.wallet,
             to: protocol.counterparty,
             blockchain: formatBlockchain(blockchain),
-            trace: {role: 'kept'},
+            trace: {role: 'kept', asset: sent.asset.notation},
             description: stuck
                 ? `refund (${txId}): never paid out (still pending), ${sentAmount} ${currency} sent, ${returnedNote}`
                 : `refund (${txId}): kept by ${protocol.counterparty}, ${sentAmount} ${currency} sent, ${returnedNote}`,

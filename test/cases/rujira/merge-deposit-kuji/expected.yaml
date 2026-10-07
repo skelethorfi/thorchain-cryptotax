@@ -11,7 +11,7 @@ from: thor12e7ryh3z4034zd398lwudmyvkm7hngy5uzu9kr
 to: thorchain
 blockchain: THORChain
 description: 1/2 - Rujira Merge deposit 3000 KUJI to 1117.38565764 KUJI merge shares; 83BFCC90762BF2BB93C692E977F080CC8D34A22174BF232E7F857EEA92713A9F
-id: 2025-04-10T09:59:07.551Z.trade-out.9ae260e81df8
+id: 2025-04-10T09:59:07.551Z.out.dbd02c200957
 ---
 walletExchange: thor12e7ryh3z4034zd398lwudmyvkm7hngy5uzu9kr
 timestamp: 2025-04-10T09:59:17.551Z
@@ -22,4 +22,4 @@ from: thorchain
 to: thor12e7ryh3z4034zd398lwudmyvkm7hngy5uzu9kr
 blockchain: THORChain
 description: 2/2 - Rujira Merge deposit 3000 KUJI to 1117.38565764 KUJI merge shares; 83BFCC90762BF2BB93C692E977F080CC8D34A22174BF232E7F857EEA92713A9F
-id: 2025-04-10T09:59:07.551Z.trade-in.24de2e6c1a1f
+id: 2025-04-10T09:59:07.551Z.in.46e3bfcc9902

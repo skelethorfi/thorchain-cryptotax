@@ -13,7 +13,7 @@ blockchain: BTC
 referencePricePerUnit: "42461.242317159755"
 referencePriceCurrency: USD
 description: 1/2 - Swap 1.018491 BTC to 1.01681035 Synth BTC/BTC; 86164D22C316B687F713B4CBFB5B661C2EF9350B7E7C200BD3A985629E573BF1
-id: 2022-03-09T20:19:10.670Z.trade-out.09ca1cd77894
+id: 2022-03-09T20:19:10.670Z.out.dd6ef24c2980
 ---
 walletExchange: thor16ker8lgzjjn5qaxat6u62npre7lkmwdaynampm
 timestamp: 2022-03-09T20:19:20.670Z
@@ -26,4 +26,4 @@ blockchain: THORChain
 referencePricePerUnit: "42461.242317159755"
 referencePriceCurrency: USD
 description: 2/2 - Swap 1.018491 BTC to 1.01681035 Synth BTC/BTC; 86164D22C316B687F713B4CBFB5B661C2EF9350B7E7C200BD3A985629E573BF1
-id: 2022-03-09T20:19:10.670Z.trade-in.07474f0e3655
+id: 2022-03-09T20:19:10.670Z.in.dd810e9eeec8

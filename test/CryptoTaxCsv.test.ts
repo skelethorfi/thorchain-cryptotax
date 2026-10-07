@@ -60,3 +60,20 @@ describe('row IDs', () => {
         expect(() => assignRowIds([row('2021-01-01T00:00:00.000Z')])).toThrow('Row without an ID');
     });
 });
+
+describe('row IDs and the export treatment', () => {
+    test('a different treatment of the same action (here, how trade assets are named) keeps every ID', async () => {
+        const path = await import('path');
+        const {readCaseInput, runCaseLayers} = await import('../src/fixtures/GoldenCase');
+        const {exportSumm} = await import('../src/export/summ');
+        const [swap] = runCaseLayers(readCaseInput(path.join(__dirname, 'cases', 'swap', 'rune-to-eth'))).activities;
+        const traded = {...swap, legs: swap.legs.map(item => item.direction === 'in' && item.role === 'principal'
+            ? {...item, asset: {notation: 'ETH~ETH', kind: 'trade' as const}} : item)};
+
+        const plain = exportSumm([traded]);
+        const prefixed = exportSumm([traded], {assets: {prefixTradeAssets: true}});
+
+        expect(plain.map(row => row.baseCurrency)).not.toEqual(prefixed.map(row => row.baseCurrency));
+        expect(plain.map(row => row.id)).toEqual(prefixed.map(row => row.id));
+    });
+});

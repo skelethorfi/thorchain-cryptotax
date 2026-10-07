@@ -3,7 +3,7 @@ import {formatAmount, parseAmount} from "../../domain/Amount";
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
 import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
 import {formatBlockchain, Protocol} from "../../domain/Protocol";
-import {findLeg, leg, plusSeconds} from "./common";
+import {findLeg, leg, legTrace, plusSeconds} from "./common";
 
 // Rujira rows (docs/specs/rujira.md): staking is a staking deposit; FIN swaps and merges are trades
 
@@ -40,7 +40,7 @@ export function rujiraStakeRows(activity: Activity, protocol: Protocol): CryptoT
         from: funds.wallet,
         to: protocol.counterparty,
         blockchain: formatBlockchain(protocol.nativeChain),
-        trace: {role: 'stake'},
+        trace: legTrace(funds),
         description: `1/1 - Rujira ${isLiquid ? 'Liquid bond' : 'Account bond'} ${amount} ${displayCurrency}${note}; ${funds.txid ?? ''}`,
     }];
 }
@@ -76,7 +76,7 @@ export function rujiraTradeRows(activity: Activity, protocol: Protocol): CryptoT
             from: sent.wallet,
             to: protocol.counterparty,
             blockchain,
-            trace: {role: 'trade-out'},
+            trace: legTrace(sent),
             description: `1/2 - ${description}`,
         },
         {
@@ -88,7 +88,7 @@ export function rujiraTradeRows(activity: Activity, protocol: Protocol): CryptoT
             from: protocol.counterparty,
             to: sent.wallet,
             blockchain,
-            trace: {role: 'trade-in'},
+            trace: legTrace(received),
             description: `2/2 - ${description}`,
         },
     ];

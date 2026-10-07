@@ -9,7 +9,7 @@ from: bnb1mdvkxuuxewcu65w5jd3pmtwqrdpslgnmj6py2r
 to: thor12gn4hnukdg3dz9le8cjarv8e94tevsy0qj9h4k
 blockchain: BNB
 description: "1/2 - Switch BNB.RUNE to THOR.RUNE (send BNB.RUNE); "
-id: 2021-06-01T12:14:02.199Z.bridge-out.63d089d05b4e
+id: 2021-06-01T12:14:02.199Z.out.6be0bffff547
 ---
 walletExchange: thor12gn4hnukdg3dz9le8cjarv8e94tevsy0qj9h4k
 timestamp: 2021-06-01T12:14:12.199Z
@@ -20,4 +20,4 @@ from: bnb1mdvkxuuxewcu65w5jd3pmtwqrdpslgnmj6py2r
 to: thor12gn4hnukdg3dz9le8cjarv8e94tevsy0qj9h4k
 blockchain: THORChain
 description: "2/2 - Switch BNB.RUNE to THOR.RUNE (receive THOR.RUNE); "
-id: 2021-06-01T12:14:02.199Z.bridge-in.795b07a4d36b
+id: 2021-06-01T12:14:02.199Z.in.031db1703bfa

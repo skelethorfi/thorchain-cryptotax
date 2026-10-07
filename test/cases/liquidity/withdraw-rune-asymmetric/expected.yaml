@@ -9,7 +9,7 @@ from: thorchain
 to: thor12vtlhpqe3lwqwn8kpua77n23r3h5s8ptda9cmn
 blockchain: THORChain
 description: 3/3 - Remove liquidity RUNE from ThorLP.ETH.THOR (asymmetric); 540F7BEC12BAC6D2DB5AB1DE894F1EEF4780E2B9E6CA578EC8C97C2D8FC6C54E
-id: 2021-11-06T01:23:55.352Z.remove.dad00a44ea31
+id: 2021-11-06T01:23:55.352Z.in.6ce47b47cab8
 ---
 walletExchange: thor12vtlhpqe3lwqwn8kpua77n23r3h5s8ptda9cmn
 timestamp: 2021-11-06T01:24:05.352Z
@@ -32,4 +32,4 @@ from: thor12vtlhpqe3lwqwn8kpua77n23r3h5s8ptda9cmn
 to: thorchain
 blockchain: THORChain
 description: 1/3 - Return LP token to ThorLP.ETH.THOR (asymmetric); 540F7BEC12BAC6D2DB5AB1DE894F1EEF4780E2B9E6CA578EC8C97C2D8FC6C54E
-id: 2021-11-06T01:23:55.352Z.lp-out.2c3e8a14f3dc
+id: 2021-11-06T01:23:55.352Z.out.f32da848fda3

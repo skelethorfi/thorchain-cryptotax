@@ -1,7 +1,7 @@
 import {Activity} from "../../domain/Activity";
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
 import {Protocol} from "../../domain/Protocol";
-import {fee, findLeg, leg, legBlockchain, named, plusSeconds, referencePrice} from "./common";
+import {fee, findLeg, leg, legBlockchain, legTrace, named, plusSeconds, referencePrice} from "./common";
 
 // A cross-chain trade: the trade-out on the sending wallet carries the fee; the trade-in on the receiving
 // wallet comes 10 s later. A part returned unfilled is netted off the trade-out.
@@ -32,7 +32,7 @@ export function swapRows(activity: Activity, protocol: Protocol): CryptoTaxTrans
             to: protocol.counterparty,
             blockchain: legBlockchain(sent, protocol),
             ...referencePrice(activity, 'midgard:swap.inPriceUSD'),
-            trace: {role: 'trade-out'},
+            trace: legTrace(sent),
             description: `1/2 - ${swap}${returnedNote}; ${txId}`,
         },
         {
@@ -45,7 +45,7 @@ export function swapRows(activity: Activity, protocol: Protocol): CryptoTaxTrans
             to: received.wallet,
             blockchain: legBlockchain(received, protocol),
             ...referencePrice(activity, 'midgard:swap.outPriceUSD'),
-            trace: {role: 'trade-in'},
+            trace: legTrace(received),
             description: `2/2 - ${swap}; ${txId}`,
         },
     ];

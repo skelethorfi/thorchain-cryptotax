@@ -9,7 +9,7 @@ from: thorchain
 to: bc1qn20y0larf5nq26a0hwjmz5e447s5r2t9cgcwxh
 blockchain: BTC
 description: 3/4 - Remove liquidity BTC from ThorLP.BTC.BTC (symmetric); 3C909D763AC1102872E14FE402D04354AE0691E76D24844E6AB86E05F184B0C6
-id: 2022-04-08T16:32:51.962Z.remove.5eb3f9162bb6
+id: 2022-04-08T16:32:51.962Z.in.b561f23b4547
 ---
 walletExchange: thor1ef95h5r7xcvahpw480pacslhutw6t6770phu0z
 timestamp: 2022-04-08T16:33:11.962Z
@@ -22,7 +22,7 @@ from: thorchain
 to: thor1ef95h5r7xcvahpw480pacslhutw6t6770phu0z
 blockchain: THORChain
 description: 4/4 - Remove liquidity RUNE from ThorLP.BTC.BTC (symmetric); 3C909D763AC1102872E14FE402D04354AE0691E76D24844E6AB86E05F184B0C6
-id: 2022-04-08T16:32:51.962Z.remove.bf6523f7929d
+id: 2022-04-08T16:32:51.962Z.in.ebf18b7d0939
 ---
 walletExchange: thor1ef95h5r7xcvahpw480pacslhutw6t6770phu0z
 timestamp: 2022-04-08T16:33:01.962Z
@@ -45,4 +45,4 @@ from: thor1ef95h5r7xcvahpw480pacslhutw6t6770phu0z
 to: thorchain
 blockchain: THORChain
 description: 1/4 - Return LP token to ThorLP.BTC.BTC (symmetric); 3C909D763AC1102872E14FE402D04354AE0691E76D24844E6AB86E05F184B0C6
-id: 2022-04-08T16:32:51.962Z.lp-out.c7801c380988
+id: 2022-04-08T16:32:51.962Z.out.c4bff1a92a84
