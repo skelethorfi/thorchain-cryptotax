@@ -70,6 +70,8 @@ export class Exporter {
             fetch: options.fetch,
             replay: options.replay ? SnapshotManifest.load(options.replay) : undefined,
             manifest: this.snapshots,
+            pendingStuckDays: this.config.pendingStuckDays,
+            today: options.today,
         });
         this.viewblock = new Viewblock(store);
         this.midgard = new MidgardService(store);

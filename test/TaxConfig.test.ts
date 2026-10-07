@@ -11,6 +11,7 @@ describe('TaxConfig', () => {
         expect(result).toEqual({
             outputPath: 'output',
             storePath: 'store',
+            pendingStuckDays: 30,
             toDate: '2026-06-30'
         });
     });
@@ -25,6 +26,12 @@ describe('TaxConfig', () => {
         expect(() => TaxConfig.applyDefaults({timezone: 'Nowhere/City'}, new Date())).toThrow('Unknown timezone: Nowhere/City');
     });
 
+    test('pendingStuckDays must be a number of days, 0 or more', () => {
+        expect(() => TaxConfig.applyDefaults({pendingStuckDays: -1}, new Date())).toThrow('pendingStuckDays must be a number of days');
+        expect(() => TaxConfig.applyDefaults({pendingStuckDays: '30' as any}, new Date())).toThrow('pendingStuckDays must be a number of days');
+        expect(TaxConfig.applyDefaults({pendingStuckDays: 0}, new Date()).pendingStuckDays).toBe(0);
+    });
+
     test('applyDefaults with populated config', () => {
         const config = {
             fromDate: '2020-01-01',
@@ -34,6 +41,7 @@ describe('TaxConfig', () => {
             outputPath: 'custom-output',
             unsupportedActionsPath: 'custom-unsupported-actions',
             storePath: 'custom-store',
+            pendingStuckDays: 90,
             wallets: []
         };
 
@@ -47,6 +55,7 @@ describe('TaxConfig', () => {
             outputPath: 'custom-output',
             unsupportedActionsPath: 'custom-unsupported-actions',
             storePath: 'custom-store',
+            pendingStuckDays: 90,
             wallets: []
         });
     });

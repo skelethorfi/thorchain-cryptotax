@@ -27,6 +27,11 @@ export interface StoreOptions {
     replay?: SnapshotManifest;
     // Records every copy this run uses
     manifest?: SnapshotManifest;
+    // A record still pending this many days after its date is stuck: a default run stops fetching it again.
+    // Default: always fetched again
+    pendingStuckDays?: number;
+    // The run's date, to tell a stuck record. Default: now
+    today?: Date;
 }
 
 export interface Fetched<T> {
@@ -151,6 +156,7 @@ export class RecordStore {
     private readonly fetchMode: FetchMode;
     private readonly replay?: SnapshotManifest;
     private readonly manifest?: SnapshotManifest;
+    private readonly stuckBefore?: Date;
     // Records and lists fetched in this run: one shared by several wallets is fetched once
     private readonly fetchedThisRun = new Set<string>();
     // File names under records/<source> or lists/<source>, by key; built on first use
@@ -161,6 +167,9 @@ export class RecordStore {
         this.offline = (options.offline ?? false) || !!options.replay;
         this.fetchMode = options.fetch ?? 'latest';
         this.manifest = options.manifest;
+        if (options.pendingStuckDays !== undefined) {
+            this.stuckBefore = new Date((options.today ?? new Date()).getTime() - options.pendingStuckDays * 86400_000);
+        }
     }
 
     // One record, e.g. a THORNode tx. date: when the record started (e.g. the date of the action it belongs
@@ -172,7 +181,7 @@ export class RecordStore {
 
         let fetchedNow: Stored<T> | undefined;
 
-        if (this.shouldFetchRecord(source, key, rules)) {
+        if (this.shouldFetchRecord(source, key, rules, date)) {
             this.assertCanFetch(`${source} ${key}`);
             const fetched = await withRetry(fetch, `${source} ${key}`);
             fetchedNow = this.store(source, key, fetched.data, rules, {fetchedAt: new Date().toISOString(), url: fetched.url}, date);
@@ -217,8 +226,9 @@ export class RecordStore {
     }
 
     // A record not stored yet is always fetched, and one still pending is fetched again, as it may since be
-    // finalised. A finalised one can only come back revised or pruned, which 'all' looks for.
-    private shouldFetchRecord<T>(source: string, key: string, rules: RecordRules<T>): boolean {
+    // finalised, unless it is stuck (pending since before the cut-off; THORNode reports a tx it pruned as not
+    // yet observed). A finalised or stuck one is fetched again by 'all'. date: of the action the record belongs to
+    private shouldFetchRecord<T>(source: string, key: string, rules: RecordRules<T>, date?: Date): boolean {
         const copies = this.copies<T>(source, key);
 
         if (this.offline) {
@@ -227,7 +237,7 @@ export class RecordStore {
 
         const wanted = copies.length === 0
             || this.fetchMode === 'all'
-            || !!rules.isPending?.(chooseCopy(copies, rules).copy.data);
+            || (!!rules.isPending?.(chooseCopy(copies, rules).copy.data) && !this.isStuck(date));
 
         return wanted && this.firstFetchThisRun(`records/${source}/${key}`);
     }
@@ -239,6 +249,10 @@ export class RecordStore {
         }
 
         return this.firstFetchThisRun(`lists/${source}/${wallet}`);
+    }
+
+    private isStuck(date?: Date): boolean {
+        return !!date && !!this.stuckBefore && date < this.stuckBefore;
     }
 
     private firstFetchThisRun(id: string): boolean {

@@ -97,6 +97,39 @@ describe('fetch modes', () => {
         expect(await new RecordStore(root).list('midgard', 'w', again, LIST)).toEqual([{id: 'a'}, {id: 'b'}]);
     });
 
+    test('a record still pending past the cut-off is stuck: fetched again only by --refetch-all', async () => {
+        const root = makeDir();
+        const today = new Date(Date.UTC(2026, 6, 31));
+        const options = {pendingStuckDays: 30, today};
+        const old = new Date(Date.UTC(2026, 5, 30));
+        const recent = new Date(Date.UTC(2026, 6, 2));
+        await new RecordStore(root, options).record('thornode', 'old', fetching<Tx>({id: 'old', status: 'pending'}), RULES, old);
+        await new RecordStore(root, options).record('thornode', 'recent', fetching<Tx>({id: 'recent', status: 'pending'}), RULES, recent);
+
+        const fetchOld = fetching<Tx>({id: 'old', status: 'done'});
+        const fetchRecent = fetching<Tx>({id: 'recent', status: 'done'});
+        expect(await new RecordStore(root, options).record('thornode', 'old', fetchOld, RULES, old)).toEqual({id: 'old', status: 'pending'});
+        expect(await new RecordStore(root, options).record('thornode', 'recent', fetchRecent, RULES, recent)).toEqual({id: 'recent', status: 'done'});
+        expect(fetchOld).not.toHaveBeenCalled();
+
+        expect(await new RecordStore(root, {...options, fetch: 'all'}).record('thornode', 'old', fetchOld, RULES, old)).toEqual({id: 'old', status: 'done'});
+    });
+
+    test('with no date or no cut-off, a pending record is always fetched again', async () => {
+        const root = makeDir();
+        const old = new Date(Date.UTC(2020, 0, 1));
+        await new RecordStore(root).record('thornode', 'a', fetching<Tx>({id: 'a', status: 'pending'}), RULES, old);
+        await new RecordStore(root).record('thornode', 'b', fetching<Tx>({id: 'b', status: 'pending'}), RULES);
+
+        const fetchA = fetching<Tx>({id: 'a', status: 'pending'});
+        const fetchB = fetching<Tx>({id: 'b', status: 'pending'});
+        await new RecordStore(root).record('thornode', 'a', fetchA, RULES, old);
+        await new RecordStore(root, {pendingStuckDays: 30}).record('thornode', 'b', fetchB, RULES);
+
+        expect(fetchA).toHaveBeenCalledTimes(1);
+        expect(fetchB).toHaveBeenCalledTimes(1);
+    });
+
     test('offline, a pending record is not fetched again', async () => {
         const root = makeDir();
         await new RecordStore(root).record('thornode', 'p', fetching<Tx>({id: 'p', status: 'pending'}), RULES);
