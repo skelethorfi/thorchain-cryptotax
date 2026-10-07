@@ -51,6 +51,9 @@ export interface RecordRules<T = any> {
     // The folder of a new record: its month 'yyyy/mm' (monthFolder), from its own date. A record with no
     // date of its own (a THORNode tx status) takes the date of the action it was fetched for, or 'undated'.
     folderOf?: (data: T) => string | undefined;
+    // Whose record it is (e.g. an action's addresses). A fetched copy that shares none with the stored copy is
+    // another member's record under the same key, not a new version of it: an error, not a new copy.
+    membersOf?: (data: T) => string[];
 }
 
 export interface ListOptions<T> {
@@ -146,6 +149,12 @@ export function chooseCopy<T>(copies: Copy<T>[], rules: RecordRules<T> = {}): {c
     return {copy, choice, ignored};
 }
 
+// Addresses compared case-insensitively; a record with none (e.g. a placeholder) matches anything
+function sharesMember(a: string[], b: string[]): boolean {
+    const lower = new Set(a.map(address => address.toLowerCase()));
+    return a.length === 0 || b.length === 0 || b.some(address => lower.has(address.toLowerCase()));
+}
+
 // Oldest first: by fetch time (unknown first), then by number
 function byAge(a: Origin & {n: number}, b: Origin & {n: number}): number {
     return (a.fetchedAt ?? '').localeCompare(b.fetchedAt ?? '') || a.n - b.n;
@@ -217,7 +226,10 @@ export class RecordStore {
 
         const lists = this.lists(source, wallet);
         const latest = lists[lists.length - 1]?.keys ?? [];
-        const earlier = [...new Set(lists.slice(0, -1).flatMap(list => list.keys))].filter(key => !latest.includes(key));
+        // A record whose key has since changed (the key rule for its shape was refined) is in the latest list under
+        // its new key, so it is not missing
+        const renamed = (key: string) => this.copies<T>(source, key).some(copy => latest.includes(options.keyOf(copy.data)));
+        const earlier = [...new Set(lists.slice(0, -1).flatMap(list => list.keys))].filter(key => !latest.includes(key) && !renamed(key));
         const keys = [...latest, ...earlier];
 
         this.manifest?.recordList({source, wallet, keys, missing: earlier, file: this.relative(lists[lists.length - 1]?.file)});
@@ -362,6 +374,11 @@ export class RecordStore {
 
         if (latest?.sha256 === hash) {
             return {copy: latest, status: 'unchanged'};
+        }
+
+        if (latest && rules.membersOf && !sharesMember(rules.membersOf(latest.data), rules.membersOf(data))) {
+            throw new Error(`${source} ${key}: the fetched record belongs to other addresses than the stored copy `
+                + `(${this.relative(latest.file)}), so two records have one key; it was not stored`);
         }
 
         return {copy: this.writeCopy(source, key, data, hash, rules, origin, date), status: latest ? 'changed' : 'new'};

@@ -11,23 +11,36 @@ import {CosmosTx} from "../thorchain/CosmosTxService";
 
 // A Midgard action has no id. Its type and first txid are unique among a wallet's actions, except for
 // contract actions: one wasm call gives an action per event, so they add the event. The few with no txid
-// (e.g. some refunds) fall back to their date. Old Midgard's genesisTx placeholders all share one txid, so
-// they are told apart by pool and depositing addresses.
+// (e.g. some refunds) fall back to their date. The store is shared by every wallet, so actions that one tx
+// gave to several members are told apart by the members' addresses: old Midgard's genesisTx placeholders
+// (also by pool), and Maya's donate adds.
 export function midgardActionKey(action: Action): string {
     const txId = action.in.find(tx => tx.txID)?.txID || action.out.find(tx => tx.txID)?.txID;
     const contractType = (action.metadata as any).contract?.contractType;
+    const members = action.in.map(tx => tx.address || '-').join('+');
 
     if (isGenesisPlaceholder(action)) {
-        return [action.type, 'genesisTx', ...action.pools, action.in.map(tx => tx.address || '-').join('+')].join('.');
+        return [action.type, 'genesisTx', ...action.pools, members].join('.');
+    }
+
+    if (isDonateAdd(action)) {
+        return [action.type, txId, members].join('.');
     }
 
     return [action.type, txId || `date-${action.date}`, contractType].filter(Boolean).join('.');
 }
 
-// A pending action (e.g. an unfinished loan repayment or refund) can later be finalised
+// Maya made LP positions for many members in one tx, each an add with the memo 'donate:<pool>' and that txid
+export function isDonateAdd(action: Action): boolean {
+    return action.type === 'addLiquidity' && /^donate:/i.test((action.metadata as any).addLiquidity?.memo ?? '');
+}
+
+// A pending action (e.g. an unfinished loan repayment or refund) can later be finalised. A copy is only
+// another version of the record when it has a member in common with the stored one (membersOf).
 export const MIDGARD_RULES: RecordRules<Action> = {
     isPending: action => action.status !== 'success',
     folderOf: action => monthFolder(new Date(Number(action.date) / 1e6)),
+    membersOf: action => action.in.map(tx => tx.address).filter(Boolean),
 };
 
 // THORNode prunes old txs: a later fetch can lose the tx and its gas, so the copy with more is used.
