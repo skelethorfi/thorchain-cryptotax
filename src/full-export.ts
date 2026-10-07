@@ -2,6 +2,7 @@ import * as path from "path";
 import {format} from 'date-fns-tz';
 import {Exporter} from "./cli/Exporter";
 import {oldCacheHint} from "./cli/store";
+import {SUMMARY_FILE} from "./cli/RunSummary";
 
 async function main() {
 
@@ -41,8 +42,15 @@ async function main() {
 
     const importCommand = replay ? undefined : oldCacheHint(storePath, path.dirname(path.resolve(configFile)));
 
+    const report = exporter.report;
+    report.about(`Config: ${path.resolve(configFile)}`);
+    report.about(`Started: ${now.toISOString()}`);
+    report.about(`Period: ${exporter.config.fromDate} to ${exporter.config.toDate} (${exporter.config.timezone ?? 'UTC'}), ${exporter.config.frequency}`);
+    report.about(`Protocols: ${(exporter.config.protocols ?? ['thorchain']).join(', ')}`);
+    report.about(`Mode: ${replay ? `replay of ${path.resolve(replay)}` : offline ? 'offline' : fetch === 'all' ? 'refetch all' : 'fetch the latest data'}; store ${storePath}`);
+
     if (importCommand) {
-        console.warn(`Found a cache from before the store, which runs no longer read. To keep what it holds, stop and import it first:\n  ${importCommand}\n`);
+        report.warn(`Found a cache from before the store, which runs no longer read. To keep what it holds, stop and import it first:\n  ${importCommand}\n`);
     }
 
     if (replay) {
@@ -57,10 +65,12 @@ async function main() {
     exporter.saveToCsv(exporter.getRows(await exporter.collectBundles(), outputPath), path.join(outputPath, 'csv'));
 
     // Which snapshot of each source this run used, for --replay
-    exporter.snapshots.write(outputPath);
+    exporter.snapshots.write(outputPath).forEach(line => report.info(line));
 
     // Last, so they are seen
-    exporter.summary.forEach(line => console.warn(line));
+    exporter.endWarnings.forEach(line => report.warn(line));
+    report.write(outputPath);
+    console.log(`Summary: ${path.join(outputPath, SUMMARY_FILE)}`);
 }
 
 main().then(() => {

@@ -15,7 +15,8 @@ import {SnapshotManifest} from "../sources/store/SnapshotManifest";
 import {getProtocol, Protocol, THORCHAIN, withAssetNames} from "../domain/Protocol";
 import {MidgardSource, Source, TcySource, ViewblockSource} from "../sources/Source";
 import {ACTION_MEMO_WARNING, actionMemoSummary} from "../interpret/midgard/send";
-import {dedupeBundles, getBundleSourceName, RawBundle, selectSends, VIEWBLOCK_SENDS_BEFORE} from "../sources/RawBundle";
+import {RunSummary} from "./RunSummary";
+import {dedupeBundles, getBundleKey, getBundleSourceName, RawBundle, selectSends, VIEWBLOCK_SENDS_BEFORE} from "../sources/RawBundle";
 import {BundleResult, collectRows, runBundle} from "../pipeline/run";
 import {csvFiles} from "../export/summ/files";
 import {Action} from "@xchainjs/xchain-midgard";
@@ -44,8 +45,10 @@ export class Exporter {
     thornode: ThornodeService;
     cosmosTxs: CosmosTxService;
     tcyDistribution: TcyDistributionService;
+    // What the run printed that is worth keeping, written to its folder as summary.md
+    report = new RunSummary();
     // Warnings for the end of the run, set by getRows
-    summary: string[] = [];
+    endWarnings: string[] = [];
 
     constructor(filename: string, options: ExportOptions = {}) {
         this.config = TaxConfig.load(filename, options.today ?? new Date());
@@ -53,13 +56,13 @@ export class Exporter {
         this.snapshots = new SnapshotManifest();
         // One store for every source (docs/specs/snapshots.md)
         if (this.config.unsupportedActionsPath !== undefined) {
-            console.warn('Config: unsupportedActionsPath is no longer used: unsupported actions are saved in each run\'s folder (<run>/unsupported/)');
+            this.report.warn('Config: unsupportedActionsPath is no longer used: unsupported actions are saved in each run\'s folder (<run>/unsupported/)');
         }
         if (this.config.cacheDataSources !== undefined) {
-            console.warn('Config: cacheDataSources is no longer used: every run fetches the latest data and keeps what was stored; use --offline to fetch nothing');
+            this.report.warn('Config: cacheDataSources is no longer used: every run fetches the latest data and keeps what was stored; use --offline to fetch nothing');
         }
         for (const wallet of this.config.wallets.filter(w => w.addReferencePrices)) {
-            console.warn(`Config: addReferencePrices is no longer supported and is ignored (wallet ${wallet.name})`);
+            this.report.warn(`Config: addReferencePrices is no longer supported and is ignored (wallet ${wallet.name})`);
         }
 
         const store = new RecordStore(storePath, {
@@ -114,17 +117,17 @@ export class Exporter {
         const sends = selectSends(unique.bundles);
 
         if (unique.duplicates > 0) {
-            console.log(`Skipped ${unique.duplicates} Midgard actions also listed for an earlier wallet`);
+            this.report.info(`Skipped ${unique.duplicates} Midgard actions also listed for an earlier wallet`);
         }
 
         if (sends.dropped.inbound > 0) {
-            console.log(`Skipped ${sends.dropped.inbound} Midgard sends that are another action's inbound`);
+            this.report.info(`Skipped ${sends.dropped.inbound} Midgard sends that are another action's inbound`);
         }
 
         const results = sends.bundles.map(bundle => runBundle(bundle, this.protocolFor(bundle), {assets: this.config.assets}));
         results.forEach(result => this.handleIssues(result, outputPath));
         const actionMemos = results.flatMap(result => result.issues).filter(issue => issue.message.startsWith(ACTION_MEMO_WARNING)).length;
-        this.summary = [actionMemoSummary(actionMemos, this.config.protocols ?? ['thorchain'])].filter((line): line is string => !!line);
+        this.endWarnings = [actionMemoSummary(actionMemos, this.config.protocols ?? ['thorchain'])].filter((line): line is string => !!line);
 
         return collectRows(results);
     }
@@ -139,14 +142,16 @@ export class Exporter {
             console.log(`${date} ${type}: ${rows.length}`);
         }
 
+        const key = getBundleKey(bundle);
+
         for (const issue of issues) {
             if (issue.kind === 'warning' || issue.kind === 'manual') {
-                console.warn(`${date} ${type}: ${issue.kind === 'manual' ? 'enter by hand: ' : ''}${issue.message}`);
+                this.report.issue(issue.kind, `${date} ${type}: ${issue.kind === 'manual' ? 'enter by hand: ' : ''}${issue.message}`, key);
             } else if (issue.kind === 'unsupported') {
-                console.error(`${date} ${type}: unsupported action`);
+                this.report.issue('unsupported', `${date} ${type}: unsupported action`, key);
                 this.saveUnsupported(bundle, outputPath);
             } else if (issue.kind === 'failed') {
-                console.error(`${date} ${type}: ${issue.message}`);
+                this.report.issue('failed', `${date} ${type}: ${issue.message}`, key);
                 this.saveFailure(outputPath, bundle.wallet, getBundleSourceName(bundle), time, bundle.data, issue.message);
             }
         }
@@ -172,9 +177,9 @@ export class Exporter {
     saveToCsv(txs: CryptoTaxTransaction[], outputPath: string) {
         const ranges = generateDateRanges(this.config.fromDate, this.config.toDate, this.config.frequency);
         const {files, exported, warnings} = csvFiles(txs, ranges, this.config.wallets, this.config.timezone);
-        warnings.forEach(warning => console.warn(`WARN: ${warning}`));
+        warnings.forEach(warning => this.report.warn(`WARN: ${warning}`));
         files.forEach(file => writeCsv(path.join(outputPath, file.name), file.rows));
-        console.log(`Total exported: ${exported}`);
+        this.report.info(`Total exported: ${exported}`);
     }
 
     private saveFailure(outputPath: string, walletAddress: string, source: string, date: Date, data: any, errorMessage: string): void {

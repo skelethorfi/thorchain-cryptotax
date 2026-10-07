@@ -50,7 +50,8 @@ are relative to the config file's folder, so the output and cache are written ne
 your config, not into the repo.
 
 Each run writes a folder under `outputPath` named by its start time, holding `csv/`,
-`snapshots.json` and, when there are any, `unsupported/` and `failures/`. Actions the
+`snapshots.json`, `summary.md` (how it ran, counts, and every warning it printed;
+`docs/specs/run-summary.md`) and, when there are any, `unsupported/` and `failures/`. Actions the
 exporter can't map yet are saved in `unsupported/`, one file per action, named like its
 store record: `<type>/<type>.<txid>[.<contract type>].json` (another protocol's under its
 own folder, e.g. `maya/`). So the folder lists exactly what that run could not map.
