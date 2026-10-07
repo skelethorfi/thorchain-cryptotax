@@ -59,12 +59,16 @@ export class TaxConfig {
         if (config.timezone !== undefined) {
             checkTimeZone(config.timezone);
         }
+        if (config.pendingStuckDays !== undefined && !(typeof config.pendingStuckDays === 'number' && config.pendingStuckDays >= 0)) {
+            throw new Error(`Config: pendingStuckDays must be a number of days, 0 or more (got ${JSON.stringify(config.pendingStuckDays)})`);
+        }
 
         const dateToday = dateIn(today, config.timezone);
         const defaults = {
             outputPath: 'output',
             // The record store (docs/specs/snapshots.md); can be shared by several configs
             storePath: 'store',
+            pendingStuckDays: 30,
             toDate: dateToday
         };
 

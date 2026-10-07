@@ -118,7 +118,17 @@ A finalised record (a THORNode tx, a Cosmos tx) can only come back revised or
 pruned, and the store keeps the earlier copy either way, so a default run
 leaves it alone. `--refetch-all` checks every record, e.g. before filing a
 year, to see what the sources have changed since. A pending one (a stage not
-completed) is fetched again on every run, until a finalised copy is stored.
+completed) is fetched again on every run, until a finalised copy is stored or it
+is stuck.
+
+A THORNode or Cosmos tx is stuck when it is still pending `pendingStuckDays`
+(config, default 30) after the date of the action it belongs to. A default run
+stops fetching it again; `--refetch-all` still does. THORChain finalises in
+minutes to hours (a streaming swap runs at most 14,400 blocks, about a day, and
+an outbound waits at most 17,280 blocks), so a month still pending means it
+never will: THORNode reports a tx it has pruned as not yet observed, and an
+outbound that is minted rather than signed (a switch) is never marked signed.
+Without the cut-off these were fetched again on every run, forever.
 
 A wallet list is the wallet's whole history, because the sources page from
 the first action, so a run sees new activity and changes to old actions in

@@ -31,6 +31,10 @@ frequency = "yearly"
 # Several configs (e.g. one per tax year) can share one store.
 # storePath = "/some/path/store"
 
+# Optional: days after its date that a THORNode or Cosmos tx still pending counts as stuck (default: 30).
+# A run stops fetching a stuck tx again; --refetch-all still does.
+# pendingStuckDays = 30
+
 # List of wallets
 # add a new [[wallets]] entry for each wallet
 # add each wallet that was used in swaps/LP/etc
