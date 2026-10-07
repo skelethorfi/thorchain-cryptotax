@@ -58,6 +58,9 @@ async function main() {
 
     // Which snapshot of each source this run used, for --replay
     exporter.snapshots.write(outputPath);
+
+    // Last, so they are seen
+    exporter.summary.forEach(line => console.warn(line));
 }
 
 main().then(() => {

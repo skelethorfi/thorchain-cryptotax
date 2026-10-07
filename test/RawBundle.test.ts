@@ -55,10 +55,11 @@ describe('selectSends', () => {
         expect(selectSends([swap, inbound, plain])).toStrictEqual({bundles: [swap, plain], dropped: {inbound: 1, viewblock: 0}});
     });
 
-    test('a Maya action with the same txid does not drop a THORChain send', () => {
+    test("drops a THORChain send that is a Maya action's inbound (RUNE sent to a Maya vault)", () => {
+        const mayaSwap = bundle('midgard', 'thor1a', action('AB', 'swap'), 'maya');
         const send = bundle('midgard', 'thor1a', action('AB', 'send'));
 
-        expect(selectSends([bundle('midgard', 'thor1a', action('AB', 'swap'), 'maya'), send]).bundles).toContain(send);
+        expect(selectSends([mayaSwap, send])).toStrictEqual({bundles: [mayaSwap], dropped: {inbound: 1, viewblock: 0}});
     });
 
     test('keeps only Viewblock sends from before 2022-04 that Midgard does not list', () => {

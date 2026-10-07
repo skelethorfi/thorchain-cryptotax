@@ -76,12 +76,13 @@ export function dedupeBundles(bundles: RawBundle[]): {bundles: RawBundle[]; dupl
 // Sends before this come from Viewblock too, as Midgard's history is incomplete (docs/specs/sends.md)
 export const VIEWBLOCK_SENDS_BEFORE = '2022-04-01';
 
-// The sends that give rows (docs/specs/sends.md): a Midgard send that is the inbound of another THORChain
-// action (a swap or TCY unstake sent by MsgSend) is dropped, as that action gives the rows; of Viewblock's
-// txs, only sends from before VIEWBLOCK_SENDS_BEFORE that Midgard does not list are kept.
+// The sends that give rows (docs/specs/sends.md): a THORChain send that is the inbound of another action, on
+// THORChain (a swap or TCY unstake sent by MsgSend) or Maya (RUNE sent to a Maya vault), is dropped, as that
+// action gives the rows; of Viewblock's txs, only sends from before VIEWBLOCK_SENDS_BEFORE that Midgard does
+// not list are kept.
 export function selectSends(bundles: RawBundle[]): {bundles: RawBundle[]; dropped: {inbound: number; viewblock: number}} {
-    const thorchain = bundles.filter(bundle => bundle.source === 'midgard' && bundle.protocol === THORCHAIN.id);
-    const inboundTxids = (sends: boolean) => new Set(thorchain
+    const midgard = bundles.filter(bundle => bundle.source === 'midgard');
+    const inboundTxids = (sends: boolean) => new Set(midgard
         .filter(bundle => isMidgardSend(bundle) === sends)
         .flatMap(bundle => (bundle.data as Action).in.map(tx => tx.txID?.toUpperCase()))
         .filter(Boolean));
