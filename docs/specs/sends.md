@@ -29,14 +29,23 @@ Maya sends (Midgard `send` with `MAYA` or `CACAO`) are not mapped yet
 
 ## Which sends give rows
 
-A `MsgSend` with a memo can be another action's inbound: a swap paid by
-`MsgSend` with an `=` memo, or a TCY unstake request (`tcy-` memo, no coins).
-Midgard then lists the same txid twice, as a `send` and as the action
-(`swap`, `tcy_unstake`). The action gives the rows; **a send whose txid is
-also the inbound of another Midgard action gives none**.
+A `MsgSend` with a memo can be another action's inbound:
 
-A send with a swap memo and no such action gives a `send` row as usual: the
-coin left the wallet, whatever the memo said.
+- on THORChain, a swap paid by `MsgSend` with an `=` memo, or a TCY unstake
+  request (`tcy-` memo, no coins): THORChain's Midgard lists the same txid as
+  a `send` and as the action (`swap`, `tcy_unstake`);
+- on Maya, RUNE sent to Maya's vault on THORChain with a Maya memo (e.g. a
+  swap of RUNE to another chain): THORChain's Midgard lists only a `send`,
+  and Maya's Midgard lists the action, with the same txid as its inbound.
+
+The action gives the rows; **a send whose txid is also the inbound of
+another listed action, on any protocol, gives none**.
+
+A send whose memo asks for an action (`=`, `+`, `-`, `swap`, `trade+`,
+`loan+`, `~` and so on) and that no listed action matches still gives a
+`send` row, as the coin left the wallet, with a warning: most likely a
+protocol received it whose actions the run does not list, e.g. a Maya swap
+in a config whose `protocols` leaves out `maya`.
 
 A send with no coins (only a memo) moves nothing and gives no row.
 

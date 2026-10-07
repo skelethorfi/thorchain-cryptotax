@@ -24,6 +24,10 @@ export interface Send {
 
 const ARKEO_DELEGATION = 'delegate:arkeo:';
 
+// A memo that asks THORChain or Maya to do something (swap, add, withdraw, trade, loan, name, bond, TCY), as
+// opposed to a note such as an exchange's deposit id
+const ACTION_MEMO = /^(=|swap|s|\+|add|a|-|wd|withdraw|loan[+-]|\$[+-]|trade[+-]|secure[+-]|pool[+-]|~|n|name|bond|unbond|tcy[+-]?)(:|$)/i;
+
 // A send from the side of the wallet whose listing gave it: the sender's legs (the coin and the native fee),
 // or the receiver's (the coin). A send to itself is the sender's.
 export function sendActivity(send: Send, wallet: string, protocol: Protocol): Activity {
@@ -74,5 +78,11 @@ export function interpretSend(bundle: RawBundle, protocol: Protocol): {activitie
         memo: (action.metadata as any)?.send?.memo ?? '',
     };
 
-    return {activities: [sendActivity(send, bundle.wallet, protocol)], issues: []};
+    // selectSends has dropped the sends another listed action explains; one with an action memo left over was
+    // most likely received by a protocol whose actions this run does not list
+    const issues: Issue[] = ACTION_MEMO.test(send.memo)
+        ? [{kind: 'warning', message: `exported as a send, but its memo asks for an action no listed action matches (on Maya? add "maya" to protocols): ${send.memo}`}]
+        : [];
+
+    return {activities: [sendActivity(send, bundle.wallet, protocol)], issues};
 }
