@@ -13,8 +13,8 @@ the sources changed.
 
 - Rows come from each run's `csv/all.csv`, which holds every row.
 - Two rows are the same when every column but `ID` is equal. `ID` is
-  `<file>:<n>`, numbered from the oldest row, so one added row renumbers
-  every newer one; it is ignored.
+  ignored, so a run from before stable IDs (`<file>:<n>`, `periods.md`) can
+  still be compared with a newer one.
 - Rows are compared as multisets: two identical rows in one run and one in
   the other leave one row removed.
 - A removed row and an added row with the same timestamp, type, base currency,
