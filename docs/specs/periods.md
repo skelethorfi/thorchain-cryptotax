@@ -35,6 +35,21 @@ counts in that period.
 The period only decides which upload a row is in; Summ still dates each row
 by its own timestamp.
 
+## Row IDs
+
+Each row's `ID` column depends only on the action it comes from: the action's
+time and the row's role, e.g. `2023-01-06T21:53:15.332Z.refund-lost` or
+`<time>.thorchain.bridge-trade-out`. A row has the same ID in every file it is
+in (`all.csv`, the period's `all-…` file, its wallet's file) and in every run,
+so a row in Summ (which shows the ID as the "Tx Hash") is found in the CSVs by
+searching for its ID, and re-exporting a year does not change the IDs of rows
+that did not change. When two rows would get the same ID (two actions in one
+block), the second and later get `.2`, `.3`, …, in the order of the rows'
+contents. A row with no ID from its mapper gets `<time>.<type>`.
+
+Before October 2026 the ID was `<file>:<n>`, numbered from the oldest row in
+the file, so one added row renumbered every newer row.
+
 ## History
 
 - Before October 2026, periods ended at 00:00 UTC on their last day, so a

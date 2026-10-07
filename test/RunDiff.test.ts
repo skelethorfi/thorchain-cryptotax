@@ -3,7 +3,7 @@ import fs from "fs-extra";
 import os from "os";
 import path from "path";
 import {diffRecords, diffRows, diffRuns, explain, parseCsv, parseCsvLine, Row} from "../src/cli/diff";
-import {CryptoTaxTransaction, renderCsv} from "../src/export/summ/csv";
+import {assignRowIds, CryptoTaxTransaction, renderCsv} from "../src/export/summ/csv";
 import {RecordEntry} from "../src/sources/store/SnapshotManifest";
 
 const TX_A = 'A1'.repeat(32);
@@ -20,7 +20,7 @@ const tx = (time: string, amount: string, txid: string, extra: Partial<CryptoTax
     ...extra,
 });
 
-const rows = (txs: CryptoTaxTransaction[]): Row[] => parseCsv(renderCsv(txs, 'all.csv'));
+const rows = (txs: CryptoTaxTransaction[]): Row[] => parseCsv(renderCsv(assignRowIds(txs)));
 
 const record = (key: string, sha256: string, choice = 'only'): RecordEntry =>
     ({source: 'midgard', key, file: `records/midgard/${key}.0.json`, fetchedAt: null, sha256, choice, copies: 1});
@@ -31,12 +31,12 @@ describe('parseCsv', () => {
 
         expect(parseCsvLine('a,"b ""c"", d",')).toStrictEqual(['a', 'b "c", d', '']);
         expect(row['Description (Optional)']).toBe('a "b", c; ' + TX_A);
-        expect(row['ID (Optional)']).toBe('all.csv:1');
+        expect(row['ID (Optional)']).toMatch(/^2025-07-01T00:00:00\.000Z\./);
     });
 });
 
 describe('diffRows', () => {
-    test('a row added before others renumbers their IDs but leaves them equal', () => {
+    test('a row added before others leaves them equal', () => {
         const old = rows([tx('2025-07-02T00:00:00Z', '1', TX_A)]);
         const now = rows([tx('2025-07-02T00:00:00Z', '1', TX_A), tx('2025-07-01T00:00:00Z', '2', TX_B)]);
 
@@ -87,7 +87,7 @@ describe('diffRecords and explain', () => {
 
 describe('diffRuns', () => {
     const writeRun = (dir: string, files: {[name: string]: CryptoTaxTransaction[]}, records: RecordEntry[]) => {
-        Object.entries(files).forEach(([name, txs]) => fs.outputFileSync(path.join(dir, 'csv', name), renderCsv(txs, name)));
+        Object.entries(files).forEach(([name, txs]) => fs.outputFileSync(path.join(dir, 'csv', name), renderCsv(assignRowIds(txs))));
         fs.outputJsonSync(path.join(dir, 'snapshots.json'), {layout: 3, records, lists: []});
     };
 

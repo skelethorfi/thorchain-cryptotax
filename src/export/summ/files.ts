@@ -1,4 +1,4 @@
-import {CryptoTaxTransaction} from "./csv";
+import {assignRowIds, CryptoTaxTransaction} from "./csv";
 import {IWallet} from "../../config/IWallet";
 import {DateRange, nextDay, startOfDay} from "../../utils/DateRange";
 
@@ -17,7 +17,8 @@ export interface CsvFile {
 //                                 the period's rows of the 'thorchain' wallet (each from or to it)
 // A period's days are calendar days in timeZone (docs/specs/periods.md). Throws when a row in a period lands
 // in no wallet file.
-export function csvFiles(rows: CryptoTaxTransaction[], ranges: DateRange[], wallets: IWallet[], timeZone: string = 'UTC'): {files: CsvFile[]; exported: number; warnings: string[]} {
+export function csvFiles(allRows: CryptoTaxTransaction[], ranges: DateRange[], wallets: IWallet[], timeZone: string = 'UTC'): {files: CsvFile[]; exported: number; warnings: string[]} {
+    const rows = assignRowIds(allRows);
     const warnings: string[] = [];
     const files: CsvFile[] = [{name: 'all.csv', rows}];
     const walletExchanges = getUniqueWalletExchanges(rows, warnings);

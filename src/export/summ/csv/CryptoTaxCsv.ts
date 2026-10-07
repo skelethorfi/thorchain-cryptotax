@@ -41,12 +41,24 @@ export function csvField(value: string): string {
     return /[",]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }
 
-// The text of one CSV file: the header, then the rows newest first, each with the ID
-// `<fileName>:<n>`, numbered from the oldest row up
-export function renderCsv(txs: CryptoTaxTransaction[], fileName: string): string {
-    const rows = ctcSortDesc(txs.map(tx => ({...tx})));
-    rows.forEach((tx, i) => tx.id = `${fileName}:${rows.length - i}`);
-    return createHeader() + rows.map(txToCsv).join('\n');
+// The text of one CSV file: the header, then the rows newest first
+export function renderCsv(txs: CryptoTaxTransaction[]): string {
+    return createHeader() + ctcSortDesc([...txs]).map(txToCsv).join('\n');
+}
+
+// Gives every row a unique ID that depends only on its action, so it is the same in every file and every run
+// (docs/specs/periods.md): the mapper's `<action time>.<role>`, and for a second row with the same one (two
+// actions in one block) `.2`, `.3`, … in the order of the rows' contents
+export function assignRowIds(rows: CryptoTaxTransaction[]): CryptoTaxTransaction[] {
+    const withIds = rows.map(row => ({...row, id: row.id || `${row.timestamp.toISOString()}.${row.type}`}));
+    const byId = new Map<string, CryptoTaxTransaction[]>();
+    withIds.forEach(row => byId.set(row.id!, [...byId.get(row.id!) ?? [], row]));
+
+    for (const [id, same] of byId) {
+        same.sort((a, b) => txToCsv(a).localeCompare(txToCsv(b))).slice(1).forEach((row, i) => row.id = `${id}.${i + 2}`);
+    }
+
+    return withIds;
 }
 
 export function writeCsv(
@@ -58,5 +70,5 @@ export function writeCsv(
     }
 
     console.log(`Write CSV: ${filename}`);
-    fs.outputFileSync(filename, renderCsv(txs, filename.split('/').pop() ?? filename));
+    fs.outputFileSync(filename, renderCsv(txs));
 }
