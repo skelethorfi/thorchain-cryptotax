@@ -82,24 +82,27 @@ export class SnapshotManifest {
         return this.lists.get(this.id(source, wallet));
     }
 
-    write(outputPath: string) {
+    // Writes the manifest; returns the run's summary of it, for the shell to print
+    write(outputPath: string): string[] {
         const records = [...this.records.values()].sort((a, b) => this.id(a.source, a.key).localeCompare(this.id(b.source, b.key)));
         const lists = [...this.lists.values()].sort((a, b) => this.id(a.source, a.wallet).localeCompare(this.id(b.source, b.wallet)));
         fs.outputJsonSync(path.join(outputPath, MANIFEST_FILE), {layout: LAYOUT, records, lists}, {spaces: 2});
 
         const count = (filter: (entry: RecordEntry) => boolean) => records.filter(filter).length;
-        console.log(`Snapshot: ${records.length} records from ${lists.length} wallet lists. ` +
+        const lines = [`Snapshot: ${records.length} records from ${lists.length} wallet lists. ` +
             `Fetched: ${count(e => e.fetched === 'new')} new, ${count(e => e.fetched === 'changed')} changed, ${count(e => e.fetched === 'unchanged')} unchanged. ` +
             `Using: ${count(e => e.choice === 'finalised')} finalised, ${count(e => e.choice === 'revised')} revised, ` +
-            `${count(e => e.choice === 'kept-over-pruned')} kept over a pruned copy, ${count(e => !!e.missing)} missing from the source`);
+            `${count(e => e.choice === 'kept-over-pruned')} kept over a pruned copy, ${count(e => !!e.missing)} missing from the source`];
 
         // Changes this run found, and records the sources no longer return; earlier choices are in the manifest
         const notable = records.filter(e => e.fetched === 'changed' || e.missing);
-        notable.slice(0, 20).forEach(entry => console.log(`  ${entry.missing ? 'missing' : `changed (${entry.choice})`}: ${entry.source} ${entry.key}`));
+        notable.slice(0, 20).forEach(entry => lines.push(`  ${entry.missing ? 'missing' : `changed (${entry.choice})`}: ${entry.source} ${entry.key}`));
 
         if (notable.length > 20) {
-            console.log(`  … and ${notable.length - 20} more (${MANIFEST_FILE})`);
+            lines.push(`  … and ${notable.length - 20} more (${MANIFEST_FILE})`);
         }
+
+        return lines;
     }
 
     private id(source: string, key: string): string {

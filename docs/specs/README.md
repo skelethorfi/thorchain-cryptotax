@@ -8,5 +8,6 @@
 - [Source data snapshots](./snapshots.md)
 - [Run diff](./run-diff.md)
 - [Sends](./sends.md)
+- [Run summary](./run-summary.md)
 - [Periods and CSV files](./periods.md)
 - [Activity](./activity.md)
