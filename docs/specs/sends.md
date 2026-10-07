@@ -45,7 +45,8 @@ A send whose memo asks for an action (`=`, `+`, `-`, `swap`, `trade+`,
 `loan+`, `~` and so on) and that no listed action matches still gives a
 `send` row, as the coin left the wallet, with a warning: most likely a
 protocol received it whose actions the run does not list, e.g. a Maya swap
-in a config whose `protocols` leaves out `maya`.
+in a config whose `protocols` leaves out `maya`. The run ends with one warning line
+counting these sends; when `maya` is not in `protocols`, it says to add it.
 
 A send with no coins (only a memo) moves nothing and gives no row.
 
