@@ -13,19 +13,22 @@ every gain; the sync never compares or writes fiat values.
 ## Two kinds of rows
 
 - **Managed rows** come from the exporter's CSVs that the operator uploads
-  (THORChain and Maya wallets: chains Summ does not import itself). Summ
+  (by default THORChain and Maya wallets). Summ
   keeps each row's `ID` (`periods.md`, Row IDs) on its leg. The sync plans
   their deletes and edits; new rows reach Summ by upload.
-- **Categorised rows** are rows the exporter writes for wallets Summ imports
-  itself (BTC, ETH and other L1 wallets): the L1 side of a swap, an LP add or
-  a refund. They are never uploaded. The sync finds Summ's own leg for each
+- **Categorised rows** are rows the exporter writes for wallets the user
+  lets Summ import itself (by default BTC, ETH and other L1 wallets): the L1
+  side of a swap, an LP add or a refund. They are never uploaded. The sync finds Summ's own leg for each
   (same on-chain txid, currency and amount) and edits its type and fee to
   match. It never creates or deletes a leg of Summ's own imports.
 
 Each CSV file's chain (in its name, `periods.md`) says which kind its rows
 are: chains listed in `managedChains` (default `THOR` and `MAYA`) are
-managed, all others categorised. A chain moves to categorised if Summ starts
-importing its wallets itself, or the uploaded rows would repeat Summ's own.
+managed, all others categorised. Which source a chain's rows come from is
+the user's choice, by what gives the better rows: Summ may support a chain's
+wallets (it has a THORChain integration) and the user still upload the
+exporter's rows because Summ's import of that chain is incomplete. What must
+not happen is both for one wallet: its rows would be counted twice.
 
 ## What Summ's MCP allows
 
@@ -88,8 +91,9 @@ again.
 
 - `filedBefore`: rows before this date belong to filed years; changing them
   is an amendment (below).
-- `managedChains`: the chains whose files are managed (default
-  `["THOR", "MAYA"]`).
+- `managedChains`: the chains whose files the user uploads, so their rows
+  are managed (default `["THOR", "MAYA"]`). A chain not listed is left to
+  Summ's own import of its wallets.
 - `managedSources`: Summ's source names of the managed rows (e.g. the
   account name the CSVs were uploaded under).
 

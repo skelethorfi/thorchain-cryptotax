@@ -17,13 +17,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '>=18'
+          node-version-file: .nvmrc
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci --ignore-scripts
 
       - name: Run tests
         run: npm test
 
       - name: Run summ-sync tests
-        run: cd packages/summ-sync && npm test
+        run: cd packages/summ-sync && npm run typecheck && npm test

@@ -5,12 +5,13 @@
   "description": "Keep Summ matching a set of Summ CSV files: pull, plan, apply through Summ's MCP server",
   "type": "module",
   "bin": {
-    "summ-sync": "bin/summ-sync.mjs"
+    "summ-sync": "bin/summ-sync.ts"
   },
   "scripts": {
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.ts",
+    "typecheck": "tsc -p ."
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   }
 }

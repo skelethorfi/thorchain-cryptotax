@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { parseActions, parseDetail, parsePageHeader } from '../src/parse.mjs'
+import { parseActions, parseDetail, parsePageHeader } from '../src/parse.ts'
 
 // Shaped like query_summ_transactions output; every value is made up.
 const PAGE = `# Transactions (Page 2 of 3, 2 returned, 502 total)
@@ -70,7 +70,7 @@ _Applied to: your account (self)_
 test('parseDetail returns the action JSON and the change history', () => {
     const { action, history } = parseDetail(DETAIL)
     assert.equal(action._id, '0000000000000000000000a1')
-    assert.equal(action.outgoing[0]._id, '00000000000000000000b001')
+    assert.equal((action.outgoing as { _id: string }[])[0]._id, '00000000000000000000b001')
     assert.deepEqual(history, ['1 Jan 2024 10:00 · user (original)', '2 Jan 2024 11:00 · user · Quantity: 2 → 1'])
 })
 
