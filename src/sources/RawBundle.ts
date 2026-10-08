@@ -5,7 +5,7 @@ import {getDistributionDate, TcyDistributionItem} from "./tcy/TcyDistributionSer
 import {CosmosTx} from "./thorchain/CosmosTxService";
 import {getActionDate} from "./thorchain/MidgardUtils";
 import {ProtocolId, THORCHAIN} from "../domain/Protocol";
-import {midgardActionKey, tcyList, VIEWBLOCK_LIST} from "./store/Sources";
+import {isDonateAdd, midgardActionKey, tcyList, VIEWBLOCK_LIST} from "./store/Sources";
 
 export type BundleSource = 'midgard' | 'viewblock' | 'tcy';
 
@@ -23,6 +23,9 @@ export interface RawBundle {
     thornodeTxs: TxStatusResponse[];
     // The Cosmos tx of a contract action
     cosmosTxs: CosmosTx[];
+    // THORChain sends that are this action's inbounds although no txid links them: a Maya liquidity auction's
+    // deposits (docs/specs/maya.md, attachAuctionDeposits)
+    inbounds?: Action[];
 }
 
 export function getBundleDate(bundle: RawBundle): Date {
@@ -141,4 +144,40 @@ export function outboundMemoTxid(send: Action): string | undefined {
 
 function isMidgardSend(bundle: RawBundle): boolean {
     return bundle.source === 'midgard' && (bundle.data as Action).type === 'send';
+}
+
+// Maya's liquidity auction (docs/specs/maya.md): each participant's deposits, THORChain sends from the add's
+// RUNE-side address with the memo '+:THOR.RUNE:<the add's CACAO-side address>…' before the add, become the
+// inbounds of their donate add, and give no send rows. Run after selectSends, which drops refunded deposits.
+export function attachAuctionDeposits(bundles: RawBundle[]): {bundles: RawBundle[]; attached: number} {
+    const deposits = new Map<RawBundle, Action[]>();
+    const attached = new Set<RawBundle>();
+
+    for (const add of bundles.filter(bundle => bundle.source === 'midgard' && bundle.protocol !== THORCHAIN.id && isDonateAdd(bundle.data as Action))) {
+        const action = add.data as Action;
+        const mayaAddress = action.in.find(tx => tx.txID)?.address?.toLowerCase();
+        const runeAddress = action.in.find(tx => !tx.txID && tx.coins[0]?.asset === 'THOR.RUNE')?.address?.toLowerCase();
+
+        if (!mayaAddress || !runeAddress) {
+            continue;
+        }
+
+        const found = bundles.filter(bundle => !attached.has(bundle) && bundle.protocol === THORCHAIN.id && isMidgardSend(bundle)
+            && isAuctionDeposit(bundle.data as Action, runeAddress, mayaAddress, action.date));
+        found.forEach(bundle => attached.add(bundle));
+        deposits.set(add, found.map(bundle => bundle.data as Action));
+    }
+
+    return {
+        bundles: bundles
+            .filter(bundle => !attached.has(bundle))
+            .map(bundle => deposits.get(bundle)?.length ? {...bundle, inbounds: deposits.get(bundle)} : bundle),
+        attached: attached.size,
+    };
+}
+
+function isAuctionDeposit(send: Action, runeAddress: string, mayaAddress: string, addDate: string): boolean {
+    const memo = ((send.metadata as any)?.send?.memo ?? '').toLowerCase();
+    return send.status === 'success' && send.in[0]?.address?.toLowerCase() === runeAddress
+        && memo.startsWith(`+:thor.rune:${mayaAddress}`) && BigInt(send.date) < BigInt(addDate);
 }

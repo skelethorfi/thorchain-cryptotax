@@ -34,6 +34,12 @@ describe('TaxConfig', () => {
         expect(() => TaxConfig.applyDefaults({pendingGraceDays: -2}, new Date())).toThrow('pendingGraceDays must be a number of days');
     });
 
+    test('mayaLiquidityAuction is income or deposit, with no default', () => {
+        expect(TaxConfig.applyDefaults({}, new Date()).mayaLiquidityAuction).toBeUndefined();
+        expect(TaxConfig.applyDefaults({mayaLiquidityAuction: 'deposit'}, new Date()).mayaLiquidityAuction).toBe('deposit');
+        expect(() => TaxConfig.applyDefaults({mayaLiquidityAuction: 'gift' as any}, new Date())).toThrow('mayaLiquidityAuction must be "income" or "deposit"');
+    });
+
     test('applyDefaults with populated config', () => {
         const config = {
             fromDate: '2020-01-01',

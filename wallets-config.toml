@@ -39,6 +39,11 @@ frequency = "yearly"
 # lists every action that is not final as recent (younger than this), waiting, or stuck.
 # pendingGraceDays = 3
 
+# Only if a wallet took part in Maya's 2023 liquidity auction (the run stops and asks when it finds one):
+# "income"  - what the auction supplied (the CACAO side) is income when it ended, then added to the pool
+# "deposit" - the position's cost is the RUNE you deposited; any gain shows when you withdraw
+# mayaLiquidityAuction = "income"
+
 # List of wallets
 # add a new [[wallets]] entry for each wallet
 # add each wallet that was used in swaps/LP/etc

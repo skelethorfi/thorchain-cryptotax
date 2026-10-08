@@ -1,0 +1,53 @@
+id: maya-midgard/addLiquidity.4B0A6F2299E84841A89F99B0F066CE7E6BC400A60906A1925738B3CC4F1D97CD.maya1zpkx5542z2kcgawp4npvazntp20nlk0j583aay+0xbf3942e808c11e4aa0f693506749b0276630062c
+protocol: maya
+kind: lp.auction.position
+status: success
+time: 2023-04-17T02:15:03.459Z
+txids:
+  in:
+    - 4B0A6F2299E84841A89F99B0F066CE7E6BC400A60906A1925738B3CC4F1D97CD
+  out: []
+memo: donate:eth.eth
+legs:
+  - direction: in
+    wallet: maya1zpkx5542z2kcgawp4npvazntp20nlk0j583aay
+    asset:
+      notation: MAYA.CACAO
+      kind: native
+    role: reward
+    basis: observed
+    amount: "14821.3903175001"
+    decimals: 10
+  - direction: out
+    wallet: maya1zpkx5542z2kcgawp4npvazntp20nlk0j583aay
+    asset:
+      notation: MAYA.CACAO
+      kind: native
+    role: principal
+    basis: observed
+    amount: "14821.3903175001"
+    decimals: 10
+  - direction: out
+    wallet: "0xbf3942e808c11e4aa0f693506749b0276630062c"
+    asset:
+      notation: ETH.ETH
+      kind: native
+    role: principal
+    basis: observed
+    amount: "1.00315128"
+    decimals: 8
+  - direction: in
+    wallet: maya1zpkx5542z2kcgawp4npvazntp20nlk0j583aay
+    asset:
+      notation: ETH.ETH
+      kind: position
+      position: lp
+    role: principal
+    basis: observed
+    amount: "1482139.03175001"
+    decimals: 8
+prices: []
+details:
+  pool: ETH.ETH
+  side: "1.00315128"
+  sideAsset: ETH.ETH

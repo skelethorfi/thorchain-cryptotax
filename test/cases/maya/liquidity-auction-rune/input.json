@@ -1,0 +1,139 @@
+{
+  "description": "Maya liquidity auction position (donate:thor.rune) of a public participant, with its 2 RUNE deposits on THORChain. The donate txid is replaced by D0\u2026D0: one tx made every participant's position",
+  "source": "midgard",
+  "protocol": "maya",
+  "wallet": "thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07",
+  "data": {
+    "date": "1681701177319549300",
+    "height": "547311",
+    "in": [
+      {
+        "address": "maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew",
+        "coins": [
+          {
+            "amount": "120599511346447",
+            "asset": "MAYA.CACAO"
+          }
+        ],
+        "txID": "D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0"
+      },
+      {
+        "address": "thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07",
+        "coins": [
+          {
+            "amount": "103655294265",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "txID": ""
+      }
+    ],
+    "metadata": {
+      "addLiquidity": {
+        "affiliateAddress": "",
+        "affiliateFee": "0",
+        "liquidityUnits": "120599511346447",
+        "memo": "donate:thor.rune"
+      }
+    },
+    "out": [],
+    "pools": [
+      "THOR.RUNE"
+    ],
+    "status": "success",
+    "type": "addLiquidity"
+  },
+  "inbounds": [
+    {
+      "date": "1679199406686716127",
+      "height": "10029080",
+      "in": [
+        {
+          "address": "thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07",
+          "coins": [
+            {
+              "amount": "100000000000",
+              "asset": "THOR.RUNE"
+            }
+          ],
+          "txID": "067A1E01B6E03E3C597276AFF45E2FB6FAF9B73331042DEF39CC0B82B33A43A4"
+        }
+      ],
+      "metadata": {
+        "send": {
+          "code": "0",
+          "memo": "+:THOR.RUNE:maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew:wr:30:TIER1",
+          "networkFees": [
+            {
+              "amount": "20000000",
+              "asset": "THOR.RUNE"
+            }
+          ],
+          "reason": "[{\"events\":[{\"type\":\"coin_received\",\"attributes\":[{\"key\":\"receiver\",\"value\":\"thor1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxtxt\"},{\"key\":\"amount\",\"value\":\"2000000rune\"},{\"key\":\"receiver\",\"value\":\"thor1z84k550lfn8mu0v4tuuvn4qjnxrmm7vlndm0hs\"},{\"key\":\"amount\",\"value\":\"100000000000rune\"}]},{\"type\":\"coin_spent\",\"attributes\":[{\"key\":\"spender\",\"value\":\"thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07\"},{\"key\":\"amount\",\"value\":\"2000000rune\"},{\"key\":\"spender\",\"value\":\"thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07\"},{\"key\":\"amount\",\"value\":\"100000000000rune\"}]},{\"type\":\"message\",\"attributes\":[{\"key\":\"action\",\"value\":\"send\"},{\"key\":\"sender\",\"value\":\"thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07\"},{\"key\":\"sender\",\"value\":\"thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07\"},{\"key\":\"module\",\"value\":\"governance\"}]},{\"type\":\"transfer\",\"attributes\":[{\"key\":\"recipient\",\"value\":\"thor1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxtxt\"},{\"key\":\"sender\",\"value\":\"thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07\"},{\"key\":\"amount\",\"value\":\"2000000rune\"},{\"key\":\"recipient\",\"value\":\"thor1z84k550lfn8mu0v4tuuvn4qjnxrmm7vlndm0hs\"},{\"key\":\"sender\",\"value\":\"thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07\"},{\"key\":\"amount\",\"value\":\"100000000000rune\"}]}]}]"
+        }
+      },
+      "out": [
+        {
+          "address": "thor1z84k550lfn8mu0v4tuuvn4qjnxrmm7vlndm0hs",
+          "coins": [
+            {
+              "amount": "100000000000",
+              "asset": "THOR.RUNE"
+            }
+          ],
+          "txID": "067A1E01B6E03E3C597276AFF45E2FB6FAF9B73331042DEF39CC0B82B33A43A4"
+        }
+      ],
+      "pools": [],
+      "status": "success",
+      "type": "send"
+    },
+    {
+      "date": "1679226564484560539",
+      "height": "10033638",
+      "in": [
+        {
+          "address": "thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07",
+          "coins": [
+            {
+              "amount": "1951750656",
+              "asset": "THOR.RUNE"
+            }
+          ],
+          "txID": "8FB173CDC60F01BF5DCE2334765B7D29A9E67F877E556A2714C2CD3F5C1CAC36"
+        }
+      ],
+      "metadata": {
+        "send": {
+          "code": "0",
+          "memo": "+:THOR.RUNE:maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew:wr:30:TIER1",
+          "networkFees": [
+            {
+              "amount": "20000000",
+              "asset": "THOR.RUNE"
+            }
+          ],
+          "reason": "[{\"events\":[{\"type\":\"coin_received\",\"attributes\":[{\"key\":\"receiver\",\"value\":\"thor1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxtxt\"},{\"key\":\"amount\",\"value\":\"2000000rune\"},{\"key\":\"receiver\",\"value\":\"thor1z84k550lfn8mu0v4tuuvn4qjnxrmm7vlndm0hs\"},{\"key\":\"amount\",\"value\":\"1951750656rune\"}]},{\"type\":\"coin_spent\",\"attributes\":[{\"key\":\"spender\",\"value\":\"thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07\"},{\"key\":\"amount\",\"value\":\"2000000rune\"},{\"key\":\"spender\",\"value\":\"thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07\"},{\"key\":\"amount\",\"value\":\"1951750656rune\"}]},{\"type\":\"message\",\"attributes\":[{\"key\":\"action\",\"value\":\"send\"},{\"key\":\"sender\",\"value\":\"thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07\"},{\"key\":\"sender\",\"value\":\"thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07\"},{\"key\":\"module\",\"value\":\"governance\"}]},{\"type\":\"transfer\",\"attributes\":[{\"key\":\"recipient\",\"value\":\"thor1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxtxt\"},{\"key\":\"sender\",\"value\":\"thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07\"},{\"key\":\"amount\",\"value\":\"2000000rune\"},{\"key\":\"recipient\",\"value\":\"thor1z84k550lfn8mu0v4tuuvn4qjnxrmm7vlndm0hs\"},{\"key\":\"sender\",\"value\":\"thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07\"},{\"key\":\"amount\",\"value\":\"1951750656rune\"}]}]}]"
+        }
+      },
+      "out": [
+        {
+          "address": "thor1z84k550lfn8mu0v4tuuvn4qjnxrmm7vlndm0hs",
+          "coins": [
+            {
+              "amount": "1951750656",
+              "asset": "THOR.RUNE"
+            }
+          ],
+          "txID": "8FB173CDC60F01BF5DCE2334765B7D29A9E67F877E556A2714C2CD3F5C1CAC36"
+        }
+      ],
+      "pools": [],
+      "status": "success",
+      "type": "send"
+    }
+  ],
+  "treatment": {
+    "mayaLiquidityAuction": "income"
+  }
+}

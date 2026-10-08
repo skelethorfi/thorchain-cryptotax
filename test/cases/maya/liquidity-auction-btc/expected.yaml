@@ -1,0 +1,53 @@
+walletExchange: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
+timestamp: 2023-04-17T03:09:34.548Z
+type: spam
+baseCurrency: BTC
+baseAmount: "0.11260338"
+from: mayaprotocol
+to: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
+description: "5/5 - Dummy transaction to get market price to then manually apply to the receive LP token transaction MayaLP.BTC.BTC (liquidity auction: the BTC side, 0.05630169 BTC, twice); EF5727E3576CDCD8494A40B98B48B6203DF3A298FCAEE3B09AAC9593DDE921AA"
+id: 2023-04-17T03:09:14.548Z.price-helper.0d83290ace1c
+---
+walletExchange: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
+timestamp: 2023-04-17T03:09:24.548Z
+type: receive-lp-token
+baseCurrency: MayaLP.BTC.BTC
+baseAmount: "1190059.90716627"
+from: mayaprotocol
+to: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
+blockchain: Mayachain
+description: "4/5 - Liquidity auction: receive LP token from MayaLP.BTC.BTC; EF5727E3576CDCD8494A40B98B48B6203DF3A298FCAEE3B09AAC9593DDE921AA"
+id: 2023-04-17T03:09:14.548Z.in.0170ca55581f
+---
+walletExchange: bc1q942qs6e8dwsqq9e7mdtq8yj0en6knhv37j7xdz
+timestamp: 2023-04-17T03:09:15.548Z
+type: add-liquidity
+baseCurrency: BTC
+baseAmount: "0.05630169"
+from: bc1q942qs6e8dwsqq9e7mdtq8yj0en6knhv37j7xdz
+to: mayaprotocol
+blockchain: BTC
+description: "3/5 - Liquidity auction: add 0.05630169 BTC deposited before; EF5727E3576CDCD8494A40B98B48B6203DF3A298FCAEE3B09AAC9593DDE921AA"
+id: 2023-04-17T03:09:14.548Z.out.0c66e925e2a2
+---
+walletExchange: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
+timestamp: 2023-04-17T03:09:15.548Z
+type: add-liquidity
+baseCurrency: CACAO
+baseAmount: "11900.5990716627"
+from: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
+to: mayaprotocol
+blockchain: Mayachain
+description: "2/5 - Liquidity auction: add 11900.5990716627 CACAO to MayaLP.BTC.BTC; EF5727E3576CDCD8494A40B98B48B6203DF3A298FCAEE3B09AAC9593DDE921AA"
+id: 2023-04-17T03:09:14.548Z.out.28d82ae4c4d2
+---
+walletExchange: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
+timestamp: 2023-04-17T03:09:14.548Z
+type: income
+baseCurrency: CACAO
+baseAmount: "11900.5990716627"
+from: mayaprotocol
+to: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
+blockchain: Mayachain
+description: "1/5 - Liquidity auction: 11900.5990716627 CACAO supplied by the auction; EF5727E3576CDCD8494A40B98B48B6203DF3A298FCAEE3B09AAC9593DDE921AA"
+id: 2023-04-17T03:09:14.548Z.reward.4034b4dc4c96

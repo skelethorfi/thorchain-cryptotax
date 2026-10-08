@@ -1,0 +1,49 @@
+{
+  "description": "Maya liquidity auction position in ETH.ETH of a public participant: the deposits were sent on ETH, which Midgard does not list",
+  "source": "midgard",
+  "protocol": "maya",
+  "wallet": "0xbf3942e808c11e4aa0f693506749b0276630062c",
+  "data": {
+    "date": "1681697703459182701",
+    "height": "546765",
+    "in": [
+      {
+        "address": "maya1zpkx5542z2kcgawp4npvazntp20nlk0j583aay",
+        "coins": [
+          {
+            "amount": "148213903175001",
+            "asset": "MAYA.CACAO"
+          }
+        ],
+        "txID": "4B0A6F2299E84841A89F99B0F066CE7E6BC400A60906A1925738B3CC4F1D97CD"
+      },
+      {
+        "address": "0xbf3942e808c11e4aa0f693506749b0276630062c",
+        "coins": [
+          {
+            "amount": "100315128",
+            "asset": "ETH.ETH"
+          }
+        ],
+        "txID": ""
+      }
+    ],
+    "metadata": {
+      "addLiquidity": {
+        "affiliateAddress": "",
+        "affiliateFee": "0",
+        "liquidityUnits": "148213903175001",
+        "memo": "donate:eth.eth"
+      }
+    },
+    "out": [],
+    "pools": [
+      "ETH.ETH"
+    ],
+    "status": "success",
+    "type": "addLiquidity"
+  },
+  "treatment": {
+    "mayaLiquidityAuction": "income"
+  }
+}

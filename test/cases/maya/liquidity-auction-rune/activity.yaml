@@ -1,0 +1,132 @@
+id: midgard/send.067A1E01B6E03E3C597276AFF45E2FB6FAF9B73331042DEF39CC0B82B33A43A4
+protocol: maya
+kind: lp.auction.deposit
+status: success
+time: 2023-03-19T04:16:46.686Z
+txids:
+  in:
+    - 067A1E01B6E03E3C597276AFF45E2FB6FAF9B73331042DEF39CC0B82B33A43A4
+  out: []
+memo: +:THOR.RUNE:maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew:wr:30:TIER1
+legs:
+  - direction: out
+    wallet: thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: principal
+    basis: observed
+    txid: 067A1E01B6E03E3C597276AFF45E2FB6FAF9B73331042DEF39CC0B82B33A43A4
+    amount: "1000"
+    decimals: 8
+  - direction: out
+    wallet: thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: gas
+    basis: default
+    txid: 067A1E01B6E03E3C597276AFF45E2FB6FAF9B73331042DEF39CC0B82B33A43A4
+    amount: "0.02"
+    decimals: 8
+prices: []
+details:
+  pool: THOR.RUNE
+---
+id: midgard/send.8FB173CDC60F01BF5DCE2334765B7D29A9E67F877E556A2714C2CD3F5C1CAC36
+protocol: maya
+kind: lp.auction.deposit
+status: success
+time: 2023-03-19T11:49:24.484Z
+txids:
+  in:
+    - 8FB173CDC60F01BF5DCE2334765B7D29A9E67F877E556A2714C2CD3F5C1CAC36
+  out: []
+memo: +:THOR.RUNE:maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew:wr:30:TIER1
+legs:
+  - direction: out
+    wallet: thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: principal
+    basis: observed
+    txid: 8FB173CDC60F01BF5DCE2334765B7D29A9E67F877E556A2714C2CD3F5C1CAC36
+    amount: "19.51750656"
+    decimals: 8
+  - direction: out
+    wallet: thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: gas
+    basis: default
+    txid: 8FB173CDC60F01BF5DCE2334765B7D29A9E67F877E556A2714C2CD3F5C1CAC36
+    amount: "0.02"
+    decimals: 8
+prices: []
+details:
+  pool: THOR.RUNE
+---
+id: maya-midgard/addLiquidity.D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0.maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew+thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07
+protocol: maya
+kind: lp.auction.position
+status: success
+time: 2023-04-17T03:12:57.319Z
+txids:
+  in:
+    - D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0
+  out: []
+memo: donate:thor.rune
+legs:
+  - direction: in
+    wallet: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
+    asset:
+      notation: MAYA.CACAO
+      kind: native
+    role: reward
+    basis: observed
+    amount: "12059.9511346447"
+    decimals: 10
+  - direction: out
+    wallet: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
+    asset:
+      notation: MAYA.CACAO
+      kind: native
+    role: principal
+    basis: observed
+    amount: "12059.9511346447"
+    decimals: 10
+  - direction: in
+    wallet: thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: reward
+    basis: observed
+    amount: "17.03543609"
+    decimals: 8
+  - direction: out
+    wallet: thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: principal
+    basis: observed
+    amount: "17.03543609"
+    decimals: 8
+  - direction: in
+    wallet: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
+    asset:
+      notation: THOR.RUNE
+      kind: position
+      position: lp
+    role: principal
+    basis: observed
+    amount: "1205995.11346447"
+    decimals: 8
+prices: []
+details:
+  pool: THOR.RUNE
+  side: "1036.55294265"
+  sideAsset: THOR.RUNE

@@ -1,5 +1,5 @@
 import {describe, expect, test} from "@jest/globals";
-import {dedupeBundles, getBundleKey, RawBundle, selectSends} from "../src/sources/RawBundle";
+import {attachAuctionDeposits, dedupeBundles, getBundleKey, RawBundle, selectSends} from "../src/sources/RawBundle";
 import {ProtocolId} from "../src/domain/Protocol";
 
 const action = (txID: string, type = 'swap') => ({type, date: '1680350400000000000', in: [{address: 'thor1a', coins: [], txID}], out: [], pools: [], metadata: {}});
@@ -97,5 +97,33 @@ describe('selectSends', () => {
         const payout = bundle('midgard', 'thor1a', {...action('PAYOUT', 'send'), metadata: {send: {memo: `REFUND:${'cd'.repeat(32)}`}}});
 
         expect(selectSends([payout]).bundles).toEqual([payout]);
+    });
+});
+
+describe('attachAuctionDeposits', () => {
+    const MAYA = 'maya1-member';
+    const THOR = 'thor1-member';
+    const add = {type: 'addLiquidity', status: 'success', date: '2000', pools: ['THOR.RUNE'],
+        in: [{address: MAYA, txID: 'DONATE', coins: [{asset: 'MAYA.CACAO', amount: '1'}]}, {address: THOR, txID: '', coins: [{asset: 'THOR.RUNE', amount: '1'}]}],
+        out: [], metadata: {addLiquidity: {memo: 'donate:thor.rune', liquidityUnits: '1'}}};
+    const send = (txID: string, memo: string, date = '1000', from = THOR) => bundle('midgard', THOR,
+        {type: 'send', status: 'success', date, in: [{address: from, txID, coins: [{asset: 'THOR.RUNE', amount: '1'}]}], out: [], pools: [], metadata: {send: {memo}}});
+
+    test("attaches the member's deposits to its donate add, and drops them as sends", () => {
+        const auctionAdd = bundle('midgard', MAYA, add, 'maya');
+        const deposit = send('D1', `+:THOR.RUNE:${MAYA.toUpperCase()}:wr:100:TIER1`);
+        const other = send('S1', 'some memo');
+
+        const {bundles, attached} = attachAuctionDeposits([auctionAdd, deposit, other]);
+
+        expect(attached).toBe(1);
+        expect(bundles).toEqual([{...auctionAdd, inbounds: [deposit.data]}, other]);
+    });
+
+    test('leaves a deposit after the add, from another address or to another member', () => {
+        const auctionAdd = bundle('midgard', MAYA, add, 'maya');
+        const sends = [send('D1', `+:THOR.RUNE:${MAYA}`, '3000'), send('D2', `+:THOR.RUNE:${MAYA}`, '1000', 'thor1-other'), send('D3', '+:THOR.RUNE:maya1-other')];
+
+        expect(attachAuctionDeposits([auctionAdd, ...sends])).toEqual({bundles: [auctionAdd, ...sends], attached: 0});
     });
 });

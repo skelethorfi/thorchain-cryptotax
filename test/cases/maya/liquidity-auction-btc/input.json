@@ -1,0 +1,49 @@
+{
+  "description": "Maya liquidity auction position in BTC.BTC of a public participant: the deposits were sent on BTC, which Midgard does not list",
+  "source": "midgard",
+  "protocol": "maya",
+  "wallet": "bc1q942qs6e8dwsqq9e7mdtq8yj0en6knhv37j7xdz",
+  "data": {
+    "date": "1681700954548578000",
+    "height": "547276",
+    "in": [
+      {
+        "address": "maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew",
+        "coins": [
+          {
+            "amount": "119005990716627",
+            "asset": "MAYA.CACAO"
+          }
+        ],
+        "txID": "EF5727E3576CDCD8494A40B98B48B6203DF3A298FCAEE3B09AAC9593DDE921AA"
+      },
+      {
+        "address": "bc1q942qs6e8dwsqq9e7mdtq8yj0en6knhv37j7xdz",
+        "coins": [
+          {
+            "amount": "5630169",
+            "asset": "BTC.BTC"
+          }
+        ],
+        "txID": ""
+      }
+    ],
+    "metadata": {
+      "addLiquidity": {
+        "affiliateAddress": "",
+        "affiliateFee": "0",
+        "liquidityUnits": "119005990716627",
+        "memo": "donate:btc.btc"
+      }
+    },
+    "out": [],
+    "pools": [
+      "BTC.BTC"
+    ],
+    "status": "success",
+    "type": "addLiquidity"
+  },
+  "treatment": {
+    "mayaLiquidityAuction": "income"
+  }
+}

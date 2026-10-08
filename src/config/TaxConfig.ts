@@ -1,4 +1,4 @@
-import {ITaxConfig} from "./ITaxConfig";
+import {ITaxConfig, MAYA_LIQUIDITY_AUCTION} from "./ITaxConfig";
 import path from "path";
 import fs from "fs-extra";
 import toml from "js-toml";
@@ -59,6 +59,10 @@ export class TaxConfig {
         if (config.timezone !== undefined) {
             checkTimeZone(config.timezone);
         }
+        if (config.mayaLiquidityAuction !== undefined && !MAYA_LIQUIDITY_AUCTION.includes(config.mayaLiquidityAuction)) {
+            throw new Error(`Config: mayaLiquidityAuction must be ${MAYA_LIQUIDITY_AUCTION.map(value => `"${value}"`).join(' or ')} (got ${JSON.stringify(config.mayaLiquidityAuction)})`);
+        }
+
         for (const key of ['pendingStuckDays', 'pendingGraceDays'] as const) {
             const days = config[key];
 
