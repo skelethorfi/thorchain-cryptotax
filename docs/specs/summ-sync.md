@@ -22,9 +22,10 @@ every gain; the sync never compares or writes fiat values.
   (same on-chain txid, currency and amount) and edits its type and fee to
   match. It never creates or deletes a leg of Summ's own imports.
 
-A run's file says which kind its rows are: files of the `THOR` and `MAYA`
-chains are managed, all others categorised (the chain is in the file name,
-`periods.md`).
+Each CSV file's chain (in its name, `periods.md`) says which kind its rows
+are: chains listed in `managedChains` (default `THOR` and `MAYA`) are
+managed, all others categorised. A chain moves to categorised if Summ starts
+importing its wallets itself, or the uploaded rows would repeat Summ's own.
 
 ## What Summ's MCP allows
 
@@ -68,7 +69,7 @@ nothing from it; the only link is the files below. It speaks MCP over
     summ-sync apply <state dir> <plan file> [--approve-deletes] [--approve-filed]
 
 The **state dir** holds snapshots, plans, apply logs, the adoption table and
-the ignore list. It is the user's private data: never in this repo.
+the overrides file. It is the user's private data: never in this repo.
 
 ## Inputs
 
@@ -87,6 +88,8 @@ again.
 
 - `filedBefore`: rows before this date belong to filed years; changing them
   is an amendment (below).
+- `managedChains`: the chains whose files are managed (default
+  `["THOR", "MAYA"]`).
 - `managedSources`: Summ's source names of the managed rows (e.g. the
   account name the CSVs were uploaded under).
 
@@ -129,16 +132,29 @@ row `ID`, the leg `_id`, the field, Summ's value and the desired value.
 | upload | rows with no leg in Summ after the deletes, per CSV file | files written to `plans/<timestamp>/upload/`, uploaded by the user |
 | categorise | categorised rows whose Summ leg differs in type or fee | `edit_transaction` |
 | report | categorised rows with no or several matching legs; Summ legs of a managed source that no ID explains; manual entries repeating a row's txid | nothing: for the user to resolve |
-| ignored | differences the ignore list keeps | nothing |
+| overridden | differences an override keeps, and overrides captured in this plan | nothing |
 
 **Filed years.** An entry whose row or leg is dated before `filedBefore` is
 an amendment: listed under its own heading in each section and applied only
 with `--approve-filed`, in a separate apply from the current year.
 
-**Drift** (a value the user changed in Summ, seen in the leg's change
-history as a user edit): shown in the plan with its history. Unless the
-ignore list keeps it, the plan sets it back. `ignore.toml` lists exceptions
-by row `ID` and field (e.g. a fee the user set by hand), each with a reason.
+**Drift and overrides.** A value the user changed in Summ is kept, never
+set back by default. Summ's change history labels every edit through the
+MCP as the user's, so an edit is the sync's own when `apply-log.jsonl`
+records it (same leg, field and value), and drift otherwise. `plan`
+records each one it has not seen before in `overrides.toml` in the state
+dir: row `ID`, field, the run's value, the user's value, when it was seen,
+and a `reason` for the user to fill in. An override always takes precedence
+over the run, so the plan shows no change for it. To have the plan revert a
+field, the user deletes its entry; the next plan then sets it back (and
+captures nothing, since the apply's edit is the sync's own).
+
+Each plan lists, under overridden, the overrides it captured for the first
+time (so an unintended edit in Summ is seen once) and every override whose
+run value has changed since it was captured (the source data or the
+mapper moved under it; the override still wins until the user decides).
+An override whose row or leg no longer exists is reported and left for the
+user to delete.
 
 ## Apply
 
