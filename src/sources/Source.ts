@@ -112,7 +112,7 @@ export class MidgardSource implements Source {
         const cosmosTxs = [];
 
         for (const txId of isThorchain ? getThornodeTxIds(action) : []) {
-            thornodeTxs.push(await this.thornode.getTxStatus(txId, getActionDate(action)));
+            thornodeTxs.push(await this.thornode.getTxStatus(txId, getActionDate(action), Number(action.height)));
         }
 
         for (const txId of isThorchain ? getCosmosTxIds(action) : []) {

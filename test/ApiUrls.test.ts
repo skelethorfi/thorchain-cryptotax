@@ -22,7 +22,7 @@ describe('API_URLS', () => {
 
         expect(loadApiUrls()).toEqual({
             thornode: 'https://gateway.liquify.com/chain/thorchain_api',
-            thornodeArchive: 'https://gateway.liquify.com/chain/thorchain_api',
+            thornodeArchive: 'https://gateway.liquify.com/chain/thorchain_v1_api',
             midgard: 'https://gateway.liquify.com/chain/thorchain_midgard',
         });
     });
