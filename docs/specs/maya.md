@@ -146,8 +146,8 @@ participants).
 
 ### Sends
 
-As THORChain sends (`sends.md`), from Maya's Midgard: `send` with Maya's 0.2
-CACAO fee, `receive`, or `income` when the sender is in `incomeFrom` (e.g. the
+As THORChain sends (`sends.md`), from Maya's Midgard: `send` with the 0.2
+CACAO default fee (wrong before the current setting; see `sends.md`), `receive`, or `income` when the sender is in `incomeFrom` (e.g. the
 MAYA token distributions after the liquidity auction). A Maya send that is
 another listed action's inbound or outbound gives no row. Golden cases:
 `maya/send-cacao`, `maya/send-maya-income`.
@@ -182,3 +182,4 @@ withdrawal.
 ## Not covered yet
 
 - Fees paid on Maya inbound transactions
+- Maya's native fee at each tx's height (today every Maya CACAO fee is the current 0.2 CACAO default)

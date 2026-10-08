@@ -97,8 +97,12 @@ exporter reads:
 - Viewblock's address listing has no fee; its single-tx endpoint shows 0.02
   RUNE on sends from 2021 to 2026.
 
-So the gas leg is the 0.02 RUNE default. On Maya it is Maya's native fee,
-0.2 CACAO, also by default.
+So the gas leg is the 0.02 RUNE default. On Maya it is the same default as
+every Maya action's CACAO fee: 0.2 CACAO, Maya's setting today. That
+setting has changed over time (mimir `NATIVETRANSACTIONFEE`: 0.0002 CACAO in
+early 2023, 1 CACAO in late 2023, 0.5 CACAO later), and Maya's Midgard
+reports 0.2 CACAO for old sends too, so the default is wrong outside the
+current period; reading the setting at each tx's height is planned (`maya.md`).
 
 ## Rows
 
