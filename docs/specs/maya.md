@@ -80,6 +80,43 @@ As THORChain: one `AddLiquidity` row per deposited asset, a
 `ReceiveLpToken` row for `MayaLP.<pool>` and the `Spam` price-helper row. With
 two assets, the first must be the native asset (CACAO on Maya).
 
+### Liquidity auction (2023)
+
+Maya opened its `THOR.RUNE` pool with a liquidity auction (March to April
+2023). A participant sent RUNE on THORChain, by `MsgSend` to Maya's vault
+with the memo `+:THOR.RUNE:<maya address>:…`, one or more times. At the end
+(2023-04-17) Maya created every participant's LP position in one `donate:`
+tx: Maya's Midgard lists one `addLiquidity` per participant (1,444 of them),
+with memo `donate:thor.rune`, a CACAO side the auction supplied (carrying the
+donate txid) and a RUNE side with **no txid**. Neither Midgard links the
+deposits to the add.
+
+**Linking.** A deposit is a successful THORChain `send` from the add's RUNE-side
+address whose memo starts with `+:THOR.RUNE:<the add's CACAO-side address>`
+(case ignored), before the add. Deposits are attached to the add's bundle as
+its `inbounds` and give no send rows. A deposit that was refunded is already
+the inbound of its refund (`sends.md`), so it is not attached.
+
+**Rows.** The RUNE left the wallet with each deposit; the position came at the
+end, with what the auction added:
+
+| When | Row | Amount |
+| --- | --- | --- |
+| each deposit | `AddLiquidity` RUNE, with the deposit's 0.02 RUNE fee | the deposit |
+| the auction's end | `Income` CACAO, then `AddLiquidity` CACAO | the add's CACAO side |
+| the auction's end | `Income` RUNE, then `AddLiquidity` RUNE | the add's RUNE side − the deposits, when positive |
+| the auction's end | `ReceiveLpToken` `MayaLP.THOR.RUNE`, and the `Spam` price-helper row | the add's liquidity units |
+
+The CACAO side and the RUNE above the deposits came from the auction, not the
+wallet, so they are income at the auction's end (decided 2026-10-08), and
+then added to the pool, so the position's cost includes them. When the RUNE
+side is **less** than the deposits (an auction withdrawal, or a tier rule),
+the run cannot tell what happened to the rest: no RUNE row is added at the
+end, and the action gets an enter-by-hand note. An add with no deposits found
+is exported as an ordinary add, with a warning.
+
+Golden case: `maya/liquidity-auction` (a public participant).
+
 ### Withdraw liquidity
 
 As THORChain: `ReturnLpToken`, the `Spam` price-helper row and one
@@ -104,11 +141,10 @@ an L1 chain (`KUJI`, `BTC`, …). See `assets.md`.
 
 Public Maya transactions in `test/cases/maya/`: CACAO → ETH.USDC swap, CACAO →
 RUNE and RUNE → KUJI swaps with affiliate outputs, a partially filled BTC →
-ETH swap and its refund (which has no rows), a symmetric KUJI add and a symmetric RUNE-pool
+ETH swap and its refund (which has no rows), a symmetric KUJI add, a liquidity auction position with its deposits, and a symmetric RUNE-pool
 withdrawal.
 
 ## Not covered yet
 
 - MAYA token transfers (Midgard `send` with asset `MAYA`)
-- The 2023 liquidity auction (`donate:` memo): cost base of the position it created
 - Fees paid on Maya inbound transactions

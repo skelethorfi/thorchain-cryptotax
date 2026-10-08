@@ -2,9 +2,10 @@ import {Activity, Leg} from "../../domain/Activity";
 import {formatAmount} from "../../domain/Amount";
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
 import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
+import {toPositionAsset} from "../../domain/Asset";
 import {getLpTokenName} from "./ThorchainUtils";
 import {formatBlockchain, Protocol} from "../../domain/Protocol";
-import {legTrace, plusSeconds} from "./common";
+import {leg, legTrace, plusSeconds} from "./common";
 
 // Summ needs a wallet for every row; an old deposit can have none
 const MISSING_ADDRESS = 'MISSING-DEPOSIT-ADDRESS';
@@ -148,4 +149,91 @@ export function withdrawRows(activity: Activity, protocol: Protocol): CryptoTaxT
         },
         ...removals,
     ].reverse();
+}
+
+// Maya's liquidity auction (docs/specs/maya.md). A deposit: an add-liquidity row with its fee, at its own date.
+export function auctionDepositRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
+    const deposit = leg(activity, 'principal', 'out');
+    const {blockchain, currency} = parseMidgardAsset(deposit.asset.notation, protocol);
+    const lpToken = getLpTokenName(toPositionAsset(activity.details.pool).notation, protocol);
+
+    return [{
+        walletExchange: deposit.wallet,
+        timestamp: activity.time,
+        type: CryptoTaxTransactionType.AddLiquidity,
+        baseCurrency: currency,
+        baseAmount: formatAmount(deposit.amount),
+        ...feeFor(activity, deposit, protocol),
+        from: deposit.wallet,
+        to: protocol.counterparty,
+        blockchain: formatBlockchain(blockchain),
+        trace: legTrace(deposit),
+        description: `Liquidity auction deposit: add ${formatAmount(deposit.amount)} ${currency} to ${lpToken}; ${deposit.txid ?? ''}`,
+    }];
+}
+
+// The auction's end: what the auction supplied as income, then added (an income row, and an add-liquidity row
+// 1 s later), the position as a receive-LP-token row 10 s later, and the price-helper row 20 s later: the RUNE
+// side twice, as the pool is symmetric
+export function auctionPositionRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
+    const supplied = activity.legs.filter(item => item.role === 'reward');
+    const position = activity.legs.find(item => item.role === 'principal' && item.direction === 'in')!;
+    const lpToken = getLpTokenName(position.asset.notation, protocol);
+    const txId = activity.txids.in[0] ?? '';
+    const total = supplied.length * 2 + 2;
+    const rows: CryptoTaxTransaction[] = supplied.flatMap((reward, i) => {
+        const added = activity.legs.find(item => item.role === 'principal' && item.direction === 'out' && item.asset.notation === reward.asset.notation)!;
+        const {blockchain, currency} = parseMidgardAsset(reward.asset.notation, protocol);
+        const amount = formatAmount(reward.amount);
+
+        return [{
+            walletExchange: reward.wallet,
+            timestamp: activity.time,
+            type: CryptoTaxTransactionType.Income,
+            baseCurrency: currency,
+            baseAmount: amount,
+            from: protocol.counterparty,
+            to: reward.wallet,
+            blockchain: formatBlockchain(blockchain),
+            trace: legTrace(reward),
+            description: `${i * 2 + 1}/${total} - Liquidity auction: ${amount} ${currency} supplied by the auction; ${txId}`,
+        }, {
+            walletExchange: added.wallet,
+            timestamp: plusSeconds(activity.time, 1),
+            type: CryptoTaxTransactionType.AddLiquidity,
+            baseCurrency: currency,
+            baseAmount: amount,
+            from: added.wallet,
+            to: protocol.counterparty,
+            blockchain: formatBlockchain(blockchain),
+            trace: legTrace(added),
+            description: `${i * 2 + 2}/${total} - Liquidity auction: add ${amount} ${currency} to ${lpToken}; ${txId}`,
+        }];
+    });
+    const runeSide = parseFloat(activity.details.runeSide);
+
+    rows.push({
+        walletExchange: position.wallet,
+        timestamp: plusSeconds(activity.time, 10),
+        type: CryptoTaxTransactionType.ReceiveLpToken,
+        baseCurrency: lpToken,
+        baseAmount: formatAmount(position.amount),
+        from: protocol.counterparty,
+        to: position.wallet,
+        blockchain: protocol.blockchain,
+        trace: legTrace(position),
+        description: `${total - 1}/${total} - Liquidity auction: receive LP token from ${lpToken}; ${txId}`,
+    }, {
+        walletExchange: position.wallet,
+        timestamp: plusSeconds(activity.time, 20),
+        type: CryptoTaxTransactionType.Spam,
+        baseCurrency: parseMidgardAsset('THOR.RUNE', protocol).currency,
+        baseAmount: (runeSide * 2).toString(),
+        from: protocol.counterparty,
+        to: position.wallet,
+        trace: {role: 'price-helper'},
+        description: `${total}/${total} - Dummy transaction to get market price to then manually apply to the receive LP token transaction ${lpToken} (liquidity auction: the RUNE side, ${activity.details.runeSide} RUNE, twice); ${txId}`,
+    });
+
+    return rows.reverse();
 }

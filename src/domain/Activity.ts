@@ -8,6 +8,7 @@ import {Asset} from "./Asset";
 // One kind per thing that happens. The union grows as each action type is ported to an activity, so every
 // exporter has to handle a kind before it can be emitted.
 export type ActivityKind = 'bond' | 'unbond' | 'swap' | 'refund' | 'lp.add' | 'lp.withdraw' | 'savers.add' | 'savers.withdraw'
+    | 'lp.auction.deposit' | 'lp.auction.position'
     | 'switch' | 'runepool.deposit' | 'runepool.withdraw' | 'loan.open' | 'loan.repay'
     | 'send' | 'tcy.claim' | 'tcy.stake' | 'tcy.unstake' | 'tcy.distribution' | 'thorname'
     | 'rujira.stake' | 'rujira.fin.trade' | 'rujira.merge.deposit' | 'rujira.merge.withdraw';

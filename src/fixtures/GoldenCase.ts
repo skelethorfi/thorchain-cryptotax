@@ -35,6 +35,8 @@ export interface GoldenCaseInput {
     thornodeTxs?: TxStatusResponse[];
     // The Cosmos tx of a contract action
     cosmosTxs?: CosmosTx[];
+    // THORChain sends attached as the action's inbounds (a Maya liquidity auction's deposits)
+    inbounds?: Action[];
 }
 
 export const INPUT_FILE = 'input.json';
@@ -134,6 +136,7 @@ export function toBundle(input: GoldenCaseInput): RawBundle {
         data: input.data,
         thornodeTxs: input.thornodeTxs ?? [],
         cosmosTxs: input.cosmosTxs ?? [],
+        ...(input.inbounds ? {inbounds: input.inbounds} : {}),
     };
 }
 
@@ -146,6 +149,7 @@ export function toCaseInput(bundle: RawBundle, description: string): GoldenCaseI
         data: bundle.data,
         ...(bundle.thornodeTxs.length ? {thornodeTxs: bundle.thornodeTxs} : {}),
         ...(bundle.cosmosTxs.length ? {cosmosTxs: bundle.cosmosTxs} : {}),
+        ...(bundle.inbounds?.length ? {inbounds: bundle.inbounds} : {}),
     };
 }
 

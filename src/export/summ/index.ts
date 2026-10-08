@@ -3,7 +3,7 @@ import {CryptoTaxTransaction, rowId} from "./csv";
 import {bondRows} from "./bond";
 import {swapRows} from "./swap";
 import {refundRows} from "./refund";
-import {addLiquidityRows, withdrawRows} from "./liquidity";
+import {addLiquidityRows, auctionDepositRows, auctionPositionRows, withdrawRows} from "./liquidity";
 import {runePoolRows, switchRows} from "./switch";
 import {loanOpenRows, loanRepayRows} from "./loan";
 import {tcyClaimRows, tcyDistributionRows, tcyStakeRows, thornameRows} from "./tcy";
@@ -45,6 +45,10 @@ function toRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] 
         case 'lp.add':
         case 'savers.add':
             return addLiquidityRows(activity, protocol);
+        case 'lp.auction.deposit':
+            return auctionDepositRows(activity, protocol);
+        case 'lp.auction.position':
+            return auctionPositionRows(activity, protocol);
         case 'lp.withdraw':
         case 'savers.withdraw':
             return withdrawRows(activity, protocol);

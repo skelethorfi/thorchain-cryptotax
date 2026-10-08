@@ -42,3 +42,19 @@ describe('liquidity', () => {
         expect(row.feeAmount).toBe('0.02');
     });
 });
+
+describe('Maya liquidity auction', () => {
+    test('a RUNE side less than the deposits adds no RUNE at the end and asks for it by hand', async () => {
+        const path = await import('path');
+        const {readCaseInput, toBundle} = await import('../src/fixtures/GoldenCase');
+        const {runBundle} = await import('../src/pipeline/run');
+        const {MAYA} = await import('../src/domain/Protocol');
+        const input = readCaseInput(path.join(__dirname, 'cases', 'maya', 'liquidity-auction'));
+        const bigDeposit = {...input.inbounds![0], in: [{...input.inbounds![0].in[0], coins: [{asset: 'THOR.RUNE', amount: '200000000000'}]}]};
+
+        const {rows, issues} = runBundle(toBundle({...input, inbounds: [bigDeposit, ...input.inbounds!.slice(1)]}), MAYA);
+
+        expect(issues.map(issue => issue.kind)).toEqual(['manual']);
+        expect(rows.filter(row => row.type === 'income').map(row => row.baseCurrency)).toEqual(['CACAO']);
+    });
+});
