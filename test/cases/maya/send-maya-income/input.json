@@ -1,0 +1,55 @@
+{
+  "description": "Maya transfer of the MAYA token, received from a sender the config lists in incomeFrom: income",
+  "source": "midgard",
+  "protocol": "maya",
+  "wallet": "maya1ednqzeetrvvya4wryxyqc6ghemc9fy07kam2as",
+  "data": {
+    "date": "1791226520309046035",
+    "height": "18692417",
+    "in": [
+      {
+        "address": "maya1e28jz625apzkm2lr7plzyvargdxlk4hc6sjyfd",
+        "coins": [
+          {
+            "amount": "1036900",
+            "asset": "MAYA"
+          }
+        ],
+        "txID": "AFA479D6763CA74944760C367696B472B33C694D592B8AFC6C0CA8157427F832"
+      }
+    ],
+    "metadata": {
+      "send": {
+        "code": "0",
+        "memo": "",
+        "networkFees": [
+          {
+            "amount": "2000000000",
+            "asset": "MAYA"
+          }
+        ],
+        "reason": "[{\"events\":[{\"type\":\"coin_received\",\"attributes\":[{\"key\":\"receiver\",\"value\":\"maya1dheycdevq39qlkxs2a6wuuzyn4aqxhve4hc8sm\"},{\"key\":\"amount\",\"value\":\"1780000000cacao\"},{\"key\":\"receiver\",\"value\":\"maya1577sz8j7xnthm3cl3vgfvmdmkrp7dqrhd9tafd\"},{\"key\":\"amount\",\"value\":\"200000000cacao\"},{\"key\":\"receiver\",\"value\":\"maya19764xganmndarzhn7mrls7tc0r59c7gj5twkz7\"},{\"key\":\"amount\",\"value\":\"20000000cacao\"},{\"key\":\"receiver\",\"value\":\"maya1ednqzeetrvvya4wryxyqc6ghemc9fy07kam2as\"},{\"key\":\"amount\",\"value\":\"1036900maya\"}]},{\"type\":\"coin_spent\",\"attributes\":[{\"key\":\"spender\",\"value\":\"maya1e28jz625apzkm2lr7plzyvargdxlk4hc6sjyfd\"},{\"key\":\"amount\",\"value\":\"1780000000cacao\"},{\"key\":\"spender\",\"value\":\"maya1e28jz625apzkm2lr7plzyvargdxlk4hc6sjyfd\"},{\"key\":\"amount\",\"value\":\"200000000cacao\"},{\"key\":\"spender\",\"value\":\"maya1e28jz625apzkm2lr7plzyvargdxlk4hc6sjyfd\"},{\"key\":\"amount\",\"value\":\"20000000cacao\"},{\"key\":\"spender\",\"value\":\"maya1e28jz625apzkm2lr7plzyvargdxlk4hc6sjyfd\"},{\"key\":\"amount\",\"value\":\"1036900maya\"}]},{\"type\":\"message\",\"attributes\":[{\"key\":\"action\",\"value\":\"send\"},{\"key\":\"sender\",\"value\":\"maya1e28jz625apzkm2lr7plzyvargdxlk4hc6sjyfd\"},{\"key\":\"sender\",\"value\":\"maya1e28jz625apzkm2lr7plzyvargdxlk4hc6sjyfd\"},{\"key\":\"sender\",\"value\":\"maya1e28jz625apzkm2lr7plzyvargdxlk4hc6sjyfd\"},{\"key\":\"sender\",\"value\":\"maya1e28jz625apzkm2lr7plzyvargdxlk4hc6sjyfd\"},{\"key\":\"module\",\"value\":\"governance\"}]},{\"type\":\"transfer\",\"attributes\":[{\"key\":\"recipient\",\"value\":\"maya1dheycdevq39qlkxs2a6wuuzyn4aqxhve4hc8sm\"},{\"key\":\"sender\",\"value\":\"maya1e28jz625apzkm2lr7plzyvargdxlk4hc6sjyfd\"},{\"key\":\"amount\",\"value\":\"1780000000cacao\"},{\"key\":\"recipient\",\"value\":\"maya1577sz8j7xnthm3cl3vgfvmdmkrp7dqrhd9tafd\"},{\"key\":\"sender\",\"value\":\"maya1e28jz625apzkm2lr7plzyvargdxlk4hc6sjyfd\"},{\"key\":\"amount\",\"value\":\"200000000cacao\"},{\"key\":\"recipient\",\"value\":\"maya19764xganmndarzhn7mrls7tc0r59c7gj5twkz7\"},{\"key\":\"sender\",\"value\":\"maya1e28jz625apzkm2lr7plzyvargdxlk4hc6sjyfd\"},{\"key\":\"amount\",\"value\":\"20000000cacao\"},{\"key\":\"recipient\",\"value\":\"maya1ednqzeetrvvya4wryxyqc6ghemc9fy07kam2as\"},{\"key\":\"sender\",\"value\":\"maya1e28jz625apzkm2lr7plzyvargdxlk4hc6sjyfd\"},{\"key\":\"amount\",\"value\":\"1036900maya\"}]}]}]"
+      }
+    },
+    "out": [
+      {
+        "address": "maya1ednqzeetrvvya4wryxyqc6ghemc9fy07kam2as",
+        "coins": [
+          {
+            "amount": "1036900",
+            "asset": "MAYA"
+          }
+        ],
+        "txID": "AFA479D6763CA74944760C367696B472B33C694D592B8AFC6C0CA8157427F832"
+      }
+    ],
+    "pools": [],
+    "status": "success",
+    "type": "send"
+  },
+  "treatment": {
+    "incomeFrom": [
+      "maya1e28jz625apzkm2lr7plzyvargdxlk4hc6sjyfd"
+    ]
+  }
+}

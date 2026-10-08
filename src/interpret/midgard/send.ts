@@ -15,7 +15,7 @@ export interface Send {
     txid: string;
     from: string;
     to: string;
-    // Midgard notation; a bare TCY is THOR.TCY
+    // Midgard notation; a bare name is the protocol's own chain's (TCY is THOR.TCY, MAYA is MAYA.MAYA)
     asset: string;
     // Base units
     amount: string;
@@ -49,7 +49,7 @@ const ACTION_MEMO = /^(=|swap|s|\+|add|a|-|wd|withdraw|loan[+-]|\$[+-]|trade[+-]
 // A send from the side of the wallet whose listing gave it: the sender's legs (the coin and the native fee),
 // or the receiver's (the coin). A send to itself is the sender's.
 export function sendActivity(send: Send, wallet: string, protocol: Protocol): Activity {
-    const asset = send.asset === 'TCY' ? 'THOR.TCY' : send.asset;
+    const asset = /[./~-]/.test(send.asset) ? send.asset : `${protocol.nativeChain}.${send.asset}`;
     const isSender = send.from === wallet;
 
     if (!isSender && send.to !== wallet) {
@@ -75,7 +75,7 @@ export function sendActivity(send: Send, wallet: string, protocol: Protocol): Ac
     };
 }
 
-// A Midgard send on THORChain. A send with no coins (e.g. a TCY unstake request's memo) moves nothing.
+// A Midgard send, on THORChain or Maya. A send with no coins (e.g. a TCY unstake request's memo) moves nothing.
 export function interpretSend(bundle: RawBundle, protocol: Protocol): {activities: Activity[]; issues: Issue[]} {
     const action = bundle.data as Action;
     const input = action.in[0];

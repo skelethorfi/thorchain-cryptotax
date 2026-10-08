@@ -17,6 +17,8 @@ import {AssetNamesConfig, getProtocol, Protocol, withAssetNames} from "../../dom
 export interface Treatment {
     assets?: AssetNamesConfig;
     mayaLiquidityAuction?: MayaLiquidityAuction;
+    // Senders whose transfers to the wallet are income (ITaxConfig.incomeFrom); unset: the known distributors
+    incomeFrom?: string[];
 }
 
 // Activities as rows of Summ's advanced CSV, the same rows the old mappers wrote
@@ -64,7 +66,7 @@ function toRows(activity: Activity, protocol: Protocol, treatment: Treatment): C
         case 'loan.repay':
             return loanRepayRows(activity, protocol);
         case 'send':
-            return sendRows(activity, protocol);
+            return sendRows(activity, protocol, treatment.incomeFrom);
         case 'tcy.claim':
             return tcyClaimRows(activity, protocol);
         case 'tcy.stake':

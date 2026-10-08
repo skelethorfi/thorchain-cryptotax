@@ -17,6 +17,7 @@ import {MidgardSource, Source, TcySource, ViewblockSource} from "../sources/Sour
 import {ageInDays, NotFinal, PendingAge, pendingAge} from "../sources/Pending";
 import {getActionDate} from "../sources/thorchain/MidgardUtils";
 import {ACTION_MEMO_WARNING, actionMemoSummary} from "../interpret/midgard/send";
+import {knownDistributorReport} from "../export/summ/send";
 import {RunSummary} from "./RunSummary";
 import {attachAuctionDeposits, dedupeBundles, getBundleKey, getBundleSourceName, RawBundle, selectSends, VIEWBLOCK_SENDS_BEFORE} from "../sources/RawBundle";
 import {BundleResult, collectRows, runBundle} from "../pipeline/run";
@@ -142,12 +143,17 @@ export class Exporter {
             this.report.info(`Attached ${auction.attached} Midgard sends to Maya liquidity auction adds as their deposits`);
         }
 
-        const results = auction.bundles.map(bundle => runBundle(bundle, this.protocolFor(bundle), {assets: this.config.assets, mayaLiquidityAuction: this.config.mayaLiquidityAuction}));
+        const results = auction.bundles.map(bundle => runBundle(bundle, this.protocolFor(bundle), {assets: this.config.assets, mayaLiquidityAuction: this.config.mayaLiquidityAuction, incomeFrom: this.config.incomeFrom}));
         results.forEach(result => this.handleIssues(result, outputPath));
         const actionMemos = results.flatMap(result => result.issues).filter(issue => issue.message.startsWith(ACTION_MEMO_WARNING)).length;
         this.endWarnings = [actionMemoSummary(actionMemos, this.config.protocols ?? ['thorchain'])].filter((line): line is string => !!line);
 
-        return collectRows(results);
+        const rows = collectRows(results);
+        const distributors = knownDistributorReport(rows, this.config.incomeFrom);
+        distributors.info.forEach(line => this.report.info(line));
+        this.endWarnings.push(...distributors.warnings);
+
+        return rows;
     }
 
     // An action still pending from before this date is stuck

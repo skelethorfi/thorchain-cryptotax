@@ -1,0 +1,10 @@
+walletExchange: maya1ednqzeetrvvya4wryxyqc6ghemc9fy07kam2as
+timestamp: 2026-10-05T18:55:20.309Z
+type: income
+baseCurrency: MAYA
+baseAmount: "103.69"
+from: maya1e28jz625apzkm2lr7plzyvargdxlk4hc6sjyfd
+to: maya1ednqzeetrvvya4wryxyqc6ghemc9fy07kam2as
+blockchain: Mayachain
+description: "Income: receive 103.69 MAYA; AFA479D6763CA74944760C367696B472B33C694D592B8AFC6C0CA8157427F832"
+id: 2026-10-05T18:55:20.309Z.in.87f14d14dfa8

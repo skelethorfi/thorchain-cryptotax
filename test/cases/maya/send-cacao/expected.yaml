@@ -1,0 +1,12 @@
+walletExchange: maya1tg884362t8ulrt4snny3u90q8uveq0dlvwuahz
+timestamp: 2026-10-07T14:45:47.525Z
+type: send
+baseCurrency: CACAO
+baseAmount: "7509"
+feeCurrency: CACAO
+feeAmount: "0.2"
+from: maya1tg884362t8ulrt4snny3u90q8uveq0dlvwuahz
+to: maya1p3yk4vq0qehumnt6sa30psu3j2my89uvltfczs
+blockchain: Mayachain
+description: Send 7509 CACAO; 99BC41FC2B8B801E95736F3705F76957782D6350B8CC666612E02737B1DB1585
+id: 2026-10-07T14:45:47.525Z.out.a2834d8b4d9d

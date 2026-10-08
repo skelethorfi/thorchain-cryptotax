@@ -44,6 +44,11 @@ frequency = "yearly"
 # "deposit" - the position's cost is the RUNE you deposited; any gain shows when you withdraw
 # mayaLiquidityAuction = "income"
 
+# Optional: senders whose transfers to your wallets are income, e.g. a project's reward distribution wallet.
+# Every other transfer you receive is a plain receive. Unset: MAYA from the known Maya distribution wallets is
+# income (docs/specs/sends.md). Setting it replaces those; incomeFrom = [] makes every transfer a receive.
+# incomeFrom = ["maya1...", "thor1..."]
+
 # List of wallets
 # add a new [[wallets]] entry for each wallet
 # add each wallet that was used in swaps/LP/etc

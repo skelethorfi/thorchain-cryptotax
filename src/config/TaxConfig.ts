@@ -63,6 +63,10 @@ export class TaxConfig {
             throw new Error(`Config: mayaLiquidityAuction must be ${MAYA_LIQUIDITY_AUCTION.map(value => `"${value}"`).join(' or ')} (got ${JSON.stringify(config.mayaLiquidityAuction)})`);
         }
 
+        if (config.incomeFrom !== undefined && !(Array.isArray(config.incomeFrom) && config.incomeFrom.every(address => typeof address === 'string' && address.length > 0))) {
+            throw new Error(`Config: incomeFrom must be a list of addresses (got ${JSON.stringify(config.incomeFrom)})`);
+        }
+
         for (const key of ['pendingStuckDays', 'pendingGraceDays'] as const) {
             const days = config[key];
 

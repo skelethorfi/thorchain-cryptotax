@@ -1,7 +1,7 @@
 # Sends
 
-A send moves a coin from one THORChain address to another with a `MsgSend`,
-outside any protocol action. It gives one row per configured wallet it
+A send moves a coin from one THORChain (or Maya) address to another with a
+`MsgSend`, outside any protocol action. It gives one row per configured wallet it
 touches: a `send` on the sending wallet, with the fee, and a `receive` on
 the receiving wallet. Nothing is swapped, so a send between two configured
 wallets is a transfer, and Summ pairs the two rows.
@@ -24,8 +24,8 @@ so the overlap gives no second row. A run for a later period never calls
 Viewblock, so if its unofficial API changes, only such runs are affected,
 and they fail rather than lose sends.
 
-Maya sends (Midgard `send` with `MAYA` or `CACAO`) are not mapped yet
-(`maya.md`).
+Maya sends (Maya's Midgard `send`, e.g. of `CACAO` or the MAYA token) are
+mapped the same way, from Maya's Midgard, with Maya's native fee (below).
 
 ## Which sends give rows
 
@@ -97,7 +97,12 @@ exporter reads:
 - Viewblock's address listing has no fee; its single-tx endpoint shows 0.02
   RUNE on sends from 2021 to 2026.
 
-So the gas leg is the 0.02 RUNE default.
+So the gas leg is the 0.02 RUNE default. On Maya it is the same default as
+every Maya action's CACAO fee: 0.2 CACAO, Maya's setting today. That
+setting has changed over time (mimir `NATIVETRANSACTIONFEE`: 0.0002 CACAO in
+early 2023, 1 CACAO in late 2023, 0.5 CACAO later), and Maya's Midgard
+reports 0.2 CACAO for old sends too, so the default is wrong outside the
+current period; reading the setting at each tx's height is planned (`maya.md`).
 
 ## Rows
 
@@ -105,10 +110,34 @@ So the gas leg is the 0.02 RUNE default.
 | --- | --- | --- | --- | --- | --- |
 | Sender | `send` | the coin and amount | 0.02 RUNE | sender, receiver | `Send <amount> <coin>; <txid>` |
 | Receiver | `receive` | the coin and amount | — | sender, receiver | `Receive <amount> <coin>; <txid>` |
+| Receiver, sender in `incomeFrom` | `income` | the coin and amount | — | sender, receiver | `Income: receive <amount> <coin>; <txid>` |
 | Arkeo delegation | `send` | the coin and amount | 0.02 RUNE | the wallet, itself | `1/1 - DelegateArkeoWallet; <txid>` |
 
 `<coin>` is `Synth DOGE` for a synth and `Trade BTC` for a trade asset;
-otherwise the ticker. The blockchain is THORChain. The base currency is the
+otherwise the ticker. The blockchain is THORChain, or Mayachain for a Maya
+send. The base currency is the
 coin's name as every other row names it (`assets.md`), so a synth received
-from a swap and later sent is one currency in Summ. Midgard and Viewblock
-write TCY as `TCY`, which is `THOR.TCY`.
+from a swap and later sent is one currency in Summ. A bare coin name is the
+protocol's own chain's: Midgard and Viewblock write TCY as `TCY`, which is
+`THOR.TCY`, and Maya's Midgard writes the MAYA token as `MAYA`, which is
+`MAYA.MAYA` (4 decimals).
+
+**Income.** Whether a transfer received is income depends on who sent it,
+which the chain does not say: a project's reward distribution is an ordinary
+wallet, not a protocol module, and neither Midgard nor the node lists them.
+
+- **Known distribution wallets** (`KNOWN_DISTRIBUTORS` in
+  `src/export/summ/send.ts`), identified by what they do (2026-10-08): on
+  Maya, a MAYA distribution wallet (2,147 of its 2,150 sends are MAYA, to 868
+  recipients, no memo) and the treasury that funds it (3,635 of its 3,860
+  sends are MAYA, to 2,549 recipients; it also trades, takes funds in from
+  many senders and sends CACAO and other tokens). Their **MAYA** transfers are
+  income; anything else they send is a `receive`, and the run warns of it, as
+  it may be a refund, a return or a trade.
+- **`incomeFrom = ["<address>", …]`** in the config replaces that list: a
+  transfer received from a listed sender is `income`, whatever the coin, and
+  every other is a `receive`; `incomeFrom = []` turns income off.
+
+The run summary counts the receipts that are income by default. A row's ID
+is that of the received coin either way (`periods.md`), so changing the list
+changes the row's type, not its ID.
