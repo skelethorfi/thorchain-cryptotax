@@ -1,6 +1,7 @@
-import {describe, expect, test} from "@jest/globals";
-import {attachAuctionDeposits, dedupeBundles, getBundleKey, RawBundle, selectSends} from "../src/sources/RawBundle";
-import {ProtocolId} from "../src/domain/Protocol";
+import {describe, test} from "node:test";
+import assert from "node:assert/strict";
+import {attachAuctionDeposits, dedupeBundles, getBundleKey, type RawBundle, selectSends} from "../src/sources/RawBundle.ts";
+import type {ProtocolId} from "../src/domain/Protocol.ts";
 
 const action = (txID: string, type = 'swap') => ({type, date: '1680350400000000000', in: [{address: 'thor1a', coins: [], txID}], out: [], pools: [], metadata: {}});
 
@@ -9,10 +10,10 @@ const bundle = (source: RawBundle['source'], wallet: string, data: any, protocol
 
 describe('getBundleKey', () => {
     test('is the store record a bundle was listed as', () => {
-        expect(getBundleKey(bundle('midgard', 'thor1a', action('A')))).toBe('midgard/swap.A');
-        expect(getBundleKey(bundle('midgard', 'thor1a', action('A'), 'maya'))).toBe('maya-midgard/swap.A');
-        expect(getBundleKey(bundle('viewblock', 'thor1a', {hash: 'H'}))).toBe('viewblock/H');
-        expect(getBundleKey(bundle('tcy', 'thor1a', {date: '1700000000'}))).toBe('tcy/thor1a.1700000000');
+        assert.equal(getBundleKey(bundle('midgard', 'thor1a', action('A'))), 'midgard/swap.A');
+        assert.equal(getBundleKey(bundle('midgard', 'thor1a', action('A'), 'maya')), 'maya-midgard/swap.A');
+        assert.equal(getBundleKey(bundle('viewblock', 'thor1a', {hash: 'H'})), 'viewblock/H');
+        assert.equal(getBundleKey(bundle('tcy', 'thor1a', {date: '1700000000'})), 'tcy/thor1a.1700000000');
     });
 });
 
@@ -22,19 +23,19 @@ describe('dedupeBundles', () => {
         const second = bundle('midgard', 'thor1b', action('A'));
         const other = bundle('midgard', 'thor1b', action('B'));
 
-        expect(dedupeBundles([first, second, other])).toStrictEqual({bundles: [first, other], duplicates: 1});
+        assert.deepEqual(dedupeBundles([first, second, other]), {bundles: [first, other], duplicates: 1});
     });
 
     test('keeps the same txid on different protocols', () => {
         const bundles = [bundle('midgard', 'thor1a', action('A')), bundle('midgard', 'thor1a', action('A'), 'maya')];
 
-        expect(dedupeBundles(bundles).duplicates).toBe(0);
+        assert.equal(dedupeBundles(bundles).duplicates, 0);
     });
 
     test("keeps every wallet's Viewblock send, which maps from that wallet's side", () => {
         const bundles = [bundle('viewblock', 'thor1a', {hash: 'H'}), bundle('viewblock', 'thor1b', {hash: 'H'})];
 
-        expect(dedupeBundles(bundles)).toStrictEqual({bundles, duplicates: 0});
+        assert.deepEqual(dedupeBundles(bundles), {bundles, duplicates: 0});
     });
 });
 
@@ -44,7 +45,7 @@ describe('selectSends', () => {
     test("keeps every wallet's Midgard send, which maps from that wallet's side", () => {
         const bundles = [bundle('midgard', 'thor1a', action('S', 'send')), bundle('midgard', 'thor1b', action('S', 'send'))];
 
-        expect(dedupeBundles(bundles)).toStrictEqual({bundles, duplicates: 0});
+        assert.deepEqual(dedupeBundles(bundles), {bundles, duplicates: 0});
     });
 
     test("drops a Midgard send that is another action's inbound, case ignored", () => {
@@ -52,14 +53,14 @@ describe('selectSends', () => {
         const inbound = bundle('midgard', 'thor1a', action('AB', 'send'));
         const plain = bundle('midgard', 'thor1a', action('CD', 'send'));
 
-        expect(selectSends([swap, inbound, plain])).toStrictEqual({bundles: [swap, plain], dropped: {inbound: 1, outbound: 0, viewblock: 0}});
+        assert.deepEqual(selectSends([swap, inbound, plain]), {bundles: [swap, plain], dropped: {inbound: 1, outbound: 0, viewblock: 0}});
     });
 
     test("drops a THORChain send that is a Maya action's inbound (RUNE sent to a Maya vault)", () => {
         const mayaSwap = bundle('midgard', 'thor1a', action('AB', 'swap'), 'maya');
         const send = bundle('midgard', 'thor1a', action('AB', 'send'));
 
-        expect(selectSends([mayaSwap, send])).toStrictEqual({bundles: [mayaSwap], dropped: {inbound: 1, outbound: 0, viewblock: 0}});
+        assert.deepEqual(selectSends([mayaSwap, send]), {bundles: [mayaSwap], dropped: {inbound: 1, outbound: 0, viewblock: 0}});
     });
 
     test('keeps only Viewblock sends from before 2022-04 that Midgard does not list', () => {
@@ -69,14 +70,14 @@ describe('selectSends', () => {
         const swap = bundle('viewblock', 'thor1a', vbSend('W1', '2021-07-01T00:00:00Z', ['swap', 'main']));
         const midgard = bundle('midgard', 'thor1a', action('E2', 'send'));
 
-        expect(selectSends([early, listed, late, swap, midgard])).toStrictEqual({bundles: [early, midgard], dropped: {inbound: 0, outbound: 0, viewblock: 3}});
+        assert.deepEqual(selectSends([early, listed, late, swap, midgard]), {bundles: [early, midgard], dropped: {inbound: 0, outbound: 0, viewblock: 3}});
     });
 
     test("drops a THORChain send that is a Maya action's outbound, by txid", () => {
         const swap = bundle('midgard', 'thor1a', {...action('IN'), out: [{address: 'thor1a', txID: 'OUTTX', coins: []}]}, 'maya');
         const payout = bundle('midgard', 'thor1a', action('outtx', 'send'));
 
-        expect(selectSends([swap, payout])).toStrictEqual({bundles: [swap], dropped: {inbound: 0, outbound: 1, viewblock: 0}});
+        assert.deepEqual(selectSends([swap, payout]), {bundles: [swap], dropped: {inbound: 0, outbound: 1, viewblock: 0}});
     });
 
     test('a send whose memo names a pending refund is its outbound: the refund is paid by it', () => {
@@ -88,15 +89,15 @@ describe('selectSends', () => {
 
         const {bundles, dropped} = selectSends([refund, payout]);
 
-        expect(dropped.outbound).toBe(1);
-        expect(bundles).toHaveLength(1);
-        expect(bundles[0].data).toMatchObject({type: 'refund', status: 'success', out: [{address: 'thor1a', txID: 'PAYOUT', coins}]});
+        assert.equal(dropped.outbound, 1);
+        assert.equal(bundles.length, 1);
+        assert.partialDeepStrictEqual(bundles[0].data, {type: 'refund', status: 'success', out: [{address: 'thor1a', txID: 'PAYOUT', coins}]});
     });
 
     test('a REFUND memo naming no listed action leaves the send a send', () => {
         const payout = bundle('midgard', 'thor1a', {...action('PAYOUT', 'send'), metadata: {send: {memo: `REFUND:${'cd'.repeat(32)}`}}});
 
-        expect(selectSends([payout]).bundles).toEqual([payout]);
+        assert.deepEqual(selectSends([payout]).bundles, [payout]);
     });
 });
 
@@ -116,14 +117,14 @@ describe('attachAuctionDeposits', () => {
 
         const {bundles, attached} = attachAuctionDeposits([auctionAdd, deposit, other]);
 
-        expect(attached).toBe(1);
-        expect(bundles).toEqual([{...auctionAdd, inbounds: [deposit.data]}, other]);
+        assert.equal(attached, 1);
+        assert.deepEqual(bundles, [{...auctionAdd, inbounds: [deposit.data]}, other]);
     });
 
     test('leaves a deposit after the add, from another address or to another member', () => {
         const auctionAdd = bundle('midgard', MAYA, add, 'maya');
         const sends = [send('D1', `+:THOR.RUNE:${MAYA}`, '3000'), send('D2', `+:THOR.RUNE:${MAYA}`, '1000', 'thor1-other'), send('D3', '+:THOR.RUNE:maya1-other')];
 
-        expect(attachAuctionDeposits([auctionAdd, ...sends])).toEqual({bundles: [auctionAdd, ...sends], attached: 0});
+        assert.deepEqual(attachAuctionDeposits([auctionAdd, ...sends]), {bundles: [auctionAdd, ...sends], attached: 0});
     });
 });

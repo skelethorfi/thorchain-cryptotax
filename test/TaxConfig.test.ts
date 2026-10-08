@@ -1,5 +1,6 @@
-import {describe, expect, jest, test} from "@jest/globals";
-import {TaxConfig} from "../src/config/TaxConfig";
+import {describe, mock, test} from "node:test";
+import assert from "node:assert/strict";
+import {TaxConfig} from "../src/config/TaxConfig.ts";
 import fs from "fs-extra";
 import os from "os";
 import path from "path";
@@ -8,7 +9,7 @@ describe('TaxConfig', () => {
     test('applyDefaults with empty config', () => {
         const result = TaxConfig.applyDefaults({}, new Date('2026-06-30T23:30:00.000Z'));
 
-        expect(result).toEqual({
+        assert.deepEqual(result, {
             outputPath: 'output',
             storePath: 'store',
             pendingStuckDays: 30,
@@ -20,30 +21,30 @@ describe('TaxConfig', () => {
     test('with a timezone, the default toDate is today\'s date there', () => {
         const result = TaxConfig.applyDefaults({timezone: 'Asia/Tokyo'}, new Date('2026-06-30T23:30:00.000Z'));
 
-        expect(result.toDate).toBe('2026-07-01');
+        assert.equal(result.toDate, '2026-07-01');
     });
 
     test('an unknown timezone is an error', () => {
-        expect(() => TaxConfig.applyDefaults({timezone: 'Nowhere/City'}, new Date())).toThrow('Unknown timezone: Nowhere/City');
+        assert.throws(() => TaxConfig.applyDefaults({timezone: 'Nowhere/City'}, new Date()), /Unknown timezone: Nowhere\/City/);
     });
 
     test('pendingStuckDays and pendingGraceDays must be a number of days, 0 or more', () => {
-        expect(() => TaxConfig.applyDefaults({pendingStuckDays: -1}, new Date())).toThrow('pendingStuckDays must be a number of days');
-        expect(() => TaxConfig.applyDefaults({pendingStuckDays: '30' as any}, new Date())).toThrow('pendingStuckDays must be a number of days');
-        expect(TaxConfig.applyDefaults({pendingStuckDays: 0}, new Date()).pendingStuckDays).toBe(0);
-        expect(() => TaxConfig.applyDefaults({pendingGraceDays: -2}, new Date())).toThrow('pendingGraceDays must be a number of days');
+        assert.throws(() => TaxConfig.applyDefaults({pendingStuckDays: -1}, new Date()), /pendingStuckDays must be a number of days/);
+        assert.throws(() => TaxConfig.applyDefaults({pendingStuckDays: '30' as any}, new Date()), /pendingStuckDays must be a number of days/);
+        assert.equal(TaxConfig.applyDefaults({pendingStuckDays: 0}, new Date()).pendingStuckDays, 0);
+        assert.throws(() => TaxConfig.applyDefaults({pendingGraceDays: -2}, new Date()), /pendingGraceDays must be a number of days/);
     });
 
     test('incomeFrom is a list of addresses', () => {
-        expect(TaxConfig.applyDefaults({incomeFrom: ['maya1a']}, new Date()).incomeFrom).toEqual(['maya1a']);
-        expect(() => TaxConfig.applyDefaults({incomeFrom: 'maya1a' as any}, new Date())).toThrow('incomeFrom must be a list of addresses');
-        expect(() => TaxConfig.applyDefaults({incomeFrom: [''] as any}, new Date())).toThrow('incomeFrom must be a list of addresses');
+        assert.deepEqual(TaxConfig.applyDefaults({incomeFrom: ['maya1a']}, new Date()).incomeFrom, ['maya1a']);
+        assert.throws(() => TaxConfig.applyDefaults({incomeFrom: 'maya1a' as any}, new Date()), /incomeFrom must be a list of addresses/);
+        assert.throws(() => TaxConfig.applyDefaults({incomeFrom: [''] as any}, new Date()), /incomeFrom must be a list of addresses/);
     });
 
     test('mayaLiquidityAuction is income or deposit, with no default', () => {
-        expect(TaxConfig.applyDefaults({}, new Date()).mayaLiquidityAuction).toBeUndefined();
-        expect(TaxConfig.applyDefaults({mayaLiquidityAuction: 'deposit'}, new Date()).mayaLiquidityAuction).toBe('deposit');
-        expect(() => TaxConfig.applyDefaults({mayaLiquidityAuction: 'gift' as any}, new Date())).toThrow('mayaLiquidityAuction must be "income" or "deposit"');
+        assert.equal(TaxConfig.applyDefaults({}, new Date()).mayaLiquidityAuction, undefined);
+        assert.equal(TaxConfig.applyDefaults({mayaLiquidityAuction: 'deposit'}, new Date()).mayaLiquidityAuction, 'deposit');
+        assert.throws(() => TaxConfig.applyDefaults({mayaLiquidityAuction: 'gift' as any}, new Date()), /mayaLiquidityAuction must be "income" or "deposit"/);
     });
 
     test('applyDefaults with populated config', () => {
@@ -62,7 +63,7 @@ describe('TaxConfig', () => {
 
         const result = TaxConfig.applyDefaults(config, new Date());
 
-        expect(result).toEqual({
+        assert.deepEqual(result, {
             fromDate: '2020-01-01',
             toDate: '2020-12-31',
             frequency: 'monthly',
@@ -81,14 +82,14 @@ describe('TaxConfig paths', () => {
     test('resolves relative paths against the config file folder', () => {
         const config = TaxConfig.resolvePaths(TaxConfig.applyDefaults({storePath: 'FY/store'}, new Date()), '/private/tax');
 
-        expect(config.outputPath).toBe(path.resolve('/private/tax/output'));
-        expect(config.storePath).toBe(path.resolve('/private/tax/FY/store'));
+        assert.equal(config.outputPath, path.resolve('/private/tax/output'));
+        assert.equal(config.storePath, path.resolve('/private/tax/FY/store'));
     });
 
     test('keeps absolute paths', () => {
         const config = TaxConfig.resolvePaths(TaxConfig.applyDefaults({outputPath: '/elsewhere/output'}, new Date()), '/private/tax');
 
-        expect(config.outputPath).toBe(path.resolve('/elsewhere/output'));
+        assert.equal(config.outputPath, path.resolve('/elsewhere/output'));
     });
 
     test('load resolves paths relative to the config file, not the working directory', () => {
@@ -98,15 +99,15 @@ describe('TaxConfig paths', () => {
 
         const config = TaxConfig.load(file, new Date());
 
-        expect(config.storePath).toBe(path.join(dir, 'FY/cache'));
-        expect(config.outputPath).toBe(path.join(dir, 'output'));
+        assert.equal(config.storePath, path.join(dir, 'FY/cache'));
+        assert.equal(config.outputPath, path.join(dir, 'output'));
     });
 
     test('an old config with cachePath still works, as storePath', () => {
-        jest.spyOn(console, 'warn').mockImplementation(() => {});
+        mock.method(console, 'warn', () => {});
 
-        expect(TaxConfig.renameDeprecated({cachePath: 'FY/cache'})).toEqual({storePath: 'FY/cache'});
-        expect(() => TaxConfig.renameDeprecated({cachePath: 'a', storePath: 'b'})).toThrow(/both storePath and/);
+        assert.deepEqual(TaxConfig.renameDeprecated({cachePath: 'FY/cache'}), {storePath: 'FY/cache'});
+        assert.throws(() => TaxConfig.renameDeprecated({cachePath: 'a', storePath: 'b'}), /both storePath and/);
     });
 
     test('loads the optional [assets] table from TOML', () => {
@@ -123,6 +124,7 @@ describe('TaxConfig paths', () => {
             'prefixSecuredAssets = true',
         ].join('\n'));
 
-        expect(TaxConfig.load(file, new Date()).assets).toEqual({prefixSecuredAssets: true});
+        // js-toml builds tables without Object's prototype; compare the values
+        assert.deepEqual({...TaxConfig.load(file, new Date()).assets}, {prefixSecuredAssets: true});
     });
 });

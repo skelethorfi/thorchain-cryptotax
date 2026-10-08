@@ -1,9 +1,9 @@
-import {RecordStore} from "../store/RecordStore";
-import {MIDGARD_LIST} from "../store/Sources";
-import {Action, Configuration, DefaultApi} from '@xchainjs/xchain-midgard';
+import {RecordStore} from "../store/RecordStore.ts";
+import {MIDGARD_LIST} from "../store/Sources.ts";
+import {type Action, Configuration, DefaultApi} from '@xchainjs/xchain-midgard';
 import assert from "assert";
-import {API_URLS} from "../../config/apiUrls";
-import {http} from "../http";
+import {API_URLS} from "../../config/apiUrls.ts";
+import {http} from "../http.ts";
 
 // https://github.com/xchainjs/xchainjs-lib/tree/master/packages/xchain-midgard
 // midgard api: https://midgard.thorswap.net/v2/doc
@@ -18,8 +18,14 @@ export class MidgardService {
     api: DefaultApi;
 
     // source: the store folder, e.g. 'midgard' or 'maya-midgard'
-    constructor(private store: RecordStore = new RecordStore('_cache'), private source: string = 'midgard',
-                private basePath: string = API_URLS.midgard) {
+    private store: RecordStore;
+    private source: string;
+    private basePath: string;
+    constructor(store: RecordStore = new RecordStore('_cache'), source: string = 'midgard',
+                basePath: string = API_URLS.midgard) {
+        this.store = store;
+        this.source = source;
+        this.basePath = basePath;
         this.api = new DefaultApi(new Configuration({basePath}), basePath, http);
     }
 

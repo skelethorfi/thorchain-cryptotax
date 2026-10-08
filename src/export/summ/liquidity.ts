@@ -1,12 +1,12 @@
-import {Activity, Leg} from "../../domain/Activity";
-import {formatAmount} from "../../domain/Amount";
-import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
-import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
-import {toPositionAsset} from "../../domain/Asset";
-import {getLpTokenName} from "./ThorchainUtils";
-import {formatBlockchain, Protocol} from "../../domain/Protocol";
-import {leg, legTrace, plusSeconds} from "./common";
-import {MayaLiquidityAuction} from "../../config/ITaxConfig";
+import type {Activity, Leg} from "../../domain/Activity.ts";
+import {formatAmount} from "../../domain/Amount.ts";
+import {type CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv/index.ts";
+import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils.ts";
+import {toPositionAsset} from "../../domain/Asset.ts";
+import {getLpTokenName} from "./ThorchainUtils.ts";
+import {formatBlockchain, type Protocol} from "../../domain/Protocol.ts";
+import {leg, legTrace, plusSeconds} from "./common.ts";
+import type {MayaLiquidityAuction} from "../../config/ITaxConfig.ts";
 
 // Summ needs a wallet for every row; an old deposit can have none
 const MISSING_ADDRESS = 'MISSING-DEPOSIT-ADDRESS';

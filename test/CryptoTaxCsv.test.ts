@@ -1,34 +1,35 @@
-import {describe, expect, test} from '@jest/globals';
-import {assignRowIds, csvField, renderCsv, rowId} from '../src/export/summ/csv';
+import {describe, test} from "node:test";
+import assert from "node:assert/strict";
+import {assignRowIds, csvField, renderCsv, rowId} from '../src/export/summ/csv/index.ts';
 
 const row = (time: string, description = '') => ({timestamp: new Date(time), type: 'fee', baseCurrency: 'RUNE', baseAmount: '1', description} as any);
 
 describe('CSV rendering', () => {
     test('writes plain fields as they are', () => {
-        expect(csvField('refund (ABC): 0.5 RUNE kept')).toBe('refund (ABC): 0.5 RUNE kept');
-        expect(csvField('')).toBe('');
+        assert.equal(csvField('refund (ABC): 0.5 RUNE kept'), 'refund (ABC): 0.5 RUNE kept');
+        assert.equal(csvField(''), '');
     });
 
     test('quotes a field with a comma or a double quote, doubling the quotes', () => {
-        expect(csvField('kept by thorchain, 1 BTC sent')).toBe('"kept by thorchain, 1 BTC sent"');
-        expect(csvField('a "b"')).toBe('"a ""b"""');
+        assert.equal(csvField('kept by thorchain, 1 BTC sent'), '"kept by thorchain, 1 BTC sent"');
+        assert.equal(csvField('a "b"'), '"a ""b"""');
     });
 
     test('keeps every row on one line', () => {
-        expect(csvField('one\ntwo')).toBe('one; two');
+        assert.equal(csvField('one\ntwo'), 'one; two');
     });
 
     test('a description with commas stays in its column', () => {
         const [, line] = renderCsv([{...row('2020-12-31T13:00:00.000Z', 'kept, sent, returned'), id: 'T.refund-fee'}]).split('\n');
-        expect(line).toBe('2020-12-31T13:00:00.000Z,fee,RUNE,1,,,,,,,,T.refund-fee,"kept, sent, returned",,');
+        assert.equal(line, '2020-12-31T13:00:00.000Z,fee,RUNE,1,,,,,,,,T.refund-fee,"kept, sent, returned",,');
     });
 
     test('rows newest first, without changing the order of the rows passed in', () => {
         const rows = [row('2021-01-01T00:00:00.000Z', 'old'), row('2021-01-02T00:00:00.000Z', 'new')];
         const lines = renderCsv(rows).split('\n');
-        expect(lines[0]).toMatch(/^Timestamp \(UTC\),Type,/);
-        expect(lines[1]).toContain(',new,');
-        expect(rows.map(r => r.description)).toEqual(['old', 'new']);
+        assert.match(lines[0], /^Timestamp \(UTC\),Type,/);
+        assert.ok(lines[1].includes(',new,'));
+        assert.deepEqual(rows.map(r => r.description), ['old', 'new']);
     });
 });
 
@@ -37,8 +38,8 @@ describe('row IDs', () => {
     const trace = {record: 'midgard/swap.ABC', role: 'trade-out', asset: 'BTC.BTC'};
 
     test('<action time>.<role>.<12 hex of the identity>, the same on every call', () => {
-        expect(rowId(time, 'thor1a', trace)).toMatch(/^2021-01-01T00:00:00\.000Z\.trade-out\.[0-9a-f]{12}$/);
-        expect(rowId(time, 'thor1a', trace)).toBe(rowId(time, 'thor1a', {...trace}));
+        assert.match(rowId(time, 'thor1a', trace), /^2021-01-01T00:00:00\.000Z\.trade-out\.[0-9a-f]{12}$/);
+        assert.equal(rowId(time, 'thor1a', trace), rowId(time, 'thor1a', {...trace}));
     });
 
     test('differs by record, wallet, role and asset', () => {
@@ -49,31 +50,31 @@ describe('row IDs', () => {
             rowId(time, 'thor1a', {...trace, role: 'trade-in'}),
             rowId(time, 'thor1a', {...trace, asset: 'ETH.ETH'}),
         ];
-        expect(new Set(ids).size).toBe(ids.length);
+        assert.equal(new Set(ids).size, ids.length);
     });
 
     test('two rows with one ID, or a row without one, is an error', () => {
         const a = {...row('2021-01-01T00:00:00.000Z'), id: 'X', trace};
 
-        expect(assignRowIds([a, {...a, id: 'Y'}])).toHaveLength(2);
-        expect(() => assignRowIds([a, {...a}])).toThrow('Two rows with the ID X (midgard/swap.ABC, trade-out)');
-        expect(() => assignRowIds([row('2021-01-01T00:00:00.000Z')])).toThrow('Row without an ID');
+        assert.equal(assignRowIds([a, {...a, id: 'Y'}]).length, 2);
+        assert.throws(() => assignRowIds([a, {...a}]), /Two rows with the ID X \(midgard\/swap\.ABC, trade-out\)/);
+        assert.throws(() => assignRowIds([row('2021-01-01T00:00:00.000Z')]), /Row without an ID/);
     });
 });
 
 describe('row IDs and the export treatment', () => {
     test('a different treatment of the same action (here, how trade assets are named) keeps every ID', async () => {
         const path = await import('path');
-        const {readCaseInput, runCaseLayers} = await import('../src/fixtures/GoldenCase');
-        const {exportSumm} = await import('../src/export/summ');
-        const [swap] = runCaseLayers(readCaseInput(path.join(__dirname, 'cases', 'swap', 'rune-to-eth'))).activities;
+        const {readCaseInput, runCaseLayers} = await import('../src/fixtures/GoldenCase.ts');
+        const {exportSumm} = await import('../src/export/summ/index.ts');
+        const [swap] = runCaseLayers(readCaseInput(path.join(import.meta.dirname, 'cases', 'swap', 'rune-to-eth'))).activities;
         const traded = {...swap, legs: swap.legs.map(item => item.direction === 'in' && item.role === 'principal'
             ? {...item, asset: {notation: 'ETH~ETH', kind: 'trade' as const}} : item)};
 
         const plain = exportSumm([traded]);
         const prefixed = exportSumm([traded], {assets: {prefixTradeAssets: true}});
 
-        expect(plain.map(row => row.baseCurrency)).not.toEqual(prefixed.map(row => row.baseCurrency));
-        expect(plain.map(row => row.id)).toEqual(prefixed.map(row => row.id));
+        assert.notDeepEqual(plain.map(row => row.baseCurrency), prefixed.map(row => row.baseCurrency));
+        assert.deepEqual(plain.map(row => row.id), prefixed.map(row => row.id));
     });
 });

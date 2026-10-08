@@ -1,9 +1,9 @@
-import {Activity, Leg} from "../../domain/Activity";
-import {formatAmount, parseAmount} from "../../domain/Amount";
-import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
-import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
-import {formatBlockchain, Protocol} from "../../domain/Protocol";
-import {findLeg, leg, legTrace, plusSeconds} from "./common";
+import type {Activity, Leg} from "../../domain/Activity.ts";
+import {formatAmount, parseAmount} from "../../domain/Amount.ts";
+import {type CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv/index.ts";
+import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils.ts";
+import {formatBlockchain, type Protocol} from "../../domain/Protocol.ts";
+import {findLeg, leg, legTrace, plusSeconds} from "./common.ts";
 
 // Rujira rows (docs/specs/rujira.md): staking is a staking deposit; FIN swaps and merges are trades
 

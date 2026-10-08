@@ -1,5 +1,5 @@
-import {IWallet} from "./IWallet";
-import {AssetNamesConfig, ProtocolId} from "../domain/Protocol";
+import type {IWallet} from "./IWallet.ts";
+import type {AssetNamesConfig, ProtocolId} from "../domain/Protocol.ts";
 
 export const MAYA_LIQUIDITY_AUCTION = ['income', 'deposit'] as const;
 export type MayaLiquidityAuction = typeof MAYA_LIQUIDITY_AUCTION[number];

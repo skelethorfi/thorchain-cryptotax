@@ -1,8 +1,8 @@
-import {ITaxConfig, MAYA_LIQUIDITY_AUCTION} from "./ITaxConfig";
+import {type ITaxConfig, MAYA_LIQUIDITY_AUCTION} from "./ITaxConfig.ts";
 import path from "path";
 import fs from "fs-extra";
-import toml from "js-toml";
-import {checkTimeZone, dateIn} from "../utils/DateRange";
+import {load as loadToml} from "js-toml";
+import {checkTimeZone, dateIn} from "../utils/DateRange.ts";
 
 export class TaxConfig {
     // today: the default toDate (its date in the config's timezone)
@@ -45,7 +45,7 @@ export class TaxConfig {
         let config;
 
         if (fileExtension === '.toml') {
-            config = toml.load(fileContent) as ITaxConfig;
+            config = loadToml(fileContent) as ITaxConfig;
         } else if (fileExtension === '.json') {
             config = JSON.parse(fileContent);
         } else {

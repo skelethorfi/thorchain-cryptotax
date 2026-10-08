@@ -1,7 +1,8 @@
-import {describe, expect, test} from '@jest/globals';
-import {NotFinal, pendingAge} from '../src/sources/Pending';
-import {MidgardSource} from '../src/sources/Source';
-import {MAYA, THORCHAIN} from '../src/domain/Protocol';
+import {describe, test} from "node:test";
+import assert from "node:assert/strict";
+import {type NotFinal, pendingAge} from '../src/sources/Pending.ts';
+import {MidgardSource} from '../src/sources/Source.ts';
+import {MAYA, THORCHAIN} from '../src/domain/Protocol.ts';
 
 const DAY = 86400_000;
 
@@ -10,10 +11,10 @@ describe('pendingAge', () => {
     const daysAgo = (days: number) => new Date(today.getTime() - days * DAY);
 
     test('recent within the grace period, stuck from the cut-off, waiting in between', () => {
-        expect(pendingAge(daysAgo(2.9), today, 3, 30)).toBe('recent');
-        expect(pendingAge(daysAgo(3), today, 3, 30)).toBe('waiting');
-        expect(pendingAge(daysAgo(29.9), today, 3, 30)).toBe('waiting');
-        expect(pendingAge(daysAgo(30), today, 3, 30)).toBe('stuck');
+        assert.equal(pendingAge(daysAgo(2.9), today, 3, 30), 'recent');
+        assert.equal(pendingAge(daysAgo(3), today, 3, 30), 'waiting');
+        assert.equal(pendingAge(daysAgo(29.9), today, 3, 30), 'waiting');
+        assert.equal(pendingAge(daysAgo(30), today, 3, 30), 'stuck');
     });
 });
 
@@ -37,8 +38,8 @@ describe('MidgardSource actions that are not final', () => {
             action('swap', 'pending', 'C', 'loanRepayment'),
         ], notFinal).bundlesFor('thor1wallet');
 
-        expect(bundles.map(b => (b.data as any).in[0].txID)).toEqual(['A', 'C']);
-        expect(notFinal.map(({key, exported}) => ({key, exported}))).toEqual([
+        assert.deepEqual(bundles.map(b => (b.data as any).in[0].txID), ['A', 'C']);
+        assert.deepEqual(notFinal.map(({key, exported}) => ({key, exported})), [
             {key: 'midgard/refund.B', exported: false},
             {key: 'midgard/swap.C', exported: true},
         ]);
@@ -48,7 +49,7 @@ describe('MidgardSource actions that are not final', () => {
         const notFinal: NotFinal[] = [];
         await source(MAYA, [action('refund', 'pending', 'D')], notFinal).bundlesFor('thor1wallet');
 
-        expect(notFinal.map(item => item.key)).toEqual(['maya-midgard/refund.D']);
+        assert.deepEqual(notFinal.map(item => item.key), ['maya-midgard/refund.D']);
     });
 
     test('a stuck refund is exported; a recent one is not', async () => {
@@ -57,10 +58,10 @@ describe('MidgardSource actions that are not final', () => {
         const refund = action('refund', 'pending', 'E');
         const afterIt = new Date(date.getTime() + DAY);
 
-        expect(await source(THORCHAIN, [refund], stuck, afterIt).bundlesFor('thor1wallet')).toHaveLength(1);
-        expect(await source(THORCHAIN, [refund], recent, date).bundlesFor('thor1wallet')).toHaveLength(0);
-        expect(await source(THORCHAIN, [refund], [], undefined).bundlesFor('thor1wallet')).toHaveLength(0);
-        expect(exported(stuck)).toEqual([{key: 'midgard/refund.E', exported: true, coveredBy: undefined}]);
+        assert.equal((await source(THORCHAIN, [refund], stuck, afterIt).bundlesFor('thor1wallet')).length, 1);
+        assert.equal((await source(THORCHAIN, [refund], recent, date).bundlesFor('thor1wallet')).length, 0);
+        assert.equal((await source(THORCHAIN, [refund], [], undefined).bundlesFor('thor1wallet')).length, 0);
+        assert.deepEqual(exported(stuck), [{key: 'midgard/refund.E', exported: true, coveredBy: undefined}]);
     });
 
     test('an action covered by a successful one of the same txid is not exported, e.g. a savers deposit\'s swap', async () => {
@@ -73,8 +74,8 @@ describe('MidgardSource actions that are not final', () => {
             action('refund', 'pending', 'G'),
         ], notFinal, afterIt).bundlesFor('thor1wallet');
 
-        expect(bundles.map(b => (b.data as any).type)).toEqual(['addLiquidity', 'swap']);
-        expect(exported(notFinal)).toEqual([
+        assert.deepEqual(bundles.map(b => (b.data as any).type), ['addLiquidity', 'swap']);
+        assert.deepEqual(exported(notFinal), [
             {key: 'midgard/swap.F', exported: false, coveredBy: 'midgard/addLiquidity.F'},
             {key: 'midgard/refund.G', exported: false, coveredBy: 'midgard/swap.G'},
         ]);
@@ -85,6 +86,6 @@ describe('MidgardSource actions that are not final', () => {
         await source(MAYA, [action('send', 'success', 'H'), action('refund', 'pending', 'H')], notFinal, new Date(date.getTime() + DAY))
             .bundlesFor('thor1wallet');
 
-        expect(exported(notFinal)).toEqual([{key: 'maya-midgard/refund.H', exported: true, coveredBy: undefined}]);
+        assert.deepEqual(exported(notFinal), [{key: 'maya-midgard/refund.H', exported: true, coveredBy: undefined}]);
     });
 });

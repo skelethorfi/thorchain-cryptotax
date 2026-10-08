@@ -1,16 +1,16 @@
-import {Activity} from "../../domain/Activity";
-import {CryptoTaxTransaction, rowId} from "./csv";
-import {bondRows} from "./bond";
-import {swapRows} from "./swap";
-import {refundRows} from "./refund";
-import {addLiquidityRows, auctionDepositRows, auctionPositionRows, withdrawRows} from "./liquidity";
-import {runePoolRows, switchRows} from "./switch";
-import {loanOpenRows, loanRepayRows} from "./loan";
-import {tcyClaimRows, tcyDistributionRows, tcyStakeRows, thornameRows} from "./tcy";
-import {rujiraStakeRows, rujiraTradeRows} from "./rujira";
-import {sendRows} from "./send";
-import {MayaLiquidityAuction} from "../../config/ITaxConfig";
-import {AssetNamesConfig, getProtocol, Protocol, withAssetNames} from "../../domain/Protocol";
+import type {Activity} from "../../domain/Activity.ts";
+import {type CryptoTaxTransaction, rowId} from "./csv/index.ts";
+import {bondRows} from "./bond.ts";
+import {swapRows} from "./swap.ts";
+import {refundRows} from "./refund.ts";
+import {addLiquidityRows, auctionDepositRows, auctionPositionRows, withdrawRows} from "./liquidity.ts";
+import {runePoolRows, switchRows} from "./switch.ts";
+import {loanOpenRows, loanRepayRows} from "./loan.ts";
+import {tcyClaimRows, tcyDistributionRows, tcyStakeRows, thornameRows} from "./tcy.ts";
+import {rujiraStakeRows, rujiraTradeRows} from "./rujira.ts";
+import {sendRows} from "./send.ts";
+import type {MayaLiquidityAuction} from "../../config/ITaxConfig.ts";
+import {type AssetNamesConfig, getProtocol, type Protocol, withAssetNames} from "../../domain/Protocol.ts";
 
 // The tax choices the Summ rows depend on, from the config. Today: how assets are named
 // (docs/specs/assets.md).

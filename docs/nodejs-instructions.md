@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - Git
-- Node
+- Node 24 (the version in [.nvmrc](../.nvmrc); with nvm: `nvm install` then `nvm use`)
 
 ## Steps
 
@@ -13,7 +13,10 @@
 
 ### 2. Install the node packages
 
-`npm install`
+`npm ci --ignore-scripts`
+
+This installs exactly the versions in `package-lock.json`, without running any package's
+install scripts.
 
 ### 3. Configure your wallets
 
@@ -43,7 +46,7 @@ Refer to the [README](../README.md) for importing into Crypto Tax Calculator
 Instead of editing `wallets-config.toml`, you can keep your config in a folder outside
 the repo and pass its path:
 
-`npx ts-node src/full-export.ts ../my-tax/wallets-config.toml`
+`node src/full-export.ts ../my-tax/wallets-config.toml`
 
 Relative `outputPath` and `storePath` values in a config
 are relative to the config file's folder, so the output and cache are written next to
@@ -75,7 +78,7 @@ since pruned. It lists what it used in `snapshots.json` in its output folder.
 - `--replay <run folder>`: use exactly the records that an earlier run used, e.g.
   the run you filed.
 
-`npx ts-node src/full-export.ts --replay ../my-tax/tax2026/2026-10-03_15-33-50 ../my-tax/wallets-config.toml`
+`node src/full-export.ts --replay ../my-tax/tax2026/2026-10-03_15-33-50 ../my-tax/wallets-config.toml`
 
 To see what changed between two runs, e.g. a replay on new code against the run it
 replays, compare their folders. Each differing row is shown with the source records

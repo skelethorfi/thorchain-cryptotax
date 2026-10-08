@@ -1,6 +1,6 @@
-import {assignRowIds, CryptoTaxTransaction} from "./csv";
-import {IWallet} from "../../config/IWallet";
-import {DateRange, nextDay, startOfDay} from "../../utils/DateRange";
+import {assignRowIds, type CryptoTaxTransaction} from "./csv/index.ts";
+import type {IWallet} from "../../config/IWallet.ts";
+import {type DateRange, nextDay, startOfDay} from "../../utils/DateRange.ts";
 
 export interface CsvFile {
     name: string;

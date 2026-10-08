@@ -1,8 +1,8 @@
-import {Activity, Leg} from "../../domain/Activity";
-import {Amount, formatAmount} from "../../domain/Amount";
-import {CryptoTaxTransaction, RowTrace} from "./csv";
-import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
-import {formatBlockchain, Protocol} from "../../domain/Protocol";
+import type {Activity, Leg} from "../../domain/Activity.ts";
+import {type Amount, formatAmount} from "../../domain/Amount.ts";
+import type {CryptoTaxTransaction, RowTrace} from "./csv/index.ts";
+import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils.ts";
+import {formatBlockchain, type Protocol} from "../../domain/Protocol.ts";
 
 export function leg(activity: Activity, role: Leg['role'], direction?: Leg['direction']): Leg {
     const found = findLeg(activity, role, direction);

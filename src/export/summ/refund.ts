@@ -1,8 +1,8 @@
-import {Activity} from "../../domain/Activity";
-import {formatAmount} from "../../domain/Amount";
-import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
-import {formatBlockchain, Protocol} from "../../domain/Protocol";
-import {fee, findLeg, leg, legTrace, named} from "./common";
+import type {Activity} from "../../domain/Activity.ts";
+import {formatAmount} from "../../domain/Amount.ts";
+import {type CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv/index.ts";
+import {formatBlockchain, type Protocol} from "../../domain/Protocol.ts";
+import {fee, findLeg, leg, legTrace, named} from "./common.ts";
 
 // A refund (docs/specs/fees.md): the send is a failed-out carrying the inbound fee, as Summ counts only a
 // failed transaction's fee. What the protocol kept (sent − returned) is a separate fee row, or lost for a

@@ -1,13 +1,13 @@
-import {Action} from "@xchainjs/xchain-midgard";
-import {Activity, Leg} from "../../domain/Activity";
-import {parseAmount} from "../../domain/Amount";
-import {Asset, toAsset} from "../../domain/Asset";
-import {Issue} from "../../domain/Issue";
-import {CosmosTx} from "../../sources/thorchain/CosmosTxService";
-import {getActionDate} from "../../sources/thorchain/MidgardUtils";
-import {Protocol} from "../../domain/Protocol";
-import {getBundleKey, RawBundle} from "../../sources/RawBundle";
-import {getTxids} from "./bond";
+import type {Action} from "@xchainjs/xchain-midgard";
+import type {Activity, Leg} from "../../domain/Activity.ts";
+import {parseAmount} from "../../domain/Amount.ts";
+import {type Asset, toAsset} from "../../domain/Asset.ts";
+import type {Issue} from "../../domain/Issue.ts";
+import type {CosmosTx} from "../../sources/thorchain/CosmosTxService.ts";
+import {getActionDate} from "../../sources/thorchain/MidgardUtils.ts";
+import type {Protocol} from "../../domain/Protocol.ts";
+import {getBundleKey, type RawBundle} from "../../sources/RawBundle.ts";
+import {getTxids} from "./bond.ts";
 
 // Rujira contract actions (wasm calls on THORChain). See docs/specs/rujira.md.
 
@@ -157,7 +157,15 @@ class Call {
     readonly txid: string;
     private readonly cosmosTx?: CosmosTx;
 
-    constructor(private bundle: RawBundle, private action: Action, private contract: Contract, private protocol: Protocol) {
+    private bundle: RawBundle;
+    private action: Action;
+    private contract: Contract;
+    private protocol: Protocol;
+    constructor(bundle: RawBundle, action: Action, contract: Contract, protocol: Protocol) {
+        this.bundle = bundle;
+        this.action = action;
+        this.contract = contract;
+        this.protocol = protocol;
         this.wallet = action.in[0].address;
         this.txid = action.in[0].txID ?? '';
         this.cosmosTx = bundle.cosmosTxs.find(tx => tx.txhash === this.txid);

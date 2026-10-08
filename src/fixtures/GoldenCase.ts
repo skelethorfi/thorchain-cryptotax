@@ -1,18 +1,18 @@
 import fs from "fs-extra";
 import path from "path";
 import YAML from "yaml";
-import {Action} from "@xchainjs/xchain-midgard";
-import {TxStatusResponse} from "@xchainjs/xchain-thornode";
-import {CryptoTaxTransaction} from "../export/summ/csv";
-import {ViewblockTx} from "../sources/viewblock";
-import {runBundle} from "../pipeline/run";
-import {Treatment} from "../export/summ";
-import {TcyDistributionItem} from "../sources/tcy/TcyDistributionService";
-import {getProtocol, ProtocolId} from "../domain/Protocol";
-import {CosmosTx} from "../sources/thorchain/CosmosTxService";
-import {BundleSource, RawBundle} from "../sources/RawBundle";
-import {Activity} from "../domain/Activity";
-import {formatAmount} from "../domain/Amount";
+import type {Action} from "@xchainjs/xchain-midgard";
+import type {TxStatusResponse} from "@xchainjs/xchain-thornode";
+import type {CryptoTaxTransaction} from "../export/summ/csv/index.ts";
+import type {ViewblockTx} from "../sources/viewblock/index.ts";
+import {runBundle} from "../pipeline/run.ts";
+import type {Treatment} from "../export/summ/index.ts";
+import type {TcyDistributionItem} from "../sources/tcy/TcyDistributionService.ts";
+import {getProtocol, type ProtocolId} from "../domain/Protocol.ts";
+import type {CosmosTx} from "../sources/thorchain/CosmosTxService.ts";
+import type {BundleSource, RawBundle} from "../sources/RawBundle.ts";
+import type {Activity} from "../domain/Activity.ts";
+import {formatAmount} from "../domain/Amount.ts";
 
 // A golden test case is a folder containing:
 //   input.json    - the raw source data (a GoldenCaseInput: a RawBundle plus a description)

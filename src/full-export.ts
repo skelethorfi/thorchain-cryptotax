@@ -1,8 +1,8 @@
 import * as path from "path";
 import {format} from 'date-fns-tz';
-import {Exporter} from "./cli/Exporter";
-import {oldCacheHint} from "./cli/store";
-import {SUMMARY_FILE} from "./cli/RunSummary";
+import {Exporter} from "./cli/Exporter.ts";
+import {oldCacheHint} from "./cli/store.ts";
+import {SUMMARY_FILE} from "./cli/RunSummary.ts";
 
 async function main() {
 

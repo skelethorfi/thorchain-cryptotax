@@ -1,4 +1,4 @@
-import {Action} from "@xchainjs/xchain-midgard";
+import type {Action} from "@xchainjs/xchain-midgard";
 
 // The parts of a Midgard action that decide how it is mapped. Two actions with the same
 // shape should exercise the same mapper code path, so a public tx with the same shape as

@@ -1,7 +1,7 @@
-import {Activity} from "../../domain/Activity";
-import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
-import {Protocol} from "../../domain/Protocol";
-import {fee, leg, legTrace, named} from "./common";
+import type {Activity} from "../../domain/Activity.ts";
+import {type CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv/index.ts";
+import type {Protocol} from "../../domain/Protocol.ts";
+import {fee, leg, legTrace, named} from "./common.ts";
 
 // One staking row: a bond deposits RUNE with the node, an unbond withdraws it
 export function bondRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {

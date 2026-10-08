@@ -1,9 +1,9 @@
-import {Action} from "@xchainjs/xchain-midgard";
-import {TxStatusResponse} from "@xchainjs/xchain-thornode";
-import {ListOptions, monthFolder, RecordRules} from "./RecordStore";
-import {ViewblockTx} from "../viewblock/ViewblockTx";
-import {TcyDistributionItem} from "../tcy/TcyDistributionService";
-import {CosmosTx} from "../thorchain/CosmosTxService";
+import type {Action} from "@xchainjs/xchain-midgard";
+import type {TxStatusResponse} from "@xchainjs/xchain-thornode";
+import {type ListOptions, monthFolder, type RecordRules} from "./RecordStore.ts";
+import type {ViewblockTx} from "../viewblock/ViewblockTx.ts";
+import type {TcyDistributionItem} from "../tcy/TcyDistributionService.ts";
+import type {CosmosTx} from "../thorchain/CosmosTxService.ts";
 
 // How each source's records are keyed, filed and compared in the store (docs/specs/snapshots.md). The
 // services and the importer of old caches both use these.

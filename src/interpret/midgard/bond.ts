@@ -1,10 +1,10 @@
-import {Action, BondMetadata} from "@xchainjs/xchain-midgard";
-import {Activity, Leg} from "../../domain/Activity";
-import {parseAmount} from "../../domain/Amount";
-import {toAsset} from "../../domain/Asset";
-import {getActionDate} from "../../sources/thorchain/MidgardUtils";
-import {Protocol} from "../../domain/Protocol";
-import {getBundleKey, RawBundle} from "../../sources/RawBundle";
+import type {Action, BondMetadata} from "@xchainjs/xchain-midgard";
+import type {Activity, Leg} from "../../domain/Activity.ts";
+import {parseAmount} from "../../domain/Amount.ts";
+import {toAsset} from "../../domain/Asset.ts";
+import {getActionDate} from "../../sources/thorchain/MidgardUtils.ts";
+import type {Protocol} from "../../domain/Protocol.ts";
+import {getBundleKey, type RawBundle} from "../../sources/RawBundle.ts";
 
 // Bond and unbond (docs/specs/activity.md). The wallet sends a MsgDeposit with the BOND or UNBOND memo;
 // a bond's RUNE goes from the wallet to the bond module, an unbond's comes back. No source gives the gas

@@ -1,7 +1,7 @@
-import {http} from "../http";
-import {RecordStore} from "../store/RecordStore";
-import {VIEWBLOCK_LIST} from "../store/Sources";
-import {ViewblockTx} from "./ViewblockTx";
+import {http} from "../http.ts";
+import {RecordStore} from "../store/RecordStore.ts";
+import {VIEWBLOCK_LIST} from "../store/Sources.ts";
+import type {ViewblockTx} from "./ViewblockTx.ts";
 
 // Viewblock's THORChain API, used only for sends Midgard does not list, from before 2022-04
 // (docs/specs/sends.md). It is unofficial: it answers requests that carry viewblock.io as their Origin, as
@@ -16,7 +16,9 @@ interface Page {
 }
 
 export class Viewblock {
-    constructor(private store: RecordStore) {
+    private store: RecordStore;
+    constructor(store: RecordStore) {
+        this.store = store;
     }
 
     // Every tx of the address, through the store

@@ -1,7 +1,8 @@
-import {describe, expect, test} from "@jest/globals";
-import {ACTION_MEMO_WARNING, actionMemoSummary, interpretSend, SELF_SEND_MEMO_WARNING} from "../src/interpret/midgard/send";
-import {RawBundle} from "../src/sources/RawBundle";
-import {THORCHAIN} from "../src/domain/Protocol";
+import {describe, test} from "node:test";
+import assert from "node:assert/strict";
+import {ACTION_MEMO_WARNING, actionMemoSummary, interpretSend, SELF_SEND_MEMO_WARNING} from "../src/interpret/midgard/send.ts";
+import type {RawBundle} from "../src/sources/RawBundle.ts";
+import {THORCHAIN} from "../src/domain/Protocol.ts";
 
 const send = (memo: string): RawBundle => ({
     source: 'midgard', protocol: 'thorchain', wallet: 'thor1-user-wallet-11111', thornodeTxs: [], cosmosTxs: [],
@@ -14,13 +15,14 @@ const send = (memo: string): RawBundle => ({
 });
 
 describe('interpretSend', () => {
-    test.each(['=:ARB.USDC:0xabc:0:be:16', 'swap:BTC.BTC:bc1q', '+:BTC.BTC', 'trade+:thor1x', '~:name:THOR:thor1x'])
-    ('warns on a send whose memo asks for an action: %s', memo => {
-        const {activities, issues} = interpretSend(send(memo), THORCHAIN);
+    for (const memo of ['=:ARB.USDC:0xabc:0:be:16', 'swap:BTC.BTC:bc1q', '+:BTC.BTC', 'trade+:thor1x', '~:name:THOR:thor1x']) {
+        test(`warns on a send whose memo asks for an action: ${memo}`, () => {
+            const {activities, issues} = interpretSend(send(memo), THORCHAIN);
 
-        expect(activities).toHaveLength(1);
-        expect(issues.map(issue => issue.kind)).toStrictEqual(['warning']);
-    });
+            assert.equal(activities.length, 1);
+            assert.deepEqual(issues.map(issue => issue.kind), ['warning']);
+        });
+    }
 
     test('a send to itself with an action memo reached no protocol: it says so, and is not counted as an unmatched action', () => {
         const toSelf = send('tcy:thor1-user-wallet-11111');
@@ -28,69 +30,71 @@ describe('interpretSend', () => {
 
         const {activities, issues} = interpretSend(toSelf, THORCHAIN);
 
-        expect(activities).toHaveLength(1);
-        expect(issues.map(issue => issue.message)).toStrictEqual([`${SELF_SEND_MEMO_WARNING}: tcy:thor1-user-wallet-11111`]);
-        expect(issues[0].message.startsWith(ACTION_MEMO_WARNING)).toBe(false);
+        assert.equal(activities.length, 1);
+        assert.deepEqual(issues.map(issue => issue.message), [`${SELF_SEND_MEMO_WARNING}: tcy:thor1-user-wallet-11111`]);
+        assert.equal(issues[0].message.startsWith(ACTION_MEMO_WARNING), false);
     });
 
-    test.each(['', '101663207', 'test', 'delegate:arkeo:arkeo1x', 'Huma deposit'])("doesn't warn on a note: '%s'", memo => {
-        expect(interpretSend(send(memo), THORCHAIN).issues).toStrictEqual([]);
-    });
+    for (const memo of ['', '101663207', 'test', 'delegate:arkeo:arkeo1x', 'Huma deposit']) {
+        test(`doesn't warn on a note: '${memo}'`, () => {
+            assert.deepEqual(interpretSend(send(memo), THORCHAIN).issues, []);
+        });
+    }
 });
 
 describe('actionMemoSummary', () => {
     test('none: no line', () => {
-        expect(actionMemoSummary(0, ['thorchain'])).toBeUndefined();
+        assert.equal(actionMemoSummary(0, ['thorchain']), undefined);
     });
 
     test('without Maya: says to add maya to protocols', () => {
-        expect(actionMemoSummary(2, ['thorchain'])).toBe('WARN: 2 sends carry a memo for an action (swap, add, …) that no listed action matches, so they are exported as sends. ' +
+        assert.equal(actionMemoSummary(2, ['thorchain']), 'WARN: 2 sends carry a memo for an action (swap, add, …) that no listed action matches, so they are exported as sends. ' +
             'Maya swaps and adds look like this: add "maya" to protocols in the config to export them as swaps and adds');
     });
 
     test('with Maya: says to check each', () => {
-        expect(actionMemoSummary(1, ['thorchain', 'maya'])).toBe("WARN: 1 send carries a memo for an action (swap, add, …) that no listed action matches, so it is exported as a send; Maya's actions are listed too, so check each (warnings above)");
+        assert.equal(actionMemoSummary(1, ['thorchain', 'maya']), "WARN: 1 send carries a memo for an action (swap, add, …) that no listed action matches, so it is exported as a send; Maya's actions are listed too, so check each (warnings above)");
     });
 });
 
 describe('income from a listed sender', () => {
     test('the same transfer is a receive, or income when its sender is in incomeFrom, with one ID', async () => {
         const path = await import('path');
-        const {readCaseInput, toBundle} = await import('../src/fixtures/GoldenCase');
-        const {runBundle} = await import('../src/pipeline/run');
-        const {MAYA} = await import('../src/domain/Protocol');
-        const input = readCaseInput(path.join(__dirname, 'cases', 'maya', 'send-maya-income'));
+        const {readCaseInput, toBundle} = await import('../src/fixtures/GoldenCase.ts');
+        const {runBundle} = await import('../src/pipeline/run.ts');
+        const {MAYA} = await import('../src/domain/Protocol.ts');
+        const input = readCaseInput(path.join(import.meta.dirname, 'cases', 'maya', 'send-maya-income'));
         const sender = input.treatment!.incomeFrom![0];
 
         const [plain] = runBundle(toBundle(input), MAYA).rows;
         const [income] = runBundle(toBundle(input), MAYA, {incomeFrom: [sender.toUpperCase()]}).rows;
 
-        expect([plain.type, income.type]).toEqual(['receive', 'income']);
-        expect(income.id).toBe(plain.id);
+        assert.deepEqual([plain.type, income.type], ['receive', 'income']);
+        assert.equal(income.id, plain.id);
     });
 });
 
 describe('known distribution wallets', () => {
     test("their MAYA is income unless incomeFrom is set; their other assets are not", async () => {
-        const {isIncomeReceipt, KNOWN_DISTRIBUTORS} = await import('../src/export/summ/send');
+        const {isIncomeReceipt, KNOWN_DISTRIBUTORS} = await import('../src/export/summ/send.ts');
         const [known] = KNOWN_DISTRIBUTORS;
 
-        expect(isIncomeReceipt(known.address.toUpperCase(), 'MAYA.MAYA')).toBe(true);
-        expect(isIncomeReceipt(known.address, 'MAYA.CACAO')).toBe(false);
-        expect(isIncomeReceipt('maya1-someone-else', 'MAYA.MAYA')).toBe(false);
-        expect(isIncomeReceipt(known.address, 'MAYA.MAYA', [])).toBe(false);
-        expect(isIncomeReceipt(known.address, 'MAYA.CACAO', [known.address])).toBe(true);
+        assert.equal(isIncomeReceipt(known.address.toUpperCase(), 'MAYA.MAYA'), true);
+        assert.equal(isIncomeReceipt(known.address, 'MAYA.CACAO'), false);
+        assert.equal(isIncomeReceipt('maya1-someone-else', 'MAYA.MAYA'), false);
+        assert.equal(isIncomeReceipt(known.address, 'MAYA.MAYA', []), false);
+        assert.equal(isIncomeReceipt(known.address, 'MAYA.CACAO', [known.address]), true);
     });
 
     test('the summary counts income by default and warns of their other receipts', async () => {
-        const {knownDistributorReport, KNOWN_DISTRIBUTORS} = await import('../src/export/summ/send');
+        const {knownDistributorReport, KNOWN_DISTRIBUTORS} = await import('../src/export/summ/send.ts');
         const from = KNOWN_DISTRIBUTORS[0].address;
         const rows = [{type: 'income', baseCurrency: 'MAYA', from}, {type: 'receive', baseCurrency: 'CACAO', from}, {type: 'receive', baseCurrency: 'CACAO', from: 'maya1-other'}] as any[];
 
         const report = knownDistributorReport(rows);
 
-        expect(report.info).toEqual(['1 receipts from known distribution wallets are income (incomeFrom is not set; docs/specs/sends.md)']);
-        expect(report.warnings).toEqual([`WARN: 1 receipts from known distribution wallets are plain receives (CACAO from …${from.slice(-8)}): if they are income, list the sender in incomeFrom`]);
-        expect(knownDistributorReport(rows, [from]).info).toEqual([]);
+        assert.deepEqual(report.info, ['1 receipts from known distribution wallets are income (incomeFrom is not set; docs/specs/sends.md)']);
+        assert.deepEqual(report.warnings, [`WARN: 1 receipts from known distribution wallets are plain receives (CACAO from …${from.slice(-8)}): if they are income, list the sender in incomeFrom`]);
+        assert.deepEqual(knownDistributorReport(rows, [from]).info, []);
     });
 });

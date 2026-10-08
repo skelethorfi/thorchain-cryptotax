@@ -1,13 +1,14 @@
-import {describe, expect, jest, test} from '@jest/globals';
+import {describe, mock, test} from "node:test";
+import assert from "node:assert/strict";
 import fs from 'fs-extra';
 import os from 'os';
 import path from 'path';
-import {chooseCopy, Copy, RecordRules, RecordStore, sha256, StoreMissError} from '../src/sources/store/RecordStore';
-import {SnapshotManifest} from '../src/sources/store/SnapshotManifest';
-import {THORNODE_RULES} from '../src/sources/store/Sources';
+import {chooseCopy, type Copy, type RecordRules, RecordStore, sha256, StoreMissError} from '../src/sources/store/RecordStore.ts';
+import {SnapshotManifest} from '../src/sources/store/SnapshotManifest.ts';
+import {THORNODE_RULES} from '../src/sources/store/Sources.ts';
 
 const makeDir = () => fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-store-'));
-const fetching = <T>(data: T) => jest.fn(async () => ({data, url: 'https://source/x'}));
+const fetching = <T>(data: T) => mock.fn(async () => ({data, url: 'https://source/x'}));
 
 interface Tx {
     id: string;
@@ -26,49 +27,49 @@ describe('RecordStore records', () => {
         const root = makeDir();
         const fetch = fetching({id: 'a', gas: '1'});
 
-        expect(await new RecordStore(root).record('thornode', 'a', fetch)).toEqual({id: 'a', gas: '1'});
-        expect(await new RecordStore(root).record('thornode', 'a', fetch)).toEqual({id: 'a', gas: '1'});
-        expect(fetch).toHaveBeenCalledTimes(1);
+        assert.deepEqual(await new RecordStore(root).record('thornode', 'a', fetch), {id: 'a', gas: '1'});
+        assert.deepEqual(await new RecordStore(root).record('thornode', 'a', fetch), {id: 'a', gas: '1'});
+        assert.equal(fetch.mock.callCount(), 1);
 
         const [copy] = new RecordStore(root).copies('thornode', 'a');
-        expect(copy).toEqual(expect.objectContaining({fetchedAt: expect.any(String), url: 'https://source/x', sha256: sha256({id: 'a', gas: '1'})}));
+        assert.equal(typeof copy.fetchedAt, 'string');
+        assert.partialDeepStrictEqual(copy, {url: 'https://source/x', sha256: sha256({id: 'a', gas: '1'})});
     });
 
     test('offline, a record not stored is an error', async () => {
-        await expect(new RecordStore(makeDir(), {offline: true}).record('thornode', 'a', fetching({id: 'a'})))
-            .rejects.toThrow(StoreMissError);
+        await assert.rejects(new RecordStore(makeDir(), {offline: true}).record('thornode', 'a', fetching({id: 'a'})), StoreMissError);
     });
 
     test('refetching stores a changed copy next to the old one; an unchanged one adds nothing', async () => {
         const root = makeDir();
         await new RecordStore(root).record('thornode', 'a', fetching({id: 'a', gas: '1'}));
         await new RecordStore(root, {fetch: 'all'}).record('thornode', 'a', fetching({id: 'a', gas: '1'}));
-        expect(new RecordStore(root).copies('thornode', 'a')).toHaveLength(1);
+        assert.equal(new RecordStore(root).copies('thornode', 'a').length, 1);
 
-        const used = await new RecordStore(root, {fetch: 'all'}).record('thornode', 'a', fetching({id: 'a', gas: '2'}), RULES);
-        expect(used).toEqual({id: 'a', gas: '2'});
-        expect(new RecordStore(root).copies('thornode', 'a')).toHaveLength(2);
+        const used = await new RecordStore(root, {fetch: 'all'}).record('thornode', 'a', fetching<Tx>({id: 'a', gas: '2'}), RULES);
+        assert.deepEqual(used, {id: 'a', gas: '2'});
+        assert.equal(new RecordStore(root).copies('thornode', 'a').length, 2);
     });
 
     test('a pruned copy is stored, but the earlier good copy is used', async () => {
         const root = makeDir();
-        jest.spyOn(console, 'log').mockImplementation(() => {});
-        await new RecordStore(root).record('thornode', 'a', fetching({id: 'a', gas: '1'}), RULES);
+        mock.method(console, 'log', () => {});
+        await new RecordStore(root).record('thornode', 'a', fetching<Tx>({id: 'a', gas: '1'}), RULES);
 
-        const used = await new RecordStore(root, {fetch: 'all'}).record('thornode', 'a', fetching({id: 'a'}), RULES);
+        const used = await new RecordStore(root, {fetch: 'all'}).record('thornode', 'a', fetching<Tx>({id: 'a'}), RULES);
 
-        expect(used).toEqual({id: 'a', gas: '1'});
-        expect(new RecordStore(root).copies('thornode', 'a')).toHaveLength(2);
+        assert.deepEqual(used, {id: 'a', gas: '1'});
+        assert.equal(new RecordStore(root).copies('thornode', 'a').length, 2);
     });
 
     test('a finalised copy is used over the pending one, which is kept', async () => {
         const root = makeDir();
-        await new RecordStore(root).record('thornode', 'a', fetching({id: 'a', status: 'pending'}), RULES);
+        await new RecordStore(root).record('thornode', 'a', fetching<Tx>({id: 'a', status: 'pending'}), RULES);
 
-        const used = await new RecordStore(root, {}).record('thornode', 'a', fetching({id: 'a', status: 'done'}), RULES);
+        const used = await new RecordStore(root, {}).record('thornode', 'a', fetching<Tx>({id: 'a', status: 'done'}), RULES);
 
-        expect(used).toEqual({id: 'a', status: 'done'});
-        expect(new RecordStore(root).copies<Tx>('thornode', 'a').map(c => c.data.status)).toEqual(['pending', 'done']);
+        assert.deepEqual(used, {id: 'a', status: 'done'});
+        assert.deepEqual(new RecordStore(root).copies<Tx>('thornode', 'a').map(c => c.data.status), ['pending', 'done']);
     });
 });
 
@@ -80,11 +81,11 @@ describe('fetch modes', () => {
 
         const pending = fetching<Tx>({id: 'pending', status: 'done'});
         const final = fetching<Tx>({id: 'final', gas: '2'});
-        expect(await new RecordStore(root).record('thornode', 'pending', pending, RULES)).toEqual({id: 'pending', status: 'done'});
-        expect(await new RecordStore(root).record('thornode', 'final', final, RULES)).toEqual({id: 'final', gas: '1'});
-        expect(final).not.toHaveBeenCalled();
+        assert.deepEqual(await new RecordStore(root).record('thornode', 'pending', pending, RULES), {id: 'pending', status: 'done'});
+        assert.deepEqual(await new RecordStore(root).record('thornode', 'final', final, RULES), {id: 'final', gas: '1'});
+        assert.equal(final.mock.callCount(), 0);
 
-        expect(await new RecordStore(root, {fetch: 'all'}).record('thornode', 'final', final, RULES)).toEqual({id: 'final', gas: '2'});
+        assert.deepEqual(await new RecordStore(root, {fetch: 'all'}).record('thornode', 'final', final, RULES), {id: 'final', gas: '2'});
     });
 
     test('wallet lists are fetched again on every run, except offline', async () => {
@@ -92,9 +93,9 @@ describe('fetch modes', () => {
         await new RecordStore(root).list('midgard', 'w', fetching([{id: 'a'}]), LIST);
         const again = fetching([{id: 'a'}, {id: 'b'}]);
 
-        expect(await new RecordStore(root, {offline: true}).list('midgard', 'w', again, LIST)).toEqual([{id: 'a'}]);
-        expect(again).not.toHaveBeenCalled();
-        expect(await new RecordStore(root).list('midgard', 'w', again, LIST)).toEqual([{id: 'a'}, {id: 'b'}]);
+        assert.deepEqual(await new RecordStore(root, {offline: true}).list('midgard', 'w', again, LIST), [{id: 'a'}]);
+        assert.equal(again.mock.callCount(), 0);
+        assert.deepEqual(await new RecordStore(root).list('midgard', 'w', again, LIST), [{id: 'a'}, {id: 'b'}]);
     });
 
     test('a record still pending past the cut-off is stuck: fetched again only by --refetch-all', async () => {
@@ -108,11 +109,11 @@ describe('fetch modes', () => {
 
         const fetchOld = fetching<Tx>({id: 'old', status: 'done'});
         const fetchRecent = fetching<Tx>({id: 'recent', status: 'done'});
-        expect(await new RecordStore(root, options).record('thornode', 'old', fetchOld, RULES, old)).toEqual({id: 'old', status: 'pending'});
-        expect(await new RecordStore(root, options).record('thornode', 'recent', fetchRecent, RULES, recent)).toEqual({id: 'recent', status: 'done'});
-        expect(fetchOld).not.toHaveBeenCalled();
+        assert.deepEqual(await new RecordStore(root, options).record('thornode', 'old', fetchOld, RULES, old), {id: 'old', status: 'pending'});
+        assert.deepEqual(await new RecordStore(root, options).record('thornode', 'recent', fetchRecent, RULES, recent), {id: 'recent', status: 'done'});
+        assert.equal(fetchOld.mock.callCount(), 0);
 
-        expect(await new RecordStore(root, {...options, fetch: 'all'}).record('thornode', 'old', fetchOld, RULES, old)).toEqual({id: 'old', status: 'done'});
+        assert.deepEqual(await new RecordStore(root, {...options, fetch: 'all'}).record('thornode', 'old', fetchOld, RULES, old), {id: 'old', status: 'done'});
     });
 
     test('with no date or no cut-off, a pending record is always fetched again', async () => {
@@ -126,8 +127,8 @@ describe('fetch modes', () => {
         await new RecordStore(root).record('thornode', 'a', fetchA, RULES, old);
         await new RecordStore(root, {pendingStuckDays: 30}).record('thornode', 'b', fetchB, RULES);
 
-        expect(fetchA).toHaveBeenCalledTimes(1);
-        expect(fetchB).toHaveBeenCalledTimes(1);
+        assert.equal(fetchA.mock.callCount(), 1);
+        assert.equal(fetchB.mock.callCount(), 1);
     });
 
     test('a record stored under a key it no longer gets is not missing once the latest list has its new key', async () => {
@@ -136,7 +137,7 @@ describe('fetch modes', () => {
         await fetch([{id: 'a'}, {id: 'b'}], tx => tx.id);
 
         const used = await fetch([{id: 'a'}, {id: 'b'}], tx => tx.id === 'b' ? 'b.member' : tx.id);
-        expect(used).toEqual([{id: 'a'}, {id: 'b'}]);
+        assert.deepEqual(used, [{id: 'a'}, {id: 'b'}]);
     });
 
     test("a fetched record of other members under a stored key is an error, not a new copy", async () => {
@@ -145,11 +146,11 @@ describe('fetch modes', () => {
         const list = (items: any[]) => new RecordStore(root).list('midgard', 'w', fetching(items), {keyOf: tx => tx.id, rules});
         await list([{id: 'k', in: ['maya1a', 'thor1a']}]);
 
-        await expect(list([{id: 'k', in: ['maya1b', 'thor1b']}])).rejects.toThrow('belongs to other addresses than the stored copy');
-        expect(new RecordStore(root).copies('midgard', 'k')).toHaveLength(1);
+        await assert.rejects(list([{id: 'k', in: ['maya1b', 'thor1b']}]), /belongs to other addresses than the stored copy/);
+        assert.equal(new RecordStore(root).copies('midgard', 'k').length, 1);
         // A revision of the same member's record is a new copy, whatever the case of its addresses
         await list([{id: 'k', in: ['MAYA1A', 'thor1a'], n: 2}]);
-        expect(new RecordStore(root).copies('midgard', 'k')).toHaveLength(2);
+        assert.equal(new RecordStore(root).copies('midgard', 'k').length, 2);
     });
 
     test('offline, a pending record is not fetched again', async () => {
@@ -157,8 +158,8 @@ describe('fetch modes', () => {
         await new RecordStore(root).record('thornode', 'p', fetching<Tx>({id: 'p', status: 'pending'}), RULES);
         const fetch = fetching<Tx>({id: 'p', status: 'done'});
 
-        expect(await new RecordStore(root, {offline: true}).record('thornode', 'p', fetch, RULES)).toEqual({id: 'p', status: 'pending'});
-        expect(fetch).not.toHaveBeenCalled();
+        assert.deepEqual(await new RecordStore(root, {offline: true}).record('thornode', 'p', fetch, RULES), {id: 'p', status: 'pending'});
+        assert.equal(fetch.mock.callCount(), 0);
     });
 });
 
@@ -166,13 +167,13 @@ describe('chooseCopy', () => {
     const copy = (data: Tx, n: number): Copy<Tx> => ({file: `${n}`, n, fetchedAt: `${n}`, sha256: sha256(data), data});
 
     test('says why a copy is used', () => {
-        expect(chooseCopy([copy({id: 'a'}, 1)], RULES).choice).toBe('only');
-        expect(chooseCopy([copy({id: 'a', status: 'pending'}, 1), copy({id: 'a'}, 2)], RULES).choice).toBe('finalised');
-        expect(chooseCopy([copy({id: 'a', gas: '1'}, 1), copy({id: 'a', gas: '2'}, 2)], RULES).choice).toBe('revised');
+        assert.equal(chooseCopy([copy({id: 'a'}, 1)], RULES).choice, 'only');
+        assert.equal(chooseCopy([copy({id: 'a', status: 'pending'}, 1), copy({id: 'a'}, 2)], RULES).choice, 'finalised');
+        assert.equal(chooseCopy([copy({id: 'a', gas: '1'}, 1), copy({id: 'a', gas: '2'}, 2)], RULES).choice, 'revised');
 
         const pruned = chooseCopy([copy({id: 'a', gas: '1'}, 1), copy({id: 'a'}, 2)], RULES);
-        expect(pruned.choice).toBe('kept-over-pruned');
-        expect(pruned.copy.data).toEqual({id: 'a', gas: '1'});
+        assert.equal(pruned.choice, 'kept-over-pruned');
+        assert.deepEqual(pruned.copy.data, {id: 'a', gas: '1'});
     });
 });
 
@@ -184,8 +185,8 @@ describe('RecordStore lists', () => {
         await store.list('midgard', 'w1', fetching([{id: 'a'}, {id: 'b'}]), LIST);
         await store.list('midgard', 'w2', fetching([{id: 'b'}]), LIST);
 
-        expect(fs.readdirSync(path.join(root, 'records', 'midgard', 'undated')).sort()).toEqual(['a.0.json', 'b.0.json']);
-        expect(store.copies('midgard', 'b')).toHaveLength(1);
+        assert.deepEqual(fs.readdirSync(path.join(root, 'records', 'midgard', 'undated')).sort(), ['a.0.json', 'b.0.json']);
+        assert.equal(store.copies('midgard', 'b').length, 1);
     });
 
     test('fetching the latest: new items are added, finalised ones replace pending ones, and missing ones are kept', async () => {
@@ -196,12 +197,12 @@ describe('RecordStore lists', () => {
         const items = await new RecordStore(root, {manifest})
             .list('midgard', 'w', fetching([{id: 'new'}, {id: 'old'}, {id: 'p', status: 'success'}]), LIST);
 
-        expect(items).toEqual([{id: 'new'}, {id: 'old'}, {id: 'p', status: 'success'}, {id: 'gone'}]);
-        expect(manifest.findRecord('midgard', 'gone')?.missing).toBe(true);
-        expect(manifest.findRecord('midgard', 'p')?.choice).toBe('finalised');
-        expect(manifest.findRecord('midgard', 'new')?.fetched).toBe('new');
-        expect(manifest.findRecord('midgard', 'old')?.fetched).toBe('unchanged');
-        expect(manifest.findList('midgard', 'w')?.missing).toEqual(['gone']);
+        assert.deepEqual(items, [{id: 'new'}, {id: 'old'}, {id: 'p', status: 'success'}, {id: 'gone'}]);
+        assert.equal(manifest.findRecord('midgard', 'gone')?.missing, true);
+        assert.equal(manifest.findRecord('midgard', 'p')?.choice, 'finalised');
+        assert.equal(manifest.findRecord('midgard', 'new')?.fetched, 'new');
+        assert.equal(manifest.findRecord('midgard', 'old')?.fetched, 'unchanged');
+        assert.deepEqual(manifest.findList('midgard', 'w')?.missing, ['gone']);
     });
 
     test('normalises before comparing, so a field that changes on every fetch adds no copy', async () => {
@@ -210,14 +211,14 @@ describe('RecordStore lists', () => {
         await new RecordStore(root).list('viewblock', 'w', fetching([{id: 'a', now: '1'}]), options);
         await new RecordStore(root, {}).list('viewblock', 'w', fetching([{id: 'a', now: '2'}]), options);
 
-        expect(new RecordStore(root).copies('viewblock', 'a').map(c => c.data)).toEqual([{id: 'a'}]);
+        assert.deepEqual(new RecordStore(root).copies('viewblock', 'a').map(c => c.data), [{id: 'a'}]);
     });
 
     test('an empty list is stored, so offline runs can replay it', async () => {
         const root = makeDir();
         await new RecordStore(root).list('viewblock', 'w', fetching([] as Tx[]), LIST);
 
-        expect(await new RecordStore(root, {offline: true}).list('viewblock', 'w', fetching([{id: 'x'}]), LIST)).toEqual([]);
+        assert.deepEqual(await new RecordStore(root, {offline: true}).list('viewblock', 'w', fetching([{id: 'x'}]), LIST), []);
     });
 
 });
@@ -231,9 +232,9 @@ describe('Layout', () => {
         // A revision whose date moved to another month
         await new RecordStore(root).list('midgard', 'w', fetching([{id: 'swap.ABC', month: '2025/08'}]), DATED);
 
-        expect(fs.readdirSync(path.join(root, 'records', 'midgard', '2025', '07')).sort()).toEqual(['swap.ABC.0.json', 'swap.ABC.1.json']);
-        expect(fs.readdirSync(path.join(root, 'lists', 'midgard'))).toEqual(['w.0.json']);
-        expect(fs.readJSONSync(path.join(root, 'records', 'midgard', '2025', '07', 'swap.ABC.0.json'))).toEqual(expect.objectContaining({source: 'midgard', key: 'swap.ABC'}));
+        assert.deepEqual(fs.readdirSync(path.join(root, 'records', 'midgard', '2025', '07')).sort(), ['swap.ABC.0.json', 'swap.ABC.1.json']);
+        assert.deepEqual(fs.readdirSync(path.join(root, 'lists', 'midgard')), ['w.0.json']);
+        assert.partialDeepStrictEqual(fs.readJSONSync(path.join(root, 'records', 'midgard', '2025', '07', 'swap.ABC.0.json')), {source: 'midgard', key: 'swap.ABC'});
     });
 
     test('a record with no date of its own is filed by the date it is given, and stays there', async () => {
@@ -241,20 +242,20 @@ describe('Layout', () => {
         await new RecordStore(root).record('thornode', 'A', fetching<Tx>({id: 'A', status: 'pending'}), RULES, new Date(Date.UTC(2025, 6, 4)));
         await new RecordStore(root).record('thornode', 'A', fetching<Tx>({id: 'A', status: 'done'}), RULES, new Date(Date.UTC(2026, 0, 1)));
 
-        expect(fs.readdirSync(path.join(root, 'records', 'thornode', '2025', '07')).sort()).toEqual(['A.0.json', 'A.1.json']);
+        assert.deepEqual(fs.readdirSync(path.join(root, 'records', 'thornode', '2025', '07')).sort(), ['A.0.json', 'A.1.json']);
     });
 
     test('names decode back to keys, and are safe as file names', async () => {
-        const {encodeName, decodeName} = await import('../src/sources/store/RecordStore');
+        const {encodeName, decodeName} = await import('../src/sources/store/RecordStore.ts');
         const key = 'contract.CFB6.wasm-rujira-fin/trade';
 
-        expect(encodeName(key)).toBe('contract.CFB6.wasm-rujira-fin%2Ftrade');
-        expect(decodeName(encodeName(key))).toBe(key);
-        expect(encodeName('a%b:c')).toBe('a%25b%3Ac');
+        assert.equal(encodeName(key), 'contract.CFB6.wasm-rujira-fin%2Ftrade');
+        assert.equal(decodeName(encodeName(key)), key);
+        assert.equal(encodeName('a%b:c'), 'a%25b%3Ac');
 
         const root = makeDir();
         await new RecordStore(root).record('midgard', key, fetching({id: key}));
-        expect(await new RecordStore(root, {offline: true}).record('midgard', key, fetching({id: 'x'}))).toEqual({id: key});
+        assert.deepEqual(await new RecordStore(root, {offline: true}).record('midgard', key, fetching({id: 'x'})), {id: key});
     });
 
     test('copies sort by fetch time: an old copy imported after a newer fetch still counts as older', async () => {
@@ -264,8 +265,8 @@ describe('Layout', () => {
         store.importCopy('thornode', 'A', {id: 'A', gas: '1'}, RULES, {fetchedAt: null, importedFrom: 'old/A.json'});
 
         const copies = new RecordStore(root).copies<Tx>('thornode', 'A');
-        expect(copies.map(c => [c.n, c.data.gas])).toEqual([[1, '1'], [0, '2']]);
-        expect(await new RecordStore(root, {offline: true}).record('thornode', 'A', fetching<Tx>({id: 'A'}), RULES)).toEqual({id: 'A', gas: '2'});
+        assert.deepEqual(copies.map(c => [c.n, c.data.gas]), [[1, '1'], [0, '2']]);
+        assert.deepEqual(await new RecordStore(root, {offline: true}).record('thornode', 'A', fetching<Tx>({id: 'A'}), RULES), {id: 'A', gas: '2'});
     });
 
     test('a new copy never overwrites a file, even one written by another run', async () => {
@@ -277,7 +278,7 @@ describe('Layout', () => {
         await first.record('thornode', 'A', fetching<Tx>({id: 'A', gas: '1'}));
         await second.record('thornode', 'A', fetching<Tx>({id: 'A', gas: '2'}));
 
-        expect(fs.readdirSync(path.join(root, 'records', 'thornode', 'undated')).sort()).toEqual(['A.0.json', 'A.1.json']);
+        assert.deepEqual(fs.readdirSync(path.join(root, 'records', 'thornode', 'undated')).sort(), ['A.0.json', 'A.1.json']);
     });
 
     test('keys that differ only in case are refused', async () => {
@@ -286,7 +287,7 @@ describe('Layout', () => {
         fs.outputJsonSync(path.join(root, 'records', 'viewblock', 'ABC.0.json'), {});
 
         if (fs.readdirSync(path.join(root, 'records', 'viewblock')).length === 2) {
-            expect(() => new RecordStore(root).copies('viewblock', 'abc')).toThrow(/differ only in case/);
+            assert.throws(() => new RecordStore(root).copies('viewblock', 'abc'), /differ only in case/);
         }
     });
 });
@@ -302,14 +303,14 @@ describe('Replay', () => {
 
         const replay = new RecordStore(root, {replay: SnapshotManifest.load(path.join(root, 'run1'))});
         const fetch = fetching([] as Tx[]);
-        expect(await replay.list('midgard', 'w', fetch, LIST)).toEqual([{id: 'a', gas: '1'}]);
+        assert.deepEqual(await replay.list('midgard', 'w', fetch, LIST), [{id: 'a', gas: '1'}]);
 
         // A replay's own manifest can be replayed too
         const run2 = new SnapshotManifest();
         await new RecordStore(root, {replay: SnapshotManifest.load(path.join(root, 'run1')), manifest: run2}).list('midgard', 'w', fetch, LIST);
-        expect(run2.findList('midgard', 'w')?.keys).toEqual(['a']);
-        expect(fetch).not.toHaveBeenCalled();
-        await expect(replay.record('thornode', 'other', fetching({id: 'other'}))).rejects.toThrow(StoreMissError);
+        assert.deepEqual(run2.findList('midgard', 'w')?.keys, ['a']);
+        assert.equal(fetch.mock.callCount(), 0);
+        await assert.rejects(replay.record('thornode', 'other', fetching({id: 'other'})), StoreMissError);
     });
 
     test('fails if a stored copy no longer matches the manifest', async () => {
@@ -321,8 +322,7 @@ describe('Replay', () => {
         const [copy] = new RecordStore(root).copies('thornode', 'a');
         fs.writeJSONSync(copy.file, {...fs.readJSONSync(copy.file), sha256: sha256({id: 'b'})});
 
-        await expect(new RecordStore(root, {replay: SnapshotManifest.load(path.join(root, 'run'))}).record('thornode', 'a', fetching({id: 'a'})))
-            .rejects.toThrow(/does not match the manifest/);
+        await assert.rejects(new RecordStore(root, {replay: SnapshotManifest.load(path.join(root, 'run'))}).record('thornode', 'a', fetching({id: 'a'})), /does not match the manifest/);
     });
 });
 
@@ -330,7 +330,7 @@ describe('THORNODE_RULES', () => {
     test('drops the growing block count of an outbound never signed', () => {
         const tx = {stages: {outbound_signed: {scheduled_outbound_height: 1, blocks_since_scheduled: 99, completed: false}}};
 
-        expect(THORNODE_RULES.normalise!(tx as any)).toEqual({stages: {outbound_signed: {scheduled_outbound_height: 1, completed: false}}});
+        assert.deepEqual(THORNODE_RULES.normalise!(tx as any), {stages: {outbound_signed: {scheduled_outbound_height: 1, completed: false}}});
     });
 });
 
@@ -345,8 +345,8 @@ describe('RecordStore within one run', () => {
         await store.record('thornode', 'a', fetch, RULES);
         await store.record('thornode', 'a', fetch, RULES);
 
-        expect(fetch).toHaveBeenCalledTimes(1);
-        expect(manifest.findRecord('thornode', 'a')?.fetched).toBe('changed');
+        assert.equal(fetch.mock.callCount(), 1);
+        assert.equal(manifest.findRecord('thornode', 'a')?.fetched, 'changed');
     });
 
     test("a list item stored again by a second wallet keeps the first wallet's changed status", async () => {
@@ -358,13 +358,13 @@ describe('RecordStore within one run', () => {
         await store.list('midgard', 'w1', fetching([{id: 'a', gas: '1'}]), LIST);
         await store.list('midgard', 'w2', fetching([{id: 'a', gas: '1'}]), LIST);
 
-        expect(manifest.findRecord('midgard', 'a')?.fetched).toBe('changed');
+        assert.equal(manifest.findRecord('midgard', 'a')?.fetched, 'changed');
     });
 
     test('copies that differ only in what normalise drops are not a revision', () => {
         const rules = {normalise: ({gas, ...tx}: Tx) => tx};
         const copies = [{id: 'a', gas: '1'}, {id: 'a', gas: '2'}].map((data, n) => ({file: `${n}`, n, fetchedAt: `${n}`, sha256: sha256(data), data}));
 
-        expect(chooseCopy(copies, rules).choice).toBe('only');
+        assert.equal(chooseCopy(copies, rules).choice, 'only');
     });
 });

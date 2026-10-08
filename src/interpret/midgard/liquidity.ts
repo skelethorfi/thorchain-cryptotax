@@ -1,14 +1,14 @@
-import {Action} from "@xchainjs/xchain-midgard";
-import {Activity, Leg} from "../../domain/Activity";
-import {formatAmount, parseAmount} from "../../domain/Amount";
-import {toAsset, toPositionAsset} from "../../domain/Asset";
-import {Issue} from "../../domain/Issue";
-import {getActionDate, parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
-import {Protocol, THORCHAIN} from "../../domain/Protocol";
-import {getBundleKey, RawBundle} from "../../sources/RawBundle";
-import {isDonateAdd, midgardActionKey} from "../../sources/store/Sources";
-import {getTxids} from "./bond";
-import {inboundGas} from "./gas";
+import type {Action} from "@xchainjs/xchain-midgard";
+import type {Activity, Leg} from "../../domain/Activity.ts";
+import {formatAmount, parseAmount} from "../../domain/Amount.ts";
+import {toAsset, toPositionAsset} from "../../domain/Asset.ts";
+import type {Issue} from "../../domain/Issue.ts";
+import {getActionDate, parseMidgardAsset} from "../../sources/thorchain/MidgardUtils.ts";
+import {type Protocol, THORCHAIN} from "../../domain/Protocol.ts";
+import {getBundleKey, type RawBundle} from "../../sources/RawBundle.ts";
+import {isDonateAdd, midgardActionKey} from "../../sources/store/Sources.ts";
+import {getTxids} from "./bond.ts";
+import {inboundGas} from "./gas.ts";
 
 // Liquidity units and savers units are reported with 8 decimals
 const UNIT_DECIMALS = 8;

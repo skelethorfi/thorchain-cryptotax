@@ -1,13 +1,13 @@
-import {Action} from "@xchainjs/xchain-midgard";
-import {Activity, Leg} from "../../domain/Activity";
-import {parseAmount} from "../../domain/Amount";
-import {toAsset} from "../../domain/Asset";
-import {Issue} from "../../domain/Issue";
-import {getActionDate} from "../../sources/thorchain/MidgardUtils";
-import {Protocol} from "../../domain/Protocol";
-import {getBundleKey, RawBundle} from "../../sources/RawBundle";
-import {getTxids} from "./bond";
-import {inboundGas} from "./gas";
+import type {Action} from "@xchainjs/xchain-midgard";
+import type {Activity, Leg} from "../../domain/Activity.ts";
+import {parseAmount} from "../../domain/Amount.ts";
+import {toAsset} from "../../domain/Asset.ts";
+import type {Issue} from "../../domain/Issue.ts";
+import {getActionDate} from "../../sources/thorchain/MidgardUtils.ts";
+import type {Protocol} from "../../domain/Protocol.ts";
+import {getBundleKey, type RawBundle} from "../../sources/RawBundle.ts";
+import {getTxids} from "./bond.ts";
+import {inboundGas} from "./gas.ts";
 
 // A refund (docs/specs/fees.md): the wallet sent an amount in, and the protocol returned all or part of
 // it, or, for a stuck one still pending, nothing yet (docs/specs/pending.md). Two refunds are not the wallet's own and give no activity: the refund of an affiliate's cut, which

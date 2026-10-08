@@ -1,15 +1,15 @@
-import {Action, ActionStatusEnum, ActionTypeEnum} from "@xchainjs/xchain-midgard";
+import {type Action, ActionStatusEnum, ActionTypeEnum} from "@xchainjs/xchain-midgard";
 import {assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
-import {MidgardService} from "./thorchain/MidgardService";
-import {ThornodeService} from "./thorchain/ThornodeService";
-import {CosmosTxService, getCosmosTxIds} from "./thorchain/CosmosTxService";
-import {MayanodeService} from "./maya/MayanodeService";
-import {TcyDistributionService} from "./tcy/TcyDistributionService";
-import {getActionDate} from "./thorchain/MidgardUtils";
-import {Viewblock} from "./viewblock";
-import {Protocol, THORCHAIN} from "../domain/Protocol";
-import {getBundleKey, RawBundle} from "./RawBundle";
-import {NotFinal} from "./Pending";
+import {MidgardService} from "./thorchain/MidgardService.ts";
+import {ThornodeService} from "./thorchain/ThornodeService.ts";
+import {CosmosTxService, getCosmosTxIds} from "./thorchain/CosmosTxService.ts";
+import {MayanodeService} from "./maya/MayanodeService.ts";
+import {TcyDistributionService} from "./tcy/TcyDistributionService.ts";
+import {getActionDate} from "./thorchain/MidgardUtils.ts";
+import {Viewblock} from "./viewblock/index.ts";
+import {type Protocol, THORCHAIN} from "../domain/Protocol.ts";
+import {getBundleKey, type RawBundle} from "./RawBundle.ts";
+import type {NotFinal} from "./Pending.ts";
 
 // Lists the raw bundles of one wallet from one API
 export interface Source {
@@ -68,9 +68,23 @@ export function shouldIncludeAction(action: Action): boolean {
 // notFinal: collects every action whose status is not 'success', exported or not, for the run summary.
 // stuckBefore: an action still pending from before this date is stuck (docs/specs/pending.md)
 export class MidgardSource implements Source {
-    constructor(private protocol: Protocol, private midgard: MidgardService, private thornode: ThornodeService,
-                private cosmosTxs: CosmosTxService, private notFinal: NotFinal[] = [], private stuckBefore?: Date,
-                private mayanode?: MayanodeService) {
+    private protocol: Protocol;
+    private midgard: MidgardService;
+    private thornode: ThornodeService;
+    private cosmosTxs: CosmosTxService;
+    private notFinal: NotFinal[];
+    private stuckBefore?: Date;
+    private mayanode?: MayanodeService;
+    constructor(protocol: Protocol, midgard: MidgardService, thornode: ThornodeService,
+                cosmosTxs: CosmosTxService, notFinal: NotFinal[] = [], stuckBefore?: Date,
+                mayanode?: MayanodeService) {
+        this.protocol = protocol;
+        this.midgard = midgard;
+        this.thornode = thornode;
+        this.cosmosTxs = cosmosTxs;
+        this.notFinal = notFinal;
+        this.stuckBefore = stuckBefore;
+        this.mayanode = mayanode;
     }
 
     async bundlesFor(wallet: string): Promise<RawBundle[]> {
@@ -129,7 +143,9 @@ export class MidgardSource implements Source {
 // Viewblock's txs of a THORChain wallet, for the sends Midgard does not list (docs/specs/sends.md);
 // selectSends keeps those
 export class ViewblockSource implements Source {
-    constructor(private viewblock: Viewblock) {
+    private viewblock: Viewblock;
+    constructor(viewblock: Viewblock) {
+        this.viewblock = viewblock;
     }
 
     async bundlesFor(wallet: string): Promise<RawBundle[]> {
@@ -144,7 +160,9 @@ export class ViewblockSource implements Source {
 
 // TCY distributions, for THORChain wallets only
 export class TcySource implements Source {
-    constructor(private tcyDistribution: TcyDistributionService) {
+    private tcyDistribution: TcyDistributionService;
+    constructor(tcyDistribution: TcyDistributionService) {
+        this.tcyDistribution = tcyDistribution;
     }
 
     async bundlesFor(wallet: string): Promise<RawBundle[]> {

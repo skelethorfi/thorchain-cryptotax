@@ -1,18 +1,19 @@
-import {afterEach, describe, expect, jest, test} from "@jest/globals";
+import {afterEach, describe, mock, test} from "node:test";
+import assert from "node:assert/strict";
 import fs from "fs-extra";
 import os from "os";
 import path from "path";
-import {renderSummary, RunSummary, SUMMARY_FILE} from "../src/cli/RunSummary";
+import {renderSummary, RunSummary, SUMMARY_FILE} from "../src/cli/RunSummary.ts";
 
 describe('RunSummary', () => {
     afterEach(() => {
-        jest.restoreAllMocks();
+        mock.restoreAll();
     });
 
     test('prints each line as before and keeps it for summary.md, with the action key on issues', () => {
-        const log = jest.spyOn(console, 'log').mockImplementation(() => {});
-        const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-        const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+        const log = mock.method(console, 'log', () => {});
+        const warn = mock.method(console, 'warn', () => {});
+        const error = mock.method(console, 'error', () => {});
         const summary = new RunSummary();
 
         summary.about('Mode: offline');
@@ -21,10 +22,10 @@ describe('RunSummary', () => {
         summary.issue('manual', '2025-01-01T00:00:00.000Z loan: enter by hand: x', 'midgard/swap.A');
         summary.issue('failed', '2025-01-02T00:00:00.000Z contract: bad asset', 'midgard/contract.B');
 
-        expect(log.mock.calls).toEqual([['Total exported: 2']]);
-        expect(warn.mock.calls).toEqual([['WARN: wallet not found in config: thor1x'], ['2025-01-01T00:00:00.000Z loan: enter by hand: x']]);
-        expect(error.mock.calls).toEqual([['2025-01-02T00:00:00.000Z contract: bad asset']]);
-        expect(renderSummary(summary)).toBe([
+        assert.deepEqual(log.mock.calls.map(call => call.arguments), [['Total exported: 2']]);
+        assert.deepEqual(warn.mock.calls.map(call => call.arguments), [['WARN: wallet not found in config: thor1x'], ['2025-01-01T00:00:00.000Z loan: enter by hand: x']]);
+        assert.deepEqual(error.mock.calls.map(call => call.arguments), [['2025-01-02T00:00:00.000Z contract: bad asset']]);
+        assert.equal(renderSummary(summary), [
             '# Run summary',
             '', '## Run', '', '- Mode: offline',
             '', '## Counts', '', '- Total exported: 2',
@@ -36,13 +37,13 @@ describe('RunSummary', () => {
     });
 
     test('writes summary.md to the run folder; a line with a newline stays one list item', () => {
-        jest.spyOn(console, 'warn').mockImplementation(() => {});
+        mock.method(console, 'warn', () => {});
         const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-summary-'));
         const summary = new RunSummary();
         summary.warn('Found a cache:\n  npm run store -- import a b');
 
         summary.write(dir);
 
-        expect(fs.readFileSync(path.join(dir, SUMMARY_FILE), 'utf8')).toContain('- Found a cache:   npm run store -- import a b\n');
+        assert.ok(fs.readFileSync(path.join(dir, SUMMARY_FILE), 'utf8').includes('- Found a cache:   npm run store -- import a b\n'));
     });
 });

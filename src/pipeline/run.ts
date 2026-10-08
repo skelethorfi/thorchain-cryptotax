@@ -1,10 +1,10 @@
-import {CryptoTaxTransaction} from "../export/summ/csv";
-import {Activity} from "../domain/Activity";
-import {Issue} from "../domain/Issue";
-import {exportSumm, Treatment} from "../export/summ";
-import {interpret} from "../interpret/registry";
-import {Protocol} from "../domain/Protocol";
-import {getBundleDate, RawBundle} from "../sources/RawBundle";
+import type {CryptoTaxTransaction} from "../export/summ/csv/index.ts";
+import type {Activity} from "../domain/Activity.ts";
+import type {Issue} from "../domain/Issue.ts";
+import {exportSumm, type Treatment} from "../export/summ/index.ts";
+import {interpret} from "../interpret/registry.ts";
+import type {Protocol} from "../domain/Protocol.ts";
+import {getBundleDate, type RawBundle} from "../sources/RawBundle.ts";
 
 // One bundle, interpreted and exported. Pure: the shell logs the issues and writes the files.
 export interface BundleResult {

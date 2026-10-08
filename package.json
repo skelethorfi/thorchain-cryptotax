@@ -1,14 +1,15 @@
 {
   "name": "thorchain-cryptotax",
   "version": "1.0.0",
-  "main": "index.ts",
-  "type": "commonjs",
+  "main": "src/full-export.ts",
+  "type": "module",
   "scripts": {
-    "test": "jest",
-    "export": "ts-node src/full-export.ts wallets-config.toml",
-    "fixture": "ts-node src/cli/fixture.ts",
-    "store": "ts-node src/cli/store.ts",
-    "diff": "ts-node src/cli/diff.ts"
+    "test": "node --test test/*.test.ts",
+    "typecheck": "tsc -p .",
+    "export": "node src/full-export.ts wallets-config.toml",
+    "fixture": "node src/cli/fixture.ts",
+    "store": "node src/cli/store.ts",
+    "diff": "node src/cli/diff.ts"
   },
   "dependencies": {
     "@types/fs-extra": "^11.0.4",
@@ -22,13 +23,11 @@
     "date-fns-tz": "^3.2.0",
     "fs-extra": "^11.3.2",
     "js-toml": "^1.0.0",
-    "lodash": "^4.17.21",
-    "ts-node": "^10.9.1",
-    "typescript": "6.0.3"
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@jest/globals": "^30.2.0",
-    "ts-jest": "29.4.12",
+    "@types/node": "24.19.1",
+    "typescript": "6.0.3",
     "yaml": "2.9.1"
   },
   "engines": {
