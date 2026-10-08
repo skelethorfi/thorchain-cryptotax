@@ -34,4 +34,7 @@ export interface ITaxConfig {
     // end) or 'deposit' (the position's cost is the RUNE deposited). No default: a run that finds an auction
     // position stops until it is set.
     mayaLiquidityAuction?: MayaLiquidityAuction;
+    // Senders whose transfers to the config's wallets are income, e.g. a project's reward distribution wallet
+    // (docs/specs/sends.md). Default: none, so every transfer received is a receive
+    incomeFrom?: string[];
 }

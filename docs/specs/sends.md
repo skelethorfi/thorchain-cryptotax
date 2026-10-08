@@ -1,7 +1,7 @@
 # Sends
 
-A send moves a coin from one THORChain address to another with a `MsgSend`,
-outside any protocol action. It gives one row per configured wallet it
+A send moves a coin from one THORChain (or Maya) address to another with a
+`MsgSend`, outside any protocol action. It gives one row per configured wallet it
 touches: a `send` on the sending wallet, with the fee, and a `receive` on
 the receiving wallet. Nothing is swapped, so a send between two configured
 wallets is a transfer, and Summ pairs the two rows.
@@ -24,8 +24,8 @@ so the overlap gives no second row. A run for a later period never calls
 Viewblock, so if its unofficial API changes, only such runs are affected,
 and they fail rather than lose sends.
 
-Maya sends (Midgard `send` with `MAYA` or `CACAO`) are not mapped yet
-(`maya.md`).
+Maya sends (Maya's Midgard `send`, e.g. of `CACAO` or the MAYA token) are
+mapped the same way, from Maya's Midgard, with Maya's native fee (below).
 
 ## Which sends give rows
 
@@ -97,7 +97,8 @@ exporter reads:
 - Viewblock's address listing has no fee; its single-tx endpoint shows 0.02
   RUNE on sends from 2021 to 2026.
 
-So the gas leg is the 0.02 RUNE default.
+So the gas leg is the 0.02 RUNE default. On Maya it is Maya's native fee,
+0.2 CACAO, also by default.
 
 ## Rows
 
@@ -105,10 +106,22 @@ So the gas leg is the 0.02 RUNE default.
 | --- | --- | --- | --- | --- | --- |
 | Sender | `send` | the coin and amount | 0.02 RUNE | sender, receiver | `Send <amount> <coin>; <txid>` |
 | Receiver | `receive` | the coin and amount | — | sender, receiver | `Receive <amount> <coin>; <txid>` |
+| Receiver, sender in `incomeFrom` | `income` | the coin and amount | — | sender, receiver | `Income: receive <amount> <coin>; <txid>` |
 | Arkeo delegation | `send` | the coin and amount | 0.02 RUNE | the wallet, itself | `1/1 - DelegateArkeoWallet; <txid>` |
 
 `<coin>` is `Synth DOGE` for a synth and `Trade BTC` for a trade asset;
-otherwise the ticker. The blockchain is THORChain. The base currency is the
+otherwise the ticker. The blockchain is THORChain, or Mayachain for a Maya
+send. The base currency is the
 coin's name as every other row names it (`assets.md`), so a synth received
-from a swap and later sent is one currency in Summ. Midgard and Viewblock
-write TCY as `TCY`, which is `THOR.TCY`.
+from a swap and later sent is one currency in Summ. A bare coin name is the
+protocol's own chain's: Midgard and Viewblock write TCY as `TCY`, which is
+`THOR.TCY`, and Maya's Midgard writes the MAYA token as `MAYA`, which is
+`MAYA.MAYA` (4 decimals).
+
+**Income.** Whether a transfer received is income depends on who sent it,
+which the chain does not say: a project's reward distribution is an ordinary
+wallet, not a protocol module (the MAYA token distributions are two such
+wallets). So the config lists them: `incomeFrom = ["<address>", …]`. A
+transfer received from a listed sender is `income`; every other is a
+`receive`. Default: none. The row's ID is that of the received coin either
+way (`periods.md`), so changing the list changes the row's type, not its ID.

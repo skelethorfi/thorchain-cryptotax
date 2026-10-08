@@ -9,7 +9,7 @@ so swaps and liquidity actions on Maya are exported by the same mappers, with a
 protocol setting that supplies the differences.
 
 This spec covers swaps, add liquidity, withdraw liquidity and refunds on Maya.
-It does not cover MAYA token sends or Maya bonding.
+It does not cover Maya bonding.
 
 ## Enabling Maya
 
@@ -144,6 +144,14 @@ Golden cases: `maya/liquidity-auction-rune` (RUNE, deposits found),
 `maya/liquidity-auction-btc` and `maya/liquidity-auction-eth` (public
 participants).
 
+### Sends
+
+As THORChain sends (`sends.md`), from Maya's Midgard: `send` with Maya's 0.2
+CACAO fee, `receive`, or `income` when the sender is in `incomeFrom` (e.g. the
+MAYA token distributions after the liquidity auction). A Maya send that is
+another listed action's inbound or outbound gives no row. Golden cases:
+`maya/send-cacao`, `maya/send-maya-income`.
+
 ### Withdraw liquidity
 
 As THORChain: `ReturnLpToken`, the `Spam` price-helper row and one
@@ -173,5 +181,4 @@ withdrawal.
 
 ## Not covered yet
 
-- MAYA token transfers (Midgard `send` with asset `MAYA`)
 - Fees paid on Maya inbound transactions

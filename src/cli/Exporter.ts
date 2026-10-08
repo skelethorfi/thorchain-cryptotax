@@ -142,7 +142,7 @@ export class Exporter {
             this.report.info(`Attached ${auction.attached} Midgard sends to Maya liquidity auction adds as their deposits`);
         }
 
-        const results = auction.bundles.map(bundle => runBundle(bundle, this.protocolFor(bundle), {assets: this.config.assets, mayaLiquidityAuction: this.config.mayaLiquidityAuction}));
+        const results = auction.bundles.map(bundle => runBundle(bundle, this.protocolFor(bundle), {assets: this.config.assets, mayaLiquidityAuction: this.config.mayaLiquidityAuction, incomeFrom: this.config.incomeFrom}));
         results.forEach(result => this.handleIssues(result, outputPath));
         const actionMemos = results.flatMap(result => result.issues).filter(issue => issue.message.startsWith(ACTION_MEMO_WARNING)).length;
         this.endWarnings = [actionMemoSummary(actionMemos, this.config.protocols ?? ['thorchain'])].filter((line): line is string => !!line);

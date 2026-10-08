@@ -41,3 +41,20 @@ describe('actionMemoSummary', () => {
         expect(actionMemoSummary(1, ['thorchain', 'maya'])).toBe("WARN: 1 send carries a memo for an action (swap, add, …) that no listed action matches, so it is exported as a send; Maya's actions are listed too, so check each (warnings above)");
     });
 });
+
+describe('income from a listed sender', () => {
+    test('the same transfer is a receive, or income when its sender is in incomeFrom, with one ID', async () => {
+        const path = await import('path');
+        const {readCaseInput, toBundle} = await import('../src/fixtures/GoldenCase');
+        const {runBundle} = await import('../src/pipeline/run');
+        const {MAYA} = await import('../src/domain/Protocol');
+        const input = readCaseInput(path.join(__dirname, 'cases', 'maya', 'send-maya-income'));
+        const sender = input.treatment!.incomeFrom![0];
+
+        const [plain] = runBundle(toBundle(input), MAYA).rows;
+        const [income] = runBundle(toBundle(input), MAYA, {incomeFrom: [sender.toUpperCase()]}).rows;
+
+        expect([plain.type, income.type]).toEqual(['receive', 'income']);
+        expect(income.id).toBe(plain.id);
+    });
+});

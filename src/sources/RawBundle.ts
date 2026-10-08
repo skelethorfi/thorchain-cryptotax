@@ -79,7 +79,7 @@ export function dedupeBundles(bundles: RawBundle[]): {bundles: RawBundle[]; dupl
 // Sends before this come from Viewblock too, as Midgard's history is incomplete (docs/specs/sends.md)
 export const VIEWBLOCK_SENDS_BEFORE = '2022-04-01';
 
-// The sends that give rows (docs/specs/sends.md). A THORChain send that is part of another listed action gives
+// The sends that give rows (docs/specs/sends.md). A THORChain or Maya send that is part of another listed action gives
 // no row of its own, as that action gives the rows:
 // - its inbound: a swap or TCY unstake sent by MsgSend on THORChain, or RUNE sent to a Maya vault;
 // - its outbound: RUNE a Maya vault pays out on THORChain, named by the action's outbound txid, or by a
@@ -98,11 +98,11 @@ export function selectSends(bundles: RawBundle[]): {bundles: RawBundle[]; droppe
     const listed = new Set([...actionInbounds, ...inboundTxids(true)]);
     const cutoff = new Date(`${VIEWBLOCK_SENDS_BEFORE}T00:00:00Z`).getTime();
 
-    const thorchainSend = (bundle: RawBundle) => bundle.protocol === THORCHAIN.id && isMidgardSend(bundle);
+    const midgardSend = (bundle: RawBundle) => isMidgardSend(bundle);
     const sendTxid = (bundle: RawBundle) => (bundle.data as Action).in[0]?.txID?.toUpperCase();
-    const isInbound = (bundle: RawBundle) => thorchainSend(bundle) && actionInbounds.has(sendTxid(bundle));
-    const payoutFor = (bundle: RawBundle) => thorchainSend(bundle) ? outboundMemoTxid(bundle.data as Action) : undefined;
-    const isOutbound = (bundle: RawBundle) => thorchainSend(bundle)
+    const isInbound = (bundle: RawBundle) => midgardSend(bundle) && actionInbounds.has(sendTxid(bundle));
+    const payoutFor = (bundle: RawBundle) => midgardSend(bundle) ? outboundMemoTxid(bundle.data as Action) : undefined;
+    const isOutbound = (bundle: RawBundle) => midgardSend(bundle)
         && (actionOutbounds.has(sendTxid(bundle)) || actionInbounds.has(payoutFor(bundle) ?? ''));
     const isViewblockGap = (bundle: RawBundle) => {
         const tx = bundle.data as ViewblockTx;

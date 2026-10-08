@@ -34,6 +34,12 @@ describe('TaxConfig', () => {
         expect(() => TaxConfig.applyDefaults({pendingGraceDays: -2}, new Date())).toThrow('pendingGraceDays must be a number of days');
     });
 
+    test('incomeFrom is a list of addresses', () => {
+        expect(TaxConfig.applyDefaults({incomeFrom: ['maya1a']}, new Date()).incomeFrom).toEqual(['maya1a']);
+        expect(() => TaxConfig.applyDefaults({incomeFrom: 'maya1a' as any}, new Date())).toThrow('incomeFrom must be a list of addresses');
+        expect(() => TaxConfig.applyDefaults({incomeFrom: [''] as any}, new Date())).toThrow('incomeFrom must be a list of addresses');
+    });
+
     test('mayaLiquidityAuction is income or deposit, with no default', () => {
         expect(TaxConfig.applyDefaults({}, new Date()).mayaLiquidityAuction).toBeUndefined();
         expect(TaxConfig.applyDefaults({mayaLiquidityAuction: 'deposit'}, new Date()).mayaLiquidityAuction).toBe('deposit');

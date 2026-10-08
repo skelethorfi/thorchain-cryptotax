@@ -49,10 +49,7 @@ const REGISTRY: Record<string, Interpreter> = {
     'midgard/tcy_claim': activity(interpretTcyClaim),
     'midgard/tcy_stake': activity(interpretTcyStake),
     'midgard/tcy_unstake': activity(interpretTcyStake),
-    // Maya sends (MAYA, CACAO) are not mapped yet (docs/specs/maya.md)
-    [`midgard/${ActionType.Send}`]: (bundle, protocol) => protocol.id === THORCHAIN.id
-        ? {rows: [], ...interpretSend(bundle, protocol)}
-        : ignore('Maya send')(bundle, protocol),
+    [`midgard/${ActionType.Send}`]: (bundle, protocol) => ({rows: [], ...interpretSend(bundle, protocol)}),
     ...Object.fromEntries(RUJIRA_CONTRACT_TYPES.map(type => [`midgard/contract/${type}`, rujira])),
     // Viewblock gives only sends from before 2022-04 that Midgard does not list (docs/specs/sends.md)
     'viewblock/send': (bundle, protocol) => ({rows: [], ...interpretViewblockSend(bundle, protocol)}),
