@@ -63,7 +63,7 @@ nothing from it; the only link is the files below. It speaks MCP over
 
 ## Commands
 
-    summ-sync login                # browser OAuth; token kept outside the repo
+    summ-sync login <state dir> [--write]  # browser OAuth; token in the state dir
     summ-sync pull  <state dir>    # writes a snapshot
     summ-sync plan  <state dir> <run dir>
     summ-sync apply <state dir> <plan file> [--approve-deletes] [--approve-filed]
@@ -79,12 +79,12 @@ record, role and asset). A row's on-chain txids are the 64-character hex
 strings in its description (as `run-diff.md`).
 
 **Snapshot** (written by `pull`): `actions.jsonl` (one line per action from
-the list) and `details/<action id>.json` for each action the plan needs:
-every action of a managed source, and every action whose tx hash is a txid
-of a categorised row. A snapshot is never patched: after an apply, pull
+the list) and `details/<action id>.json` (the action's JSON and change
+history) for each action the plan needs: every action of a managed source,
+and every action whose tx hash is a txid of a categorised row. A snapshot is never patched: after an apply, pull
 again.
 
-**Sync config** (`summ-sync.toml` in the state dir):
+**Sync config** (`summ-sync.json` in the state dir):
 
 - `filedBefore`: rows before this date belong to filed years; changing them
   is an amendment (below).
@@ -142,7 +142,7 @@ with `--approve-filed`, in a separate apply from the current year.
 set back by default. Summ's change history labels every edit through the
 MCP as the user's, so an edit is the sync's own when `apply-log.jsonl`
 records it (same leg, field and value), and drift otherwise. `plan`
-records each one it has not seen before in `overrides.toml` in the state
+records each one it has not seen before in `overrides.json` in the state
 dir: row `ID`, field, the run's value, the user's value, when it was seen,
 and a `reason` for the user to fill in. An override always takes precedence
 over the run, so the plan shows no change for it. To have the plan revert a
