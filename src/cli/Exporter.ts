@@ -133,6 +133,10 @@ export class Exporter {
             this.report.info(`Skipped ${sends.dropped.inbound} Midgard sends that are another action's inbound`);
         }
 
+        if (sends.dropped.outbound > 0) {
+            this.report.info(`Skipped ${sends.dropped.outbound} Midgard sends that are another action's outbound`);
+        }
+
         const results = sends.bundles.map(bundle => runBundle(bundle, this.protocolFor(bundle), {assets: this.config.assets}));
         results.forEach(result => this.handleIssues(result, outputPath));
         const actionMemos = results.flatMap(result => result.issues).filter(issue => issue.message.startsWith(ACTION_MEMO_WARNING)).length;
