@@ -50,7 +50,7 @@ API endpoint defaults are committed in `src/config/apiUrls.ts`.
 You can override them by setting environment variables before running the app:
 
 - `THORNODE_API_URL`
-- `THORNODE_API_ARCHIVE_URL`
+- `THORNODE_API_ARCHIVE_URL` (THORChain v1: tx statuses up to its last block, 2024-09-04)
 - `MIDGARD_API_URL`
 
 ### Contributing a new transaction type

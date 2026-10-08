@@ -4,35 +4,39 @@ import {THORNODE_RULES} from "../store/Sources";
 import {API_URLS} from "../../config/apiUrls";
 import {http} from "../http";
 
-// Seems like not all transactions may be on the latest API URL
-// Following how THORChain Explorer handles it - https://github.com/thorchain/thorchain-explorer-v2/blob/main/api/thornode.api.js
+// The last block of THORChain v1 (2024-09-04). The current API has no tx status up to it; the v1 API has them from
+// the 2022-03-22 migration on, and neither has the ones before.
+export const THORNODE_V1_LAST_HEIGHT = 17562001;
+
+export function thornodeUrlFor(height?: number): string {
+    return height !== undefined && height <= THORNODE_V1_LAST_HEIGHT ? API_URLS.thornodeArchive : API_URLS.thornode;
+}
 
 export class ThornodeService {
-    api: TransactionsApi;
-    archive: TransactionsApi;
+    private apis = new Map<string, TransactionsApi>();
 
     constructor(private store: RecordStore = new RecordStore('_cache'), private source: string = 'thornode') {
-        this.api = new TransactionsApi(new Configuration({basePath: API_URLS.thornode}), API_URLS.thornode, http);
-        this.archive = new TransactionsApi(new Configuration({basePath: API_URLS.thornodeArchive}), API_URLS.thornodeArchive, http);
     }
 
-    // date: of the action the tx belongs to; a tx status has no date of its own to be filed by
-    async getTxStatus(hash: string, date?: Date): Promise<TxStatusResponse> {
+    // date and height: of the action the tx belongs to; a tx status has no date of its own to be filed by, and the
+    // height picks the API that has it
+    async getTxStatus(hash: string, date?: Date, height?: number): Promise<TxStatusResponse> {
         if (!hash) {
             throw new Error('No transaction hash');
         }
 
-        return this.store.record(this.source, hash, () => this.fetchTxStatus(hash), THORNODE_RULES, date);
+        return this.store.record(this.source, hash, () => this.fetchTxStatus(hash, height), THORNODE_RULES, date);
     }
 
-    private async fetchTxStatus(hash: string) {
-        const tx = (await this.api.txStatus(hash)).data;
+    private async fetchTxStatus(hash: string, height?: number) {
+        const url = thornodeUrlFor(height);
+        let api = this.apis.get(url);
 
-        // If the transaction data does not exist then fetch it from the archive
-        if (!tx.tx) {
-            return {data: (await this.archive.txStatus(hash)).data, url: `${API_URLS.thornodeArchive}/thorchain/tx/status/${hash}`};
+        if (!api) {
+            api = new TransactionsApi(new Configuration({basePath: url}), url, http);
+            this.apis.set(url, api);
         }
 
-        return {data: tx, url: `${API_URLS.thornode}/thorchain/tx/status/${hash}`};
+        return {data: (await api.txStatus(hash)).data, url: `${url}/thorchain/tx/status/${hash}`};
     }
 }
