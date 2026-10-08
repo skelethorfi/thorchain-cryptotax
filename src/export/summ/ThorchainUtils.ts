@@ -1,8 +1,8 @@
-import { TxStatusResponse } from '@xchainjs/xchain-thornode';
-import { parseMidgardAsset, parseMidgardPool } from '../../sources/thorchain/MidgardUtils';
-import { inboundGas } from '../../interpret/midgard/gas';
-import { formatAmount } from '../../domain/Amount';
-import { Protocol, THORCHAIN } from '../../domain/Protocol';
+import type { TxStatusResponse } from '@xchainjs/xchain-thornode';
+import { parseMidgardAsset, parseMidgardPool } from '../../sources/thorchain/MidgardUtils.ts';
+import { inboundGas } from '../../interpret/midgard/gas.ts';
+import { formatAmount } from '../../domain/Amount.ts';
+import { type Protocol, THORCHAIN } from '../../domain/Protocol.ts';
 
 // The fee columns for an inbound transaction: its gas leg, named for the CSV (docs/specs/fees.md)
 export function getInboundFee(

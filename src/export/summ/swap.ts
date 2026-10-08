@@ -1,7 +1,7 @@
-import {Activity} from "../../domain/Activity";
-import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
-import {Protocol} from "../../domain/Protocol";
-import {fee, findLeg, leg, legBlockchain, legTrace, named, plusSeconds, referencePrice} from "./common";
+import type {Activity} from "../../domain/Activity.ts";
+import {type CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv/index.ts";
+import type {Protocol} from "../../domain/Protocol.ts";
+import {fee, findLeg, leg, legBlockchain, legTrace, named, plusSeconds, referencePrice} from "./common.ts";
 
 // A cross-chain trade: the trade-out on the sending wallet carries the fee; the trade-in on the receiving
 // wallet comes 10 s later. A part returned unfilled is netted off the trade-out.

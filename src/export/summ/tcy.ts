@@ -1,9 +1,9 @@
-import {Activity} from "../../domain/Activity";
-import {formatAmount} from "../../domain/Amount";
-import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
-import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
-import {Protocol} from "../../domain/Protocol";
-import {findLeg, leg, legTrace} from "./common";
+import type {Activity} from "../../domain/Activity.ts";
+import {formatAmount} from "../../domain/Amount.ts";
+import {type CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv/index.ts";
+import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils.ts";
+import type {Protocol} from "../../domain/Protocol.ts";
+import {findLeg, leg, legTrace} from "./common.ts";
 
 // The fee columns from the gas leg, or no fee columns at all when there is none (as these rows always had)
 function feeIfAny(activity: Activity, protocol: Protocol): Pick<CryptoTaxTransaction, 'feeCurrency' | 'feeAmount'> {

@@ -1,7 +1,7 @@
-import {RecordStore} from '../store/RecordStore';
-import {tcyList} from '../store/Sources';
-import { API_URLS } from '../../config/apiUrls';
-import {http} from '../http';
+import {RecordStore} from '../store/RecordStore.ts';
+import {tcyList} from '../store/Sources.ts';
+import { API_URLS } from '../../config/apiUrls.ts';
+import {http} from '../http.ts';
 
 const MIDGARD_API_URL = API_URLS.midgard;
 
@@ -49,7 +49,11 @@ export function getDistributionDate(item: TcyDistributionItem): Date {
 export class TcyDistributionService {
     baseUrl: string;
 
-    constructor(private store: RecordStore = new RecordStore('_cache'), private source: string = 'tcy') {
+    private store: RecordStore;
+    private source: string;
+    constructor(store: RecordStore = new RecordStore('_cache'), source: string = 'tcy') {
+        this.store = store;
+        this.source = source;
         this.baseUrl = MIDGARD_API_URL;
     }
 

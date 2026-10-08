@@ -1,4 +1,4 @@
-import { CryptoTaxTransactionType } from './CryptoTaxTransactionType';
+import { CryptoTaxTransactionType } from './CryptoTaxTransactionType.ts';
 
 export interface CryptoTaxTransaction {
     /**

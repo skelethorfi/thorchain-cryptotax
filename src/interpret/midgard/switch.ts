@@ -1,12 +1,12 @@
-import {Action} from "@xchainjs/xchain-midgard";
-import {Activity, Leg} from "../../domain/Activity";
-import {parseAmount} from "../../domain/Amount";
-import {toAsset} from "../../domain/Asset";
-import {getActionDate} from "../../sources/thorchain/MidgardUtils";
-import {Protocol} from "../../domain/Protocol";
-import {getBundleKey, RawBundle} from "../../sources/RawBundle";
-import {getTxids, nativeGas} from "./bond";
-import {inboundGas} from "./gas";
+import type {Action} from "@xchainjs/xchain-midgard";
+import type {Activity, Leg} from "../../domain/Activity.ts";
+import {parseAmount} from "../../domain/Amount.ts";
+import {toAsset} from "../../domain/Asset.ts";
+import {getActionDate} from "../../sources/thorchain/MidgardUtils.ts";
+import type {Protocol} from "../../domain/Protocol.ts";
+import {getBundleKey, type RawBundle} from "../../sources/RawBundle.ts";
+import {getTxids, nativeGas} from "./bond.ts";
+import {inboundGas} from "./gas.ts";
 
 // A switch (docs/specs/activity.md): an asset from another chain (e.g. BEP2 RUNE, Cosmos KUJI) sent in and
 // the same asset minted on THORChain

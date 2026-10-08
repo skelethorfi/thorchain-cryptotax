@@ -1,9 +1,9 @@
-import {Activity} from "../../domain/Activity";
-import {formatAmount} from "../../domain/Amount";
-import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
-import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
-import {formatBlockchain, Protocol} from "../../domain/Protocol";
-import {fee, findLeg, leg, legTrace} from "./common";
+import type {Activity} from "../../domain/Activity.ts";
+import {formatAmount} from "../../domain/Amount.ts";
+import {type CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv/index.ts";
+import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils.ts";
+import {formatBlockchain, type Protocol} from "../../domain/Protocol.ts";
+import {fee, findLeg, leg, legTrace} from "./common.ts";
 
 // A loan open (docs/specs/loans.md): the collateral deposit carries the fee; the loan received has none
 export function loanOpenRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {

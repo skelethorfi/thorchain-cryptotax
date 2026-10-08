@@ -1,9 +1,9 @@
-import {Activity} from "../../domain/Activity";
-import {formatAmount} from "../../domain/Amount";
-import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
-import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
-import {formatBlockchain, Protocol} from "../../domain/Protocol";
-import {fee, leg, legTrace, plusSeconds} from "./common";
+import type {Activity} from "../../domain/Activity.ts";
+import {formatAmount} from "../../domain/Amount.ts";
+import {type CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv/index.ts";
+import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils.ts";
+import {formatBlockchain, type Protocol} from "../../domain/Protocol.ts";
+import {fee, leg, legTrace, plusSeconds} from "./common.ts";
 
 // A switch is a bridge: the asset leaves its old chain and arrives on THORChain 10 s later
 export function switchRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {

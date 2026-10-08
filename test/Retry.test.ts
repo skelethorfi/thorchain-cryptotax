@@ -1,33 +1,33 @@
-import {describe, expect, jest, test} from '@jest/globals';
-import {isTransient, withRetry} from '../src/sources/Retry';
+import {describe, mock, test} from "node:test";
+import assert from "node:assert/strict";
+import {isTransient, withRetry} from '../src/sources/Retry.ts';
 
 describe('withRetry', () => {
     test('retries a transient error, then succeeds', async () => {
-        jest.spyOn(console, 'log').mockImplementation(() => {});
-        const fn = jest.fn<() => Promise<string>>()
-            .mockRejectedValueOnce({response: {status: 502}})
-            .mockResolvedValueOnce('ok');
+        mock.method(console, 'log', () => {});
+        const fn = mock.fn(async (): Promise<string> => 'ok');
+        fn.mock.mockImplementationOnce(async () => { throw {response: {status: 502}}; });
 
-        expect(await withRetry(fn, 'test', [0])).toBe('ok');
-        expect(fn).toHaveBeenCalledTimes(2);
+        assert.equal(await withRetry(fn, 'test', [0]), 'ok');
+        assert.equal(fn.mock.callCount(), 2);
     });
 
     test('does not retry other errors, and gives up after the last delay', async () => {
-        const notFound = jest.fn<() => Promise<string>>().mockRejectedValue({response: {status: 404}});
-        await expect(withRetry(notFound, 'test', [0])).rejects.toEqual({response: {status: 404}});
-        expect(notFound).toHaveBeenCalledTimes(1);
+        const notFound = mock.fn(async (): Promise<string> => { throw {response: {status: 404}}; });
+        await assert.rejects(withRetry(notFound, 'test', [0]), (e) => { assert.deepEqual(e, {response: {status: 404}}); return true; });
+        assert.equal(notFound.mock.callCount(), 1);
 
-        jest.spyOn(console, 'log').mockImplementation(() => {});
-        const down = jest.fn<() => Promise<string>>().mockRejectedValue({code: 'ECONNRESET'});
-        await expect(withRetry(down, 'test', [0, 0])).rejects.toEqual({code: 'ECONNRESET'});
-        expect(down).toHaveBeenCalledTimes(3);
+        mock.method(console, 'log', () => {});
+        const down = mock.fn(async (): Promise<string> => { throw {code: 'ECONNRESET'}; });
+        await assert.rejects(withRetry(down, 'test', [0, 0]), (e) => { assert.deepEqual(e, {code: 'ECONNRESET'}); return true; });
+        assert.equal(down.mock.callCount(), 3);
     });
 
     test('knows which errors are transient', () => {
-        expect(isTransient({response: {status: 504}})).toBe(true);
-        expect(isTransient({response: {status: 429}})).toBe(true);
-        expect(isTransient({message: 'fetch failed', cause: {code: 'UND_ERR_CONNECT_TIMEOUT'}})).toBe(true);
-        expect(isTransient({response: {status: 400}})).toBe(false);
-        expect(isTransient(new Error('Offline: nothing stored'))).toBe(false);
+        assert.equal(isTransient({response: {status: 504}}), true);
+        assert.equal(isTransient({response: {status: 429}}), true);
+        assert.equal(isTransient({message: 'fetch failed', cause: {code: 'UND_ERR_CONNECT_TIMEOUT'}}), true);
+        assert.equal(isTransient({response: {status: 400}}), false);
+        assert.equal(isTransient(new Error('Offline: nothing stored')), false);
     });
 });

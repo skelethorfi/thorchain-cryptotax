@@ -1,8 +1,8 @@
 import {assetFromStringEx} from "@xchainjs/xchain-util";
-import {Activity} from "../../domain/Activity";
-import {Protocol} from "../../domain/Protocol";
-import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
-import {fee, leg, legTrace, named} from "./common";
+import type {Activity} from "../../domain/Activity.ts";
+import type {Protocol} from "../../domain/Protocol.ts";
+import {type CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv/index.ts";
+import {fee, leg, legTrace, named} from "./common.ts";
 
 // Reward distribution wallets known from what they do (docs/specs/sends.md): ordinary wallets, not protocol
 // modules, so no source names them. Their transfers of the listed assets are income unless the config sets

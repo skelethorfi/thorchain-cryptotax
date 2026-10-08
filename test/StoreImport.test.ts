@@ -1,11 +1,12 @@
-import {describe, expect, jest, test} from '@jest/globals';
+import {describe, mock, test} from "node:test";
+import assert from "node:assert/strict";
 import fs from 'fs-extra';
 import os from 'os';
 import path from 'path';
-import {RecordStore} from '../src/sources/store/RecordStore';
-import {importCache} from '../src/cli/store';
-import {MidgardService} from '../src/sources/thorchain/MidgardService';
-import {ThornodeService} from '../src/sources/thorchain/ThornodeService';
+import {RecordStore} from '../src/sources/store/RecordStore.ts';
+import {importCache} from '../src/cli/store.ts';
+import {MidgardService} from '../src/sources/thorchain/MidgardService.ts';
+import {ThornodeService} from '../src/sources/thorchain/ThornodeService.ts';
 
 const action = (txID: string, extra: any = {}) => ({type: 'addLiquidity', status: 'success', date: '1', height: '1', in: [{txID, address: 'w', coins: []}], out: [], pools: [], metadata: {}, ...extra});
 
@@ -26,15 +27,15 @@ describe('store import', () => {
         const tax2025Counts = importCache(store, tax2025);
         importCache(store, history);
 
-        expect(tax2025Counts.midgard.skipped).toBe(1);
+        assert.equal(tax2025Counts.midgard.skipped, 1);
         // THORNode files have no date of their own: they are filed by the Midgard action with that txid
-        expect(path.relative(path.join(dir, 'store', 'records', 'thornode'), path.dirname(store.copies('thornode', 'A')[0].file))).toBe('1970/01');
-        expect(store.copies('thornode', 'A').map(copy => copy.importedFrom)).toEqual(['tax2025/cache/thornode/A.json', 'history/cache/thornode/A.json']);
+        assert.equal(path.relative(path.join(dir, 'store', 'records', 'thornode'), path.dirname(store.copies('thornode', 'A')[0].file)), '1970/01');
+        assert.deepEqual(store.copies('thornode', 'A').map(copy => copy.importedFrom), ['tax2025/cache/thornode/A.json', 'history/cache/thornode/A.json']);
 
         const offline = new RecordStore(path.join(dir, 'store'), {offline: true});
-        jest.spyOn(console, 'log').mockImplementation(() => {});
-        expect((await new MidgardService(offline).getActions('w')).map(a => a.in[0].txID)).toEqual(['A', 'OLD']);
-        expect(await new ThornodeService(offline).getTxStatus('A')).toEqual({tx: {gas: [{asset: 'BTC.BTC', amount: '1'}]}});
+        mock.method(console, 'log', () => {});
+        assert.deepEqual((await new MidgardService(offline).getActions('w')).map(a => a.in[0].txID), ['A', 'OLD']);
+        assert.deepEqual(await new ThornodeService(offline).getTxStatus('A'), {tx: {gas: [{asset: 'BTC.BTC', amount: '1'}]}});
     });
 
     test('importing the same cache again adds nothing', () => {
@@ -45,43 +46,43 @@ describe('store import', () => {
         importCache(store, path.join(dir, 'cache'));
         const again = importCache(store, path.join(dir, 'cache'));
 
-        expect(again.thornode).toEqual({copies: 0, existing: 1, lists: 0, skipped: 0});
+        assert.deepEqual(again.thornode, {copies: 0, existing: 1, lists: 0, skipped: 0});
     });
 });
 
 describe('TCY records', () => {
     test("two wallets paid on the same day keep their own distributions", async () => {
-        const {TcyDistributionService} = await import('../src/sources/tcy/TcyDistributionService');
+        const {TcyDistributionService} = await import('../src/sources/tcy/TcyDistributionService.ts');
         const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-tcy-'));
         fs.outputJsonSync(path.join(dir, 'cache', 'tcy', 'tcy_distribution_w1.json'), {distributions: [{date: '1', amount: '10', price: '1'}]});
         fs.outputJsonSync(path.join(dir, 'cache', 'tcy', 'tcy_distribution_w2.json'), {distributions: [{date: '1', amount: '99', price: '1'}]});
         importCache(new RecordStore(path.join(dir, 'store')), path.join(dir, 'cache'));
 
         const tcy = new TcyDistributionService(new RecordStore(path.join(dir, 'store'), {offline: true}));
-        expect((await tcy.getTcyDistribution('w1')).distributions).toEqual([{date: '1', amount: '10', price: '1'}]);
-        expect((await tcy.getTcyDistribution('w2')).distributions).toEqual([{date: '1', amount: '99', price: '1'}]);
+        assert.deepEqual((await tcy.getTcyDistribution('w1')).distributions, [{date: '1', amount: '10', price: '1'}]);
+        assert.deepEqual((await tcy.getTcyDistribution('w2')).distributions, [{date: '1', amount: '99', price: '1'}]);
     });
 });
 
 describe('midgardActionKey', () => {
     test('tells genesisTx placeholders apart by pool and depositing addresses', async () => {
-        const {midgardActionKey} = await import('../src/sources/store/Sources');
+        const {midgardActionKey} = await import('../src/sources/store/Sources.ts');
         const genesis = (pool: string, addresses: string[]) => ({...action('genesisTx'), pools: [pool], in: addresses.map(address => ({address, txID: 'genesisTx', coins: []}))}) as any;
 
         const keys = [genesis('BNB.BUSD', ['thor1a', 'bnb1a']), genesis('BNB.BUSD', ['', 'bnb1a']), genesis('BTC.BTC', ['thor1a', 'bc1a'])].map(midgardActionKey);
 
-        expect(new Set(keys).size).toBe(3);
-        expect(keys[1]).toBe('addLiquidity.genesisTx.BNB.BUSD.-+bnb1a');
+        assert.equal(new Set(keys).size, 3);
+        assert.equal(keys[1], 'addLiquidity.genesisTx.BNB.BUSD.-+bnb1a');
     });
 
     test("tells Maya's donate adds apart by member: one tx gave each member a position", async () => {
-        const {midgardActionKey} = await import('../src/sources/store/Sources');
+        const {midgardActionKey} = await import('../src/sources/store/Sources.ts');
         const donate = (addresses: string[]) => ({...action('T'), metadata: {addLiquidity: {memo: 'donate:thor.rune'}},
             in: addresses.map((address, i) => ({address, txID: i === 0 ? 'T' : '', coins: []}))}) as any;
 
-        expect(midgardActionKey(donate(['maya1a', 'thor1a']))).toBe('addLiquidity.T.maya1a+thor1a');
-        expect(midgardActionKey(donate(['maya1b', 'thor1b']))).toBe('addLiquidity.T.maya1b+thor1b');
-        expect(midgardActionKey(action('T') as any)).toBe('addLiquidity.T');
+        assert.equal(midgardActionKey(donate(['maya1a', 'thor1a'])), 'addLiquidity.T.maya1a+thor1a');
+        assert.equal(midgardActionKey(donate(['maya1b', 'thor1b'])), 'addLiquidity.T.maya1b+thor1b');
+        assert.equal(midgardActionKey(action('T') as any), 'addLiquidity.T');
     });
 });
 
@@ -96,25 +97,25 @@ describe('store import from the folder-per-record layout', () => {
         const store = new RecordStore(path.join(dir, 'store'));
         importCache(store, v1);
 
-        expect(fs.readdirSync(path.join(dir, 'store', 'records', 'midgard', '2025', '07'))).toEqual(['swap.A.0.json']);
-        expect(store.copies('midgard', 'swap.A')[0].importedFrom).toBe('FY/cache/midgard/w.json');
-        jest.spyOn(console, 'log').mockImplementation(() => {});
+        assert.deepEqual(fs.readdirSync(path.join(dir, 'store', 'records', 'midgard', '2025', '07')), ['swap.A.0.json']);
+        assert.equal(store.copies('midgard', 'swap.A')[0].importedFrom, 'FY/cache/midgard/w.json');
+        mock.method(console, 'log', () => {});
         const offline = new RecordStore(path.join(dir, 'store'), {offline: true});
-        expect((await new MidgardService(offline).getActions('w')).map(a => a.type)).toEqual(['swap']);
+        assert.deepEqual((await new MidgardService(offline).getActions('w')).map(a => a.type), ['swap']);
     });
 });
 
 describe('oldCacheHint', () => {
     test('suggests importing an old cache next to the config, or in the store folder, while the store is empty', async () => {
-        const {oldCacheHint} = await import('../src/cli/store');
+        const {oldCacheHint} = await import('../src/cli/store.ts');
         const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-hint-'));
         fs.outputJsonSync(path.join(dir, 'cache', 'midgard', 'w.json'), []);
 
-        expect(oldCacheHint(path.join(dir, 'store'), dir)).toMatch(/npm run store -- import .*store .*cache$/);
+        assert.match(oldCacheHint(path.join(dir, 'store'), dir)!, /npm run store -- import .*store .*cache$/);
         // A config whose cachePath still points at the old cache
-        expect(oldCacheHint(path.join(dir, 'cache'), dir)).toMatch(/import .*cache .*cache$/);
+        assert.match(oldCacheHint(path.join(dir, 'cache'), dir)!, /import .*cache .*cache$/);
 
         fs.outputJsonSync(path.join(dir, 'store', 'records', 'thornode', 'undated', 'A.0.json'), {});
-        expect(oldCacheHint(path.join(dir, 'store'), dir)).toBeUndefined();
+        assert.equal(oldCacheHint(path.join(dir, 'store'), dir), undefined);
     });
 });

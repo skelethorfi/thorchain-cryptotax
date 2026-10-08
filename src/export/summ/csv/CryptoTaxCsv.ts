@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import fs from 'fs-extra';
-import {CryptoTaxTransaction, RowTrace} from './CryptoTaxTranaction';
-import {ctcSortDesc} from "./index";
+import type {CryptoTaxTransaction, RowTrace} from './CryptoTaxTranaction.ts';
+import {ctcSortDesc} from "./index.ts";
 
 export const csvMapping = [
     { header: 'Timestamp (UTC)', field: 'timestamp' },

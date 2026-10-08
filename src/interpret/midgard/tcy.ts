@@ -1,12 +1,12 @@
-import {Action} from "@xchainjs/xchain-midgard";
-import {Activity, Leg} from "../../domain/Activity";
-import {formatAmount, parseAmount} from "../../domain/Amount";
-import {toAsset} from "../../domain/Asset";
-import {getActionDate} from "../../sources/thorchain/MidgardUtils";
-import {getDistributionDate, TcyDistributionItem} from "../../sources/tcy/TcyDistributionService";
-import {Protocol} from "../../domain/Protocol";
-import {getBundleKey, RawBundle} from "../../sources/RawBundle";
-import {getTxids, nativeGas} from "./bond";
+import type {Action} from "@xchainjs/xchain-midgard";
+import type {Activity, Leg} from "../../domain/Activity.ts";
+import {formatAmount, parseAmount} from "../../domain/Amount.ts";
+import {toAsset} from "../../domain/Asset.ts";
+import {getActionDate} from "../../sources/thorchain/MidgardUtils.ts";
+import {getDistributionDate, type TcyDistributionItem} from "../../sources/tcy/TcyDistributionService.ts";
+import type {Protocol} from "../../domain/Protocol.ts";
+import {getBundleKey, type RawBundle} from "../../sources/RawBundle.ts";
+import {getTxids, nativeGas} from "./bond.ts";
 
 // TCY amounts are reported with 8 decimals
 const DECIMALS = 8;

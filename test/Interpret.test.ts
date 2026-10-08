@@ -1,8 +1,9 @@
-import {describe, expect, test} from "@jest/globals";
-import {interpret} from "../src/interpret/registry";
-import {RawBundle} from "../src/sources/RawBundle";
-import {MAYA, THORCHAIN} from "../src/domain/Protocol";
-import {readCaseInput, toBundle} from "../src/fixtures/GoldenCase";
+import {describe, test} from "node:test";
+import assert from "node:assert/strict";
+import {interpret} from "../src/interpret/registry.ts";
+import type {RawBundle} from "../src/sources/RawBundle.ts";
+import {MAYA, THORCHAIN} from "../src/domain/Protocol.ts";
+import {readCaseInput, toBundle} from "../src/fixtures/GoldenCase.ts";
 
 const midgardBundle = (action: any, protocol = THORCHAIN): RawBundle =>
     ({source: 'midgard', protocol: protocol.id, wallet: '', data: action, thornodeTxs: [], cosmosTxs: []});
@@ -14,7 +15,7 @@ describe('interpret', () => {
         // Make the asset string invalid
         (bundle.data as any).in[0].coins[0].asset = 'INVALID';
 
-        expect(interpret(bundle, THORCHAIN)).toStrictEqual({activities: [], rows: [], issues: [{
+        assert.deepEqual(interpret(bundle, THORCHAIN), {activities: [], rows: [], issues: [{
             kind: 'failed',
             message: '[Midgard] Failed to parse asset string: "INVALID". type: switch, txid: 0000000000000000000000000000000000000000000000000000000000000000',
         }]});
@@ -23,25 +24,25 @@ describe('interpret', () => {
     test('an action type with no interpreter is unsupported', () => {
         const action = {type: 'donate', date: '0', in: [], out: [], metadata: {}};
 
-        expect(interpret(midgardBundle(action), THORCHAIN).issues).toStrictEqual([{kind: 'unsupported', message: 'unsupported action: donate'}]);
+        assert.deepEqual(interpret(midgardBundle(action), THORCHAIN).issues, [{kind: 'unsupported', message: 'unsupported action: donate'}]);
     });
 
     test('a contract type with no interpreter is unsupported', () => {
         const action = {type: 'contract', date: '0', in: [], out: [], metadata: {contract: {contractType: 'wasm-unknown/call'}}};
 
-        expect(interpret(midgardBundle(action), THORCHAIN).issues).toStrictEqual([{kind: 'unsupported', message: 'unsupported action: contract wasm-unknown/call'}]);
+        assert.deepEqual(interpret(midgardBundle(action), THORCHAIN).issues, [{kind: 'unsupported', message: 'unsupported action: contract wasm-unknown/call'}]);
     });
 
     test('only some action types are mapped on Maya', () => {
         const action = {type: 'bond', date: '0', in: [], out: [], metadata: {}};
 
-        expect(interpret(midgardBundle(action, MAYA), MAYA).issues).toStrictEqual([{kind: 'unsupported', message: 'unsupported action: bond'}]);
+        assert.deepEqual(interpret(midgardBundle(action, MAYA), MAYA).issues, [{kind: 'unsupported', message: 'unsupported action: bond'}]);
     });
 
     test('a Levana position is to be entered by hand', () => {
         const bundle = toBundle(readCaseInput('test/cases/rujira/levana-open-position'));
 
-        expect(interpret(bundle, THORCHAIN).issues.map(issue => issue.kind)).toStrictEqual(['manual']);
+        assert.deepEqual(interpret(bundle, THORCHAIN).issues.map(issue => issue.kind), ['manual']);
     });
 
     test('an LP add with no deposit address gives a warning', () => {
@@ -49,8 +50,8 @@ describe('interpret', () => {
         (bundle.data as any).in[0].address = '';
 
         const {activities, issues} = interpret(bundle, THORCHAIN);
-        expect(issues).toStrictEqual([{kind: 'warning', message: 'missing deposit address'}]);
-        expect(activities).toHaveLength(1);
+        assert.deepEqual(issues, [{kind: 'warning', message: 'missing deposit address'}]);
+        assert.equal(activities.length, 1);
     });
 
     test('a synth swap from an L1 address (a savers withdrawal) is ignored', () => {
@@ -61,7 +62,7 @@ describe('interpret', () => {
             metadata: {swap: {memo: '=:BTC.BTC:bc1qexample', networkFees: [], affiliateAddress: '', affiliateFee: '0', isStreamingSwap: false, txType: 'swap'}},
         };
 
-        expect(interpret(midgardBundle(action), THORCHAIN)).toStrictEqual({activities: [], rows: [], issues: [{
+        assert.deepEqual(interpret(midgardBundle(action), THORCHAIN), {activities: [], rows: [], issues: [{
             kind: 'ignored',
             message: 'synth swap from an L1 address (a savers withdrawal)',
         }]});
@@ -71,7 +72,7 @@ describe('interpret', () => {
         const action = {type: 'send', date: '0', in: [], out: [], metadata: {}};
 
         for (const protocol of [THORCHAIN, MAYA]) {
-            expect(interpret(midgardBundle(action, protocol), protocol).issues.map(issue => issue.kind)).toStrictEqual(['ignored']);
+            assert.deepEqual(interpret(midgardBundle(action, protocol), protocol).issues.map(issue => issue.kind), ['ignored']);
         }
     });
 });

@@ -1,4 +1,4 @@
-import {API_URLS} from "../config/apiUrls";
+import {API_URLS} from "../config/apiUrls.ts";
 
 // What differs between THORChain and its fork Maya Protocol when mapping Midgard actions.
 // See docs/specs/maya.md.

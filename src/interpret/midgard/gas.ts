@@ -1,9 +1,9 @@
-import {TxStatusResponse} from "@xchainjs/xchain-thornode";
+import type {TxStatusResponse} from "@xchainjs/xchain-thornode";
 import {assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
-import {Leg} from "../../domain/Activity";
-import {parseAmount} from "../../domain/Amount";
-import {toAsset} from "../../domain/Asset";
-import {Protocol, THORCHAIN} from "../../domain/Protocol";
+import type {Leg} from "../../domain/Activity.ts";
+import {parseAmount} from "../../domain/Amount.ts";
+import {toAsset} from "../../domain/Asset.ts";
+import {type Protocol, THORCHAIN} from "../../domain/Protocol.ts";
 
 // The gas the wallet paid to send its inbound transaction (docs/specs/fees.md):
 // 1. THORNode's gas for the tx (observed);

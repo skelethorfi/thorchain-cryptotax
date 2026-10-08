@@ -1,4 +1,4 @@
-import {Action} from "@xchainjs/xchain-midgard";
+import type {Action} from "@xchainjs/xchain-midgard";
 
 // How old an action that is not final is, by its own date (docs/specs/pending.md):
 // recent: younger than the grace period, it may still finalise; stuck: still pending past the cut-off;

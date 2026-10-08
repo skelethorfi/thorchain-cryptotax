@@ -1,8 +1,8 @@
-import {Action} from "@xchainjs/xchain-midgard";
-import {RecordStore} from "../store/RecordStore";
-import {COSMOS_TX_RULES} from "../store/Sources";
-import {API_URLS} from "../../config/apiUrls";
-import {http} from "../http";
+import type {Action} from "@xchainjs/xchain-midgard";
+import {RecordStore} from "../store/RecordStore.ts";
+import {COSMOS_TX_RULES} from "../store/Sources.ts";
+import {API_URLS} from "../../config/apiUrls.ts";
+import {http} from "../http.ts";
 
 // A THORChain Cosmos tx from THORNode's /cosmos/tx/v1beta1/txs/{hash}, trimmed to what the mappers use.
 // It is the only source of what a wasm contract call paid out and of its gas (docs/specs/rujira.md).
@@ -50,7 +50,11 @@ export function toCosmosTx(response: any): CosmosTx {
 }
 
 export class CosmosTxService {
-    constructor(private store: RecordStore = new RecordStore('_cache'), private source: string = 'thornode-cosmos') {
+    private store: RecordStore;
+    private source: string;
+    constructor(store: RecordStore = new RecordStore('_cache'), source: string = 'thornode-cosmos') {
+        this.store = store;
+        this.source = source;
     }
 
     // date: of the action the tx belongs to, for filing a tx stored without its block time

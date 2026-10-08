@@ -1,8 +1,8 @@
 import fs from "fs-extra";
 import path from "path";
-import {Action} from "@xchainjs/xchain-midgard";
-import {Origin, RecordStore} from "../sources/store/RecordStore";
-import {ListSource, SOURCES} from "../sources/store/Sources";
+import type {Action} from "@xchainjs/xchain-midgard";
+import {type Origin, RecordStore} from "../sources/store/RecordStore.ts";
+import {type ListSource, SOURCES} from "../sources/store/Sources.ts";
 
 // npm run store -- import <store> <old cache or store>...
 //
@@ -197,6 +197,6 @@ function main() {
     }
 }
 
-if (require.main === module) {
+if (import.meta.main) {
     main();
 }

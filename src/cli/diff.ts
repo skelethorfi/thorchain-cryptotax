@@ -1,6 +1,6 @@
 import fs from "fs-extra";
 import path from "path";
-import {MANIFEST_FILE, RecordEntry} from "../sources/store/SnapshotManifest";
+import {MANIFEST_FILE, type RecordEntry} from "../sources/store/SnapshotManifest.ts";
 
 // npm run diff -- <old run> <new run>
 //
@@ -282,6 +282,6 @@ function main() {
     process.exitCode = differs ? 1 : 0;
 }
 
-if (require.main === module) {
+if (import.meta.main) {
     main();
 }

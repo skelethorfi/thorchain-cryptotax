@@ -1,19 +1,19 @@
-import {Action, ActionTypeEnum as ActionType} from "@xchainjs/xchain-midgard";
-import {CryptoTaxTransaction} from "../export/summ/csv";
-import {Issue} from "../domain/Issue";
-import {RawBundle} from "../sources/RawBundle";
-import {Protocol, THORCHAIN} from "../domain/Protocol";
-import {interpretBond} from "./midgard/bond";
-import {interpretSwap} from "./midgard/swap";
-import {interpretRefund} from "./midgard/refund";
-import {interpretAddLiquidity, interpretWithdraw} from "./midgard/liquidity";
-import {interpretRunePool, interpretSwitch} from "./midgard/switch";
-import {interpretLoanOpen, interpretLoanRepay} from "./midgard/loan";
-import {interpretTcyClaim, interpretTcyDistribution, interpretTcyStake, interpretThorname} from "./midgard/tcy";
-import {Activity} from "../domain/Activity";
-import {interpretRujira, RUJIRA_CONTRACT_TYPES} from "./midgard/rujira";
-import {interpretSend} from "./midgard/send";
-import {interpretViewblockSend} from "./viewblock/send";
+import {type Action, ActionTypeEnum as ActionType} from "@xchainjs/xchain-midgard";
+import type {CryptoTaxTransaction} from "../export/summ/csv/index.ts";
+import type {Issue} from "../domain/Issue.ts";
+import type {RawBundle} from "../sources/RawBundle.ts";
+import {type Protocol, THORCHAIN} from "../domain/Protocol.ts";
+import {interpretBond} from "./midgard/bond.ts";
+import {interpretSwap} from "./midgard/swap.ts";
+import {interpretRefund} from "./midgard/refund.ts";
+import {interpretAddLiquidity, interpretWithdraw} from "./midgard/liquidity.ts";
+import {interpretRunePool, interpretSwitch} from "./midgard/switch.ts";
+import {interpretLoanOpen, interpretLoanRepay} from "./midgard/loan.ts";
+import {interpretTcyClaim, interpretTcyDistribution, interpretTcyStake, interpretThorname} from "./midgard/tcy.ts";
+import type {Activity} from "../domain/Activity.ts";
+import {interpretRujira, RUJIRA_CONTRACT_TYPES} from "./midgard/rujira.ts";
+import {interpretSend} from "./midgard/send.ts";
+import {interpretViewblockSend} from "./viewblock/send.ts";
 
 // A ported action type gives activities, which an exporter turns into rows; the rest still give rows
 export interface Interpretation {

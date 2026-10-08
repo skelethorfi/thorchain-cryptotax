@@ -1,9 +1,10 @@
-import { runBundle } from '../src/pipeline/run';
-import { Action, Transaction } from '@xchainjs/xchain-midgard';
-import { describe, expect, test } from '@jest/globals';
-import { CryptoTaxTransactionType } from '../src/export/summ/csv';
-import { toMidgardNanoTimestamp } from '../src/sources/thorchain/MidgardUtils';
-import { MAYA, Protocol, THORCHAIN } from '../src/domain/Protocol';
+import { runBundle } from '../src/pipeline/run.ts';
+import type { Action, Transaction } from '@xchainjs/xchain-midgard';
+import {describe, test} from "node:test";
+import assert from "node:assert/strict";
+import { CryptoTaxTransactionType } from '../src/export/summ/csv/index.ts';
+import { toMidgardNanoTimestamp } from '../src/sources/thorchain/MidgardUtils.ts';
+import { MAYA, type Protocol, THORCHAIN } from '../src/domain/Protocol.ts';
 
 describe('swap', () => {
     // A swap through the exporter's path: interpreted, then exported as rows. A failure throws.
@@ -114,9 +115,7 @@ describe('swap', () => {
         });
 
 
-        expect(() => swap(action)).toThrow(
-            'Failed to parse asset string: "BTCBTC"'
-        );
+        assert.throws(() => swap(action), /Failed to parse asset string: "BTCBTC"/);
     });
 
     test('should correctly map a simple swap', () => {
@@ -132,16 +131,16 @@ describe('swap', () => {
 
         const result = swap(action);
 
-        expect(result).toHaveLength(2);
-        expect(result[0].type).toBe(CryptoTaxTransactionType.BridgeTradeOut);
-        expect(result[1].type).toBe(CryptoTaxTransactionType.BridgeTradeIn);
+        assert.equal(result.length, 2);
+        assert.equal(result[0].type, CryptoTaxTransactionType.BridgeTradeOut);
+        assert.equal(result[1].type, CryptoTaxTransactionType.BridgeTradeIn);
 
-        expect(result[0].description).toBe('1/2 - Swap 1 BTC to 20 ETH; tx123');
-        expect(result[0].baseCurrency).toBe('BTC');
-        expect(result[0].baseAmount).toBe('1');
-        expect(result[1].description).toBe('2/2 - Swap 1 BTC to 20 ETH; tx123');
-        expect(result[1].baseCurrency).toBe('ETH');
-        expect(result[1].baseAmount).toBe('20');
+        assert.equal(result[0].description, '1/2 - Swap 1 BTC to 20 ETH; tx123');
+        assert.equal(result[0].baseCurrency, 'BTC');
+        assert.equal(result[0].baseAmount, '1');
+        assert.equal(result[1].description, '2/2 - Swap 1 BTC to 20 ETH; tx123');
+        assert.equal(result[1].baseCurrency, 'ETH');
+        assert.equal(result[1].baseAmount, '20');
     });
 
     test('should use inbound thornode gas instead of Midgard network fee for non-THOR swaps', () => {
@@ -165,8 +164,8 @@ describe('swap', () => {
             }) as any,
         ]);
 
-        expect(result[0].feeCurrency).toBe('BTC');
-        expect(result[0].feeAmount).toBe('0.00003672');
+        assert.equal(result[0].feeCurrency, 'BTC');
+        assert.equal(result[0].feeAmount, '0.00003672');
     });
 
     test('should leave fee blank for non-THOR swaps when thornode gas is unavailable', () => {
@@ -184,8 +183,8 @@ describe('swap', () => {
 
         const result = swap(action, []);
 
-        expect(result[0].feeCurrency).toBe('');
-        expect(result[0].feeAmount).toBe('');
+        assert.equal(result[0].feeCurrency, '');
+        assert.equal(result[0].feeAmount, '');
     });
 
     test('should set USD reference prices when provided by Midgard', () => {
@@ -204,10 +203,10 @@ describe('swap', () => {
 
         const result = swap(action);
 
-        expect(result[0].referencePricePerUnit).toBe('30000');
-        expect(result[0].referencePriceCurrency).toBe('USD');
-        expect(result[1].referencePricePerUnit).toBe('1500');
-        expect(result[1].referencePriceCurrency).toBe('USD');
+        assert.equal(result[0].referencePricePerUnit, '30000');
+        assert.equal(result[0].referencePriceCurrency, 'USD');
+        assert.equal(result[1].referencePricePerUnit, '1500');
+        assert.equal(result[1].referencePriceCurrency, 'USD');
     });
 
     test('should handle synth swaps', () => {
@@ -223,15 +222,15 @@ describe('swap', () => {
 
         const result = swap(action);
 
-        expect(result).toHaveLength(2);
-        expect(result[0].description).toContain('Synth BTC/BTC');
-        expect(result[1].description).toContain('Synth ETH/ETH');
-        expect(result[0].baseCurrency).toBe('ThorSynth.BTC.BTC');
-        expect(result[1].baseCurrency).toBe('ThorSynth.ETH.ETH');
-        expect(result[0].blockchain).toBe('THORChain');
-        expect(result[1].blockchain).toBe('THORChain');
-        expect(result[0].feeCurrency).toBe('RUNE');
-        expect(result[0].feeAmount).toBe('0.02');
+        assert.equal(result.length, 2);
+        assert.ok(result[0].description!.includes('Synth BTC/BTC'));
+        assert.ok(result[1].description!.includes('Synth ETH/ETH'));
+        assert.equal(result[0].baseCurrency, 'ThorSynth.BTC.BTC');
+        assert.equal(result[1].baseCurrency, 'ThorSynth.ETH.ETH');
+        assert.equal(result[0].blockchain, 'THORChain');
+        assert.equal(result[1].blockchain, 'THORChain');
+        assert.equal(result[0].feeCurrency, 'RUNE');
+        assert.equal(result[0].feeAmount, '0.02');
     });
 
     test('should fall back to default RUNE gas for THOR swaps when thornode gas is unavailable', () => {
@@ -249,8 +248,8 @@ describe('swap', () => {
 
         const result = swap(action, []);
 
-        expect(result[0].feeCurrency).toBe('RUNE');
-        expect(result[0].feeAmount).toBe('0.02');
+        assert.equal(result[0].feeCurrency, 'RUNE');
+        assert.equal(result[0].feeAmount, '0.02');
     });
 
     test('should fall back to default RUNE gas for trade assets when thornode gas is unavailable', () => {
@@ -268,8 +267,8 @@ describe('swap', () => {
 
         const result = swap(action, []);
 
-        expect(result[0].feeCurrency).toBe('RUNE');
-        expect(result[0].feeAmount).toBe('0.02');
+        assert.equal(result[0].feeCurrency, 'RUNE');
+        assert.equal(result[0].feeAmount, '0.02');
     });
 
     test('should not fall back to default RUNE gas for token assets when thornode gas is unavailable', () => {
@@ -287,8 +286,8 @@ describe('swap', () => {
 
         const result = swap(action, []);
 
-        expect(result[0].feeCurrency).toBe('');
-        expect(result[0].feeAmount).toBe('');
+        assert.equal(result[0].feeCurrency, '');
+        assert.equal(result[0].feeAmount, '');
     });
 
     test('should throw an error for invalid input', () => {
@@ -305,9 +304,7 @@ describe('swap', () => {
             in: [],
         };
 
-        expect(() => swap(invalidAction)).toThrow(
-            'swap: expected 1 input but there were 0'
-        );
+        assert.throws(() => swap(invalidAction), /swap: expected 1 input but there were 0/);
     });
 
     test('should ignore synth swaps from non-thor addresses', () => {
@@ -323,7 +320,7 @@ describe('swap', () => {
 
         const result = swap(action);
 
-        expect(result).toHaveLength(0);
+        assert.equal(result.length, 0);
     });
 
     test('should throw an error for THOR.TOR swaps', () => {
@@ -337,9 +334,7 @@ describe('swap', () => {
             txID: 'tx131415',
         });
 
-        expect(() => swap(action)).toThrow(
-            'swap: invalid swap - THOR.TOR'
-        );
+        assert.throws(() => swap(action), /swap: invalid swap - THOR\.TOR/);
     });
 
     test('should send to the sender when the memo destination is empty', () => {
@@ -356,8 +351,8 @@ describe('swap', () => {
 
         const result = swap(action);
 
-        expect(result[1].to).toBe('0xSameAddress');
-        expect(result[1].baseAmount).toBe('0.99');
+        assert.equal(result[1].to, '0xSameAddress');
+        assert.equal(result[1].baseAmount, '0.99');
     });
 
     test('should not treat a same-asset return to the sender as the swap output when the destination is empty', () => {
@@ -373,7 +368,7 @@ describe('swap', () => {
         action.metadata.swap!.memo = '=:ARB.ETH:::wr:0';
 
 
-        expect(() => swap(action)).toThrow('swap: no matching out tx');
+        assert.throws(() => swap(action), /swap: no matching out tx/);
     });
 
     test('Maya: a CACAO input without node data falls back to the 0.2 CACAO native fee', () => {
@@ -389,9 +384,9 @@ describe('swap', () => {
 
         const result = swap(action, [], MAYA);
 
-        expect(result[0].feeCurrency).toBe('CACAO');
-        expect(result[0].feeAmount).toBe('0.2');
-        expect(result[0].to).toBe('mayaprotocol');
+        assert.equal(result[0].feeCurrency, 'CACAO');
+        assert.equal(result[0].feeAmount, '0.2');
+        assert.equal(result[0].to, 'mayaprotocol');
     });
 
     test('Maya: a synth swapped from a Maya wallet is the wallet\'s swap, not a savers withdrawal', () => {
@@ -407,8 +402,8 @@ describe('swap', () => {
 
         const result = swap(action, [], MAYA);
 
-        expect(result).toHaveLength(2);
-        expect(result[0].blockchain).toBe('Mayachain');
+        assert.equal(result.length, 2);
+        assert.equal(result[0].blockchain, 'Mayachain');
     });
 
     test('Maya: a RUNE input still pays THORChain gas', () => {
@@ -424,7 +419,7 @@ describe('swap', () => {
 
         const result = swap(action, [], MAYA);
 
-        expect(result[0].feeCurrency).toBe('RUNE');
-        expect(result[0].feeAmount).toBe('0.02');
+        assert.equal(result[0].feeCurrency, 'RUNE');
+        assert.equal(result[0].feeAmount, '0.02');
     });
 });

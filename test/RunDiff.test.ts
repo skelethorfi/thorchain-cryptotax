@@ -1,10 +1,11 @@
-import {describe, expect, test} from "@jest/globals";
+import {describe, test} from "node:test";
+import assert from "node:assert/strict";
 import fs from "fs-extra";
 import os from "os";
 import path from "path";
-import {diffRecords, diffRows, diffRuns, explain, parseCsv, parseCsvLine, Row} from "../src/cli/diff";
-import {CryptoTaxTransaction, renderCsv} from "../src/export/summ/csv";
-import {RecordEntry} from "../src/sources/store/SnapshotManifest";
+import {diffRecords, diffRows, diffRuns, explain, parseCsv, parseCsvLine, type Row} from "../src/cli/diff.ts";
+import {type CryptoTaxTransaction, renderCsv} from "../src/export/summ/csv/index.ts";
+import type {RecordEntry} from "../src/sources/store/SnapshotManifest.ts";
 
 const TX_A = 'A1'.repeat(32);
 const TX_B = 'b2'.repeat(32);
@@ -30,9 +31,9 @@ describe('parseCsv', () => {
     test('reads what renderCsv writes, quotes and commas included', () => {
         const [row] = rows([tx('2025-07-01T00:00:00Z', '1', TX_A, {description: 'a "b", c; ' + TX_A})]);
 
-        expect(parseCsvLine('a,"b ""c"", d",')).toStrictEqual(['a', 'b "c", d', '']);
-        expect(row['Description (Optional)']).toBe('a "b", c; ' + TX_A);
-        expect(row['ID (Optional)']).toBe('2025-07-01T00:00:00Z.receive');
+        assert.deepEqual(parseCsvLine('a,"b ""c"", d",'), ['a', 'b "c", d', '']);
+        assert.equal(row['Description (Optional)'], 'a "b", c; ' + TX_A);
+        assert.equal(row['ID (Optional)'], '2025-07-01T00:00:00Z.receive');
     });
 });
 
@@ -43,23 +44,23 @@ describe('diffRows', () => {
 
         const diff = diffRows(old, now);
 
-        expect(diff.removed).toHaveLength(0);
-        expect(diff.changed).toHaveLength(0);
-        expect(diff.added.map(row => row['Base Amount'])).toStrictEqual(['2']);
+        assert.equal(diff.removed.length, 0);
+        assert.equal(diff.changed.length, 0);
+        assert.deepEqual(diff.added.map(row => row['Base Amount']), ['2']);
     });
 
     test('rows are multisets: one of two identical rows removed', () => {
         const same = tx('2025-07-01T00:00:00Z', '1', TX_A);
 
-        expect(diffRows(rows([same, same]), rows([same])).removed).toHaveLength(1);
+        assert.equal(diffRows(rows([same, same]), rows([same])).removed.length, 1);
     });
 
     test('a removed and an added row with the same time, type, base currency, from and to are one changed row', () => {
         const diff = diffRows(rows([tx('2025-07-01T00:00:00Z', '1', TX_A)]), rows([tx('2025-07-01T00:00:00Z', '1.5', TX_A)]));
 
-        expect(diff.removed).toHaveLength(0);
-        expect(diff.added).toHaveLength(0);
-        expect(diff.changed.map(change => change.columns)).toStrictEqual([['Base Amount', 'Description (Optional)']]);
+        assert.equal(diff.removed.length, 0);
+        assert.equal(diff.added.length, 0);
+        assert.deepEqual(diff.changed.map(change => change.columns), [['Base Amount', 'Description (Optional)']]);
     });
 });
 
@@ -70,7 +71,7 @@ describe('diffRecords and explain', () => {
     );
 
     test('a record differs when only one run has it or the runs used different copies', () => {
-        expect(changes.map(change => [change.key, change.change])).toStrictEqual([
+        assert.deepEqual(changes.map(change => [change.key, change.change]), [
             [`refund.${TX_B}`, 'only-new'],
             [`send.${TX_B}`, 'only-old'],
             [`swap.${TX_A}`, 'changed'],
@@ -81,8 +82,8 @@ describe('diffRecords and explain', () => {
         const [row] = rows([tx('2025-07-01T00:00:00Z', '1', TX_A.toLowerCase())]);
         const [other] = rows([tx('2025-07-01T00:00:00Z', '1', 'C3'.repeat(32))]);
 
-        expect(explain(row, changes).map(change => change.key)).toStrictEqual([`swap.${TX_A}`]);
-        expect(explain(other, changes)).toStrictEqual([]);
+        assert.deepEqual(explain(row, changes).map(change => change.key), [`swap.${TX_A}`]);
+        assert.deepEqual(explain(other, changes), []);
     });
 });
 
@@ -100,8 +101,8 @@ describe('diffRuns', () => {
 
         const result = diffRuns(path.join(root, 'old'), path.join(root, 'new'));
 
-        expect(result.differs).toBe(false);
-        expect(result.lines).toContain('Records: none differ, so every difference comes from code or config');
+        assert.equal(result.differs, false);
+        assert.ok(result.lines.includes('Records: none differ, so every difference comes from code or config'));
     });
 
     test('a changed row names its record; a row moved between files differs even when all.csv does not', () => {
@@ -115,19 +116,19 @@ describe('diffRuns', () => {
         const {lines, differs} = diffRuns(path.join(root, 'old'), path.join(root, 'new'));
         const text = lines.join('\n');
 
-        expect(differs).toBe(true);
-        expect(text).toContain('0 removed, 0 added, 1 changed');
-        expect(text).toContain('Base Amount: 1 → 1.5');
-        expect(text).toContain(`← midgard swap.${TX_A}: another copy (revised)`);
+        assert.equal(differs, true);
+        assert.ok(text.includes('0 removed, 0 added, 1 changed'));
+        assert.ok(text.includes('Base Amount: 1 → 1.5'));
+        assert.ok(text.includes(`← midgard swap.${TX_A}: another copy (revised)`));
         // b moved from p1 to p0 and is listed under both; a's change is listed once, from all.csv
-        expect(text).toContain('p0.csv: 0 → 1 rows; 0 only in the old run, 1 only in the new run\n    + 2025-06-30T20:00:00.000Z receive 2 RUNE');
-        expect(text).toContain('p1.csv: 2 → 1 rows; 2 only in the old run, 1 only in the new run\n    - 2025-06-30T20:00:00.000Z receive 2 RUNE');
-        expect(text.match(/1\.5 RUNE/g)).toHaveLength(1);
+        assert.ok(text.includes('p0.csv: 0 → 1 rows; 0 only in the old run, 1 only in the new run\n    + 2025-06-30T20:00:00.000Z receive 2 RUNE'));
+        assert.ok(text.includes('p1.csv: 2 → 1 rows; 2 only in the old run, 1 only in the new run\n    - 2025-06-30T20:00:00.000Z receive 2 RUNE'));
+        assert.equal(text.match(/1\.5 RUNE/g)!.length, 1);
     });
 
     test('a folder without csv/all.csv is refused', () => {
         const root = fs.mkdtempSync(path.join(os.tmpdir(), 'run-diff-'));
 
-        expect(() => diffRuns(root, root)).toThrow('not a run folder');
+        assert.throws(() => diffRuns(root, root), /not a run folder/);
     });
 });

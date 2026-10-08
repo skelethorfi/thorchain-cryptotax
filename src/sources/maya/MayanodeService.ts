@@ -1,5 +1,5 @@
-import {Fetched, RecordStore} from "../store/RecordStore";
-import {http} from "../http";
+import {type Fetched, RecordStore} from "../store/RecordStore.ts";
+import {http} from "../http.ts";
 
 // Maya's native transaction fee as set at a height: mimir NATIVETRANSACTIONFEE when set, else the constant. The
 // setting has changed over time (docs/specs/maya.md, Fees), and Mayanode serves the state at a past height
@@ -12,7 +12,13 @@ export interface NativeFee {
 }
 
 export class MayanodeService {
-    constructor(private store: RecordStore, private url: string, private source: string = 'mayanode-fee') {
+    private store: RecordStore;
+    private url: string;
+    private source: string;
+    constructor(store: RecordStore, url: string, source: string = 'mayanode-fee') {
+        this.store = store;
+        this.url = url;
+        this.source = source;
     }
 
     // date: of the action the height belongs to, for filing the record

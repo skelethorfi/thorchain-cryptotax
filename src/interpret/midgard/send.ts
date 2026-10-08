@@ -1,12 +1,12 @@
-import {Action} from "@xchainjs/xchain-midgard";
-import {Activity, Leg} from "../../domain/Activity";
-import {parseAmount} from "../../domain/Amount";
-import {toAsset} from "../../domain/Asset";
-import {Issue} from "../../domain/Issue";
-import {Protocol} from "../../domain/Protocol";
-import {getActionDate} from "../../sources/thorchain/MidgardUtils";
-import {getBundleKey, RawBundle} from "../../sources/RawBundle";
-import {nativeGas} from "./bond";
+import type {Action} from "@xchainjs/xchain-midgard";
+import type {Activity, Leg} from "../../domain/Activity.ts";
+import {parseAmount} from "../../domain/Amount.ts";
+import {toAsset} from "../../domain/Asset.ts";
+import type {Issue} from "../../domain/Issue.ts";
+import type {Protocol} from "../../domain/Protocol.ts";
+import {getActionDate} from "../../sources/thorchain/MidgardUtils.ts";
+import {getBundleKey, type RawBundle} from "../../sources/RawBundle.ts";
+import {nativeGas} from "./bond.ts";
 
 // A send (docs/specs/sends.md), as Midgard or Viewblock gives it
 export interface Send {

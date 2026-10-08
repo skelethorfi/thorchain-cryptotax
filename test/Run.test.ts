@@ -1,5 +1,6 @@
-import {describe, expect, test} from "@jest/globals";
-import {BundleResult, collectRows} from "../src/pipeline/run";
+import {describe, test} from "node:test";
+import assert from "node:assert/strict";
+import {type BundleResult, collectRows} from "../src/pipeline/run.ts";
 
 const result = (time: string, id: string, failed = false): BundleResult => ({
     bundle: {} as any,
@@ -18,10 +19,10 @@ describe('collectRows', () => {
             result('2025-03-01', 'd'),
         ]);
 
-        expect(rows.map(row => row.id)).toStrictEqual(['b', 'd', 'a', 'c']);
+        assert.deepEqual(rows.map(row => row.id), ['b', 'd', 'a', 'c']);
     });
 
     test('a failed bundle gives no rows', () => {
-        expect(collectRows([result('2025-01-01', 'a', true), result('2025-01-01', 'b')]).map(row => row.id)).toStrictEqual(['b']);
+        assert.deepEqual(collectRows([result('2025-01-01', 'a', true), result('2025-01-01', 'b')]).map(row => row.id), ['b']);
     });
 });

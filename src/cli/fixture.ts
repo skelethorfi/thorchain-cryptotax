@@ -1,23 +1,23 @@
 import fs from "fs-extra";
 import os from "os";
 import path from "path";
-import {Action, Configuration, DefaultApi} from "@xchainjs/xchain-midgard";
-import {ThornodeService} from "../sources/thorchain/ThornodeService";
-import {RecordStore} from "../sources/store/RecordStore";
-import {MayanodeService} from "../sources/maya/MayanodeService";
-import {CosmosTxService} from "../sources/thorchain/CosmosTxService";
-import {MidgardService} from "../sources/thorchain/MidgardService";
-import {MidgardSource} from "../sources/Source";
-import {http} from "../sources/http";
+import {type Action, Configuration, DefaultApi} from "@xchainjs/xchain-midgard";
+import {ThornodeService} from "../sources/thorchain/ThornodeService.ts";
+import {RecordStore} from "../sources/store/RecordStore.ts";
+import {MayanodeService} from "../sources/maya/MayanodeService.ts";
+import {CosmosTxService} from "../sources/thorchain/CosmosTxService.ts";
+import {MidgardService} from "../sources/thorchain/MidgardService.ts";
+import {MidgardSource} from "../sources/Source.ts";
+import {http} from "../sources/http.ts";
 import {execFileSync} from "child_process";
-import {Anonymiser, findSurvivors, getTokens} from "../fixtures/Anonymise";
+import {Anonymiser, findSurvivors, getTokens} from "../fixtures/Anonymise.ts";
 import {
-    ACTIVITY_FILE, EXPECTED_FILE, formatRows, GoldenCaseInput, INPUT_FILE, readCaseInput, runCaseLayers, toCaseInput, toPlainActivity,
+    ACTIVITY_FILE, EXPECTED_FILE, formatRows, type GoldenCaseInput, INPUT_FILE, readCaseInput, runCaseLayers, toCaseInput, toPlainActivity,
     writeCaseActivities, writeCaseExpected,
-} from "../fixtures/GoldenCase";
-import {getPrivateDir, mask, PrivateData} from "../fixtures/PrivateData";
-import {describeShape, getActionIds, getActionShape, sameShape} from "../fixtures/Shape";
-import {getProtocol, Protocol} from "../domain/Protocol";
+} from "../fixtures/GoldenCase.ts";
+import {getPrivateDir, mask, PrivateData} from "../fixtures/PrivateData.ts";
+import {describeShape, getActionIds, getActionShape, sameShape} from "../fixtures/Shape.ts";
+import {getProtocol, type Protocol} from "../domain/Protocol.ts";
 
 // Workflow for adding a golden test case without leaking private data:
 //
@@ -32,7 +32,7 @@ import {getProtocol, Protocol} from "../domain/Protocol";
 //
 // fetch, similar and add take --protocol maya for Maya Protocol txs (default thorchain).
 
-const REPO_DIR = path.resolve(__dirname, '../..');
+const REPO_DIR = path.resolve(import.meta.dirname, '../..');
 
 // Written next to an anonymised case. The owner's pre-commit hook blocks committing anything in the case's
 // folder while it exists, and CI fails on it: a fresh reviewer deletes it once the case is checked.

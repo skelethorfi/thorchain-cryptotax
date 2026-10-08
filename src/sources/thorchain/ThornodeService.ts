@@ -1,8 +1,8 @@
-import {Configuration, TransactionsApi, TxStatusResponse} from "@xchainjs/xchain-thornode";
-import {RecordStore} from "../store/RecordStore";
-import {THORNODE_RULES} from "../store/Sources";
-import {API_URLS} from "../../config/apiUrls";
-import {http} from "../http";
+import {Configuration, TransactionsApi, type TxStatusResponse} from "@xchainjs/xchain-thornode";
+import {RecordStore} from "../store/RecordStore.ts";
+import {THORNODE_RULES} from "../store/Sources.ts";
+import {API_URLS} from "../../config/apiUrls.ts";
+import {http} from "../http.ts";
 
 // The last block of THORChain v1 (2024-09-04). The current API has no tx status up to it; the v1 API has them from
 // the 2022-03-22 migration on, and neither has the ones before.
@@ -15,7 +15,11 @@ export function thornodeUrlFor(height?: number): string {
 export class ThornodeService {
     private apis = new Map<string, TransactionsApi>();
 
-    constructor(private store: RecordStore = new RecordStore('_cache'), private source: string = 'thornode') {
+    private store: RecordStore;
+    private source: string;
+    constructor(store: RecordStore = new RecordStore('_cache'), source: string = 'thornode') {
+        this.store = store;
+        this.source = source;
     }
 
     // date and height: of the action the tx belongs to; a tx status has no date of its own to be filed by, and the

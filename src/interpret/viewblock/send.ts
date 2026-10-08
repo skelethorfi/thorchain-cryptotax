@@ -1,9 +1,9 @@
-import {Activity} from "../../domain/Activity";
-import {Issue} from "../../domain/Issue";
-import {Protocol} from "../../domain/Protocol";
-import {getBundleKey, RawBundle} from "../../sources/RawBundle";
-import {MSG_SEND_TYPES, ViewblockTx} from "../../sources/viewblock";
-import {sendActivity} from "../midgard/send";
+import type {Activity} from "../../domain/Activity.ts";
+import type {Issue} from "../../domain/Issue.ts";
+import type {Protocol} from "../../domain/Protocol.ts";
+import {getBundleKey, type RawBundle} from "../../sources/RawBundle.ts";
+import {MSG_SEND_TYPES, type ViewblockTx} from "../../sources/viewblock/index.ts";
+import {sendActivity} from "../midgard/send.ts";
 
 // A Viewblock send, for sends before 2022-04 that Midgard does not list (docs/specs/sends.md). The coin is
 // the tx's input; a failed tx moved nothing.

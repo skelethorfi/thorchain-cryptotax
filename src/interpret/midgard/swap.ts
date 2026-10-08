@@ -1,13 +1,13 @@
-import {Action, Transaction} from "@xchainjs/xchain-midgard";
-import {Activity, Leg, Price} from "../../domain/Activity";
-import {parseAmount} from "../../domain/Amount";
-import {toAsset} from "../../domain/Asset";
-import {Issue} from "../../domain/Issue";
-import {getActionDate} from "../../sources/thorchain/MidgardUtils";
-import {Protocol} from "../../domain/Protocol";
-import {getBundleKey, RawBundle} from "../../sources/RawBundle";
-import {getTxids} from "./bond";
-import {inboundGas} from "./gas";
+import type {Action, Transaction} from "@xchainjs/xchain-midgard";
+import type {Activity, Leg, Price} from "../../domain/Activity.ts";
+import {parseAmount} from "../../domain/Amount.ts";
+import {toAsset} from "../../domain/Asset.ts";
+import type {Issue} from "../../domain/Issue.ts";
+import {getActionDate} from "../../sources/thorchain/MidgardUtils.ts";
+import type {Protocol} from "../../domain/Protocol.ts";
+import {getBundleKey, type RawBundle} from "../../sources/RawBundle.ts";
+import {getTxids} from "./bond.ts";
+import {inboundGas} from "./gas.ts";
 
 // https://dev.thorchain.org/concepts/memos.html#swap
 const SWAP_DESTADDR = 2;

@@ -1,6 +1,6 @@
-import {ProtocolId} from "./Protocol";
-import {Amount} from "./Amount";
-import {Asset} from "./Asset";
+import type {ProtocolId} from "./Protocol.ts";
+import type {Amount} from "./Amount.ts";
+import type {Asset} from "./Asset.ts";
 
 // What happened on-chain, independent of any tax tool and of which wallet is exported
 // (docs/specs/activity.md). Interpreters make it from a bundle; exporters turn it into rows.

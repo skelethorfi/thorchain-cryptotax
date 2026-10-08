@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 import fs from 'fs-extra';
 import * as path from "path";
-import {SnapshotManifest} from "./SnapshotManifest";
-import {withRetry} from "../Retry";
+import {SnapshotManifest} from "./SnapshotManifest.ts";
+import {withRetry} from "../Retry.ts";
 
 // Source data is stored one record (an action, a tx) per file, and a record that comes back different is
 // stored again as a new copy, never overwritten. A run picks one copy of each record by rules (the good
@@ -171,7 +171,9 @@ export class RecordStore {
     // File names under records/<source> or lists/<source>, by key; built on first use
     private readonly index = new Map<string, Map<string, string[]>>();
 
-    constructor(readonly root: string, options: StoreOptions = {}) {
+    readonly root: string;
+    constructor(root: string, options: StoreOptions = {}) {
+        this.root = root;
         this.replay = options.replay;
         this.offline = (options.offline ?? false) || !!options.replay;
         this.fetchMode = options.fetch ?? 'latest';
