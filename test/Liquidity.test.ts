@@ -49,7 +49,7 @@ describe('Maya liquidity auction', () => {
         const {readCaseInput, toBundle} = await import('../src/fixtures/GoldenCase');
         const {runBundle} = await import('../src/pipeline/run');
         const {MAYA} = await import('../src/domain/Protocol');
-        const input = readCaseInput(path.join(__dirname, 'cases', 'maya', 'liquidity-auction'));
+        const input = readCaseInput(path.join(__dirname, 'cases', 'maya', 'liquidity-auction-rune'));
         const bigDeposit = {...input.inbounds![0], in: [{...input.inbounds![0].in[0], coins: [{asset: 'THOR.RUNE', amount: '200000000000'}]}]};
 
         const {rows, issues} = runBundle(toBundle({...input, inbounds: [bigDeposit, ...input.inbounds!.slice(1)]}), MAYA, {mayaLiquidityAuction: 'income'});
@@ -63,7 +63,7 @@ describe('Maya liquidity auction', () => {
         const {readCaseInput, toBundle} = await import('../src/fixtures/GoldenCase');
         const {runBundle} = await import('../src/pipeline/run');
         const {MAYA} = await import('../src/domain/Protocol');
-        const bundle = toBundle(readCaseInput(path.join(__dirname, 'cases', 'maya', 'liquidity-auction')));
+        const bundle = toBundle(readCaseInput(path.join(__dirname, 'cases', 'maya', 'liquidity-auction-rune')));
         return (mayaLiquidityAuction?: 'income' | 'deposit') => runBundle(bundle, MAYA, {mayaLiquidityAuction}).rows;
     };
 

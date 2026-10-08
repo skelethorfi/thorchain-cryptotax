@@ -173,26 +173,44 @@ export function auctionDepositRows(activity: Activity, protocol: Protocol): Cryp
     }];
 }
 
-// The auction's end. With 'income', what the auction supplied as income, then added (an income row, and an
-// add-liquidity row 1 s later); with 'deposit', nothing for it, so the position's cost is the RUNE deposited.
-// Then the position as a receive-LP-token row 10 s later, and the price-helper row 20 s later: the RUNE side
-// twice, as the pool is symmetric.
+// The auction's end. What the auction supplied (a reward leg): with 'income', an income row, then an add-liquidity
+// row 1 s later; with 'deposit', nothing, so the position's cost is what was deposited. A side added at the end
+// (deposits not found): an add-liquidity row. Then the position as a receive-LP-token row 10 s later, and the
+// price-helper row 20 s later: the deposited asset's side twice, as the pool is symmetric.
 export function auctionPositionRows(activity: Activity, protocol: Protocol, treatment?: MayaLiquidityAuction): CryptoTaxTransaction[] {
     if (!treatment) {
         throw new Error(`Config: this run has a Maya liquidity auction position (${activity.time.toISOString().slice(0, 10)}). `
             + 'Set mayaLiquidityAuction = "income" (what the auction supplied is income at its end) or "deposit" '
-            + '(the position\'s cost is the RUNE deposited; any gain shows at withdrawal). See docs/specs/maya.md');
+            + '(the position\'s cost is what was deposited; any gain shows at withdrawal). See docs/specs/maya.md');
     }
 
-    const supplied = treatment === 'income' ? activity.legs.filter(item => item.role === 'reward') : [];
     const position = activity.legs.find(item => item.role === 'principal' && item.direction === 'in')!;
     const lpToken = getLpTokenName(position.asset.notation, protocol);
     const txId = activity.txids.in[0] ?? '';
-    const total = supplied.length * 2 + 2;
-    const rows: CryptoTaxTransaction[] = supplied.flatMap((reward, i) => {
-        const added = activity.legs.find(item => item.role === 'principal' && item.direction === 'out' && item.asset.notation === reward.asset.notation)!;
-        const {blockchain, currency} = parseMidgardAsset(reward.asset.notation, protocol);
-        const amount = formatAmount(reward.amount);
+    const isSupplied = (item: Leg) => activity.legs.some(other => other.role === 'reward' && other.asset.notation === item.asset.notation);
+    const adds = activity.legs.filter(item => item.role === 'principal' && item.direction === 'out' && (treatment === 'income' || !isSupplied(item)));
+    const total = adds.reduce((count, item) => count + (isSupplied(item) ? 2 : 1), 0) + 2;
+    let n = 0;
+    const rows: CryptoTaxTransaction[] = adds.flatMap(item => {
+        const {blockchain, currency} = parseMidgardAsset(item.asset.notation, protocol);
+        const amount = formatAmount(item.amount);
+        const reward = activity.legs.find(other => other.role === 'reward' && other.asset.notation === item.asset.notation);
+        const add: CryptoTaxTransaction = {
+            walletExchange: item.wallet,
+            timestamp: plusSeconds(activity.time, 1),
+            type: CryptoTaxTransactionType.AddLiquidity,
+            baseCurrency: currency,
+            baseAmount: amount,
+            from: item.wallet,
+            to: protocol.counterparty,
+            blockchain: formatBlockchain(blockchain),
+            trace: legTrace(item),
+            description: '',
+        };
+
+        if (!reward) {
+            return [{...add, description: `${++n}/${total} - Liquidity auction: add ${amount} ${currency} deposited before; ${txId}`}];
+        }
 
         return [{
             walletExchange: reward.wallet,
@@ -204,21 +222,10 @@ export function auctionPositionRows(activity: Activity, protocol: Protocol, trea
             to: reward.wallet,
             blockchain: formatBlockchain(blockchain),
             trace: legTrace(reward),
-            description: `${i * 2 + 1}/${total} - Liquidity auction: ${amount} ${currency} supplied by the auction; ${txId}`,
-        }, {
-            walletExchange: added.wallet,
-            timestamp: plusSeconds(activity.time, 1),
-            type: CryptoTaxTransactionType.AddLiquidity,
-            baseCurrency: currency,
-            baseAmount: amount,
-            from: added.wallet,
-            to: protocol.counterparty,
-            blockchain: formatBlockchain(blockchain),
-            trace: legTrace(added),
-            description: `${i * 2 + 2}/${total} - Liquidity auction: add ${amount} ${currency} to ${lpToken}; ${txId}`,
-        }];
+            description: `${++n}/${total} - Liquidity auction: ${amount} ${currency} supplied by the auction; ${txId}`,
+        }, {...add, description: `${++n}/${total} - Liquidity auction: add ${amount} ${currency} to ${lpToken}; ${txId}`}];
     });
-    const runeSide = parseFloat(activity.details.runeSide);
+    const side = parseMidgardAsset(activity.details.sideAsset, protocol).currency;
 
     rows.push({
         walletExchange: position.wallet,
@@ -235,12 +242,12 @@ export function auctionPositionRows(activity: Activity, protocol: Protocol, trea
         walletExchange: position.wallet,
         timestamp: plusSeconds(activity.time, 20),
         type: CryptoTaxTransactionType.Spam,
-        baseCurrency: parseMidgardAsset('THOR.RUNE', protocol).currency,
-        baseAmount: (runeSide * 2).toString(),
+        baseCurrency: side,
+        baseAmount: (parseFloat(activity.details.side) * 2).toString(),
         from: protocol.counterparty,
         to: position.wallet,
         trace: {role: 'price-helper'},
-        description: `${total}/${total} - Dummy transaction to get market price to then manually apply to the receive LP token transaction ${lpToken} (liquidity auction: the RUNE side, ${activity.details.runeSide} RUNE, twice); ${txId}`,
+        description: `${total}/${total} - Dummy transaction to get market price to then manually apply to the receive LP token transaction ${lpToken} (liquidity auction: the ${side} side, ${activity.details.side} ${side}, twice); ${txId}`,
     });
 
     return rows.reverse();

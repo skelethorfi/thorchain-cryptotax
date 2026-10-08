@@ -19,7 +19,7 @@ export function interpretAddLiquidity(bundle: RawBundle, protocol: Protocol): {a
     const action = bundle.data as Action;
     const deposits = action.in;
 
-    if (isDonateAdd(action) && bundle.inbounds?.length) {
+    if (isDonateAdd(action)) {
         return interpretAuction(bundle, protocol);
     }
 
@@ -62,27 +62,28 @@ export function interpretAddLiquidity(bundle: RawBundle, protocol: Protocol): {a
         activities: [activity(bundle, protocol, position.position === 'savers' ? 'savers.add' : 'lp.add', legs)],
         issues: [
             ...(deposits[0].address ? [] : [{kind: 'warning' as const, message: 'missing deposit address'}]),
-            ...(isDonateAdd(action) ? [{kind: 'warning' as const, message: 'Maya liquidity auction add with no deposits found: exported as an ordinary add (maya.md)'}] : []),
         ],
     };
 }
 
-// Maya's liquidity auction (docs/specs/maya.md): each deposit, a THORChain send of RUNE, is an add of its own at
-// its date; at the auction's end the position comes with the CACAO side and any RUNE above the deposits, both
-// from the auction: received (reward legs), then added
+// Maya's liquidity auction (docs/specs/maya.md). Each participant's position has a CACAO side the auction supplied
+// (received, as a reward leg, then added) and a side of the deposited asset (RUNE, BTC, ETH, USDT or USDC). RUNE
+// deposits, sent on THORChain, are found (the bundle's inbounds): each is an add of its own at its date, and any
+// RUNE above them is supplied by the auction too. Deposits on another chain are not listed by any source read
+// here, nor RUNE deposits that were not found: the side is then added at the auction's end, with a note.
 function interpretAuction(bundle: RawBundle, protocol: Protocol): {activities: Activity[]; issues: Issue[]} {
     const action = bundle.data as Action;
     const cacaoSide = action.in.find(tx => tx.txID)!;
-    const runeSide = action.in.find(tx => !tx.txID)!;
-    const runeAsset = runeSide.coins[0].asset;
-    const rune = (amount: string | bigint) => parseAmount(amount.toString(), protocol.decimals(runeAsset));
-    const sends = bundle.inbounds!;
+    const side = action.in.find(tx => !tx.txID)!;
+    const sideCoin = side.coins[0];
+    const amountOf = (asset: string, amount: string | bigint) => parseAmount(amount.toString(), protocol.decimals(asset));
+    const sends = bundle.inbounds ?? [];
     const deposited = sends.reduce((sum, send) => sum + BigInt(send.in[0].coins[0].amount), 0n);
-    const extra = BigInt(runeSide.coins[0].amount) - deposited;
+    const extra = BigInt(sideCoin.amount) - deposited;
     const deposits: Activity[] = sends.map(send => {
         const txid = send.in[0].txID ?? '';
         const wallet = send.in[0].address;
-        const gas = inboundGas(txid, [], wallet, runeAsset, protocol);
+        const gas = inboundGas(txid, [], wallet, sideCoin.asset, protocol);
 
         return {
             id: `midgard/${midgardActionKey(send)}`,
@@ -93,28 +94,36 @@ function interpretAuction(bundle: RawBundle, protocol: Protocol): {activities: A
             txids: {in: [txid], out: []},
             memo: (send.metadata as any)?.send?.memo || undefined,
             legs: [
-                {direction: 'out', wallet, asset: toAsset(runeAsset), amount: rune(send.in[0].coins[0].amount), role: 'principal', basis: 'observed', txid},
+                {direction: 'out', wallet, asset: toAsset(sideCoin.asset), amount: amountOf(sideCoin.asset, send.in[0].coins[0].amount), role: 'principal', basis: 'observed', txid},
                 ...(gas ? [{...gas, txid}] : []),
             ],
             prices: [],
             details: {pool: action.pools[0]},
         };
     });
-    const cacao = cacaoSide.coins[0];
     const supplied = (wallet: string, asset: string, amount: Leg['amount']): Leg[] => [
         {direction: 'in', wallet, asset: toAsset(asset), amount, role: 'reward', basis: 'observed'},
         {direction: 'out', wallet, asset: toAsset(asset), amount, role: 'principal', basis: 'observed'},
     ];
+    const added = (wallet: string, asset: string, amount: Leg['amount']): Leg =>
+        ({direction: 'out', wallet, asset: toAsset(asset), amount, role: 'principal', basis: 'observed'});
+    const cacao = cacaoSide.coins[0];
     const legs: Leg[] = [
-        ...supplied(cacaoSide.address, cacao.asset, parseAmount(cacao.amount, protocol.decimals(cacao.asset))),
-        ...(extra > 0n ? supplied(runeSide.address, runeAsset, rune(extra)) : []),
+        ...supplied(cacaoSide.address, cacao.asset, amountOf(cacao.asset, cacao.amount)),
+        ...(sends.length === 0 ? [added(side.address, sideCoin.asset, amountOf(sideCoin.asset, sideCoin.amount))]
+            : extra > 0n ? supplied(side.address, sideCoin.asset, amountOf(sideCoin.asset, extra)) : []),
         {direction: 'in', wallet: cacaoSide.address, asset: toPositionAsset(action.pools[0]),
             amount: parseAmount(action.metadata.addLiquidity?.liquidityUnits ?? '', UNIT_DECIMALS), role: 'principal', basis: 'observed'},
     ];
-    const position = {...activity(bundle, protocol, 'lp.auction.position', legs), details: {pool: action.pools[0], runeSide: formatAmount(rune(runeSide.coins[0].amount))}};
-    const issues: Issue[] = extra < 0n
-        ? [{kind: 'manual', message: `Maya liquidity auction: the position's RUNE side (${runeSide.coins[0].amount}) is less than the deposits (${deposited}); enter what happened to the difference by hand`}]
-        : [];
+    const position = {...activity(bundle, protocol, 'lp.auction.position', legs),
+        details: {pool: action.pools[0], side: formatAmount(amountOf(sideCoin.asset, sideCoin.amount)), sideAsset: sideCoin.asset}};
+    const chain = sideCoin.asset.split('.')[0];
+    const issues: Issue[] = sends.length === 0
+        ? [{kind: 'manual', message: `Maya liquidity auction: the ${sideCoin.asset} deposits were sent ${chain === 'THOR' ? 'on THORChain but not found' : `on ${chain}, which no source here lists`}; `
+            + `the position's ${sideCoin.asset} side is added at the auction's end. If that wallet's own transactions are imported, categorise its deposits to Maya's vault as this add instead`}]
+        : extra < 0n
+            ? [{kind: 'manual', message: `Maya liquidity auction: the position's ${sideCoin.asset} side (${sideCoin.amount}) is less than the deposits (${deposited}); enter what happened to the difference by hand`}]
+            : [];
 
     return {activities: [...deposits, position], issues};
 }

@@ -128,4 +128,5 @@ legs:
 prices: []
 details:
   pool: THOR.RUNE
-  runeSide: "1036.55294265"
+  side: "1036.55294265"
+  sideAsset: THOR.RUNE

@@ -82,39 +82,54 @@ two assets, the first must be the native asset (CACAO on Maya).
 
 ### Liquidity auction (2023)
 
-Maya opened its `THOR.RUNE` pool with a liquidity auction (March to April
-2023). A participant sent RUNE on THORChain, by `MsgSend` to Maya's vault
-with the memo `+:THOR.RUNE:<maya address>:…`, one or more times. At the end
-(2023-04-17) Maya created every participant's LP position in one `donate:`
-tx: Maya's Midgard lists one `addLiquidity` per participant (1,444 of them),
-with memo `donate:thor.rune`, a CACAO side the auction supplied (carrying the
-donate txid) and a RUNE side with **no txid**. Neither Midgard links the
-deposits to the add.
+Maya opened with a liquidity auction (March to April 2023) for five pools:
+`THOR.RUNE` (1,444 participants), `BTC.BTC` (285), `ETH.ETH` (271),
+`ETH.USDT` (83) and `ETH.USDC` (50). A participant deposited the pool's
+asset, one or more times, to Maya's vault on that asset's chain, with the
+memo `+:<pool>:<maya address>:…`. At the end (2023-04-16/17) Maya created
+every participant's LP position, one `donate:` tx per pool: Maya's Midgard
+lists one `addLiquidity` per participant, with memo `donate:<pool>`, a CACAO
+side the auction supplied (carrying the donate txid, from the participant's
+maya address) and a side of the deposited asset with **no txid**. No Midgard
+links the deposits to the add.
 
-**Linking.** A deposit is a successful THORChain `send` from the add's RUNE-side
+**Deposits.** RUNE deposits are THORChain sends, which THORChain's Midgard
+lists: a deposit is a successful THORChain `send` from the add's RUNE-side
 address whose memo starts with `+:THOR.RUNE:<the add's CACAO-side address>`
 (case ignored), before the add. Deposits are attached to the add's bundle as
 its `inbounds` and give no send rows. A deposit that was refunded is already
-the inbound of its refund (`sends.md`), so it is not attached.
+the inbound of its refund (`sends.md`), so it is not attached. BTC, ETH, USDT
+and USDC deposits were sent on Bitcoin or Ethereum, which no source read here
+lists (they are in that wallet's own import in Summ).
 
-**Rows.** The RUNE left the wallet with each deposit; the position came at the
-end, with what the auction added:
+**Rows**, RUNE with its deposits found:
 
 | When | Row | Amount |
 | --- | --- | --- |
 | each deposit | `AddLiquidity` RUNE, with the deposit's 0.02 RUNE fee | the deposit |
-| the auction's end | `Income` CACAO, then `AddLiquidity` CACAO | the add's CACAO side |
-| the auction's end | `Income` RUNE, then `AddLiquidity` RUNE | the add's RUNE side − the deposits, when positive |
-| the auction's end | `ReceiveLpToken` `MayaLP.THOR.RUNE`, and the `Spam` price-helper row | the add's liquidity units |
+| the auction's end | CACAO the auction supplied (below) | the add's CACAO side |
+| the auction's end | RUNE the auction supplied (below) | the add's RUNE side − the deposits, when positive |
+| the auction's end | `ReceiveLpToken` `MayaLP.<pool>`, and the `Spam` price-helper row (the deposited asset's side, twice) | the add's liquidity units |
 
-The CACAO side and the RUNE above the deposits came from the auction, not the
-wallet. How to treat them is a tax choice, set by the config key
-`mayaLiquidityAuction`:
+Another asset, or RUNE whose deposits were not found: the side is an
+`AddLiquidity` row at the auction's end, in that wallet's file, with no fee,
+and the action gets an enter-by-hand note: if that wallet's transactions are
+imported, its deposits to Maya's vault are this add, and should be
+categorised so rather than counted twice. The CACAO side, LP token and
+price-helper rows are as above.
 
-- `"income"`: they are income at the auction's end, then added to the pool,
-  so the position's cost includes them (the `Income` and `AddLiquidity` rows
-  above).
-- `"deposit"`: no rows for them; the position's cost is the RUNE deposited,
+When the RUNE side is **less** than the deposits found (an auction
+withdrawal, or a tier rule), the run cannot tell what happened to the rest:
+no RUNE row is added at the end, and the action gets an enter-by-hand note.
+
+**What the auction supplied** (the CACAO side, and RUNE above the deposits)
+came from the auction, not the wallet. How to treat it is a tax choice, set
+by the config key `mayaLiquidityAuction`:
+
+- `"income"`: it is income at the auction's end (an `Income` row), then
+  added to the pool (an `AddLiquidity` row 1 s later), so the position's
+  cost includes it.
+- `"deposit"`: no rows for it; the position's cost is what was deposited,
   and any gain shows when the position is withdrawn.
 
 The key has no default: a run that finds an auction position stops, before
@@ -122,13 +137,11 @@ writing anything, until it is set, as a default would make a choice worth
 an income year's timing for the user. Configs without an auction position
 never need it. The rows both choices share (the deposits, the LP token and
 the price-helper) have the same IDs under either, so switching changes
-exactly the `Income` and `AddLiquidity` rows at the auction's end. When the RUNE
-side is **less** than the deposits (an auction withdrawal, or a tier rule),
-the run cannot tell what happened to the rest: no RUNE row is added at the
-end, and the action gets an enter-by-hand note. An add with no deposits found
-is exported as an ordinary add, with a warning.
+exactly the `Income` and `AddLiquidity` rows of what the auction supplied.
 
-Golden case: `maya/liquidity-auction` (a public participant).
+Golden cases: `maya/liquidity-auction-rune` (RUNE, deposits found),
+`maya/liquidity-auction-btc` and `maya/liquidity-auction-eth` (public
+participants).
 
 ### Withdraw liquidity
 
@@ -154,7 +167,7 @@ an L1 chain (`KUJI`, `BTC`, …). See `assets.md`.
 
 Public Maya transactions in `test/cases/maya/`: CACAO → ETH.USDC swap, CACAO →
 RUNE and RUNE → KUJI swaps with affiliate outputs, a partially filled BTC →
-ETH swap and its refund (which has no rows), a symmetric KUJI add, a liquidity auction position with its deposits, and a symmetric RUNE-pool
+ETH swap and its refund (which has no rows), a symmetric KUJI add, liquidity auction positions (RUNE with its deposits, BTC, ETH), and a symmetric RUNE-pool
 withdrawal.
 
 ## Not covered yet

@@ -1,0 +1,53 @@
+id: maya-midgard/addLiquidity.EF5727E3576CDCD8494A40B98B48B6203DF3A298FCAEE3B09AAC9593DDE921AA.maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew+bc1q942qs6e8dwsqq9e7mdtq8yj0en6knhv37j7xdz
+protocol: maya
+kind: lp.auction.position
+status: success
+time: 2023-04-17T03:09:14.548Z
+txids:
+  in:
+    - EF5727E3576CDCD8494A40B98B48B6203DF3A298FCAEE3B09AAC9593DDE921AA
+  out: []
+memo: donate:btc.btc
+legs:
+  - direction: in
+    wallet: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
+    asset:
+      notation: MAYA.CACAO
+      kind: native
+    role: reward
+    basis: observed
+    amount: "11900.5990716627"
+    decimals: 10
+  - direction: out
+    wallet: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
+    asset:
+      notation: MAYA.CACAO
+      kind: native
+    role: principal
+    basis: observed
+    amount: "11900.5990716627"
+    decimals: 10
+  - direction: out
+    wallet: bc1q942qs6e8dwsqq9e7mdtq8yj0en6knhv37j7xdz
+    asset:
+      notation: BTC.BTC
+      kind: native
+    role: principal
+    basis: observed
+    amount: "0.05630169"
+    decimals: 8
+  - direction: in
+    wallet: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
+    asset:
+      notation: BTC.BTC
+      kind: position
+      position: lp
+    role: principal
+    basis: observed
+    amount: "1190059.90716627"
+    decimals: 8
+prices: []
+details:
+  pool: BTC.BTC
+  side: "0.05630169"
+  sideAsset: BTC.BTC
