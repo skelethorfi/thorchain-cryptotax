@@ -45,5 +45,6 @@
   },
   "treatment": {
     "mayaLiquidityAuction": "income"
-  }
+  },
+  "nativeFee": "2000000"
 }

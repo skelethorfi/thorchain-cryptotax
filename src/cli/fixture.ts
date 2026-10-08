@@ -4,6 +4,7 @@ import path from "path";
 import {Action, Configuration, DefaultApi} from "@xchainjs/xchain-midgard";
 import {ThornodeService} from "../sources/thorchain/ThornodeService";
 import {RecordStore} from "../sources/store/RecordStore";
+import {MayanodeService} from "../sources/maya/MayanodeService";
 import {CosmosTxService} from "../sources/thorchain/CosmosTxService";
 import {MidgardService} from "../sources/thorchain/MidgardService";
 import {MidgardSource} from "../sources/Source";
@@ -78,7 +79,8 @@ async function fetchInput(txid: string, protocol: Protocol, index?: number): Pro
     // The exporter's bundle builder; related txs go to a throwaway store, as the tx may be anyone's
     const store = new RecordStore(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-fixture-')));
     const source = new MidgardSource(protocol, new MidgardService(store, `${protocol.id}-midgard`, protocol.midgardUrl),
-        new ThornodeService(store), new CosmosTxService(store));
+        new ThornodeService(store), new CosmosTxService(store), [], undefined,
+        protocol.nodeUrl ? new MayanodeService(store, protocol.nodeUrl) : undefined);
     const bundle = await source.bundle(action, action.in[0]?.address ?? '');
 
     return toCaseInput(bundle, describeShape(getActionShape(action)));

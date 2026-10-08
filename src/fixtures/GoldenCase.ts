@@ -38,6 +38,8 @@ export interface GoldenCaseInput {
     cosmosTxs?: CosmosTx[];
     // THORChain sends attached as the action's inbounds (a Maya liquidity auction's deposits)
     inbounds?: Action[];
+    // The native fee at the action's height (Maya), base units
+    nativeFee?: string;
     // The config's treatment choices the case is mapped with, e.g. {mayaLiquidityAuction: 'income'}
     treatment?: Treatment;
 }
@@ -140,6 +142,7 @@ export function toBundle(input: GoldenCaseInput): RawBundle {
         thornodeTxs: input.thornodeTxs ?? [],
         cosmosTxs: input.cosmosTxs ?? [],
         ...(input.inbounds ? {inbounds: input.inbounds} : {}),
+        ...(input.nativeFee ? {nativeFee: input.nativeFee} : {}),
     };
 }
 
@@ -153,6 +156,7 @@ export function toCaseInput(bundle: RawBundle, description: string): GoldenCaseI
         ...(bundle.thornodeTxs.length ? {thornodeTxs: bundle.thornodeTxs} : {}),
         ...(bundle.cosmosTxs.length ? {cosmosTxs: bundle.cosmosTxs} : {}),
         ...(bundle.inbounds?.length ? {inbounds: bundle.inbounds} : {}),
+        ...(bundle.nativeFee ? {nativeFee: bundle.nativeFee} : {}),
     };
 }
 

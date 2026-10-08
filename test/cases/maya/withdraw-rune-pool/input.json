@@ -66,5 +66,6 @@
     ],
     "status": "success",
     "type": "withdraw"
-  }
+  },
+  "nativeFee": "2000000000"
 }

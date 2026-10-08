@@ -63,5 +63,6 @@
     "pools": [],
     "status": "success",
     "type": "refund"
-  }
+  },
+  "nativeFee": "2000000000"
 }
