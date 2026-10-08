@@ -12,8 +12,8 @@ to: mayaprotocol
 blockchain: Mayachain
 referencePricePerUnit: "0.19053173093158599"
 referencePriceCurrency: USD
-id: 2025-10-03T02:11:13.439Z.maya.bridge-trade-out
 description: 1/2 - Swap 20000 CACAO to 3798.840908 USDC; 6A923F07C97C6EE09AE2DDEFF8D9329AFC61F38925CF4965BDB0D7D1FD88F279
+id: 2025-10-03T02:11:13.439Z.out.4fb7e342e456
 ---
 walletExchange: "0x36944b474580f5da31b864fbae80dd53c9814d49"
 timestamp: 2025-10-03T02:11:23.439Z
@@ -25,5 +25,5 @@ to: "0x36944b474580f5da31b864fbae80dd53c9814d49"
 blockchain: ETH
 referencePricePerUnit: "0.998580942216526"
 referencePriceCurrency: USD
-id: 2025-10-03T02:11:13.439Z.maya.bridge-trade-in
 description: 2/2 - Swap 20000 CACAO to 3798.840908 USDC; 6A923F07C97C6EE09AE2DDEFF8D9329AFC61F38925CF4965BDB0D7D1FD88F279
+id: 2025-10-03T02:11:13.439Z.in.0b8e9bc07acc

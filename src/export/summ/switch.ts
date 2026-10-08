@@ -3,7 +3,7 @@ import {formatAmount} from "../../domain/Amount";
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
 import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
 import {formatBlockchain, Protocol} from "../../domain/Protocol";
-import {fee, leg, plusSeconds} from "./common";
+import {fee, leg, legTrace, plusSeconds} from "./common";
 
 // A switch is a bridge: the asset leaves its old chain and arrives on THORChain 10 s later
 export function switchRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
@@ -14,7 +14,6 @@ export function switchRows(activity: Activity, protocol: Protocol): CryptoTaxTra
     const from = `${input.blockchain}.${input.currency}`;
     const to = `${output.blockchain}.${output.currency}`;
     const txId = sent.txid ?? '';
-    const idPrefix = activity.time.toISOString();
 
     return [
         {
@@ -27,7 +26,7 @@ export function switchRows(activity: Activity, protocol: Protocol): CryptoTaxTra
             from: sent.wallet,
             to: received.wallet,
             blockchain: formatBlockchain(input.blockchain),
-            id: `${idPrefix}.bridge-out`,
+            trace: legTrace(sent),
             description: `1/2 - Switch ${from} to ${to} (send ${from}); ${txId}`,
         },
         {
@@ -39,7 +38,7 @@ export function switchRows(activity: Activity, protocol: Protocol): CryptoTaxTra
             from: sent.wallet,
             to: received.wallet,
             blockchain: formatBlockchain(output.blockchain),
-            id: `${idPrefix}.bridge-in`,
+            trace: legTrace(received),
             description: `2/2 - Switch ${from} to ${to} (receive ${to}); ${txId}`,
         },
     ];
@@ -57,7 +56,6 @@ export function runePoolRows(activity: Activity, protocol: Protocol): CryptoTaxT
     const currency = parseMidgardAsset(rune.asset.notation, protocol).currency;
     const amount = formatAmount(rune.amount);
     const txId = rune.txid ?? '';
-    const idPrefix = activity.time.toISOString();
     const wallet = rune.wallet;
 
     if (isDeposit) {
@@ -65,12 +63,12 @@ export function runePoolRows(activity: Activity, protocol: Protocol): CryptoTaxT
             {
                 walletExchange: wallet, timestamp: activity.time, type: CryptoTaxTransactionType.AddLiquidity,
                 baseCurrency: currency, baseAmount: amount, ...fee(activity, protocol), from: wallet, to: protocol.counterparty,
-                blockchain: protocol.blockchain, id: `${idPrefix}.add-liquidity`, description: `1/2 - Deposit ${amount} ${currency} to ${RUNEPOOL}; ${txId}`,
+                blockchain: protocol.blockchain, trace: legTrace(rune), description: `1/2 - Deposit ${amount} ${currency} to ${RUNEPOOL}; ${txId}`,
             },
             {
                 walletExchange: wallet, timestamp: plusSeconds(activity.time, 10), type: CryptoTaxTransactionType.ReceiveLpToken,
                 baseCurrency: token, baseAmount: formatAmount(position.amount), from: protocol.counterparty, to: wallet,
-                blockchain: protocol.blockchain, id: `${idPrefix}.receive-lp-token`, description: `2/2 - Receive LP token from ${RUNEPOOL}; ${txId}`,
+                blockchain: protocol.blockchain, trace: legTrace(position), description: `2/2 - Receive LP token from ${RUNEPOOL}; ${txId}`,
             },
         ];
     }
@@ -79,12 +77,12 @@ export function runePoolRows(activity: Activity, protocol: Protocol): CryptoTaxT
         {
             walletExchange: wallet, timestamp: activity.time, type: CryptoTaxTransactionType.ReturnLpToken,
             baseCurrency: token, baseAmount: formatAmount(position.amount), ...fee(activity, protocol), from: wallet, to: protocol.counterparty,
-            blockchain: protocol.blockchain, id: `${idPrefix}.return-lp-token`, description: `1/2 - Return LP token to ${RUNEPOOL}; ${txId}`,
+            blockchain: protocol.blockchain, trace: legTrace(position), description: `1/2 - Return LP token to ${RUNEPOOL}; ${txId}`,
         },
         {
             walletExchange: wallet, timestamp: plusSeconds(activity.time, 10), type: CryptoTaxTransactionType.RemoveLiquidity,
             baseCurrency: currency, baseAmount: amount, from: protocol.counterparty, to: wallet,
-            blockchain: protocol.blockchain, id: `${idPrefix}.remove-liquidity`, description: `2/2 - Withdraw ${amount} ${currency} from ${RUNEPOOL}; ${txId}`,
+            blockchain: protocol.blockchain, trace: legTrace(rune), description: `2/2 - Withdraw ${amount} ${currency} from ${RUNEPOOL}; ${txId}`,
         },
     ];
 }

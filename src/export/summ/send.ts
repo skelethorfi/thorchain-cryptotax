@@ -2,7 +2,7 @@ import {assetFromStringEx} from "@xchainjs/xchain-util";
 import {Activity} from "../../domain/Activity";
 import {Protocol} from "../../domain/Protocol";
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
-import {fee, leg, named} from "./common";
+import {fee, leg, legTrace, named} from "./common";
 
 // A send or a receive on the wallet that listed it; an Arkeo delegation is a send to itself
 // (docs/specs/sends.md)
@@ -28,7 +28,7 @@ export function sendRows(activity: Activity, protocol: Protocol): CryptoTaxTrans
         from: activity.details.from,
         to: activity.details.to,
         blockchain: protocol.blockchain,
-        id: `${activity.time.toISOString()}.${type}`,
+        trace: legTrace(coin),
         description,
     }];
 }

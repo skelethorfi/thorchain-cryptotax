@@ -2,7 +2,7 @@ import {Activity} from "../../domain/Activity";
 import {formatAmount} from "../../domain/Amount";
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
 import {formatBlockchain, Protocol} from "../../domain/Protocol";
-import {fee, findLeg, leg, named} from "./common";
+import {fee, findLeg, leg, legTrace, named} from "./common";
 
 // A refund (docs/specs/fees.md): the send is a failed-out carrying the inbound fee, as Summ counts only a
 // failed transaction's fee. What the protocol kept (sent − returned) is a separate fee row, or lost for a
@@ -10,7 +10,7 @@ import {fee, findLeg, leg, named} from "./common";
 export function refundRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
     const sent = leg(activity, 'principal', 'out');
     const returnedAmount = {...sent.amount, base: findLeg(activity, 'returned')?.amount.base ?? 0n};
-    const kept = {...sent.amount, base: sent.amount.base - returnedAmount.base};
+    const notReturned = {...sent.amount, base: sent.amount.base - returnedAmount.base};
     const {blockchain, currency, amount: sentAmount} = named(sent, protocol);
     const txId = activity.txids.in[0] ?? '';
     const time = activity.time;
@@ -24,11 +24,11 @@ export function refundRows(activity: Activity, protocol: Protocol): CryptoTaxTra
         from: sent.wallet,
         to: protocol.counterparty,
         blockchain: formatBlockchain(blockchain),
-        id: `${time.toISOString()}.refund`,
+        trace: legTrace(sent),
         description: `refund (${txId}): ${activity.details.reason}`,
     }];
 
-    if (kept.base > 0n) {
+    if (notReturned.base > 0n) {
         const returnTxId = activity.txids.out[0];
         const returnedNote = `${formatAmount(returnedAmount)} ${currency} returned` + (returnTxId ? ` in ${returnTxId}` : '');
         const stuck = activity.status === 'pending';
@@ -38,11 +38,11 @@ export function refundRows(activity: Activity, protocol: Protocol): CryptoTaxTra
             timestamp: time,
             type: stuck ? CryptoTaxTransactionType.Lost : CryptoTaxTransactionType.Fee,
             baseCurrency: currency,
-            baseAmount: formatAmount(kept),
+            baseAmount: formatAmount(notReturned),
             from: sent.wallet,
             to: protocol.counterparty,
             blockchain: formatBlockchain(blockchain),
-            id: `${time.toISOString()}.refund-${stuck ? 'lost' : 'fee'}`,
+            trace: {role: 'unreturned', asset: sent.asset.notation},
             description: stuck
                 ? `refund (${txId}): never paid out (still pending), ${sentAmount} ${currency} sent, ${returnedNote}`
                 : `refund (${txId}): kept by ${protocol.counterparty}, ${sentAmount} ${currency} sent, ${returnedNote}`,

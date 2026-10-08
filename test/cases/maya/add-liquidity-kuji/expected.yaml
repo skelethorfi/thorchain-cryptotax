@@ -5,8 +5,8 @@ baseCurrency: CACAO
 baseAmount: "710.110931248"
 from: mayaprotocol
 to: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
-id: 2023-11-09T06:40:04.262Z.spam
 description: 4/4 - Dummy transaction to get market price to then manually apply to the receive LP token transaction MayaLP.KUJI.KUJI (symmetric); 493628E56D76DCB664E14C142C35CB4AA45D5643A0958F250F583A4029D11166
+id: 2023-11-09T06:40:04.262Z.price-helper.19e747132ced
 ---
 walletExchange: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
 timestamp: 2023-11-09T06:40:14.262Z
@@ -16,8 +16,8 @@ baseAmount: "9931.43775001"
 from: mayaprotocol
 to: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
 blockchain: Mayachain
-id: 2023-11-09T06:40:04.262Z.receive-lp-token
 description: 3/4 - Receive LP token from MayaLP.KUJI.KUJI (symmetric); 493628E56D76DCB664E14C142C35CB4AA45D5643A0958F250F583A4029D11166
+id: 2023-11-09T06:40:04.262Z.in.cf21b461f0ac
 ---
 walletExchange: kujira1wml3m2tkkdv5z6rdj3l4mp229c2493kaayukp6
 timestamp: 2023-11-09T06:40:04.262Z
@@ -29,8 +29,8 @@ feeAmount: ""
 from: kujira1wml3m2tkkdv5z6rdj3l4mp229c2493kaayukp6
 to: mayaprotocol
 blockchain: KUJI
-id: 2023-11-09T06:40:04.262Z.add-liquidity.KUJI
 description: 2/4 - Add liquidity KUJI to MayaLP.KUJI.KUJI (symmetric); 493628E56D76DCB664E14C142C35CB4AA45D5643A0958F250F583A4029D11166
+id: 2023-11-09T06:40:04.262Z.out.a58a6e671a81
 ---
 walletExchange: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
 timestamp: 2023-11-09T06:40:04.262Z
@@ -42,5 +42,5 @@ feeAmount: "0.2"
 from: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
 to: mayaprotocol
 blockchain: Mayachain
-id: 2023-11-09T06:40:04.262Z.add-liquidity.CACAO
 description: 1/4 - Add liquidity CACAO to MayaLP.KUJI.KUJI (symmetric); 493628E56D76DCB664E14C142C35CB4AA45D5643A0958F250F583A4029D11166
+id: 2023-11-09T06:40:04.262Z.out.cff1d2c9bacb

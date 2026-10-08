@@ -1,6 +1,6 @@
 import {Activity, Leg} from "../../domain/Activity";
 import {Amount, formatAmount} from "../../domain/Amount";
-import {CryptoTaxTransaction} from "./csv";
+import {CryptoTaxTransaction, RowTrace} from "./csv";
 import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
 import {formatBlockchain, Protocol} from "../../domain/Protocol";
 
@@ -53,4 +53,10 @@ export function referencePrice(activity: Activity, source: string): Pick<CryptoT
 
 export function plusSeconds(time: Date, seconds: number): Date {
     return new Date(time.getTime() + seconds * 1000);
+}
+
+// What a row records, for its ID (docs/specs/periods.md, Row IDs): the leg it is, named by what moved, not by how
+// the row is exported, so a change of treatment (a trade exported as a bridge, a fee as lost) keeps the ID
+export function legTrace(item: Leg): RowTrace {
+    return {role: item.role === 'principal' ? item.direction : item.role, asset: item.asset.notation};
 }

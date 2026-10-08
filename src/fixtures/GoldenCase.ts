@@ -120,7 +120,8 @@ export function toPlainActivity(activity: Activity): object {
 }
 
 // A row as expected.yaml holds it: the timestamp as ISO, as the CSV writes it
-export function toPlainRow(row: CryptoTaxTransaction): object {
+// The row as expected.yaml holds it: its CSV columns (the trace is in the ID)
+export function toPlainRow({trace, ...row}: CryptoTaxTransaction): object {
     return {...row, timestamp: row.timestamp.toISOString()};
 }
 

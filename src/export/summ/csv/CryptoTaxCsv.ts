@@ -1,5 +1,6 @@
+import crypto from "crypto";
 import fs from 'fs-extra';
-import { CryptoTaxTransaction } from './CryptoTaxTranaction';
+import {CryptoTaxTransaction, RowTrace} from './CryptoTaxTranaction';
 import {ctcSortDesc} from "./index";
 
 export const csvMapping = [
@@ -46,19 +47,32 @@ export function renderCsv(txs: CryptoTaxTransaction[]): string {
     return createHeader() + ctcSortDesc([...txs]).map(txToCsv).join('\n');
 }
 
-// Gives every row a unique ID that depends only on its action, so it is the same in every file and every run
-// (docs/specs/periods.md): the mapper's `<action time>.<role>`, and for a second row with the same one (two
-// actions in one block) `.2`, `.3`, … in the order of the rows' contents
-export function assignRowIds(rows: CryptoTaxTransaction[]): CryptoTaxTransaction[] {
-    const withIds = rows.map(row => ({...row, id: row.id || `${row.timestamp.toISOString()}.${row.type}`}));
-    const byId = new Map<string, CryptoTaxTransaction[]>();
-    withIds.forEach(row => byId.set(row.id!, [...byId.get(row.id!) ?? [], row]));
+// A row's ID depends only on what the row is, never on its amounts or wording, so it is the same in every
+// file and every run (docs/specs/periods.md, Row IDs): `<action time>.<role>.<hash>`, the hash being the first
+// 12 hex digits of SHA-256 over the format version, the action's store record, the wallet, the role and the
+// asset. It traces a row in Summ (its "Tx Hash") back to the action.
+export function rowId(time: Date, walletExchange: string, trace: RowTrace): string {
+    const identity = ['v1', trace.record ?? '', walletExchange, trace.role, trace.asset ?? ''].join('|');
+    return `${time.toISOString()}.${trace.role}.${crypto.createHash('sha256').update(identity).digest('hex').slice(0, 12)}`;
+}
 
-    for (const [id, same] of byId) {
-        same.sort((a, b) => txToCsv(a).localeCompare(txToCsv(b))).slice(1).forEach((row, i) => row.id = `${id}.${i + 2}`);
+// Checks every row has an ID and no two share one: two rows with one identity are a mapper bug
+export function assignRowIds(rows: CryptoTaxTransaction[]): CryptoTaxTransaction[] {
+    const seen = new Set<string>();
+
+    for (const row of rows) {
+        if (!row.id) {
+            throw new Error(`Row without an ID: ${txToCsv(row)}`);
+        }
+
+        if (seen.has(row.id)) {
+            throw new Error(`Two rows with the ID ${row.id} (${row.trace?.record ?? 'no record'}, ${row.trace?.role ?? 'no role'})`);
+        }
+
+        seen.add(row.id);
     }
 
-    return withIds;
+    return rows;
 }
 
 export function writeCsv(
@@ -71,4 +85,13 @@ export function writeCsv(
 
     console.log(`Write CSV: ${filename}`);
     fs.outputFileSync(filename, renderCsv(txs));
+}
+
+export const ROW_IDS_FILE = 'row-ids.csv';
+
+// What each row's ID is made from, newest first: to trace a row in Summ back to its action
+export function renderRowIds(rows: CryptoTaxTransaction[]): string {
+    const lines = ctcSortDesc([...rows]).map(row => [row.id, formatValue(row.timestamp), row.type, row.walletExchange,
+        row.trace?.record, row.trace?.role, row.trace?.asset].map(value => csvField(value ?? '')).join(','));
+    return ['ID,Timestamp (UTC),Type,Wallet,Record,Role,Asset', ...lines].join('\n') + '\n';
 }

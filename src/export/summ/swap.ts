@@ -1,7 +1,7 @@
 import {Activity} from "../../domain/Activity";
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
 import {Protocol} from "../../domain/Protocol";
-import {fee, findLeg, leg, legBlockchain, named, plusSeconds, referencePrice} from "./common";
+import {fee, findLeg, leg, legBlockchain, legTrace, named, plusSeconds, referencePrice} from "./common";
 
 // A cross-chain trade: the trade-out on the sending wallet carries the fee; the trade-in on the receiving
 // wallet comes 10 s later. A part returned unfilled is netted off the trade-out.
@@ -17,7 +17,6 @@ export function swapRows(activity: Activity, protocol: Protocol): CryptoTaxTrans
     const swap = `Swap ${input.amount} ${synth(sent.asset.notation)}${input.displayCurrency} to ${output.amount} ${synth(received.asset.notation)}${output.displayCurrency}`;
     const returnedNote = returned ? ` (${named(returned, protocol).amount} ${input.displayCurrency} returned unfilled)` : '';
     const txId = activity.txids.in[0] ?? '';
-    const idPrefix = `${activity.time.toISOString()}.${protocol.id}`;
 
     return [
         {
@@ -33,7 +32,7 @@ export function swapRows(activity: Activity, protocol: Protocol): CryptoTaxTrans
             to: protocol.counterparty,
             blockchain: legBlockchain(sent, protocol),
             ...referencePrice(activity, 'midgard:swap.inPriceUSD'),
-            id: `${idPrefix}.bridge-trade-out`,
+            trace: legTrace(sent),
             description: `1/2 - ${swap}${returnedNote}; ${txId}`,
         },
         {
@@ -46,7 +45,7 @@ export function swapRows(activity: Activity, protocol: Protocol): CryptoTaxTrans
             to: received.wallet,
             blockchain: legBlockchain(received, protocol),
             ...referencePrice(activity, 'midgard:swap.outPriceUSD'),
-            id: `${idPrefix}.bridge-trade-in`,
+            trace: legTrace(received),
             description: `2/2 - ${swap}; ${txId}`,
         },
     ];

@@ -3,7 +3,7 @@ import {formatAmount, parseAmount} from "../../domain/Amount";
 import {CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv";
 import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
 import {formatBlockchain, Protocol} from "../../domain/Protocol";
-import {findLeg, leg, plusSeconds} from "./common";
+import {findLeg, leg, legTrace, plusSeconds} from "./common";
 
 // Rujira rows (docs/specs/rujira.md): staking is a staking deposit; FIN swaps and merges are trades
 
@@ -40,20 +40,20 @@ export function rujiraStakeRows(activity: Activity, protocol: Protocol): CryptoT
         from: funds.wallet,
         to: protocol.counterparty,
         blockchain: formatBlockchain(protocol.nativeChain),
-        id: `${time.toISOString()}.rujira-${isLiquid ? 'liquid-bond' : 'account-bond'}`,
+        trace: legTrace(funds),
         description: `1/1 - Rujira ${isLiquid ? 'Liquid bond' : 'Account bond'} ${amount} ${displayCurrency}${note}; ${funds.txid ?? ''}`,
     }];
 }
 
-const TRADES: {[kind: string]: {idSuffix: string; label: string}} = {
-    'rujira.fin.trade': {idSuffix: 'fin', label: 'FIN swap'},
-    'rujira.merge.deposit': {idSuffix: 'merge-deposit', label: 'Merge deposit'},
-    'rujira.merge.withdraw': {idSuffix: 'merge-withdraw', label: 'Merge withdraw'},
+const TRADES: {[kind: string]: {label: string}} = {
+    'rujira.fin.trade': {label: 'FIN swap'},
+    'rujira.merge.deposit': {label: 'Merge deposit'},
+    'rujira.merge.withdraw': {label: 'Merge withdraw'},
 };
 
 // A trade-out carrying the fee, and the trade-in 10 s later; an amount returned unfilled is netted off
 export function rujiraTradeRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
-    const {idSuffix, label} = TRADES[activity.kind];
+    const {label} = TRADES[activity.kind];
     const sent = leg(activity, 'principal', 'out');
     const received = leg(activity, 'principal', 'in');
     const returned = findLeg(activity, 'returned');
@@ -76,7 +76,7 @@ export function rujiraTradeRows(activity: Activity, protocol: Protocol): CryptoT
             from: sent.wallet,
             to: protocol.counterparty,
             blockchain,
-            id: `${time.toISOString()}.rujira-${idSuffix}.bridge-trade-out`,
+            trace: legTrace(sent),
             description: `1/2 - ${description}`,
         },
         {
@@ -88,7 +88,7 @@ export function rujiraTradeRows(activity: Activity, protocol: Protocol): CryptoT
             from: protocol.counterparty,
             to: sent.wallet,
             blockchain,
-            id: `${time.toISOString()}.rujira-${idSuffix}.bridge-trade-in`,
+            trace: legTrace(received),
             description: `2/2 - ${description}`,
         },
     ];

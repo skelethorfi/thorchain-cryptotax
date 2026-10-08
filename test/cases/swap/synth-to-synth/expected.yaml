@@ -12,8 +12,8 @@ to: thorchain
 blockchain: THORChain
 referencePricePerUnit: "42423.47396404385"
 referencePriceCurrency: USD
-id: 2022-03-20T07:19:18.793Z.thorchain.bridge-trade-out
 description: 1/2 - Swap 0.21823 Synth BTC/BTC to 9255.63936161 Synth BNB/BUSD; 91F0B32DB9B7475D3895A376BE95137C441FD7CABBDCC1359CC037650AC1BCBD
+id: 2022-03-20T07:19:18.793Z.out.30f8fd13c09e
 ---
 walletExchange: thor1yep703ewakef0h2l9qel93xh96tvkm004pesq7
 timestamp: 2022-03-20T07:19:28.793Z
@@ -25,5 +25,5 @@ to: thor1yep703ewakef0h2l9qel93xh96tvkm004pesq7
 blockchain: THORChain
 referencePricePerUnit: "0.9999999999999999"
 referencePriceCurrency: USD
-id: 2022-03-20T07:19:18.793Z.thorchain.bridge-trade-in
 description: 2/2 - Swap 0.21823 Synth BTC/BTC to 9255.63936161 Synth BNB/BUSD; 91F0B32DB9B7475D3895A376BE95137C441FD7CABBDCC1359CC037650AC1BCBD
+id: 2022-03-20T07:19:18.793Z.in.e0abf3d470ff
