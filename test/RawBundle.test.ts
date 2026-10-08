@@ -52,14 +52,14 @@ describe('selectSends', () => {
         const inbound = bundle('midgard', 'thor1a', action('AB', 'send'));
         const plain = bundle('midgard', 'thor1a', action('CD', 'send'));
 
-        expect(selectSends([swap, inbound, plain])).toStrictEqual({bundles: [swap, plain], dropped: {inbound: 1, viewblock: 0}});
+        expect(selectSends([swap, inbound, plain])).toStrictEqual({bundles: [swap, plain], dropped: {inbound: 1, outbound: 0, viewblock: 0}});
     });
 
     test("drops a THORChain send that is a Maya action's inbound (RUNE sent to a Maya vault)", () => {
         const mayaSwap = bundle('midgard', 'thor1a', action('AB', 'swap'), 'maya');
         const send = bundle('midgard', 'thor1a', action('AB', 'send'));
 
-        expect(selectSends([mayaSwap, send])).toStrictEqual({bundles: [mayaSwap], dropped: {inbound: 1, viewblock: 0}});
+        expect(selectSends([mayaSwap, send])).toStrictEqual({bundles: [mayaSwap], dropped: {inbound: 1, outbound: 0, viewblock: 0}});
     });
 
     test('keeps only Viewblock sends from before 2022-04 that Midgard does not list', () => {
@@ -69,6 +69,33 @@ describe('selectSends', () => {
         const swap = bundle('viewblock', 'thor1a', vbSend('W1', '2021-07-01T00:00:00Z', ['swap', 'main']));
         const midgard = bundle('midgard', 'thor1a', action('E2', 'send'));
 
-        expect(selectSends([early, listed, late, swap, midgard])).toStrictEqual({bundles: [early, midgard], dropped: {inbound: 0, viewblock: 3}});
+        expect(selectSends([early, listed, late, swap, midgard])).toStrictEqual({bundles: [early, midgard], dropped: {inbound: 0, outbound: 0, viewblock: 3}});
+    });
+
+    test("drops a THORChain send that is a Maya action's outbound, by txid", () => {
+        const swap = bundle('midgard', 'thor1a', {...action('IN'), out: [{address: 'thor1a', txID: 'OUTTX', coins: []}]}, 'maya');
+        const payout = bundle('midgard', 'thor1a', action('outtx', 'send'));
+
+        expect(selectSends([swap, payout])).toStrictEqual({bundles: [swap], dropped: {inbound: 0, outbound: 1, viewblock: 0}});
+    });
+
+    test('a send whose memo names a pending refund is its outbound: the refund is paid by it', () => {
+        const txid = 'ab'.repeat(32);
+        const refund = bundle('midgard', 'thor1a', {...action(txid, 'refund'), status: 'pending'}, 'maya');
+        const coins = [{asset: 'THOR.RUNE', amount: '9998000000'}];
+        const payout = bundle('midgard', 'thor1a', {...action('PAYOUT', 'send'), metadata: {send: {memo: `REFUND:${txid.toUpperCase()}`}},
+            out: [{address: 'thor1a', txID: '', coins}]});
+
+        const {bundles, dropped} = selectSends([refund, payout]);
+
+        expect(dropped.outbound).toBe(1);
+        expect(bundles).toHaveLength(1);
+        expect(bundles[0].data).toMatchObject({type: 'refund', status: 'success', out: [{address: 'thor1a', txID: 'PAYOUT', coins}]});
+    });
+
+    test('a REFUND memo naming no listed action leaves the send a send', () => {
+        const payout = bundle('midgard', 'thor1a', {...action('PAYOUT', 'send'), metadata: {send: {memo: `REFUND:${'cd'.repeat(32)}`}}});
+
+        expect(selectSends([payout]).bundles).toEqual([payout]);
     });
 });

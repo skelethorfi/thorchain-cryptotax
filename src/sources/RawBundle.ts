@@ -76,36 +76,67 @@ export function dedupeBundles(bundles: RawBundle[]): {bundles: RawBundle[]; dupl
 // Sends before this come from Viewblock too, as Midgard's history is incomplete (docs/specs/sends.md)
 export const VIEWBLOCK_SENDS_BEFORE = '2022-04-01';
 
-// The sends that give rows (docs/specs/sends.md): a THORChain send that is the inbound of another action, on
-// THORChain (a swap or TCY unstake sent by MsgSend) or Maya (RUNE sent to a Maya vault), is dropped, as that
-// action gives the rows; of Viewblock's txs, only sends from before VIEWBLOCK_SENDS_BEFORE that Midgard does
-// not list are kept.
-export function selectSends(bundles: RawBundle[]): {bundles: RawBundle[]; dropped: {inbound: number; viewblock: number}} {
+// The sends that give rows (docs/specs/sends.md). A THORChain send that is part of another listed action gives
+// no row of its own, as that action gives the rows:
+// - its inbound: a swap or TCY unstake sent by MsgSend on THORChain, or RUNE sent to a Maya vault;
+// - its outbound: RUNE a Maya vault pays out on THORChain, named by the action's outbound txid, or by a
+//   'REFUND:<txid>' / 'OUT:<txid>' memo naming the action's inbound txid. Maya's Midgard can leave a refund it
+//   paid this way pending with no outbound; the send is then the refund's outbound, so the refund is paid.
+// Of Viewblock's txs, only sends from before VIEWBLOCK_SENDS_BEFORE that Midgard does not list are kept.
+export function selectSends(bundles: RawBundle[]): {bundles: RawBundle[]; dropped: {inbound: number; outbound: number; viewblock: number}} {
     const midgard = bundles.filter(bundle => bundle.source === 'midgard');
+    const actions = midgard.filter(bundle => !isMidgardSend(bundle));
     const inboundTxids = (sends: boolean) => new Set(midgard
         .filter(bundle => isMidgardSend(bundle) === sends)
         .flatMap(bundle => (bundle.data as Action).in.map(tx => tx.txID?.toUpperCase()))
         .filter(Boolean));
     const actionInbounds = inboundTxids(false);
+    const actionOutbounds = new Set(actions.flatMap(bundle => (bundle.data as Action).out.map(tx => tx.txID?.toUpperCase())).filter(Boolean));
     const listed = new Set([...actionInbounds, ...inboundTxids(true)]);
     const cutoff = new Date(`${VIEWBLOCK_SENDS_BEFORE}T00:00:00Z`).getTime();
 
-    const isInbound = (bundle: RawBundle) => bundle.protocol === THORCHAIN.id && isMidgardSend(bundle)
-        && actionInbounds.has((bundle.data as Action).in[0]?.txID?.toUpperCase());
+    const thorchainSend = (bundle: RawBundle) => bundle.protocol === THORCHAIN.id && isMidgardSend(bundle);
+    const sendTxid = (bundle: RawBundle) => (bundle.data as Action).in[0]?.txID?.toUpperCase();
+    const isInbound = (bundle: RawBundle) => thorchainSend(bundle) && actionInbounds.has(sendTxid(bundle));
+    const payoutFor = (bundle: RawBundle) => thorchainSend(bundle) ? outboundMemoTxid(bundle.data as Action) : undefined;
+    const isOutbound = (bundle: RawBundle) => thorchainSend(bundle)
+        && (actionOutbounds.has(sendTxid(bundle)) || actionInbounds.has(payoutFor(bundle) ?? ''));
     const isViewblockGap = (bundle: RawBundle) => {
         const tx = bundle.data as ViewblockTx;
         return tx.types.includes('send') && tx.timestamp < cutoff && !listed.has(tx.hash.toUpperCase());
     };
 
-    const kept = bundles.filter(bundle => bundle.source === 'viewblock' ? isViewblockGap(bundle) : !isInbound(bundle));
+    // A pending refund's outbound found by its memo: the refund was paid
+    const payouts = new Map(midgard.filter(isOutbound).filter(payoutFor).map(bundle => [payoutFor(bundle)!, bundle.data as Action]));
+    const settled = (bundle: RawBundle): RawBundle => {
+        const action = bundle.data as Action;
+        const payout = payouts.get(action.in[0]?.txID?.toUpperCase() ?? '');
+
+        if (isMidgardSend(bundle) || action.type !== 'refund' || action.status === 'success' || !payout) {
+            return bundle;
+        }
+
+        return {...bundle, data: {...action, status: 'success', out: payout.out.map(tx => ({...tx, txID: payout.in[0].txID}))} as Action};
+    };
+
+    const kept = bundles
+        .filter(bundle => bundle.source === 'viewblock' ? isViewblockGap(bundle) : !isInbound(bundle) && !isOutbound(bundle))
+        .map(bundle => bundle.source === 'midgard' ? settled(bundle) : bundle);
 
     return {
         bundles: kept,
         dropped: {
             inbound: bundles.filter(isInbound).length,
+            outbound: bundles.filter(bundle => !isInbound(bundle) && isOutbound(bundle)).length,
             viewblock: bundles.filter(bundle => bundle.source === 'viewblock').length - kept.filter(bundle => bundle.source === 'viewblock').length,
         },
     };
+}
+
+// The inbound txid an outbound's memo names ('REFUND:<txid>' or 'OUT:<txid>'), upper case
+export function outboundMemoTxid(send: Action): string | undefined {
+    const memo = (send.metadata as any)?.send?.memo ?? '';
+    return /^(?:REFUND|OUT):([0-9A-Fa-f]{64})$/i.exec(memo.trim())?.[1].toUpperCase();
 }
 
 function isMidgardSend(bundle: RawBundle): boolean {

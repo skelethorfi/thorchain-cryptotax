@@ -41,6 +41,22 @@ A `MsgSend` with a memo can be another action's inbound:
 The action gives the rows; **a send whose txid is also the inbound of
 another listed action, on any protocol, gives none**.
 
+A `MsgSend` can also be another action's **outbound**: Maya pays RUNE out on
+THORChain by `MsgSend` from its vault, so a Maya swap to RUNE, a withdrawal
+of a RUNE side or a refund of RUNE shows on THORChain's Midgard as a `send`
+to the wallet, besides the Maya action that already gives the received RUNE.
+**A send is an outbound, and gives no row, when its txid is in another
+listed action's outbounds, or its memo is `REFUND:<txid>` or `OUT:<txid>`
+naming another listed action's inbound txid.** Otherwise the same RUNE
+would be received twice.
+
+Maya's Midgard can leave a refund it paid this way `pending` with no
+outbound. When a send's memo names such a refund, the send is its outbound:
+the refund is exported as paid (a `FailedOut`, and a `Fee` for what it did
+not return, `fees.md`), not as a stuck refund's `Lost` (`pending.md`). The
+run summary still lists the refund under Not final, as Midgard's status is
+unchanged.
+
 A send whose memo asks for an action (`=`, `+`, `-`, `swap`, `trade+`,
 `loan+`, `~` and so on) and that no listed action matches still gives a
 `send` row, as the coin left the wallet, with a warning: most likely a
