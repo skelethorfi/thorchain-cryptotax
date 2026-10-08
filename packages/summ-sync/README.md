@@ -5,7 +5,7 @@ Terraform: pull Summ's state, plan the differences, apply them, pull again.
 The design is `docs/specs/summ-sync.md` in this repo.
 
 It is a separate package: it reads files (Summ CSVs with stable `ID`s and a
-`row-ids.csv`), not the exporter's code, and needs no dependencies (Node 22
+`row-ids.csv`), not the exporter's code, and needs no dependencies (Node 24
 built-ins only). It talks to Summ only through Summ's MCP server
 (`https://mcp.summ.com/mcp`), with your own login.
 
