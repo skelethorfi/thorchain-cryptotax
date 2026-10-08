@@ -170,7 +170,7 @@ legs share their actions (a delete by action would remove those too).
 | edit | managed legs whose row changed only in editable fields | `edit_transaction` per action |
 | upload | rows with no leg in Summ after the deletes, per CSV file | files written to `plans/<timestamp>/upload/` (the file's header and those rows as the run wrote them; filed-year rows in `<file>_filed.csv`), uploaded by the user |
 | categorise | categorised rows whose Summ leg differs in type or fee | `edit_transaction` |
-| report | categorised rows with no or several matching legs; Summ legs of a managed source that no ID explains; manual entries repeating a row's txid | nothing: for the user to resolve |
+| report | categorised rows with no or several matching legs; legacy legs that fit several rows; managed rows whose ID Summ holds under a source not in `managedSources` (not uploaded again); manual entries repeating a row's txid | nothing: for the user to resolve |
 | overridden | differences an override keeps, and overrides captured in this plan | nothing |
 
 **Filed years.** An entry whose row or leg is dated before `filedBefore` is

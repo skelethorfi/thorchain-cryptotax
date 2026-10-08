@@ -57,7 +57,7 @@ export interface UploadEntry {
 }
 
 export interface ReportEntry {
-    kind: 'no-leg' | 'several-legs' | 'leg-claimed-twice' | 'not-in-snapshot' | 'fee' | 'ambiguous-adoption' | 'manual-entry'
+    kind: 'no-leg' | 'several-legs' | 'leg-claimed-twice' | 'not-in-snapshot' | 'fee' | 'ambiguous-adoption' | 'manual-entry' | 'other-source'
     filed: boolean
     id?: string
     legIds?: string[]
@@ -284,11 +284,22 @@ export function makePlan(input: PlanInput): PlanResult {
         }
     }
 
+    // A row whose ID is on legs of a source not in managedSources was uploaded under another account:
+    // uploading it again would duplicate it
+    const otherSources = new Map<string, Leg[]>()
+    for (const leg of input.legs) {
+        if (!managedSources.has(leg.source) && rowsById.has(leg.id)) otherSources.set(leg.id, [...(otherSources.get(leg.id) ?? []), leg])
+    }
+
     const toUpload: Row[] = []
     for (const row of managedRows) {
         const legs = matched.get(row.id)
         if (!legs) {
-            if (!heldBack.has(row.id)) toUpload.push(row)
+            const elsewhere = otherSources.get(row.id)
+            if (elsewhere) {
+                const sources = [...new Set(elsewhere.map((l) => l.source))].join(', ')
+                plan.report.push({ kind: 'other-source', filed: isFiled(row.timestamp), id: row.id, legIds: elsewhere.map((l) => l.legId), detail: `the row is in Summ under ${sources}, not in managedSources; add the source to summ-sync.json` })
+            } else if (!heldBack.has(row.id)) toUpload.push(row)
             continue
         }
         const isAdopted = legs.some((l) => adopted.has(l.legId))

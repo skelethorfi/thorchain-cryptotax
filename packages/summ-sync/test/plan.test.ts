@@ -254,6 +254,13 @@ test('a manual entry naming a row\'s txid is reported', () => {
     assert.deepEqual(p.report.map((e) => [e.kind, e.id]), [['manual-entry', r.id]])
 })
 
+test('a row uploaded under a source not in managedSources is reported, not uploaded again', () => {
+    const r = row()
+    const { plan: p } = plan({ rows: [r], legs: legsOf(r, { source: 'other-account' }) })
+    assert.deepEqual(p.report.map((e) => e.kind), ['other-source'])
+    assert.deepEqual(p.upload, [])
+})
+
 test('a CSV type with no Summ type stops the plan', () => {
     assert.throws(() => plan({ rows: [row({ type: 'teleport' })] }), /No Summ type for CSV type teleport/)
 })
