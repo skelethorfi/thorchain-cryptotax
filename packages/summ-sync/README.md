@@ -45,7 +45,9 @@ optional:
 ```
 
 - `managedChains`: chains whose CSV files you upload; the sync manages
-  their rows. Rows of other chains only correct Summ's own imports.
+  their rows. Rows of other chains only correct Summ's own import of those
+  wallets. Choose per chain by which gives the better rows, never both for
+  one wallet (its rows would count twice).
 - `managedSources`: Summ's source names of the uploaded rows (see
   `get_filter_options`); `pull` saves full detail for their actions.
 - `filedBefore`: rows before this date are in filed years; changing them is
