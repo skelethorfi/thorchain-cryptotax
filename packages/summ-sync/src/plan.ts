@@ -110,9 +110,12 @@ const HISTORY_LABELS: Record<string, string> = {
     blockchain: 'Blockchain',
 }
 
-/** A difference below 1e-8 of the amount is equal. */
+/**
+ * A difference below 1e-8 of the amount, or of one unit at the 8th decimal, is equal: the exporter's amounts
+ * carry THORChain's 8 decimals, while Summ's own imports hold an L1 amount (e.g. ETH gas) in full.
+ */
 export function sameAmount(a: number, b: number): boolean {
-    return Math.abs(a - b) <= 1e-8 * Math.max(Math.abs(a), Math.abs(b))
+    return Math.abs(a - b) <= Math.max(1e-8 * Math.max(Math.abs(a), Math.abs(b)), 1.000001e-8)
 }
 
 const seconds = (time: string) => Math.floor(Date.parse(time) / 1000)

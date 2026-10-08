@@ -88,10 +88,12 @@ test('a row Summ holds as the run has it plans nothing', () => {
     assert.equal(p.counts.matchedRows, 1)
 })
 
-test('a trade compares its quote leg, and amounts within 1e-8 are equal', () => {
+test('a trade compares its quote leg; amounts within 1e-8 of the amount or at the 8th decimal are equal', () => {
     const r = row({ type: 'sell', quoteCurrency: 'BTC', quoteAmount: '0.001' })
     const legs = legsOf(r)
     legs[0].quantity = 1.5 * (1 + 1e-10)
+    assert.ok(empty(plan({ rows: [r], legs }).plan))
+    legs[1].quantity = 0.00100000999
     assert.ok(empty(plan({ rows: [r], legs }).plan))
     legs[1].quantity = 0.002
     const { plan: p } = plan({ rows: [r], legs })
