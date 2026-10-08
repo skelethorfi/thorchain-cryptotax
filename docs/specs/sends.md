@@ -66,7 +66,8 @@ counting these sends; when `maya` is not in `protocols`, it says to add it.
 
 A send **to itself** with such a memo reached no protocol, so it did nothing
 but pay its fee (most likely a failed attempt at the action, e.g. a TCY claim
-sent to the claiming wallet rather than to THORChain). It still gives its
+sent to the claiming wallet rather than to THORChain; the TCY claims page had
+faults in May 2025). It still gives its
 `send` row, as the fee was paid, with a warning that says so, and is not
 counted in that end-of-run line.
 
