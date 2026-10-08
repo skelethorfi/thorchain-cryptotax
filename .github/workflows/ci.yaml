@@ -24,3 +24,6 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+      - name: Run summ-sync tests
+        run: cd packages/summ-sync && npm test
