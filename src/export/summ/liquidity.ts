@@ -6,6 +6,7 @@ import {toPositionAsset} from "../../domain/Asset";
 import {getLpTokenName} from "./ThorchainUtils";
 import {formatBlockchain, Protocol} from "../../domain/Protocol";
 import {leg, legTrace, plusSeconds} from "./common";
+import {MayaLiquidityAuction} from "../../config/ITaxConfig";
 
 // Summ needs a wallet for every row; an old deposit can have none
 const MISSING_ADDRESS = 'MISSING-DEPOSIT-ADDRESS';
@@ -172,11 +173,18 @@ export function auctionDepositRows(activity: Activity, protocol: Protocol): Cryp
     }];
 }
 
-// The auction's end: what the auction supplied as income, then added (an income row, and an add-liquidity row
-// 1 s later), the position as a receive-LP-token row 10 s later, and the price-helper row 20 s later: the RUNE
-// side twice, as the pool is symmetric
-export function auctionPositionRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
-    const supplied = activity.legs.filter(item => item.role === 'reward');
+// The auction's end. With 'income', what the auction supplied as income, then added (an income row, and an
+// add-liquidity row 1 s later); with 'deposit', nothing for it, so the position's cost is the RUNE deposited.
+// Then the position as a receive-LP-token row 10 s later, and the price-helper row 20 s later: the RUNE side
+// twice, as the pool is symmetric.
+export function auctionPositionRows(activity: Activity, protocol: Protocol, treatment?: MayaLiquidityAuction): CryptoTaxTransaction[] {
+    if (!treatment) {
+        throw new Error(`Config: this run has a Maya liquidity auction position (${activity.time.toISOString().slice(0, 10)}). `
+            + 'Set mayaLiquidityAuction = "income" (what the auction supplied is income at its end) or "deposit" '
+            + '(the position\'s cost is the RUNE deposited; any gain shows at withdrawal). See docs/specs/maya.md');
+    }
+
+    const supplied = treatment === 'income' ? activity.legs.filter(item => item.role === 'reward') : [];
     const position = activity.legs.find(item => item.role === 'principal' && item.direction === 'in')!;
     const lpToken = getLpTokenName(position.asset.notation, protocol);
     const txId = activity.txids.in[0] ?? '';

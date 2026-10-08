@@ -52,9 +52,32 @@ describe('Maya liquidity auction', () => {
         const input = readCaseInput(path.join(__dirname, 'cases', 'maya', 'liquidity-auction'));
         const bigDeposit = {...input.inbounds![0], in: [{...input.inbounds![0].in[0], coins: [{asset: 'THOR.RUNE', amount: '200000000000'}]}]};
 
-        const {rows, issues} = runBundle(toBundle({...input, inbounds: [bigDeposit, ...input.inbounds!.slice(1)]}), MAYA);
+        const {rows, issues} = runBundle(toBundle({...input, inbounds: [bigDeposit, ...input.inbounds!.slice(1)]}), MAYA, {mayaLiquidityAuction: 'income'});
 
         expect(issues.map(issue => issue.kind)).toEqual(['manual']);
         expect(rows.filter(row => row.type === 'income').map(row => row.baseCurrency)).toEqual(['CACAO']);
+    });
+
+    const auction = async () => {
+        const path = await import('path');
+        const {readCaseInput, toBundle} = await import('../src/fixtures/GoldenCase');
+        const {runBundle} = await import('../src/pipeline/run');
+        const {MAYA} = await import('../src/domain/Protocol');
+        const bundle = toBundle(readCaseInput(path.join(__dirname, 'cases', 'maya', 'liquidity-auction')));
+        return (mayaLiquidityAuction?: 'income' | 'deposit') => runBundle(bundle, MAYA, {mayaLiquidityAuction}).rows;
+    };
+
+    test("with 'deposit', the end gives only the LP token and the price-helper; the deposits and their IDs are as with 'income'", async () => {
+        const rows = await auction();
+        const income = rows('income');
+        const deposit = rows('deposit');
+
+        expect(deposit.map(row => row.type)).toEqual(['add-liquidity', 'add-liquidity', 'spam', 'receive-lp-token']);
+        expect(deposit.map(row => row.id).every(id => income.some(other => other.id === id))).toBe(true);
+    });
+
+    test('without the config key, the run stops and says what to set', async () => {
+        const rows = await auction();
+        expect(() => rows()).toThrow('Set mayaLiquidityAuction = "income"');
     });
 });

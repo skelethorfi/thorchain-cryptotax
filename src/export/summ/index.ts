@@ -9,17 +9,19 @@ import {loanOpenRows, loanRepayRows} from "./loan";
 import {tcyClaimRows, tcyDistributionRows, tcyStakeRows, thornameRows} from "./tcy";
 import {rujiraStakeRows, rujiraTradeRows} from "./rujira";
 import {sendRows} from "./send";
+import {MayaLiquidityAuction} from "../../config/ITaxConfig";
 import {AssetNamesConfig, getProtocol, Protocol, withAssetNames} from "../../domain/Protocol";
 
 // The tax choices the Summ rows depend on, from the config. Today: how assets are named
 // (docs/specs/assets.md).
 export interface Treatment {
     assets?: AssetNamesConfig;
+    mayaLiquidityAuction?: MayaLiquidityAuction;
 }
 
 // Activities as rows of Summ's advanced CSV, the same rows the old mappers wrote
 export function exportSumm(activities: Activity[], treatment: Treatment = {}): CryptoTaxTransaction[] {
-    return activities.flatMap(activity => toRows(activity, withAssetNames(getProtocol(activity.protocol), treatment.assets))
+    return activities.flatMap(activity => toRows(activity, withAssetNames(getProtocol(activity.protocol), treatment.assets), treatment)
         .map(row => withId(row, activity)));
 }
 
@@ -33,7 +35,7 @@ function withId(row: CryptoTaxTransaction, activity: Activity): CryptoTaxTransac
     return {...row, trace, id: rowId(activity.time, row.walletExchange ?? '', trace)};
 }
 
-function toRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
+function toRows(activity: Activity, protocol: Protocol, treatment: Treatment): CryptoTaxTransaction[] {
     switch (activity.kind) {
         case 'bond':
         case 'unbond':
@@ -48,7 +50,7 @@ function toRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] 
         case 'lp.auction.deposit':
             return auctionDepositRows(activity, protocol);
         case 'lp.auction.position':
-            return auctionPositionRows(activity, protocol);
+            return auctionPositionRows(activity, protocol, treatment.mayaLiquidityAuction);
         case 'lp.withdraw':
         case 'savers.withdraw':
             return withdrawRows(activity, protocol);

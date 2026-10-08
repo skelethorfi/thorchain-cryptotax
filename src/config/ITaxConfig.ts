@@ -1,6 +1,9 @@
 import {IWallet} from "./IWallet";
 import {AssetNamesConfig, ProtocolId} from "../domain/Protocol";
 
+export const MAYA_LIQUIDITY_AUCTION = ['income', 'deposit'] as const;
+export type MayaLiquidityAuction = typeof MAYA_LIQUIDITY_AUCTION[number];
+
 export interface ITaxConfig {
     fromDate: string;
     toDate: string;
@@ -27,4 +30,8 @@ export interface ITaxConfig {
     protocols?: ProtocolId[];
     // How assets that live on THORChain or Maya are named (docs/specs/assets.md). Default: L1 names
     assets?: AssetNamesConfig;
+    // Maya's 2023 liquidity auction (docs/specs/maya.md): 'income' (what the auction supplied is income at its
+    // end) or 'deposit' (the position's cost is the RUNE deposited). No default: a run that finds an auction
+    // position stops until it is set.
+    mayaLiquidityAuction?: MayaLiquidityAuction;
 }

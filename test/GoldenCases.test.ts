@@ -31,7 +31,7 @@ describe('golden cases', () => {
 
     // The fixture tool writes input.json from a RawBundle, so every case must survive the round trip
     test.each(caseDirs.map(dir => [name(dir), dir]))('%s input.json is a RawBundle', (_name, dir) => {
-        const input = readCaseInput(dir);
+        const {treatment, ...input} = readCaseInput(dir);
         expect(toCaseInput(toBundle(input), input.description)).toStrictEqual(input);
     });
 

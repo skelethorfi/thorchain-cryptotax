@@ -6,6 +6,7 @@ import {TxStatusResponse} from "@xchainjs/xchain-thornode";
 import {CryptoTaxTransaction} from "../export/summ/csv";
 import {ViewblockTx} from "../sources/viewblock";
 import {runBundle} from "../pipeline/run";
+import {Treatment} from "../export/summ";
 import {TcyDistributionItem} from "../sources/tcy/TcyDistributionService";
 import {getProtocol, ProtocolId} from "../domain/Protocol";
 import {CosmosTx} from "../sources/thorchain/CosmosTxService";
@@ -37,6 +38,8 @@ export interface GoldenCaseInput {
     cosmosTxs?: CosmosTx[];
     // THORChain sends attached as the action's inbounds (a Maya liquidity auction's deposits)
     inbounds?: Action[];
+    // The config's treatment choices the case is mapped with, e.g. {mayaLiquidityAuction: 'income'}
+    treatment?: Treatment;
 }
 
 export const INPUT_FILE = 'input.json';
@@ -161,7 +164,7 @@ export function runCase(input: GoldenCaseInput): object[] {
 
 // The activities a ported action type gives, and the rows as expected.yaml holds them
 export function runCaseLayers(input: GoldenCaseInput): {activities: Activity[]; rows: object[]} {
-    const {activities, rows, issues} = runBundle(toBundle(input), getProtocol(input.protocol));
+    const {activities, rows, issues} = runBundle(toBundle(input), getProtocol(input.protocol), input.treatment);
     const failure = issues.find(issue => issue.kind === 'failed');
 
     if (failure) {

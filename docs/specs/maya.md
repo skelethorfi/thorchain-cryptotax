@@ -108,8 +108,21 @@ end, with what the auction added:
 | the auction's end | `ReceiveLpToken` `MayaLP.THOR.RUNE`, and the `Spam` price-helper row | the add's liquidity units |
 
 The CACAO side and the RUNE above the deposits came from the auction, not the
-wallet, so they are income at the auction's end (decided 2026-10-08), and
-then added to the pool, so the position's cost includes them. When the RUNE
+wallet. How to treat them is a tax choice, set by the config key
+`mayaLiquidityAuction`:
+
+- `"income"`: they are income at the auction's end, then added to the pool,
+  so the position's cost includes them (the `Income` and `AddLiquidity` rows
+  above).
+- `"deposit"`: no rows for them; the position's cost is the RUNE deposited,
+  and any gain shows when the position is withdrawn.
+
+The key has no default: a run that finds an auction position stops, before
+writing anything, until it is set, as a default would make a choice worth
+an income year's timing for the user. Configs without an auction position
+never need it. The rows both choices share (the deposits, the LP token and
+the price-helper) have the same IDs under either, so switching changes
+exactly the `Income` and `AddLiquidity` rows at the auction's end. When the RUNE
 side is **less** than the deposits (an auction withdrawal, or a tier rule),
 the run cannot tell what happened to the rest: no RUNE row is added at the
 end, and the action gets an enter-by-hand note. An add with no deposits found
