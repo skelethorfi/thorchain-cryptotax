@@ -25,6 +25,7 @@ export interface Send {
 const ARKEO_DELEGATION = 'delegate:arkeo:';
 
 export const ACTION_MEMO_WARNING = 'exported as a send, but its memo asks for an action no listed action matches';
+export const SELF_SEND_MEMO_WARNING = 'sent to itself with a memo that asks for an action: no protocol received it, so it did nothing but pay the fee (a failed attempt?)';
 
 // The run summary's line for the sends that warned of an action memo: RUNE sent to Maya's vault (e.g. a Maya
 // swap) is one, unless the config lists Maya's actions
@@ -97,8 +98,11 @@ export function interpretSend(bundle: RawBundle, protocol: Protocol): {activitie
     };
 
     // selectSends has dropped the sends another listed action explains; one with an action memo left over was
-    // most likely received by a protocol whose actions this run does not list (actionMemoSummary)
-    const issues: Issue[] = ACTION_MEMO.test(send.memo) ? [{kind: 'warning', message: `${ACTION_MEMO_WARNING}: ${send.memo}`}] : [];
+    // most likely received by a protocol whose actions this run does not list (actionMemoSummary). One sent to
+    // itself reached no protocol: it did nothing but pay the fee, e.g. a failed attempt at the action.
+    const issues: Issue[] = !ACTION_MEMO.test(send.memo) ? []
+        : send.from === send.to ? [{kind: 'warning', message: `${SELF_SEND_MEMO_WARNING}: ${send.memo}`}]
+        : [{kind: 'warning', message: `${ACTION_MEMO_WARNING}: ${send.memo}`}];
 
     return {activities: [sendActivity(send, bundle.wallet, protocol)], issues};
 }
