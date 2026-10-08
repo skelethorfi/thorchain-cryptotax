@@ -1,5 +1,5 @@
 import {describe, expect, test} from "@jest/globals";
-import {actionMemoSummary, interpretSend} from "../src/interpret/midgard/send";
+import {ACTION_MEMO_WARNING, actionMemoSummary, interpretSend, SELF_SEND_MEMO_WARNING} from "../src/interpret/midgard/send";
 import {RawBundle} from "../src/sources/RawBundle";
 import {THORCHAIN} from "../src/domain/Protocol";
 
@@ -20,6 +20,17 @@ describe('interpretSend', () => {
 
         expect(activities).toHaveLength(1);
         expect(issues.map(issue => issue.kind)).toStrictEqual(['warning']);
+    });
+
+    test('a send to itself with an action memo reached no protocol: it says so, and is not counted as an unmatched action', () => {
+        const toSelf = send('tcy:thor1-user-wallet-11111');
+        (toSelf.data as any).out[0].address = 'thor1-user-wallet-11111';
+
+        const {activities, issues} = interpretSend(toSelf, THORCHAIN);
+
+        expect(activities).toHaveLength(1);
+        expect(issues.map(issue => issue.message)).toStrictEqual([`${SELF_SEND_MEMO_WARNING}: tcy:thor1-user-wallet-11111`]);
+        expect(issues[0].message.startsWith(ACTION_MEMO_WARNING)).toBe(false);
     });
 
     test.each(['', '101663207', 'test', 'delegate:arkeo:arkeo1x', 'Huma deposit'])("doesn't warn on a note: '%s'", memo => {
