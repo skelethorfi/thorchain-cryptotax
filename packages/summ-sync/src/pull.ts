@@ -9,14 +9,14 @@
 
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { McpClient } from './mcp.mjs'
-import { parseActions, parseDetail, parsePageHeader } from './parse.mjs'
-import { loadConfig } from './config.mjs'
+import { McpClient } from './mcp.ts'
+import { parseActions, parseDetail, parsePageHeader } from './parse.ts'
+import { loadConfig } from './config.ts'
 
 const PAGE_SIZE = 250
 
-async function queryAll(client, filter) {
-    const pages = []
+async function queryAll(client: McpClient, filter?: Record<string, unknown>): Promise<string[]> {
+    const pages: string[] = []
     for (let page = 1; ; page++) {
         const text = await client.callTool('query_summ_transactions', {
             count: PAGE_SIZE,
@@ -34,7 +34,7 @@ async function queryAll(client, filter) {
     return pages
 }
 
-export async function pull(stateDir) {
+export async function pull(stateDir: string): Promise<string> {
     const config = loadConfig(stateDir)
     const stamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-')
     const dir = join(stateDir, 'snapshots', stamp)
@@ -57,7 +57,7 @@ export async function pull(stateDir) {
     let details = 0
     for (const source of config.managedSources) {
         console.log(`Fetching full detail for source "${source}"`)
-        const ids = (await queryAll(client, { type: 'source', value: [source] })).flatMap(parseActions).map((a) => a['Action ID'])
+        const ids = (await queryAll(client, { type: 'source', value: [source] })).flatMap(parseActions).map((a) => a['Action ID'] as string)
         for (const [i, actionId] of ids.entries()) {
             const detail = parseDetail(await client.callTool('inspect_transaction', { actionId }))
             writeFileSync(join(dir, 'details', `${actionId}.json`), JSON.stringify(detail, null, 2) + '\n')

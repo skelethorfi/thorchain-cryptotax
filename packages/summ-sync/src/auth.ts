@@ -3,6 +3,7 @@
 // (mode 600); the state dir is the user's private folder, never a repo.
 
 import { createServer } from 'node:http'
+import type { AddressInfo } from 'node:net'
 import { createHash, randomBytes } from 'node:crypto'
 import { execFile } from 'node:child_process'
 import { mkdirSync, readFileSync, writeFileSync, existsSync, chmodSync } from 'node:fs'
@@ -13,21 +14,36 @@ export const MCP_URL = `${ISSUER}/mcp`
 export const READ_SCOPE = 'mcp:read'
 export const WRITE_SCOPE = 'mcp:read mcp:write'
 
-const b64url = (buf) => buf.toString('base64url')
-const authFile = (stateDir) => join(stateDir, '.auth.json')
+interface Auth {
+    client_id: string
+    scope: string
+    access_token: string
+    refresh_token?: string
+    expires_at: number
+}
 
-function loadAuth(stateDir) {
+interface TokenResponse {
+    access_token: string
+    refresh_token?: string
+    expires_in?: number
+    scope?: string
+}
+
+const b64url = (buf: Buffer) => buf.toString('base64url')
+const authFile = (stateDir: string) => join(stateDir, '.auth.json')
+
+function loadAuth(stateDir: string): Auth {
     if (!existsSync(authFile(stateDir))) throw new Error(`Not logged in. Run: summ-sync login ${stateDir}`)
     return JSON.parse(readFileSync(authFile(stateDir), 'utf8'))
 }
 
-function saveAuth(stateDir, auth) {
+function saveAuth(stateDir: string, auth: Auth) {
     mkdirSync(stateDir, { recursive: true })
     writeFileSync(authFile(stateDir), JSON.stringify(auth, null, 2), { mode: 0o600 })
     chmodSync(authFile(stateDir), 0o600)
 }
 
-async function postForm(url, params) {
+async function postForm(url: string, params: Record<string, string>): Promise<TokenResponse> {
     const res = await fetch(url, {
         method: 'POST',
         headers: { 'content-type': 'application/x-www-form-urlencoded', accept: 'application/json' },
@@ -38,7 +54,7 @@ async function postForm(url, params) {
     return JSON.parse(text)
 }
 
-function withExpiry(auth, token) {
+function withExpiry(auth: Pick<Auth, 'client_id' | 'scope' | 'refresh_token'>, token: TokenResponse): Auth {
     return {
         ...auth,
         access_token: token.access_token,
@@ -48,10 +64,10 @@ function withExpiry(auth, token) {
 }
 
 /** Authorise in the browser and save the token. `scope` is READ_SCOPE or WRITE_SCOPE. */
-export async function login(stateDir, scope = READ_SCOPE) {
+export async function login(stateDir: string, scope = READ_SCOPE): Promise<void> {
     const server = createServer()
-    await new Promise((r) => server.listen(0, '127.0.0.1', r))
-    const redirectUri = `http://127.0.0.1:${server.address().port}/callback`
+    await new Promise<void>((r) => server.listen(0, '127.0.0.1', r))
+    const redirectUri = `http://127.0.0.1:${(server.address() as AddressInfo).port}/callback`
 
     const reg = await fetch(`${ISSUER}/oauth/register`, {
         method: 'POST',
@@ -66,7 +82,7 @@ export async function login(stateDir, scope = READ_SCOPE) {
         }),
     })
     if (!reg.ok) throw new Error(`register -> ${reg.status} ${(await reg.text()).slice(0, 300)}`)
-    const client = await reg.json()
+    const client = (await reg.json()) as { client_id: string }
 
     const verifier = b64url(randomBytes(32))
     const state = b64url(randomBytes(16))
@@ -85,16 +101,17 @@ export async function login(stateDir, scope = READ_SCOPE) {
     console.log(`Opening the browser to authorise (scope ${scope}). If it does not open, visit:\n${authUrl}\n`)
     execFile(process.platform === 'darwin' ? 'open' : 'xdg-open', [authUrl.toString()], () => {})
 
-    const code = await new Promise((resolve, reject) => {
+    const code = await new Promise<string>((resolve, reject) => {
         const timer = setTimeout(() => reject(new Error('Timed out waiting for authorisation (5 min)')), 300_000)
         server.on('request', (req, res) => {
-            const url = new URL(req.url, redirectUri)
+            const url = new URL(req.url ?? '/', redirectUri)
             if (url.pathname !== '/callback') return res.writeHead(404).end()
-            const ok = url.searchParams.get('state') === state && url.searchParams.get('code')
-            res.writeHead(ok ? 200 : 400, { 'content-type': 'text/plain' })
-            res.end(ok ? 'Authorised. You can close this tab.' : `Failed: ${url.searchParams.get('error') ?? 'bad state'}`)
+            const code = url.searchParams.get('state') === state ? url.searchParams.get('code') : null
+            res.writeHead(code ? 200 : 400, { 'content-type': 'text/plain' })
+            res.end(code ? 'Authorised. You can close this tab.' : `Failed: ${url.searchParams.get('error') ?? 'bad state'}`)
             clearTimeout(timer)
-            ok ? resolve(url.searchParams.get('code')) : reject(new Error(`Authorisation failed: ${url.search}`))
+            if (code) resolve(code)
+            else reject(new Error(`Authorisation failed: ${url.search}`))
         })
     })
     server.close()
@@ -112,7 +129,7 @@ export async function login(stateDir, scope = READ_SCOPE) {
 }
 
 /** A valid access token, refreshed when it is about to expire. */
-export async function accessToken(stateDir) {
+export async function accessToken(stateDir: string): Promise<string> {
     let auth = loadAuth(stateDir)
     if (Date.now() < auth.expires_at - 60_000) return auth.access_token
     if (!auth.refresh_token) throw new Error('Token expired and there is no refresh token. Run login again.')

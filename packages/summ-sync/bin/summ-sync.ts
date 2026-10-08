@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // summ-sync: keep Summ matching a set of Summ CSV files (README.md).
 
-import { login, READ_SCOPE, WRITE_SCOPE } from '../src/auth.mjs'
-import { McpClient } from '../src/mcp.mjs'
-import { pull } from '../src/pull.mjs'
+import { login, READ_SCOPE, WRITE_SCOPE } from '../src/auth.ts'
+import { McpClient } from '../src/mcp.ts'
+import { pull } from '../src/pull.ts'
 
 const USAGE = `Usage:
   summ-sync login <state dir> [--write]   authorise in the browser (read, or read and write)
@@ -21,6 +21,7 @@ try {
         for (const t of await client.listTools()) console.log(`${t.name}${t.annotations?.readOnlyHint ? ' (read-only)' : ''}`)
     } else throw new Error(USAGE)
 } catch (e) {
-    console.error(e.message.startsWith('Usage') ? e.message : `Error: ${e.message}`)
+    const message = e instanceof Error ? e.message : String(e)
+    console.error(message.startsWith('Usage') ? message : `Error: ${message}`)
     process.exit(1)
 }

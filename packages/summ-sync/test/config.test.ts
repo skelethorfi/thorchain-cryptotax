@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { DEFAULTS, loadConfig, parseConfig } from '../src/config.mjs'
+import { DEFAULTS, loadConfig, parseConfig } from '../src/config.ts'
 
 test('a missing config gives the defaults', () => {
     assert.deepEqual(loadConfig(mkdtempSync(join(tmpdir(), 'summ-sync-'))), DEFAULTS)
