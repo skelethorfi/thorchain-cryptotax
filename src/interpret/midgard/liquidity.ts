@@ -3,8 +3,8 @@ import {Activity, Leg} from "../../domain/Activity";
 import {formatAmount, parseAmount} from "../../domain/Amount";
 import {toAsset, toPositionAsset} from "../../domain/Asset";
 import {Issue} from "../../domain/Issue";
-import {getActionDate} from "../../sources/thorchain/MidgardUtils";
-import {Protocol} from "../../domain/Protocol";
+import {getActionDate, parseMidgardAsset} from "../../sources/thorchain/MidgardUtils";
+import {Protocol, THORCHAIN} from "../../domain/Protocol";
 import {getBundleKey, RawBundle} from "../../sources/RawBundle";
 import {isDonateAdd, midgardActionKey} from "../../sources/store/Sources";
 import {getTxids} from "./bond";
@@ -118,11 +118,19 @@ function interpretAuction(bundle: RawBundle, protocol: Protocol): {activities: A
     const position = {...activity(bundle, protocol, 'lp.auction.position', legs),
         details: {pool: action.pools[0], side: formatAmount(amountOf(sideCoin.asset, sideCoin.amount)), sideAsset: sideCoin.asset}};
     const chain = sideCoin.asset.split('.')[0];
+    const currency = parseMidgardAsset(sideCoin.asset, protocol).currency;
+    const sideAmount = `${formatAmount(amountOf(sideCoin.asset, sideCoin.amount))} ${currency}`;
+    const notFound = chain === THORCHAIN.nativeChain
+        ? `the ${currency} deposits were not found among the wallet's THORChain sends`
+        : `the ${currency} deposits were sent on the ${chain} chain, which this tool does not read`;
     const issues: Issue[] = sends.length === 0
-        ? [{kind: 'manual', message: `Maya liquidity auction: the ${sideCoin.asset} deposits were sent ${chain === 'THOR' ? 'on THORChain but not found' : `on ${chain}, which no source here lists`}; `
-            + `the position's ${sideCoin.asset} side is added at the auction's end. If that wallet's own transactions are imported, categorise its deposits to Maya's vault as this add instead`}]
+        ? [{kind: 'manual', message: `Maya liquidity auction (${action.pools[0]}): ${notFound}, so the side, ${sideAmount}, is one add-liquidity row `
+            + `at the auction's end, in the file of ${side.address}. Do not upload that row: in Summ, categorise that wallet's own deposits `
+            + `to Maya's vault (sent before ${getActionDate(action).toISOString().slice(0, 10)}) as the add to the pool instead. `
+            + `Their total can differ from the side (auction withdrawals, tier rules)`}]
         : extra < 0n
-            ? [{kind: 'manual', message: `Maya liquidity auction: the position's ${sideCoin.asset} side (${sideCoin.amount}) is less than the deposits (${deposited}); enter what happened to the difference by hand`}]
+            ? [{kind: 'manual', message: `Maya liquidity auction (${action.pools[0]}): the position's side, ${sideAmount}, is less than the deposits found `
+                + `(${formatAmount(amountOf(sideCoin.asset, deposited))} ${currency}); enter what happened to the difference by hand`}]
             : [];
 
     return {activities: [...deposits, position], issues};

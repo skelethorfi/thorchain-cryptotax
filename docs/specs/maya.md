@@ -113,9 +113,10 @@ lists (they are in that wallet's own import in Summ).
 
 Another asset, or RUNE whose deposits were not found: the side is an
 `AddLiquidity` row at the auction's end, in that wallet's file, with no fee,
-and the action gets an enter-by-hand note: if that wallet's transactions are
-imported, its deposits to Maya's vault are this add, and should be
-categorised so rather than counted twice. The CACAO side, LP token and
+and the action gets an enter-by-hand note giving the side's amount and the
+file: not to upload that row, but to categorise that wallet's own deposits to
+Maya's vault (in its own import in Summ) as the add, as their total can
+differ from the side. Summ push-back (backlog) can do that categorising. The CACAO side, LP token and
 price-helper rows are as above.
 
 When the RUNE side is **less** than the deposits found (an auction
