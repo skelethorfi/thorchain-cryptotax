@@ -4,14 +4,18 @@
 //     pages/NNNN.md            every page of the action list, as returned
 //     actions.jsonl            one line per action (parsed from the pages)
 //     details/<action id>.json full JSON and change history of each action
-//                              of a managed source (config.managedSources)
+//                              of a managed source (config.managedSources) and,
+//                              given a run dir, of each action whose tx hash is a
+//                              txid of a categorised row (a chain not in managedChains)
 //     manifest.json            counts and what was fetched
 
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { McpClient } from './mcp.ts'
-import { parseActions, parseDetail, parsePageHeader } from './parse.ts'
-import { loadConfig } from './config.ts'
+import { type ListedAction, parseActions, parseDetail, parsePageHeader } from './parse.ts'
+import { type Config, loadConfig } from './config.ts'
+import { readRun } from './run.ts'
+import { normaliseTxid } from './snapshot.ts'
 
 const PAGE_SIZE = 250
 
@@ -34,8 +38,20 @@ async function queryAll(client: McpClient, filter?: Record<string, unknown>): Pr
     return pages
 }
 
-export async function pull(stateDir: string): Promise<string> {
+/** The txids of the run's categorised rows: those plan matches to Summ's own imports. */
+export function categorisedTxids(runDir: string, config: Config): Set<string> {
+    const managed = new Set(config.managedChains)
+    return new Set(readRun(runDir).rows.filter((r) => !managed.has(r.chain)).flatMap((r) => r.txids))
+}
+
+/** The ids of the listed actions whose tx hash is one of `txids`. */
+export function actionsWithTxids(actions: ListedAction[], txids: Set<string>): string[] {
+    return actions.filter((a) => typeof a['Tx Hash'] === 'string' && txids.has(normaliseTxid(a['Tx Hash']))).map((a) => a['Action ID'] as string)
+}
+
+export async function pull(stateDir: string, runDir?: string): Promise<string> {
     const config = loadConfig(stateDir)
+    const txids = runDir ? categorisedTxids(runDir, config) : null
     const stamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-')
     const dir = join(stateDir, 'snapshots', stamp)
     mkdirSync(join(dir, 'pages'), { recursive: true })
@@ -54,20 +70,28 @@ export async function pull(stateDir: string): Promise<string> {
     if (unique !== total) console.log('  WARNING: counts differ. The data changed during the pull or the parser missed rows; check pages/.')
 
     mkdirSync(join(dir, 'details'), { recursive: true })
-    let details = 0
-    for (const source of config.managedSources) {
-        console.log(`Fetching full detail for source "${source}"`)
-        const ids = (await queryAll(client, { type: 'source', value: [source] })).flatMap(parseActions).map((a) => a['Action ID'] as string)
+    const fetched = new Set<string>()
+    const fetchDetails = async (ids: string[]) => {
         for (const [i, actionId] of ids.entries()) {
             const detail = parseDetail(await client.callTool('inspect_transaction', { actionId }))
             writeFileSync(join(dir, 'details', `${actionId}.json`), JSON.stringify(detail, null, 2) + '\n')
+            fetched.add(actionId)
             process.stdout.write(`\r  ${i + 1}/${ids.length}   `)
         }
         process.stdout.write('\n')
-        details += ids.length
     }
+    for (const source of config.managedSources) {
+        console.log(`Fetching full detail for source "${source}"`)
+        await fetchDetails((await queryAll(client, { type: 'source', value: [source] })).flatMap(parseActions).map((a) => a['Action ID'] as string))
+    }
+    if (txids) {
+        const ids = actionsWithTxids(actions, txids).filter((id) => !fetched.has(id))
+        console.log(`Fetching full detail for ${ids.length} actions with a categorised row's txid`)
+        await fetchDetails(ids)
+    }
+    const details = fetched.size
 
-    const manifest = { takenAt: new Date().toISOString(), total, parsed: actions.length, unique, managedSources: config.managedSources, details }
+    const manifest = { takenAt: new Date().toISOString(), total, parsed: actions.length, unique, managedSources: config.managedSources, run: runDir ?? null, details }
     writeFileSync(join(dir, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n')
     console.log(`Snapshot written to ${dir}`)
     return dir
