@@ -12,3 +12,4 @@
 - [Run summary](./run-summary.md)
 - [Periods and CSV files](./periods.md)
 - [Activity](./activity.md)
+- [Summ sync](./summ-sync.md)

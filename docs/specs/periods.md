@@ -70,8 +70,10 @@ ID's timestamp, type, wallet, record, role and asset. An ID changes only when
 what the row is changes (e.g. a mapper fix splits a row); `v1` changes if the
 format ever does. Two rows with one ID are a mapper bug, and stop the run.
 
-Summ is not known to de-duplicate on the ID when a file is uploaded again, so
-nothing relies on it.
+On upload, Summ skips a row whose ID and data equal a row it already holds,
+and imports a row with a known ID but different data as a second row (Summ
+help, "Handling duplicate transactions"). So a corrected row replaces the old
+one only after the old one is deleted (`summ-sync.md`).
 
 ## History
 
