@@ -35,6 +35,7 @@ export interface ITaxConfig {
     // position stops until it is set.
     mayaLiquidityAuction?: MayaLiquidityAuction;
     // Senders whose transfers to the config's wallets are income, e.g. a project's reward distribution wallet
-    // (docs/specs/sends.md). Default: none, so every transfer received is a receive
+    // (docs/specs/sends.md). Unset: the known distribution wallets' MAYA (KNOWN_DISTRIBUTORS); set, it replaces
+    // them, so [] makes every transfer received a receive
     incomeFrom?: string[];
 }

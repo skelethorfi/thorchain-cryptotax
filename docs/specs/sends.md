@@ -120,8 +120,20 @@ protocol's own chain's: Midgard and Viewblock write TCY as `TCY`, which is
 
 **Income.** Whether a transfer received is income depends on who sent it,
 which the chain does not say: a project's reward distribution is an ordinary
-wallet, not a protocol module (the MAYA token distributions are two such
-wallets). So the config lists them: `incomeFrom = ["<address>", …]`. A
-transfer received from a listed sender is `income`; every other is a
-`receive`. Default: none. The row's ID is that of the received coin either
-way (`periods.md`), so changing the list changes the row's type, not its ID.
+wallet, not a protocol module, and neither Midgard nor the node lists them.
+
+- **Known distribution wallets** (`KNOWN_DISTRIBUTORS` in
+  `src/export/summ/send.ts`), identified by what they do (2026-10-08): on
+  Maya, a MAYA distribution wallet (2,147 of its 2,150 sends are MAYA, to 868
+  recipients, no memo) and the treasury that funds it (3,635 of its 3,860
+  sends are MAYA, to 2,549 recipients; it also trades, takes funds in from
+  many senders and sends CACAO and other tokens). Their **MAYA** transfers are
+  income; anything else they send is a `receive`, and the run warns of it, as
+  it may be a refund, a return or a trade.
+- **`incomeFrom = ["<address>", …]`** in the config replaces that list: a
+  transfer received from a listed sender is `income`, whatever the coin, and
+  every other is a `receive`; `incomeFrom = []` turns income off.
+
+The run summary counts the receipts that are income by default. A row's ID
+is that of the received coin either way (`periods.md`), so changing the list
+changes the row's type, not its ID.

@@ -17,7 +17,7 @@ import {AssetNamesConfig, getProtocol, Protocol, withAssetNames} from "../../dom
 export interface Treatment {
     assets?: AssetNamesConfig;
     mayaLiquidityAuction?: MayaLiquidityAuction;
-    // Senders whose transfers to the wallet are income (ITaxConfig.incomeFrom)
+    // Senders whose transfers to the wallet are income (ITaxConfig.incomeFrom); unset: the known distributors
     incomeFrom?: string[];
 }
 

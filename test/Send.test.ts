@@ -58,3 +58,28 @@ describe('income from a listed sender', () => {
         expect(income.id).toBe(plain.id);
     });
 });
+
+describe('known distribution wallets', () => {
+    test("their MAYA is income unless incomeFrom is set; their other assets are not", async () => {
+        const {isIncomeReceipt, KNOWN_DISTRIBUTORS} = await import('../src/export/summ/send');
+        const [known] = KNOWN_DISTRIBUTORS;
+
+        expect(isIncomeReceipt(known.address.toUpperCase(), 'MAYA.MAYA')).toBe(true);
+        expect(isIncomeReceipt(known.address, 'MAYA.CACAO')).toBe(false);
+        expect(isIncomeReceipt('maya1-someone-else', 'MAYA.MAYA')).toBe(false);
+        expect(isIncomeReceipt(known.address, 'MAYA.MAYA', [])).toBe(false);
+        expect(isIncomeReceipt(known.address, 'MAYA.CACAO', [known.address])).toBe(true);
+    });
+
+    test('the summary counts income by default and warns of their other receipts', async () => {
+        const {knownDistributorReport, KNOWN_DISTRIBUTORS} = await import('../src/export/summ/send');
+        const from = KNOWN_DISTRIBUTORS[0].address;
+        const rows = [{type: 'income', baseCurrency: 'MAYA', from}, {type: 'receive', baseCurrency: 'CACAO', from}, {type: 'receive', baseCurrency: 'CACAO', from: 'maya1-other'}] as any[];
+
+        const report = knownDistributorReport(rows);
+
+        expect(report.info).toEqual(['1 receipts from known distribution wallets are income (incomeFrom is not set; docs/specs/sends.md)']);
+        expect(report.warnings).toEqual([`WARN: 1 receipts from known distribution wallets are plain receives (CACAO from …${from.slice(-8)}): if they are income, list the sender in incomeFrom`]);
+        expect(knownDistributorReport(rows, [from]).info).toEqual([]);
+    });
+});
