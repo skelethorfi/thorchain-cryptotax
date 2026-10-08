@@ -38,7 +38,7 @@ type: add-liquidity
 baseCurrency: CACAO
 baseAmount: "355.055465624"
 feeCurrency: CACAO
-feeAmount: "0.2"
+feeAmount: "1"
 from: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
 to: mayaprotocol
 blockchain: Mayachain

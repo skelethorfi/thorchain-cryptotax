@@ -3,6 +3,7 @@ import {assetFromStringEx, AssetType} from "@xchainjs/xchain-util";
 import {MidgardService} from "./thorchain/MidgardService";
 import {ThornodeService} from "./thorchain/ThornodeService";
 import {CosmosTxService, getCosmosTxIds} from "./thorchain/CosmosTxService";
+import {MayanodeService} from "./maya/MayanodeService";
 import {TcyDistributionService} from "./tcy/TcyDistributionService";
 import {getActionDate} from "./thorchain/MidgardUtils";
 import {Viewblock} from "./viewblock";
@@ -68,7 +69,8 @@ export function shouldIncludeAction(action: Action): boolean {
 // stuckBefore: an action still pending from before this date is stuck (docs/specs/pending.md)
 export class MidgardSource implements Source {
     constructor(private protocol: Protocol, private midgard: MidgardService, private thornode: ThornodeService,
-                private cosmosTxs: CosmosTxService, private notFinal: NotFinal[] = [], private stuckBefore?: Date) {
+                private cosmosTxs: CosmosTxService, private notFinal: NotFinal[] = [], private stuckBefore?: Date,
+                private mayanode?: MayanodeService) {
     }
 
     async bundlesFor(wallet: string): Promise<RawBundle[]> {
@@ -117,7 +119,10 @@ export class MidgardSource implements Source {
             cosmosTxs.push(await this.cosmosTxs.getTx(txId, getActionDate(action)));
         }
 
-        return {source: 'midgard', protocol: this.protocol.id, wallet, data: action, thornodeTxs, cosmosTxs};
+        // Maya's native fee has changed over time: the setting at the action's height (docs/specs/maya.md, Fees)
+        const nativeFee = this.mayanode ? (await this.mayanode.nativeFee(Number(action.height), getActionDate(action))).amount : undefined;
+
+        return {source: 'midgard', protocol: this.protocol.id, wallet, data: action, thornodeTxs, cosmosTxs, ...(nativeFee ? {nativeFee} : {})};
     }
 }
 

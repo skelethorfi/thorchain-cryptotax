@@ -72,5 +72,6 @@
     ],
     "status": "success",
     "type": "swap"
-  }
+  },
+  "nativeFee": "5000000000"
 }

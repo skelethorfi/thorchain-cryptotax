@@ -28,7 +28,7 @@ legs:
     role: gas
     basis: default
     txid: 493628E56D76DCB664E14C142C35CB4AA45D5643A0958F250F583A4029D11166
-    amount: "0.2"
+    amount: "1"
     decimals: 10
   - direction: out
     wallet: kujira1wml3m2tkkdv5z6rdj3l4mp229c2493kaayukp6

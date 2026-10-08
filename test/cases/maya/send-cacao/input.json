@@ -46,5 +46,6 @@
     "pools": [],
     "status": "success",
     "type": "send"
-  }
+  },
+  "nativeFee": "2000000000"
 }

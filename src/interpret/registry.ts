@@ -95,7 +95,10 @@ export function findInterpreter(bundle: RawBundle, protocol: Protocol): Interpre
         ?? REGISTRY[`${bundle.source}/${type}`];
 }
 
-export function interpret(bundle: RawBundle, protocol: Protocol): Interpretation {
+export function interpret(bundle: RawBundle, baseProtocol: Protocol): Interpretation {
+    // The native fee at the action's height, when the source gave it, is the default gas of every leg it pays
+    const protocol = bundle.nativeFee ? {...baseProtocol, defaultGas: bundle.nativeFee} : baseProtocol;
+
     try {
         const interpreter = findInterpreter(bundle, protocol);
 

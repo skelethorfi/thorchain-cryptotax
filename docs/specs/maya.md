@@ -35,7 +35,7 @@ only `maya1` wallets: swaps and liquidity adds are often started from a `thor1`,
 | Blockchain value for the native chain | `THORChain` | `Mayachain` (Summ's name; Summ has no Maya Protocol chain to attach rows to; see below) |
 | LP token | `ThorLP.<pool>` | `MayaLP.<pool>` |
 | Native address prefix | `thor1` | `maya1` |
-| Default inbound gas when node data is missing | 0.02 RUNE (see `fees.md`) | 0.2 CACAO for CACAO inputs (Mayanode `NativeTransactionFee`, `2000000000` in constants and mimir on 2026-10-01; assumed unchanged historically); 0.02 RUNE for RUNE inputs (sent on THORChain); none for other inputs, as Maya node data is not fetched |
+| Default inbound gas when node data is missing | 0.02 RUNE (see `fees.md`) | Maya's native fee at the action's height for CACAO inputs (Fees, below); 0.02 RUNE for RUNE inputs (sent on THORChain); none for other inputs, as Maya node tx data is not fetched |
 
 Decimals were checked on 2026-10-01 against live pool depths: Midgard's
 `assetPriceUSD` only matches `cacaoDepth / assetDepth` when CACAO is read as
@@ -146,8 +146,8 @@ participants).
 
 ### Sends
 
-As THORChain sends (`sends.md`), from Maya's Midgard: `send` with the 0.2
-CACAO default fee (wrong before the current setting; see `sends.md`), `receive`, or `income` when the sender is in `incomeFrom` (e.g. the
+As THORChain sends (`sends.md`), from Maya's Midgard: `send` with Maya's
+native fee at its height (Fees, below), `receive`, or `income` when the sender is in `incomeFrom` (e.g. the
 MAYA token distributions after the liquidity auction). A Maya send that is
 another listed action's inbound or outbound gives no row. Golden cases:
 `maya/send-cacao`, `maya/send-maya-income`.
@@ -166,6 +166,29 @@ the counterparty: a `FailedOut` row with the inbound fee, and a `Fee` row for
 what Maya kept when less came back than was sent. Refunds still `pending` are
 skipped, as on THORChain.
 
+### Fees
+
+Maya's native transaction fee, paid in CACAO by a send or an action sent
+from a Maya wallet, has changed over time. Mimir `NATIVETRANSACTIONFEE`
+overrides the constant (0.2 CACAO), and its value at a height is the fee:
+
+| Maya height (about) | Fee |
+| --- | --- |
+| up to at least 1,500,000 (2023) | 0.0002 CACAO |
+| around 3,600,000 (late 2023) | 1 CACAO |
+| around 4,400,000 to 5,000,000 (2023-2024) | 0.5 CACAO |
+| from around 9,900,000 (2025) | 0.2 CACAO |
+
+The 0.2 CACAO now was checked on a 2026 send's events (0.178 to the reserve,
+0.02 to `maya_fund` and 0.002 to a third account). Maya's Midgard reports
+0.2 CACAO as the fee of old sends too, so it is not used, as on THORChain.
+Mayanode has pruned old txs but serves its state at a past height, so the
+source reads the setting at each Maya action's height
+(`/mayachain/mimir?height=`, else `/mayachain/constants?height=`), stores it
+(`mayanode-fee` records, one per height) and puts it in the bundle
+(`nativeFee`); it replaces the 0.2 CACAO default for every CACAO fee of that
+action. Golden cases carry it too.
+
 ### Blockchain values
 
 As on THORChain, every row uses the protocol's blockchain name for its native
@@ -182,4 +205,3 @@ withdrawal.
 ## Not covered yet
 
 - Fees paid on Maya inbound transactions
-- Maya's native fee at each tx's height (today every Maya CACAO fee is the current 0.2 CACAO default)

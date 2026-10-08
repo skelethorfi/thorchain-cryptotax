@@ -67,7 +67,7 @@ for an inbound transaction:
    - an asset on THORChain (`THOR.*`, e.g. RUNE, TCY, KUJI on THORChain), or a
      synth, trade or secured asset: **0.02 RUNE**, THORChain's native
      transaction fee
-   - on Maya, CACAO: **0.2 CACAO** (see `maya.md`)
+   - on Maya, CACAO: **Maya's native fee at the action's height** (0.2 CACAO now; it has changed, see `maya.md`, Fees)
 3. **Otherwise blank.** Gas for L1 inputs (BTC, ETH, tokens, …) is only known
    from THORNode, so an L1 row is blank only when THORNode has no record of the
    inbound transaction, or on Maya, where THORNode is not queried.
@@ -88,7 +88,7 @@ transaction. Rows for what comes out have no fee.
 | Loan repayment | `LoanRepayment` | inbound fee; the `CollateralWithdrawal` row has none |
 | Refund | `FailedOut` | inbound fee; what the protocol kept is a separate `Fee` row (see Refunds) |
 | Add liquidity | each `AddLiquidity` row | inbound fee of that deposit. A savers deposit sent from an L1 wallet uses that chain's gas, although Midgard reports the coin as the synth (`BTC/BTC`) |
-| Withdraw liquidity | `ReturnLpToken` | inbound fee of the withdrawal request (e.g. 0.02 RUNE or 0.2 CACAO); `RemoveLiquidity` rows have none |
+| Withdraw liquidity | `ReturnLpToken` | inbound fee of the withdrawal request (e.g. 0.02 RUNE, or Maya's native fee in CACAO); `RemoveLiquidity` rows have none |
 | RUNEPool deposit | `AddLiquidity` | 0.02 RUNE |
 | RUNEPool withdraw | `ReturnLpToken` | 0.02 RUNE |
 | TCY stake / unstake | the single row | 0.02 RUNE |

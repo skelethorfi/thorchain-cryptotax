@@ -5,6 +5,7 @@ import {CryptoTaxTransaction, renderRowIds, ROW_IDS_FILE, writeCsv} from "../exp
 import {MidgardService} from "../sources/thorchain/MidgardService";
 import {ThornodeService} from "../sources/thorchain/ThornodeService";
 import {CosmosTxService} from "../sources/thorchain/CosmosTxService";
+import {MayanodeService} from "../sources/maya/MayanodeService";
 import {TcyDistributionService} from "../sources/tcy/TcyDistributionService";
 import {ITaxConfig} from "../config/ITaxConfig";
 import {generateDateRanges} from "../utils/DateRange";
@@ -44,7 +45,7 @@ export class Exporter {
     midgard: MidgardService;
     // Midgard of each other protocol enabled in the config (e.g. Maya)
     thorchain: Protocol;
-    otherMidgards: {protocol: Protocol, midgard: MidgardService}[];
+    otherMidgards: {protocol: Protocol, midgard: MidgardService, node?: MayanodeService}[];
     thornode: ThornodeService;
     cosmosTxs: CosmosTxService;
     tcyDistribution: TcyDistributionService;
@@ -92,6 +93,7 @@ export class Exporter {
             .map(protocol => ({
                 protocol,
                 midgard: new MidgardService(store, `${protocol.id}-midgard`, protocol.midgardUrl),
+                node: protocol.nodeUrl ? new MayanodeService(store, protocol.nodeUrl) : undefined,
             }));
     }
 
@@ -102,7 +104,7 @@ export class Exporter {
         return [
             ...(this.config.fromDate < VIEWBLOCK_SENDS_BEFORE ? [new ViewblockSource(this.viewblock)] : []),
             new MidgardSource(this.thorchain, this.midgard, this.thornode, this.cosmosTxs, this.notFinal, this.stuckBefore()),
-            ...this.otherMidgards.map(({protocol, midgard}) => new MidgardSource(protocol, midgard, this.thornode, this.cosmosTxs, this.notFinal, this.stuckBefore())),
+            ...this.otherMidgards.map(({protocol, midgard, node}) => new MidgardSource(protocol, midgard, this.thornode, this.cosmosTxs, this.notFinal, this.stuckBefore(), node)),
             new TcySource(this.tcyDistribution),
         ];
     }

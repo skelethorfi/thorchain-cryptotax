@@ -24,6 +24,7 @@ export interface Protocol {
     prefixSecuredAssets?: boolean;
     prefixTradeAssets?: boolean;
     midgardUrl: string;
+    nodeUrl?: string;
     // Fallback inbound gas (base units of the native asset) when THORNode data is missing
     defaultGas?: string;
     // Decimals of an asset's base amounts as reported by this protocol's Midgard
@@ -65,6 +66,8 @@ export const MAYA: Protocol = {
     saversTokenPrefix: 'MayaSavers',
     assetNamePrefix: 'Maya',
     midgardUrl: process.env.MAYA_MIDGARD_API_URL || 'https://midgard.mayachain.info',
+    // Mayanode: the native fee setting at a past height (MayanodeService)
+    nodeUrl: process.env.MAYANODE_API_URL || 'https://mayanode.mayachain.info',
     // NativeTransactionFee from Mayanode constants and mimir (2026-10-01): 0.2 CACAO
     defaultGas: '2000000000',
     decimals: (asset: string) => MAYA_DECIMALS[asset.toUpperCase()] ?? 8,

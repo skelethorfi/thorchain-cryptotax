@@ -42,5 +42,6 @@
     ],
     "status": "success",
     "type": "addLiquidity"
-  }
+  },
+  "nativeFee": "10000000000"
 }
