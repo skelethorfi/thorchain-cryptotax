@@ -10,7 +10,25 @@ It is TypeScript that Node 24 runs directly (type stripping, so only
 erasable syntax: no enums or namespaces); `tsc` from the repo root checks it. It talks to Summ only through Summ's MCP server
 (`https://mcp.summ.com/mcp`), with your own login.
 
-Status: `login`, `pull`, `plan` and `apply`.
+Status: experimental. `login`, `pull`, `plan` and `apply` work; review every
+plan before you apply it.
+
+## A year's sync
+
+1. Export the year with the exporter (a run dir with `csv/`).
+2. `login <state dir> --write` once (the token is refreshed after that).
+3. `pull <state dir> <run dir>`, then `plan <state dir> <run dir>`. Read `plan.md`.
+4. `apply <state dir> <plan dir>` (`--dry-run` first; `--approve-deletes` if the
+   plan deletes). It deletes and edits, and holds back categorisation while the
+   plan has uploads.
+5. Upload the files in `<plan dir>/upload/` to Summ, under the account named
+   in `managedSources`. They hold only the rows Summ lacks.
+6. `pull`, `plan`, `apply` again: it categorises Summ's own legs, now that
+   Summ can pair them with the uploaded rows, and ignores the receives Summ
+   made up to pair a send as a transfer.
+7. `pull` and `plan`: what is left is under Report, for you to resolve.
+
+Filed years go in a separate apply with `--approve-filed`.
 
 ## Usage
 
@@ -37,7 +55,8 @@ Status: `login`, `pull`, `plan` and `apply`.
   you delete them.
 - `apply` carries out a plan made from the latest snapshot: deletes (only
   with `--approve-deletes`), then edits and categorisation, each checked
-  against Summ's current value first; then it lists the upload files. It
+  against Summ's current value first (categorisation waits while the plan
+  has uploads); then it lists the upload files. It
   applies the current years' entries, or with `--approve-filed` only the
   filed years'. `--dry-run` does the look-ups and checks with read tools
   only and writes nothing. Every write goes to `<state dir>/apply-log.jsonl`

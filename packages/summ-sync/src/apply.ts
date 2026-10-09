@@ -4,7 +4,9 @@
 //   2. deletes (--approve-deletes): each leg looked up by _id, and only actions that hold nothing but the
 //      entry's legs are deleted, by action id; a leg that shares its action with other legs is refused
 //   3. edits and categorisation, each action looked up again by leg _id and checked against the plan's Summ value;
-//      then the receive Summ made up to pair a categorised send as a transfer is ignored, once it is alone
+//      then the receive Summ made up to pair a categorised send as a transfer is ignored, once it is alone.
+//      Categorisation waits while the plan has uploads: Summ pairs a categorised leg with the uploaded other
+//      side of the swap only when that side is already there
 //   4. list the upload files for the user
 //   5. every call, its result and undo handle go to <state dir>/apply-log.jsonl as they happen
 //
@@ -41,6 +43,8 @@ export interface LogLine {
 export interface ApplyResult {
     deleted: number
     edited: number
+    /** Categorisations held back until the plan's uploads are in Summ. */
+    heldBack: number
     skipped: { id: string | null; reason: string }[]
     uploads: { file: string; rows: number }[]
 }
@@ -103,7 +107,7 @@ export async function applyPlan(
     /** Summ rebuilds actions and refreshes its search a few seconds after a write. */
     settleMs = 3000,
 ): Promise<ApplyResult> {
-    const result: ApplyResult = { deleted: 0, edited: 0, skipped: [], uploads: [] }
+    const result: ApplyResult = { deleted: 0, edited: 0, heldBack: 0, skipped: [], uploads: [] }
     const write = opts.dryRun ? null : log
     const skip = (id: string | null, reason: string, extra: Record<string, unknown> = {}): false => {
         result.skipped.push({ id, reason })
@@ -140,7 +144,13 @@ export async function applyPlan(
     }
 
     // ---- Edits, then categorisation: the same call on a managed row's legs or on Summ's own leg
-    const edits = [...selected(plan.edit, opts).map((e) => ['edit', e] as const), ...selected(plan.categorise, opts).map((e) => ['categorise', e] as const)]
+    const uploads = selected(plan.upload, opts)
+    const categorise = selected(plan.categorise, opts)
+    if (uploads.length && categorise.length) {
+        result.heldBack = categorise.length
+        say(`Categorisation: ${categorise.length} held back until the uploads are in Summ`)
+    }
+    const edits = [...selected(plan.edit, opts).map((e) => ['edit', e] as const), ...(uploads.length ? [] : categorise).map((e) => ['categorise', e] as const)]
     if (edits.length) say(`Edits and categorisation: ${edits.length}`)
     for (const [kind, entry] of edits) await applyEdit(kind, entry)
 
@@ -199,7 +209,7 @@ export async function applyPlan(
         return true
     }
 
-    for (const u of selected(plan.upload, opts)) result.uploads.push({ file: u.filed ? u.file.replace(/\.csv$/, '_filed.csv') : u.file, rows: u.ids.length })
+    for (const u of uploads) result.uploads.push({ file: u.filed ? u.file.replace(/\.csv$/, '_filed.csv') : u.file, rows: u.ids.length })
     return result
 }
 
@@ -222,11 +232,11 @@ export async function runApply(client: ToolCaller & { connect(): Promise<void> }
 
     const uploadDir = join(dir, 'upload')
     const present = new Set(existsSync(uploadDir) ? readdirSync(uploadDir) : [])
-    console.log(`\nDeleted ${result.deleted}, edited ${result.edited}, skipped ${result.skipped.length}`)
+    console.log(`\nDeleted ${result.deleted}, edited ${result.edited}, skipped ${result.skipped.length}, held back ${result.heldBack}`)
     if (result.uploads.length) {
         console.log(`Upload these files in Summ (${uploadDir}):`)
         for (const u of result.uploads) console.log(`  ${u.file}: ${u.rows} rows${present.has(u.file) ? '' : ' (missing!)'}`)
-    }
-    console.log('Then pull and plan again.')
+        console.log('Then pull, plan and apply again.')
+    } else console.log('Then pull and plan again.')
     return result
 }

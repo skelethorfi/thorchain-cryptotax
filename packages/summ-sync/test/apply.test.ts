@@ -265,6 +265,20 @@ test('a failing call stops the apply', async () => {
     assert.equal(summ.calls.filter((c) => c.name === 'edit_transaction').length, 0)
 })
 
+test('categorisation waits while the plan has uploads; managed edits do not', async () => {
+    const summ = new FakeSumm()
+    summ.add('a', [{ _id: 'leg-1', trade: 'withdrawal', quantity: '1' }])
+    summ.add('b', [{ _id: 'leg-2', trade: 'withdrawal', quantity: '1' }])
+    const managed = edit({ id: 'row-2', changes: [{ ...edit().changes[0], legId: 'leg-2' }] })
+    const plan = planFile({ edit: [managed], categorise: [edit()], upload: [{ file: 'f.csv', filed: false, ids: ['x'] }] })
+    const { result } = await run(summ, plan)
+    assert.deepEqual([result.edited, result.heldBack], [1, 1])
+    assert.equal(summ.calls.find((c) => c.name === 'edit_transaction')?.args.actionId, 'b')
+    // filed-year uploads do not hold back the current year's categorisation
+    const current = await run(summ, planFile({ categorise: [edit()], upload: [{ file: 'f.csv', filed: true, ids: ['x'] }] }))
+    assert.deepEqual([current.result.edited, current.result.heldBack], [1, 0])
+})
+
 test('upload files are listed, filed ones under their _filed name', async () => {
     const plan = planFile({ upload: [{ file: 'f.csv', filed: false, ids: ['a', 'b'] }, { file: 'g.csv', filed: true, ids: ['c'] }] })
     assert.deepEqual((await run(new FakeSumm(), plan)).result.uploads, [{ file: 'f.csv', rows: 2 }])

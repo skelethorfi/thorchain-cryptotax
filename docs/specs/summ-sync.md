@@ -240,6 +240,11 @@ In this order, stopping at the first failure:
    handle, one line per changed field (`legId`, `field`, `value`) for
    plan's drift check, and each skip.
 
+While the plan has uploads (for the years this apply covers), apply holds
+back categorisation: Summ pairs a categorised leg with the other side of
+its swap only when that side is already in Summ, so the user uploads first
+and runs pull, plan and apply again.
+
 An apply carries out the current years' entries, or with `--approve-filed`
 only the filed years'. `--dry-run` does steps 1 to 3 with read tools only
 and writes nothing.
