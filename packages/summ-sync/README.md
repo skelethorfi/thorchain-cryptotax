@@ -45,8 +45,10 @@ Filed years go in a separate apply with `--approve-filed`.
   action list (`pages/`), one line per action (`actions.jsonl`), the full
   JSON and change history of each action of a managed source
   (`details/<action id>.json`), and `manifest.json`. Given a run dir, it
-  also fetches the detail of each action whose tx hash is a txid of the
-  run's categorised rows (chains not in `managedChains`).
+  fetches that detail only for the run's periods (a day either side), and
+  also for each action whose tx hash is a txid of the run's categorised
+  rows (chains not in `managedChains`); `plan` then refuses a run with
+  other periods. Without a run dir it fetches every year (slow).
 - `plan` compares the run's period wallet files with the latest snapshot
   and writes `<state dir>/plans/<timestamp>/`: `plan.json`, `plan.md` and
   `upload/` (the rows Summ lacks, per file). It calls nothing. It adds the

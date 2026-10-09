@@ -3,7 +3,7 @@
 
 import type { Config } from './config.ts'
 import { before, inPeriod } from './dates.ts'
-import type { Row, RunFile } from './run.ts'
+import { periodsOf, type Row, type RunFile } from './run.ts'
 import { type Leg, normaliseTxid } from './snapshot.ts'
 import type { AppliedEdit, LegRole, Override, Value } from './state.ts'
 import { type SummType, summBlockchain, summType } from './summ-types.ts'
@@ -163,7 +163,7 @@ export function makePlan(input: PlanInput): PlanResult {
 
     const managedChains = new Set(config.managedChains)
     const managedSources = new Set(config.managedSources)
-    const periods = [...new Map(input.files.map((f) => [`${f.period.from}_${f.period.to}`, f.period])).values()]
+    const periods = periodsOf(input.files)
     const inScope = (time: string) => periods.some((p) => inPeriod(time, p, config.timezone))
     const isFiled = (time: string) => config.filedBefore !== null && before(time, config.filedBefore, config.timezone)
 

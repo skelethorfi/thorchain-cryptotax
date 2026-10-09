@@ -88,9 +88,11 @@ on-chain txids are the 64-character hex strings in its description (as
 
 **Snapshot** (written by `pull`): `actions.jsonl` (one line per action from
 the list) and `details/<action id>.json` (the action's JSON and change
-history) for each action the plan needs: every action of a managed source,
-and, when pull is given the run dir, every action whose tx hash is a txid
-of a categorised row. A snapshot is never patched: after an apply, pull
+history) for each action the plan needs: every action of a managed source
+(only those dated in the run's periods, a day either side, when pull is
+given the run dir; plan then refuses a run with other periods, whose
+managed legs it would miss), and, when pull is given the run dir, every
+action whose tx hash is a txid of a categorised row. A snapshot is never patched: after an apply, pull
 again.
 
 **Sync config** (`summ-sync.json` in the state dir):
