@@ -120,7 +120,7 @@ export function sameAmount(a: number, b: number): boolean {
 
 const seconds = (time: string) => Math.floor(Date.parse(time) / 1000)
 
-function same(field: string, a: Value, b: Value): boolean {
+export function same(field: string, a: Value, b: Value): boolean {
     if (a === null || b === null || a === '' || b === '') return (a ?? '') === (b ?? '')
     if (field === 'quantity') return sameAmount(Number(a), Number(b))
     if (field === 'timestamp') return seconds(String(a)) === seconds(String(b))

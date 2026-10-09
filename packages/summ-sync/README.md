@@ -10,13 +10,14 @@ It is TypeScript that Node 24 runs directly (type stripping, so only
 erasable syntax: no enums or namespaces); `tsc` from the repo root checks it. It talks to Summ only through Summ's MCP server
 (`https://mcp.summ.com/mcp`), with your own login.
 
-Status: `login`, `pull` and `plan`. `apply` is next.
+Status: `login`, `pull`, `plan` and `apply`.
 
 ## Usage
 
     node packages/summ-sync/bin/summ-sync.ts login <state dir> [--write]
     node packages/summ-sync/bin/summ-sync.ts pull  <state dir> [<run dir>]
     node packages/summ-sync/bin/summ-sync.ts plan  <state dir> <run dir>
+    node packages/summ-sync/bin/summ-sync.ts apply <state dir> <plan dir> [--dry-run] [--approve-deletes] [--approve-filed]
     node packages/summ-sync/bin/summ-sync.ts tools <state dir>
 
 - `login` opens the browser to authorise this tool (scope `mcp:read`, or
@@ -34,10 +35,19 @@ Status: `login`, `pull` and `plan`. `apply` is next.
   legs it adopted (old `<file>:<n>` IDs) to `adopted.csv`, and the values
   you changed in Summ to `overrides.json`, where they win over the run until
   you delete them.
+- `apply` carries out a plan made from the latest snapshot: deletes (only
+  with `--approve-deletes`), then edits and categorisation, each checked
+  against Summ's current value first; then it lists the upload files. It
+  applies the current years' entries, or with `--approve-filed` only the
+  filed years'. `--dry-run` does the look-ups and checks with read tools
+  only and writes nothing. Every write goes to `<state dir>/apply-log.jsonl`
+  with its undo handle (`undo_edit`; deletes have none). It needs
+  `login --write`. Afterwards, upload the files, then pull and plan again.
 - `tools` lists the server's tools.
 
 Each command may call only the tools it needs; `login` and `pull` use read
-tools only, `plan` none. Requests are spaced 400 ms apart.
+tools only, `plan` none, `apply` also `edit_transaction` and
+`bulk_edit_transactions`. Requests are spaced 400 ms apart.
 
 ## State dir
 

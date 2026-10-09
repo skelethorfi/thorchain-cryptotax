@@ -71,7 +71,7 @@ nothing from it; the only link is the files below. It speaks MCP over
     summ-sync login <state dir> [--write]  # browser OAuth; token in the state dir
     summ-sync pull  <state dir> [<run dir>]  # writes a snapshot
     summ-sync plan  <state dir> <run dir>    # reads files only; calls nothing
-    summ-sync apply <state dir> <plan file> [--approve-deletes] [--approve-filed]
+    summ-sync apply <state dir> <plan dir> [--dry-run] [--approve-deletes] [--approve-filed]
 
 The **state dir** holds snapshots, plans, apply logs, the adoption table and
 the overrides file. It is the user's private data: never in this repo.
@@ -205,14 +205,28 @@ user to delete.
 
 In this order, stopping at the first failure:
 
-1. Check the plan's snapshot is the latest; refuse an older plan.
-2. Deletes (approved), by the leg `_id`s, never by a filter.
+1. Check the plan's snapshot is the latest, and that `apply-log.jsonl`
+   records no write since that snapshot was taken; refuse otherwise (pull
+   and plan again).
+2. Deletes (approved), selected by the legs' `_id`s (the `id` filter with
+   `showAssociated: 0`), never by action or a wider filter. Each leg is
+   looked up again first. A delete whose legs share an action with other
+   legs (in the plan or in Summ now) is skipped and reported: whether a
+   delete selected by leg keeps the other legs of its action is not yet
+   shown.
 3. Edits and categorisation. Before each action, look it up again by leg
    `_id` (action ids change after every write) and check the leg still
    holds the plan's "Summ value"; a leg that changed since the pull is
-   skipped and reported.
+   skipped and reported. All changes of one action go in one
+   `edit_transaction`.
 4. Print the upload files for the user to upload.
-5. Write `apply-log.jsonl`: each call, its result and its undo handle.
+5. Write `apply-log.jsonl` as it goes: each call, its result and its undo
+   handle, one line per changed field (`legId`, `field`, `value`) for
+   plan's drift check, and each skip.
+
+An apply carries out the current years' entries, or with `--approve-filed`
+only the filed years'. `--dry-run` does steps 1 to 3 with read tools only
+and writes nothing.
 
 Then `pull` and `plan` again: the plan should be empty, apart from what the
 upload adds once done.
