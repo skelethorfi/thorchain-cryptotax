@@ -9,8 +9,8 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { loadConfig } from './config.ts'
 import { type Change, makePlan, type EditEntry, type Plan } from './plan.ts'
-import { periodsOf, readRun, type Row, type RunFile } from './run.ts'
-import { checkCovers, latestSnapshot, readSnapshot } from './snapshot.ts'
+import { readRun, type Row, type RunFile } from './run.ts'
+import { latestSnapshot, readSnapshot } from './snapshot.ts'
 import { readAdopted, readApplyLog, readOverrides, writeAdopted, writeOverrides } from './state.ts'
 
 const show = (v: unknown) => (v === null || v === '' || v === undefined ? '–' : String(v))
@@ -93,7 +93,6 @@ export function writePlan(stateDir: string, runDir: string): string {
     const snapshotDir = latestSnapshot(stateDir)
     const snapshot = readSnapshot(snapshotDir)
     const { files, rows } = readRun(runDir)
-    checkCovers(snapshot, periodsOf(files))
     const now = new Date().toISOString()
     const { plan, adopted, overrides } = makePlan({
         files,
@@ -108,7 +107,6 @@ export function writePlan(stateDir: string, runDir: string): string {
         now,
     })
 
-    if (snapshot.detailPeriods) plan.notes.push('The snapshot has managed detail for the run\'s periods only, so managedLegsOutOfScope counts none')
     const dir = join(stateDir, 'plans', now.slice(0, 19).replace(/:/g, '-'))
     mkdirSync(join(dir, 'upload'), { recursive: true })
     writeFileSync(join(dir, 'plan.json'), JSON.stringify({ snapshot: snapshot.name, run: resolve(runDir), ...plan }, null, 2) + '\n')

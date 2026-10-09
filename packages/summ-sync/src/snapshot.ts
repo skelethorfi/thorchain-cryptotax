@@ -35,19 +35,6 @@ export interface Snapshot {
     history: Map<string, string[]>
     /** Every listed action's tx hash, lower case without 0x. */
     txHashes: Set<string>
-    /** The periods whose managed actions have full detail; null: every year. */
-    detailPeriods: { from: string; to: string }[] | null
-}
-
-/** Refuses a run with a period the snapshot has no managed detail for: plan would miss Summ's legs there and
- * upload their rows again. */
-export function checkCovers(snapshot: Snapshot, periods: { from: string; to: string }[]): void {
-    if (!snapshot.detailPeriods) return
-    const covered = snapshot.detailPeriods
-    const missing = periods.filter((p) => !covered.some((c) => c.from <= p.from && p.to <= c.to))
-    if (missing.length) {
-        throw new Error(`Snapshot ${snapshot.name} has managed detail only for ${covered.map((c) => `${c.from} to ${c.to}`).join(', ')}, not ${missing.map((p) => `${p.from} to ${p.to}`).join(', ')}: pull with this run dir`)
-    }
 }
 
 const SIDES: LegSide[] = ['incoming', 'outgoing', 'fees']
@@ -106,6 +93,5 @@ export function readSnapshot(dir: string): Snapshot {
         const hash = JSON.parse(line)['Tx Hash']
         if (typeof hash === 'string') for (const h of hash.split(/[\s,]+/)) if (h) txHashes.add(normaliseTxid(h))
     }
-    const manifest = JSON.parse(readFileSync(join(dir, 'manifest.json'), 'utf8'))
-    return { name: dir.split(/[\\/]/).pop() as string, legs, history, txHashes, detailPeriods: manifest.detailPeriods ?? null }
+    return { name: dir.split(/[\\/]/).pop() as string, legs, history, txHashes }
 }

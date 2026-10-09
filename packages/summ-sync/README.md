@@ -33,7 +33,7 @@ Filed years go in a separate apply with `--approve-filed`.
 ## Usage
 
     node packages/summ-sync/bin/summ-sync.ts login <state dir> [--write]
-    node packages/summ-sync/bin/summ-sync.ts pull  <state dir> [<run dir>]
+    node packages/summ-sync/bin/summ-sync.ts pull  <state dir> [<run dir>] [--full]
     node packages/summ-sync/bin/summ-sync.ts plan  <state dir> <run dir>
     node packages/summ-sync/bin/summ-sync.ts apply <state dir> <plan dir> [--dry-run] [--approve-deletes] [--approve-filed]
     node packages/summ-sync/bin/summ-sync.ts tools <state dir>
@@ -45,10 +45,11 @@ Filed years go in a separate apply with `--approve-filed`.
   action list (`pages/`), one line per action (`actions.jsonl`), the full
   JSON and change history of each action of a managed source
   (`details/<action id>.json`), and `manifest.json`. Given a run dir, it
-  fetches that detail only for the run's periods (a day either side), and
-  also for each action whose tx hash is a txid of the run's categorised
-  rows (chains not in `managedChains`); `plan` then refuses a run with
-  other periods. Without a run dir it fetches every year (slow).
+  also fetches the detail of each action whose tx hash is a txid of the
+  run's categorised rows (chains not in `managedChains`). Summ gives an
+  action a new id whenever it changes, so detail the previous snapshot
+  holds under the same id is copied from it, and only new ids are
+  fetched; `--full` fetches all of it again (e.g. before filing a year).
 - `plan` compares the run's period wallet files with the latest snapshot
   and writes `<state dir>/plans/<timestamp>/`: `plan.json`, `plan.md` and
   `upload/` (the rows Summ lacks, per file). It calls nothing. It adds the

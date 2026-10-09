@@ -69,7 +69,7 @@ nothing from it; the only link is the files below. It speaks MCP over
 ## Commands
 
     summ-sync login <state dir> [--write]  # browser OAuth; token in the state dir
-    summ-sync pull  <state dir> [<run dir>]  # writes a snapshot
+    summ-sync pull  <state dir> [<run dir>] [--full]  # writes a snapshot
     summ-sync plan  <state dir> <run dir>    # reads files only; calls nothing
     summ-sync apply <state dir> <plan dir> [--dry-run] [--approve-deletes] [--approve-filed]
 
@@ -88,11 +88,12 @@ on-chain txids are the 64-character hex strings in its description (as
 
 **Snapshot** (written by `pull`): `actions.jsonl` (one line per action from
 the list) and `details/<action id>.json` (the action's JSON and change
-history) for each action the plan needs: every action of a managed source
-(only those dated in the run's periods, a day either side, when pull is
-given the run dir; plan then refuses a run with other periods, whose
-managed legs it would miss), and, when pull is given the run dir, every
-action whose tx hash is a txid of a categorised row. A snapshot is never patched: after an apply, pull
+history) for each action the plan needs: every action of a managed source,
+and, when pull is given the run dir, every action whose tx hash is a txid
+of a categorised row. Summ's action ids are database ids made when the
+action is (re)built, and every write rebuilds it, so an id the previous
+snapshot holds is unchanged: its detail is copied from there, and only
+new ids are fetched (`pull --full` fetches everything). A snapshot is never patched: after an apply, pull
 again.
 
 **Sync config** (`summ-sync.json` in the state dir):
