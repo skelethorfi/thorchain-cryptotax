@@ -15,12 +15,14 @@ interface FakeLeg {
     quantity: string
     timestamp?: string
     id?: string
+    importType?: string
 }
 
 /** Summ as a fake MCP server: actions of incoming legs; an edit rebuilds the action under a new id. */
 class FakeSumm implements ToolCaller {
     actions = new Map<string, FakeLeg[]>()
     calls: { name: string; args: Record<string, unknown> }[] = []
+    splits = true
     private n = 0
 
     add(actionId: string, legs: FakeLeg[]) {
@@ -48,12 +50,19 @@ class FakeSumm implements ToolCaller {
             }
             this.actions.delete(args.actionId as string)
             const next = `rebuilt${++this.n}`
-            this.actions.set(next, legs)
+            // Like Summ: a categorised send no longer pairs with the receive it made up, which is left on its own
+            const madeUp = legs.filter((l) => l.importType === 'soft-transfer')
+            if (this.splits && madeUp.length) this.actions.set(`alone${this.n}`, madeUp)
+            this.actions.set(next, this.splits ? legs.filter((l) => !madeUp.includes(l)) : legs)
             return `Edited 1 action.\n- **Bulk Edit ID**: \`undo${this.n}abcdef\`\n- **Affected Action IDs**: ${next}`
         }
         if (name === 'bulk_edit_transactions') {
             if (args.filter) throw new Error('a write selected by filter')
             const ids = args.actionIds as string[]
+            if ((args.operation as { type: string }).type === 'ignore') {
+                for (const id of ids) for (const l of this.actions.get(id) ?? []) l.trade = 'ignoreIn'
+                return `Bulk ignore updated ${ids.length} action.\nBulk Edit ID: ignore${++this.n}abcdef`
+            }
             for (const id of ids) this.actions.delete(id)
             return `Deleted ${ids.length} actions.`
         }
@@ -105,7 +114,7 @@ function planFile(over: Partial<PlanFile> = {}): PlanFile {
 
 async function run(summ: FakeSumm, plan: PlanFile, opts: Partial<ApplyOptions> = {}) {
     const log: Omit<LogLine, 'time' | 'plan'>[] = []
-    const result = await applyPlan(summ, plan, 'p', { ...OPTS, ...opts }, (l) => log.push(l), () => {})
+    const result = await applyPlan(summ, plan, 'p', { ...OPTS, ...opts }, (l) => log.push(l), () => {}, 0)
     return { result, log }
 }
 
@@ -141,6 +150,44 @@ test('a leg that changed since the pull is skipped and reported, not edited', as
     assert.equal(summ.calls.some((c) => c.name === 'edit_transaction'), false)
     assert.equal(log[0].call, 'skip')
     assert.equal(log[0].legId, undefined, 'a skip must not read back as an edit of the sync')
+})
+
+const MADE_UP: FakeLeg = { _id: 'made-up', trade: 'deposit', quantity: '1', importType: 'soft-transfer' }
+
+test('after categorising, the receive Summ made up is ignored by its own action id once it is alone', async () => {
+    const summ = new FakeSumm()
+    summ.add('a', [{ _id: 'leg-1', trade: 'withdrawal', quantity: '1' }, { ...MADE_UP }])
+    const { result, log } = await run(summ, planFile({ categorise: [edit({ ignore: ['made-up'] })] }))
+    assert.equal(result.edited, 1)
+    const ignore = summ.calls.find((c) => c.name === 'bulk_edit_transactions')
+    assert.deepEqual(ignore?.args, { actionIds: ['alone1'], operation: { type: 'ignore' } })
+    assert.equal(summ.actions.get('alone1')?.[0].trade, 'ignoreIn')
+    const line = log.find((l) => l.operation === 'ignore')
+    assert.deepEqual([line?.legIds, line?.undo, line?.field], [['made-up'], 'ignore2abcdef', undefined])
+})
+
+test('a made-up receive already on its own is ignored without an edit', async () => {
+    const summ = new FakeSumm()
+    summ.add('b', [{ ...MADE_UP }])
+    const { result } = await run(summ, planFile({ categorise: [edit({ changes: [], ignore: ['made-up'] })] }))
+    assert.equal(result.edited, 0)
+    assert.equal(summ.actions.get('b')?.[0].trade, 'ignoreIn')
+})
+
+test('a made-up receive still in an action with other legs is skipped, not ignored', async () => {
+    const summ = new FakeSumm()
+    summ.splits = false
+    summ.add('a', [{ _id: 'leg-1', trade: 'withdrawal', quantity: '1' }, { ...MADE_UP }])
+    const { result } = await run(summ, planFile({ categorise: [edit({ ignore: ['made-up'] })] }))
+    assert.match(result.skipped[0].reason, /still shares its action with 1 other legs/)
+    assert.equal(summ.calls.some((c) => c.name === 'bulk_edit_transactions'), false)
+})
+
+test('a made-up receive is not ignored when its send was skipped', async () => {
+    const summ = new FakeSumm()
+    summ.add('a', [{ _id: 'leg-1', trade: 'deposit', quantity: '1' }, { ...MADE_UP }])
+    await run(summ, planFile({ categorise: [edit({ ignore: ['made-up'] })] }))
+    assert.equal(summ.calls.some((c) => c.name === 'bulk_edit_transactions'), false)
 })
 
 test('a leg no longer in Summ is skipped', async () => {
@@ -214,7 +261,7 @@ test('a failing call stops the apply', async () => {
         },
     }
     const plan = planFile({ categorise: [edit(), edit({ id: 'row-2', changes: [{ ...edit().changes[0], legId: 'leg-2' }] })] })
-    await assert.rejects(applyPlan(failing, plan, 'p', OPTS, () => {}, () => {}), /rejected/)
+    await assert.rejects(applyPlan(failing, plan, 'p', OPTS, () => {}, () => {}, 0), /rejected/)
     assert.equal(summ.calls.filter((c) => c.name === 'edit_transaction').length, 0)
 })
 

@@ -3,7 +3,8 @@
 //   1. refuse a plan whose snapshot is not the latest, or that Summ changed under since (apply-log.jsonl)
 //   2. deletes (--approve-deletes): each leg looked up by _id, and only actions that hold nothing but the
 //      entry's legs are deleted, by action id; a leg that shares its action with other legs is refused
-//   3. edits and categorisation, each action looked up again by leg _id and checked against the plan's Summ value
+//   3. edits and categorisation, each action looked up again by leg _id and checked against the plan's Summ value;
+//      then the receive Summ made up to pair a categorised send as a transfer is ignored, once it is alone
 //   4. list the upload files for the user
 //   5. every call, its result and undo handle go to <state dir>/apply-log.jsonl as they happen
 //
@@ -78,8 +79,10 @@ export function undoHandle(text: string): string | null {
 // showAssociated 0, so each is inspected, and a write never selects by this filter
 const idFilter = (legIds: string[]) => ({ type: 'id', value: legIds, showAssociated: 0 })
 
+type Found = { actionId: string; legs: Leg[] }
+
 /** The action that holds a leg now (action ids change on every write) and its legs. */
-async function lookUp(client: ToolCaller, legId: string): Promise<{ actionId: string; legs: Leg[] } | null> {
+async function lookUp(client: ToolCaller, legId: string): Promise<Found | null> {
     const listed = parseActions(await client.callTool('query_summ_transactions', { filter: idFilter([legId]), includeHidden: true, count: 50 }))
     for (const actionId of new Set(listed.map((a) => a['Action ID'] as string))) {
         const legs = legsOf(parseDetail(await client.callTool('inspect_transaction', { actionId })))
@@ -88,6 +91,8 @@ async function lookUp(client: ToolCaller, legId: string): Promise<{ actionId: st
     return null
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
 export async function applyPlan(
     client: ToolCaller,
     plan: PlanFile,
@@ -95,13 +100,16 @@ export async function applyPlan(
     opts: ApplyOptions,
     log: (line: Omit<LogLine, 'time' | 'plan'>) => void,
     say: (text: string) => void = console.log,
+    /** Summ rebuilds actions and refreshes its search a few seconds after a write. */
+    settleMs = 3000,
 ): Promise<ApplyResult> {
     const result: ApplyResult = { deleted: 0, edited: 0, skipped: [], uploads: [] }
     const write = opts.dryRun ? null : log
-    const skip = (id: string | null, reason: string, extra: Record<string, unknown> = {}) => {
+    const skip = (id: string | null, reason: string, extra: Record<string, unknown> = {}): false => {
         result.skipped.push({ id, reason })
         say(`  skipped ${id ?? '(no row)'}: ${reason}`)
         write?.({ call: 'skip', id, reason, ...extra })
+        return false
     }
 
     // ---- Deletes
@@ -137,6 +145,32 @@ export async function applyPlan(
     for (const [kind, entry] of edits) await applyEdit(kind, entry)
 
     async function applyEdit(kind: string, entry: EditEntry) {
+        if (entry.changes.length && !(await editLegs(kind, entry))) return
+        for (const legId of entry.ignore ?? []) await ignoreMadeUp(entry, legId, entry.changes.length > 0)
+    }
+
+    /** Summ's made-up other side of a transfer, once the categorised leg is split off: ignored, by action id. */
+    async function ignoreMadeUp(entry: EditEntry, legId: string, afterEdit: boolean) {
+        if (!write) return say(`  would ignore the made-up receive ${legId} of ${entry.id}`)
+        let found: Found | null = null
+        for (let attempt = 0; attempt < 5; attempt++) {
+            if (afterEdit || attempt > 0) await sleep(settleMs)
+            found = await lookUp(client, legId)
+            if (found && found.legs.length === 1) break
+        }
+        if (!found) return skip(entry.id, `made-up receive ${legId} is no longer in Summ`)
+        const leg = found.legs.find((l) => l.legId === legId) as Leg
+        if (found.legs.length !== 1) return skip(entry.id, `made-up receive ${legId} still shares its action with ${found.legs.length - 1} other legs`)
+        if (leg.importType !== 'soft-transfer') return skip(entry.id, `leg ${legId} is not a made-up receive (${leg.importType})`)
+        if (leg.trade === 'ignoreIn' || leg.trade === 'ignoreOut') return say(`  made-up receive ${legId} of ${entry.id} is already ignored`)
+        const text = await client.callTool('bulk_edit_transactions', { actionIds: [found.actionId], operation: { type: 'ignore' } })
+        const undo = undoHandle(text)
+        write({ call: 'bulk_edit_transactions', operation: 'ignore', id: entry.id, legIds: [legId], actionIds: [found.actionId], undo, result: text })
+        say(`  ignored the made-up receive of ${entry.id}${undo ? ` (undo ${undo})` : ''}`)
+    }
+
+    /** True when the edit was made. */
+    async function editLegs(kind: string, entry: EditEntry): Promise<boolean> {
         const found = await lookUp(client, entry.changes[0].legId)
         if (!found) return skip(entry.id, `leg ${entry.changes[0].legId} is no longer in Summ`)
         for (const change of entry.changes) {
@@ -151,7 +185,10 @@ export async function applyPlan(
         for (const c of entry.changes) byLeg.set(c.legId, { ...byLeg.get(c.legId), [c.field]: c.desired })
         const args = { actionId: found.actionId, edits: [...byLeg].map(([transactionId, updates]) => ({ transactionId, updates })) }
         const summary = entry.changes.map((c) => `${c.field} ${JSON.stringify(c.summ)} -> ${JSON.stringify(c.desired)}`).join(', ')
-        if (!write) return say(`  would ${kind} ${entry.id}: ${summary}`)
+        if (!write) {
+            say(`  would ${kind} ${entry.id}: ${summary}`)
+            return true
+        }
         const text = await client.callTool('edit_transaction', args)
         result.edited++
         const undo = undoHandle(text)
@@ -159,6 +196,7 @@ export async function applyPlan(
         for (const c of entry.changes) write({ call: 'edit_transaction', kind, id: entry.id, actionId: found.actionId, legId: c.legId, field: c.field, from: c.summ, value: c.desired, undo })
         write({ call: 'edit_transaction', kind, id: entry.id, actionId: found.actionId, undo, result: text })
         say(`  ${kind} ${entry.id}: ${summary}${undo ? ` (undo ${undo})` : ''}`)
+        return true
     }
 
     for (const u of selected(plan.upload, opts)) result.uploads.push({ file: u.filed ? u.file.replace(/\.csv$/, '_filed.csv') : u.file, rows: u.ids.length })

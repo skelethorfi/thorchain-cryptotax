@@ -35,6 +35,11 @@ export interface EditEntry {
     filed: boolean
     actionId: string
     changes: Change[]
+    /**
+     * Categorised only: the receive Summ made up to pair its leg as a transfer (importType soft-transfer), to
+     * be ignored once the leg is categorised and Summ has split it off into an action of its own.
+     */
+    ignore?: string[]
 }
 
 export interface DeleteEntry {
@@ -97,6 +102,9 @@ export interface PlanResult {
     /** overrides.json after this plan: the input's plus the ones captured now. */
     overrides: Override[]
 }
+
+const SOFT_TRANSFER = 'soft-transfer'
+const IGNORED = new Set(['ignoreIn', 'ignoreOut'])
 
 const STABLE_ID = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\.[a-z-]+\.[0-9a-f]{12}$/
 
@@ -358,7 +366,9 @@ export function makePlan(input: PlanInput): PlanResult {
 
     // ---- Categorised rows: Summ's own leg with the row's txid, side and currency, and its amount or the
     // amount plus the fee; only its type and fee are set
-    const ownLegs = input.legs.filter((l) => !managedSources.has(l.source) && l.importType !== 'manual')
+    // Summ's own imports, without the legs Summ made up to pair a send as a transfer (soft-transfer)
+    const ownLegs = input.legs.filter((l) => !managedSources.has(l.source) && l.importType !== 'manual' && l.importType !== SOFT_TRANSFER)
+    const softLegs = input.legs.filter((l) => l.importType === SOFT_TRANSFER && !IGNORED.has(l.trade))
     const legClaims = new Map<string, string[]>()
     const categorised: [Row, Leg][] = []
     for (const row of input.rows.filter((r) => !managedChains.has(r.chain))) {
@@ -400,7 +410,16 @@ export function makePlan(input: PlanInput): PlanResult {
             plan.report.push({ kind: 'fee', filed, id: row.id, legIds: feeLegs.map((l) => l.legId), detail: 'the row has no fee; Summ has a fee leg' })
         }
         const resolved = changes.map((c) => resolve(row.id, leg.actionId, c)).filter((c): c is Change => c !== null)
-        if (resolved.length) plan.categorise.push({ id: row.id, filed, actionId: leg.actionId, changes: resolved })
+        // A row that is not a plain send or receive leaves Summ's made-up other side of the transfer counted
+        // on its own once categorised: it is ignored
+        const trade = typeOf(row).trade
+        const ignore =
+            trade === 'withdrawal' || trade === 'deposit'
+                ? []
+                : softLegs.filter((l) => row.txids.includes(normaliseTxid(l.id)) && sameCurrency(l.currency, leg.currency)).map((l) => l.legId)
+        if (resolved.length || ignore.length) {
+            plan.categorise.push({ id: row.id, filed, actionId: leg.actionId, changes: resolved, ...(ignore.length ? { ignore } : {}) })
+        }
     }
 
     // ---- Manual entries repeating a row's txid

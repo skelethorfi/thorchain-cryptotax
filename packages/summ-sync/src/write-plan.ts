@@ -17,9 +17,10 @@ const show = (v: unknown) => (v === null || v === '' || v === undefined ? '–' 
 const cell = (v: unknown) => show(v).replaceAll('|', '\\|')
 
 function changeLines(entries: EditEntry[]): string[] {
-    return entries.flatMap((e) =>
-        e.changes.map((c: Change) => `| ${e.id} | ${c.leg} \`${c.legId}\` | ${c.field} | ${cell(c.summ)} | ${cell(c.desired)} |`),
-    )
+    return entries.flatMap((e) => [
+        ...e.changes.map((c: Change) => `| ${e.id} | ${c.leg} \`${c.legId}\` | ${c.field} | ${cell(c.summ)} | ${cell(c.desired)} |`),
+        ...(e.ignore ?? []).map((legId) => `| ${e.id} | made-up receive \`${legId}\` | – | transfer | ignored |`),
+    ])
 }
 
 function section<T extends { filed: boolean }>(title: string, entries: T[], render: (entries: T[]) => string[]): string[] {

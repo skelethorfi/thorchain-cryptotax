@@ -134,6 +134,15 @@ txid of the row, with the same currency, and an amount equal to the row's
 or the row's plus its fee (Summ records the gross amount on some chains).
 Exactly one leg must match; none or several is reported, not guessed.
 
+**Made-up receives.** Summ pairs a send of its own imports with a receive
+it makes up itself (source `manual`, import type `soft-transfer`, to an
+account such as "THORChain"), so the send is a transfer that disposes of
+nothing. Once the send is categorised as anything but a plain send,
+Summ splits that receive off as a Receive of its own (`unmatchedTransfer`),
+and the asset counts twice. So plan lists each such leg (same txid and
+currency, not yet ignored) with the categorised row, and apply ignores
+it. A made-up leg is never matched to a categorised row.
+
 ## Compared fields
 
 Type, base currency and amount, quote currency and amount (buy and sell),
@@ -220,6 +229,12 @@ In this order, stopping at the first failure:
    holds the plan's "Summ value"; a leg that changed since the pull is
    skipped and reported. All changes of one action go in one
    `edit_transaction`.
+   Then each made-up receive of the row is looked up again by `_id`
+   (waiting a few seconds for Summ to split it off) and ignored by its
+   action id, only when that action holds nothing else; if the edit was
+   skipped, so is the ignore. An undo handle cannot be relied on to back
+   out of this: once Summ re-pairs the categorised leg with another
+   (e.g. an uploaded bridge-trade-in), the edit's handle is stale.
 4. Print the upload files for the user to upload.
 5. Write `apply-log.jsonl` as it goes: each call, its result and its undo
    handle, one line per changed field (`legId`, `field`, `value`) for
