@@ -53,8 +53,10 @@ decides the design:
   itself, by time and amount.
 
 On upload, Summ skips a row whose `ID` and data equal a row it holds, and
-**imports a row with a known `ID` but different data as a second row**.
-So a changed managed row is deleted before the upload that brings its new
+**imports a row with a known `ID` but different data as a second row**;
+a changed amount or a changed description alone is enough. The `ID` is
+stored as given and shown as the leg's "Tx Hash" (a 121-character ID was
+kept whole). So a changed managed row is deleted before the upload that brings its new
 version.
 
 ## Package
@@ -225,8 +227,6 @@ upload adds once done.
 
 ## Open
 
-- Which fields Summ compares when it calls an uploaded row identical. Until
-  known, upload files hold only rows Summ lacks, never a whole file again.
 - Whether a categorised leg's amount is gross or net of the fee, per chain.
 - A categorised row that receives on an L1 (the outbound of a swap) names
   only the THORChain inbound txid in its description, while Summ's leg
