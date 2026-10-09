@@ -73,11 +73,12 @@ export function undoHandle(text: string): string | null {
     return text.match(/Bulk Edit ID\W*([A-Za-z0-9_-]{8,})/i)?.[1] ?? null
 }
 
-const idFilter = (legIds: string[], showAssociated: 0 | 1) => ({ type: 'id', value: legIds, showAssociated })
+// Exactly these legs' actions (showAssociated 1 would add the actions Summ associates with them)
+const idFilter = (legIds: string[]) => ({ type: 'id', value: legIds, showAssociated: 0 })
 
 /** The action that holds a leg now (action ids change on every write) and its legs. */
 async function lookUp(client: ToolCaller, legId: string): Promise<{ actionId: string; legs: Leg[] } | null> {
-    const listed = parseActions(await client.callTool('query_summ_transactions', { filter: idFilter([legId], 1), includeHidden: true, count: 50 }))
+    const listed = parseActions(await client.callTool('query_summ_transactions', { filter: idFilter([legId]), includeHidden: true, count: 50 }))
     for (const actionId of new Set(listed.map((a) => a['Action ID'] as string))) {
         const legs = legsOf(parseDetail(await client.callTool('inspect_transaction', { actionId })))
         if (legs.some((l) => l.legId === legId)) return { actionId, legs }
@@ -118,7 +119,7 @@ export async function applyPlan(
             const others = found.legs.filter((l) => !entry.legIds.includes(l.legId))
             if (others.length) return skip(entry.id, `leg ${legId} now shares its action with ${others.length} other legs`, { legIds: entry.legIds })
         }
-        const args = { filter: idFilter(entry.legIds, 0), operation: { type: 'delete' } }
+        const args = { filter: idFilter(entry.legIds), operation: { type: 'delete' } }
         if (!write) return say(`  would delete ${entry.legIds.length} legs of ${entry.summId}`)
         const text = await client.callTool('bulk_edit_transactions', args)
         result.deleted++
