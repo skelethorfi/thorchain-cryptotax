@@ -109,6 +109,19 @@ test('a changed amount, type or time is an edit of the leg', () => {
     assert.equal(p.edit[0].changes[0].legId, legs[0].legId)
 })
 
+test('a blank blockchain in Summ is not compared (Summ infers it from the wallet); another chain is', () => {
+    const r = row()
+    assert.ok(empty(plan({ rows: [r], legs: legsOf(r, { blockchain: '' }) }).plan))
+    const { plan: p } = plan({ rows: [r], legs: legsOf(r, { blockchain: 'btc' }) })
+    assert.deepEqual(p.edit[0].changes.map((c) => [c.field, c.summ, c.desired]), [['blockchain', 'btc', 'thorchain']])
+})
+
+test('a categorised row matches a leg whose hash carries an output index', () => {
+    const r = btcRow({ type: 'bridge-trade-out' })
+    const { plan: p } = plan({ rows: [r], legs: [ownLeg({ id: `${TX1}__1` })] })
+    assert.equal(p.categorise.length, 1)
+})
+
 test('a changed description, currency or shape deletes the legs and uploads the row', () => {
     const r = row({ feeCurrency: 'RUNE', feeAmount: '0.02' })
     for (const [legs, reason] of [

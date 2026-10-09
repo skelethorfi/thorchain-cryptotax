@@ -39,8 +39,11 @@ export interface Snapshot {
 
 const SIDES: LegSide[] = ['incoming', 'outgoing', 'fees']
 
+/** A tx hash as plan compares it: lower case, without 0x, and without the output index some imports append
+ * (`<hash>__1`, `<hash>-0`). */
 export function normaliseTxid(txid: string): string {
-    return txid.toLowerCase().replace(/^0x/, '')
+    const hex = txid.match(/^(?:0x)?([0-9a-fA-F]{64})(?:(?:__|-)\d+)?$/)
+    return hex ? hex[1].toLowerCase() : txid.toLowerCase().replace(/^0x/, '')
 }
 
 const text = (value: unknown): string => (typeof value === 'string' ? value : '')

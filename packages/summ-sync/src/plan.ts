@@ -336,7 +336,8 @@ export function makePlan(input: PlanInput): PlanResult {
             ...compare(base, 'base', 'timestamp', row.timestamp),
             ...compare(base, 'base', 'from', row.from),
             ...compare(base, 'base', 'to', row.to),
-            ...(chain ? compare(base, 'base', 'blockchain', chain) : []),
+            // Summ infers a blank blockchain from the wallet (docs/specs/assets.md), so only a value it holds is compared
+            ...(chain && base.blockchain ? compare(base, 'base', 'blockchain', chain) : []),
             ...(quote ? [...compare(quote, 'quote', 'trade', type.quote as string), ...compare(quote, 'quote', 'quantity', Number(row.quoteAmount))] : []),
             ...(fee ? compare(fee, 'fee', 'quantity', Number(row.feeAmount)) : []),
         ]
