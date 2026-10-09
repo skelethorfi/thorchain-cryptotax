@@ -1,7 +1,8 @@
 // apply: carries out a reviewed plan through Summ's MCP (spec: docs/specs/summ-sync.md, Apply).
 //
 //   1. refuse a plan whose snapshot is not the latest, or that Summ changed under since (apply-log.jsonl)
-//   2. deletes (--approve-deletes), selected by leg _id; a leg that shares its action with other legs is refused
+//   2. deletes (--approve-deletes): each leg looked up by _id, and only actions that hold nothing but the
+//      entry's legs are deleted, by action id; a leg that shares its action with other legs is refused
 //   3. edits and categorisation, each action looked up again by leg _id and checked against the plan's Summ value
 //   4. list the upload files for the user
 //   5. every call, its result and undo handle go to <state dir>/apply-log.jsonl as they happen
@@ -73,7 +74,8 @@ export function undoHandle(text: string): string | null {
     return text.match(/Bulk Edit ID\W*([A-Za-z0-9_-]{8,})/i)?.[1] ?? null
 }
 
-// Exactly these legs' actions (showAssociated 1 would add the actions Summ associates with them)
+// Candidates only: the id filter lists the leg's action but can list unrelated actions too, even with
+// showAssociated 0, so each is inspected, and a write never selects by this filter
 const idFilter = (legIds: string[]) => ({ type: 'id', value: legIds, showAssociated: 0 })
 
 /** The action that holds a leg now (action ids change on every write) and its legs. */
@@ -113,17 +115,20 @@ export async function applyPlan(
             // Whether a delete selected by leg _id keeps the other legs of the action is not yet shown
             return skip(entry.id, `its actions hold ${entry.otherLegs} other legs`, { legIds: entry.legIds })
         }
+        const actionIds = new Set<string>()
         for (const legId of entry.legIds) {
             const found = await lookUp(client, legId)
             if (!found) return skip(entry.id, `leg ${legId} is no longer in Summ`, { legIds: entry.legIds })
             const others = found.legs.filter((l) => !entry.legIds.includes(l.legId))
             if (others.length) return skip(entry.id, `leg ${legId} now shares its action with ${others.length} other legs`, { legIds: entry.legIds })
+            actionIds.add(found.actionId)
         }
-        const args = { filter: idFilter(entry.legIds), operation: { type: 'delete' } }
+        // By the actions just inspected, which hold only the entry's legs: never by a filter
+        const args = { actionIds: [...actionIds], operation: { type: 'delete' } }
         if (!write) return say(`  would delete ${entry.legIds.length} legs of ${entry.summId}`)
         const text = await client.callTool('bulk_edit_transactions', args)
         result.deleted++
-        write({ call: 'bulk_edit_transactions', operation: 'delete', id: entry.id, summId: entry.summId, legIds: entry.legIds, result: text })
+        write({ call: 'bulk_edit_transactions', operation: 'delete', id: entry.id, summId: entry.summId, legIds: entry.legIds, actionIds: [...actionIds], result: text })
     }
 
     // ---- Edits, then categorisation: the same call on a managed row's legs or on Summ's own leg

@@ -208,12 +208,13 @@ In this order, stopping at the first failure:
 1. Check the plan's snapshot is the latest, and that `apply-log.jsonl`
    records no write since that snapshot was taken; refuse otherwise (pull
    and plan again).
-2. Deletes (approved), selected by the legs' `_id`s (the `id` filter with
-   `showAssociated: 0`), never by action or a wider filter. Each leg is
-   looked up again first. A delete whose legs share an action with other
-   legs (in the plan or in Summ now) is skipped and reported: whether a
-   delete selected by leg keeps the other legs of its action is not yet
-   shown.
+2. Deletes (approved). Each leg is looked up again by `_id`, and only
+   actions that now hold nothing but the entry's legs are deleted, by
+   their action ids. A delete whose legs share an action with other legs
+   (in the plan or in Summ now) is skipped and reported. Never by a
+   filter: Summ's `id` filter lists the leg's action but can list
+   unrelated actions too, even with `showAssociated: 0`, so a look-up
+   inspects each action it lists and keeps only the one holding the leg.
 3. Edits and categorisation. Before each action, look it up again by leg
    `_id` (action ids change after every write) and check the leg still
    holds the plan's "Summ value"; a leg that changed since the pull is

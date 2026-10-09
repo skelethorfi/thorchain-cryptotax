@@ -30,8 +30,11 @@ class FakeSumm implements ToolCaller {
     async callTool(name: string, args: Record<string, unknown>): Promise<string> {
         this.calls.push({ name, args })
         if (name === 'query_summ_transactions') {
+            // Like Summ's id filter: the leg's action, then unrelated ones
             const ids = (args.filter as { value: string[] }).value
-            const hits = [...this.actions].filter(([, legs]) => legs.some((l) => ids.includes(l._id)))
+            const all = [...this.actions]
+            const own = all.filter(([, legs]) => legs.some((l) => ids.includes(l._id)))
+            const hits = [...own, ...all.filter((a) => !own.includes(a))]
             return hits.map(([actionId], i) => `## ${i + 1}. Send\n- **Action ID**: \`${actionId}\`\n`).join('\n')
         }
         if (name === 'inspect_transaction') {
@@ -49,9 +52,10 @@ class FakeSumm implements ToolCaller {
             return `Edited 1 action.\n- **Bulk Edit ID**: \`undo${this.n}abcdef\`\n- **Affected Action IDs**: ${next}`
         }
         if (name === 'bulk_edit_transactions') {
-            const ids = (args.filter as { value: string[] }).value
-            for (const [actionId, legs] of this.actions) if (legs.every((l) => ids.includes(l._id))) this.actions.delete(actionId)
-            return `Deleted ${ids.length} transaction legs.`
+            if (args.filter) throw new Error('a write selected by filter')
+            const ids = args.actionIds as string[]
+            for (const id of ids) this.actions.delete(id)
+            return `Deleted ${ids.length} actions.`
         }
         throw new Error(`unexpected tool ${name}`)
     }
@@ -175,13 +179,15 @@ test('deletes need --approve-deletes', async () => {
     assert.equal(summ.calls.length, 0)
 })
 
-test('a delete selects exactly its legs by _id, never by action', async () => {
+test('a delete looks its legs up by _id and deletes only the actions that hold nothing else, by action id', async () => {
     const summ = new FakeSumm()
+    summ.add('unrelated', [{ _id: 'their-leg', trade: 'deposit', quantity: '1' }])
     summ.add('d', [{ _id: 'leg-9', trade: 'withdrawal', quantity: '1' }])
     const { result, log } = await run(summ, planFile({ delete: [del()] }), { approveDeletes: true })
     assert.equal(result.deleted, 1)
     const call = summ.calls.find((c) => c.name === 'bulk_edit_transactions')
-    assert.deepEqual(call?.args, { filter: { type: 'id', value: ['leg-9'], showAssociated: 0 }, operation: { type: 'delete' } })
+    assert.deepEqual(call?.args, { actionIds: ['d'], operation: { type: 'delete' } })
+    assert.deepEqual([...summ.actions.keys()], ['unrelated'])
     assert.equal(log[0].operation, 'delete')
 })
 
