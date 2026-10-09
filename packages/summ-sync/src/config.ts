@@ -10,12 +10,15 @@ export interface Config {
     managedSources: string[]
     /** Rows before this date (YYYY-MM-DD) are in filed years. */
     filedBefore: string | null
+    /** Summ's account timezone (IANA name): the days of the run's periods and of filedBefore. */
+    timezone: string
 }
 
 export const DEFAULTS: Config = {
     managedChains: ['THOR', 'MAYA'],
     managedSources: [],
     filedBefore: null,
+    timezone: 'UTC',
 }
 
 export function parseConfig(text: string): Config {
@@ -28,6 +31,11 @@ export function parseConfig(text: string): Config {
     }
     if (config.filedBefore !== null && !/^\d{4}-\d{2}-\d{2}$/.test(config.filedBefore)) {
         throw new Error('summ-sync.json: filedBefore must be a date (YYYY-MM-DD) or null')
+    }
+    try {
+        new Intl.DateTimeFormat('en-US', { timeZone: config.timezone })
+    } catch {
+        throw new Error(`summ-sync.json: timezone must be an IANA name such as "Europe/London" (got ${JSON.stringify(config.timezone)})`)
     }
     return config
 }

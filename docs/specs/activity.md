@@ -87,6 +87,16 @@ An amount is `{base: bigint, decimals}`, e.g. `{base: 2000000n, decimals: 8}`
 is 0.02. It stays exact until a row is written. `formatAmount` gives the same
 string the CSV has always had (`0.02`, `1`, `5000`).
 
+The decimals are the protocol's, not the asset's own chain's: THORChain
+holds every asset at 8 decimals, and Maya at 8 except CACAO (10) and MAYA
+(4) (`maya.md`). So an L1 amount that Midgard reports is THORChain's 8-decimal
+value, not the chain's exact one. An ETH or ERC-20 amount (18 or 6 decimals
+on Ethereum) is cut to 8, and an inbound's gas is THORChain's observation of
+it at 8 decimals, which can be one unit above the exact fee. A wallet import of the same L1 tx (Summ's own)
+can differ from the CSV in the last decimals; Summ sync treats a difference of
+at most one unit at the 8th decimal as equal (`summ-sync.md`). The exact value
+is only on the L1 chain; the exporter does not read it.
+
 ## Kinds
 
 `ActivityKind` is a closed union. It grows as each action type is ported, so an

@@ -53,8 +53,10 @@ decides the design:
   itself, by time and amount.
 
 On upload, Summ skips a row whose `ID` and data equal a row it holds, and
-**imports a row with a known `ID` but different data as a second row**.
-So a changed managed row is deleted before the upload that brings its new
+**imports a row with a known `ID` but different data as a second row**;
+a changed amount or a changed description alone is enough. The `ID` is
+stored as given and shown as the leg's "Tx Hash" (a 121-character ID was
+kept whole). So a changed managed row is deleted before the upload that brings its new
 version.
 
 ## Package
@@ -67,8 +69,8 @@ nothing from it; the only link is the files below. It speaks MCP over
 ## Commands
 
     summ-sync login <state dir> [--write]  # browser OAuth; token in the state dir
-    summ-sync pull  <state dir>    # writes a snapshot
-    summ-sync plan  <state dir> <run dir>
+    summ-sync pull  <state dir> [<run dir>]  # writes a snapshot
+    summ-sync plan  <state dir> <run dir>    # reads files only; calls nothing
     summ-sync apply <state dir> <plan file> [--approve-deletes] [--approve-filed]
 
 The **state dir** holds snapshots, plans, apply logs, the adoption table and
@@ -76,15 +78,19 @@ the overrides file. It is the user's private data: never in this repo.
 
 ## Inputs
 
-**Run folder** (written by the exporter): `csv/*.csv` per wallet and period,
-`csv/all.csv`, and `row-ids.csv` (each `ID`'s timestamp, type, wallet,
-record, role and asset). A row's on-chain txids are the 64-character hex
-strings in its description (as `run-diff.md`).
+**Run folder** (written by the exporter): the desired state is its period
+wallet files, `csv/<from>_<to>_<CHAIN>_<wallet>_<name>.csv` (`periods.md`),
+the files the user uploads. `csv/all.csv` is not read: it holds rows outside
+the run's periods. `row-ids.csv` traces an `ID` back to its action for the
+user; plan does not need it. No other file is written for the sync. A row's
+on-chain txids are the 64-character hex strings in its description (as
+`run-diff.md`).
 
 **Snapshot** (written by `pull`): `actions.jsonl` (one line per action from
 the list) and `details/<action id>.json` (the action's JSON and change
 history) for each action the plan needs: every action of a managed source,
-and every action whose tx hash is a txid of a categorised row. A snapshot is never patched: after an apply, pull
+and, when pull is given the run dir, every action whose tx hash is a txid
+of a categorised row. A snapshot is never patched: after an apply, pull
 again.
 
 **Sync config** (`summ-sync.json` in the state dir):
@@ -96,15 +102,32 @@ again.
   Summ's own import of its wallets.
 - `managedSources`: Summ's source names of the managed rows (e.g. the
   account name the CSVs were uploaded under).
+- `timezone`: the Summ account's timezone (IANA name, default `UTC`): the
+  days of the run's periods and of `filedBefore`, as the exporter's
+  `timezone` (`periods.md`).
 
 ## Matching
 
-**Managed rows** match a Summ leg of a managed source with the same `id`.
-Rows uploaded before stable IDs carry `<file>:<n>`: the first plan adopts
-each such leg to the row with the same txid in its description, timestamp,
-type, currency and amount, and records it in `adopted.csv` (leg `_id`,
-stable ID). An adopted leg is then matched through that table. A legacy leg
-that matches no row is planned for deletion like any other.
+**Scope.** Summ holds every year; a run holds its periods. A managed leg
+that matches no row is only planned for deletion when its timestamp falls
+in one of the run's periods (whole days in `timezone`); one outside them is
+left alone and counted.
+
+**Managed rows** match the Summ legs of a managed source with the same `id`.
+A row is in Summ as a base leg (the type's side), a quote leg on the other
+side for `buy` and `sell` only (Summ keeps no leg for the quote of other
+types, e.g. `bridge-trade-out`), and a leg in `fees` when the row has a fee,
+all carrying the row's `ID`.
+
+Rows uploaded before stable IDs carry `<file>:<n>`: plan adopts each such
+leg to the one unmatched row with the same base leg (type, currency, amount,
+timestamp to the second) and, when the leg's description holds txids (old
+descriptions often do not), the same txids. It records each adopted leg in
+`adopted.csv` in the state dir (`Leg,ID`: leg `_id`, row ID); later plans
+match the leg through that table, so a later change of the row is an edit,
+not a re-upload. An in-scope legacy leg that fits no row is planned for
+deletion like any other. One that fits several rows, or a row that several
+legacy legs fit, is reported, and those rows are not uploaded.
 
 **Categorised rows** match a leg of Summ's own imports whose tx hash is a
 txid of the row, with the same currency, and an amount equal to the row's
@@ -113,29 +136,43 @@ Exactly one leg must match; none or several is reported, not guessed.
 
 ## Compared fields
 
-Type, base currency and amount, quote currency and amount, fee currency and
-amount, timestamp (to the second), blockchain, from and to (managed rows
-only). Not price, value or gain. CSV types are compared as Summ's enum
+Type, base currency and amount, quote currency and amount (buy and sell),
+fee currency and amount, timestamp (to the second), blockchain, from and to
+(managed rows only), and the description (managed rows with a stable ID; an
+adopted leg keeps its old wording). Not price, value or gain.
+
+A changed shape (a leg on the other side, a quote or fee leg gained or
+lost), currency or description cannot be an edit (the MCP rejects custom
+currencies such as LP tokens, and cannot set descriptions), so such a row is
+deleted and uploaded again. The other fields are edits.
+
+The CSV's blockchain names are mapped to Summ's ids by a table in the
+package (`THORChain` → `thorchain`, `BNB` → `binancechain`, ...); a chain
+the table lacks is not compared, and the plan says which. CSV types are compared as Summ's enum
 (`bridge-trade-out` → `bridgeTradeOut`, `receive-lp-token` →
 `receivingLiquidityProviderToken`, ...); the mapping table is part of the
 package and a type it lacks stops the plan.
 
-Amounts are compared to the precision Summ stores; a difference below
-`1e-8` of the amount is equal.
+Amounts are equal when they differ by less than `1e-8` of the amount, or
+by at most one unit at the 8th decimal: the exporter's amounts carry
+THORChain's 8 decimals, while Summ's own imports hold e.g. ETH gas in full.
 
 ## Plan
 
 `plan` writes `plans/<timestamp>/plan.json` (machine-readable, the input to
-`apply`) and `plan.md` (for review), and nothing else. Each entry names the
-row `ID`, the leg `_id`, the field, Summ's value and the desired value.
+`apply`), `plan.md` (for review) and `upload/`, and adds what it adopted
+and captured to `adopted.csv` and `overrides.json`. It changes nothing in
+Summ. Each change names the row `ID`, the leg `_id`, the field, Summ's
+value and the desired value; each delete names the legs and how many other
+legs share their actions (a delete by action would remove those too).
 
 | Section | Contents | Applied as |
 | --- | --- | --- |
 | delete | managed legs with no row in the run; managed legs whose row changed in a field an edit cannot set (description, ID) or whose action shape changed | bulk delete, only with `--approve-deletes` |
 | edit | managed legs whose row changed only in editable fields | `edit_transaction` per action |
-| upload | rows with no leg in Summ after the deletes, per CSV file | files written to `plans/<timestamp>/upload/`, uploaded by the user |
+| upload | rows with no leg in Summ after the deletes, per CSV file | files written to `plans/<timestamp>/upload/` (the file's header and those rows as the run wrote them; filed-year rows in `<file>_filed.csv`), uploaded by the user |
 | categorise | categorised rows whose Summ leg differs in type or fee | `edit_transaction` |
-| report | categorised rows with no or several matching legs; Summ legs of a managed source that no ID explains; manual entries repeating a row's txid | nothing: for the user to resolve |
+| report | categorised rows with no or several matching legs; legacy legs that fit several rows; managed rows whose ID Summ holds under a source not in `managedSources` (not uploaded again); manual entries repeating a row's txid | nothing: for the user to resolve |
 | overridden | differences an override keeps, and overrides captured in this plan | nothing |
 
 **Filed years.** An entry whose row or leg is dated before `filedBefore` is
@@ -145,7 +182,11 @@ with `--approve-filed`, in a separate apply from the current year.
 **Drift and overrides.** A value the user changed in Summ is kept, never
 set back by default. Summ's change history labels every edit through the
 MCP as the user's, so an edit is the sync's own when `apply-log.jsonl`
-records it (same leg, field and value), and drift otherwise. `plan`
+records it (same leg, field and value), and drift otherwise. The history is
+per action, in the web app's labels (`Category`, `Quantity`, `From`, ...),
+so a difference counts as drift when its action's history has a `user`
+change of that field's label: an edit of another leg in the same action
+(e.g. the other side of a transfer) can make it drift too. `plan`
 records each one it has not seen before in `overrides.json` in the state
 dir: row `ID`, field, the run's value, the user's value, when it was seen,
 and a `reason` for the user to fill in. An override always takes precedence
@@ -186,6 +227,8 @@ upload adds once done.
 
 ## Open
 
-- Which fields Summ compares when it calls an uploaded row identical. Until
-  known, upload files hold only rows Summ lacks, never a whole file again.
 - Whether a categorised leg's amount is gross or net of the fee, per chain.
+- A categorised row that receives on an L1 (the outbound of a swap) names
+  only the THORChain inbound txid in its description, while Summ's leg
+  carries the outbound txid, so it matches no leg until the exporter adds
+  the outbound txid to the description.

@@ -4,17 +4,23 @@
 import { login, READ_SCOPE, WRITE_SCOPE } from '../src/auth.ts'
 import { McpClient } from '../src/mcp.ts'
 import { pull } from '../src/pull.ts'
+import { writePlan } from '../src/write-plan.ts'
 
 const USAGE = `Usage:
   summ-sync login <state dir> [--write]   authorise in the browser (read, or read and write)
-  summ-sync pull  <state dir>             snapshot Summ into <state dir>/snapshots/
+  summ-sync pull  <state dir> [<run dir>] snapshot Summ into <state dir>/snapshots/
+  summ-sync plan  <state dir> <run dir>   compare a run with the latest snapshot (calls nothing)
   summ-sync tools <state dir>             list the MCP server's tools`
 
 const [command, stateDir, ...rest] = process.argv.slice(2)
 try {
     if (!stateDir) throw new Error(USAGE)
     if (command === 'login') await login(stateDir, rest.includes('--write') ? WRITE_SCOPE : READ_SCOPE)
-    else if (command === 'pull') await pull(stateDir)
+    else if (command === 'pull') await pull(stateDir, rest[0])
+    else if (command === 'plan') {
+        if (!rest[0]) throw new Error(USAGE)
+        writePlan(stateDir, rest[0])
+    }
     else if (command === 'tools') {
         const client = new McpClient(stateDir)
         await client.connect()
