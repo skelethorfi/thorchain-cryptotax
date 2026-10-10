@@ -105,8 +105,10 @@ export function readAction(stateDir: string, actionId: string): ActionDetail | n
 export function storeAction(stateDir: string, detail: ActionDetail, replace = false): string {
     const file = actionFile(stateDir, detail.action._id)
     if (replace || !existsSync(file)) {
+        // Through a temporary file, so a pull that stops never leaves half a file under the id
         mkdirSync(dirname(file), { recursive: true })
-        writeFileSync(file, JSON.stringify(detail, null, 2) + '\n')
+        writeFileSync(`${file}.tmp`, JSON.stringify(detail, null, 2) + '\n')
+        renameSync(`${file}.tmp`, file)
     }
     return file
 }

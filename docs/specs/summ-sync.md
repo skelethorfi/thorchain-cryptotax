@@ -99,13 +99,18 @@ unique counts, managed sources, the run dir, how many details were fetched
 and how many the store already held), then one entry per listed action:
 `id`, `txHash`, `category`, `tags`, and `detail: true` when the action is
 one the plan needs (below). The file is written whole at the end of the
-pull, so a pull that stops leaves no snapshot. The list pages themselves are
+pull, so a pull that stops leaves no snapshot. An action of a managed
+source that the full list missed because Summ rebuilt it during the pull
+(its new id is only in the source query) is added as an entry, with a
+warning, so the plan still reads its legs. Store files are written through
+a temporary file, so a stopped pull never leaves half a file under an id. The list pages themselves are
 not kept. An action deleted in Summ is simply absent from later snapshots;
 its stored detail stays.
 
 **Prune** removes snapshot files older than `--older-than` days (default
 30, by the time in their name; never the latest) and store files that no
-remaining snapshot lists, but only files git tracks with no uncommitted
+remaining snapshot lists, except actions apply saved before deleting them
+(named in `apply-log.jsonl`), but only files git tracks with no uncommitted
 changes (git keeps them); otherwise it removes nothing and lists the files.
 Plans keep their snapshot's name.
 

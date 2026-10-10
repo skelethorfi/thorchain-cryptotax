@@ -8,12 +8,13 @@
 //                                       action a new id whenever it changes. --full fetches them all again and
 //                                       reports any stored id whose legs or history differ
 
+import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { McpClient } from './mcp.ts'
 import { type ListedAction, parseActions, parseDetail, parsePageHeader } from './parse.ts'
 import { type Config, loadConfig } from './config.ts'
 import { readRun, type Row } from './run.ts'
-import { normaliseTxid, readAction, type SnapshotEntry, storeAction, syncView, writeSnapshot } from './snapshot.ts'
+import { actionFile, normaliseTxid, readAction, type SnapshotEntry, storeAction, syncView, writeSnapshot } from './snapshot.ts'
 
 const PAGE_SIZE = 250
 
@@ -78,12 +79,12 @@ export async function pull(stateDir: string, runDir?: string, { full = false, cl
     const fetchDetails = async (ids: string[]) => {
         const todo = [...new Set(ids)].filter((id) => !needed.has(id))
         todo.forEach((id) => needed.add(id))
-        const fetch = full ? todo : todo.filter((id) => !readAction(stateDir, id))
+        const fetch = full ? todo : todo.filter((id) => !existsSync(actionFile(stateDir, id)))
         stored += todo.length - fetch.length
         console.log(`  ${todo.length - fetch.length} already in the store, ${fetch.length} to fetch`)
         for (const [i, actionId] of fetch.entries()) {
             const detail = parseDetail(await client.callTool('inspect_transaction', { actionId }))
-            const before = readAction(stateDir, actionId)
+            const before = full ? readAction(stateDir, actionId) : null
             const changed = before !== null && syncView(before) !== syncView(detail)
             if (changed) differs.push(actionId)
             storeAction(stateDir, detail, changed)
@@ -92,16 +93,27 @@ export async function pull(stateDir: string, runDir?: string, { full = false, cl
         }
         if (fetch.length) process.stdout.write('\n')
     }
+    // An action Summ rebuilt while the full list was paged appears under its new id only in the source query:
+    // it joins the snapshot's entries, so plan reads its legs
+    const listed = new Set(actions.map((a) => a['Action ID']))
+    const late: ListedAction[] = []
     for (const source of config.managedSources) {
         console.log(`Full detail for source "${source}"`)
-        await fetchDetails((await queryAll(client, { type: 'source', value: [source] })).flatMap(parseActions).map((a) => a['Action ID'] as string))
+        const sourceActions = (await queryAll(client, { type: 'source', value: [source] })).flatMap(parseActions)
+        for (const a of sourceActions) {
+            if (listed.has(a['Action ID'])) continue
+            listed.add(a['Action ID'])
+            late.push(a)
+        }
+        await fetchDetails(sourceActions.map((a) => a['Action ID'] as string))
     }
+    if (late.length) console.log(`  WARNING: ${late.length} actions of a managed source were not in the full list (Summ changed during the pull); added to the snapshot`)
     if (txids) {
         console.log("Full detail for the actions with a categorised row's txid")
         await fetchDetails(actionsWithTxids(actions, txids))
     }
     if (differs.length) {
-        console.log(`WARNING: ${differs.length} stored actions differ from Summ under the same id (replaced; the old files are in git):`)
+        console.log(`WARNING: ${differs.length} stored actions differ from Summ under the same id (replaced; the old versions are in git if committed):`)
         for (const id of differs) console.log(`  ${id}`)
     }
 
@@ -112,11 +124,12 @@ export async function pull(stateDir: string, runDir?: string, { full = false, cl
         unique,
         managedSources: config.managedSources,
         run: runDir ?? null,
+        late: late.length,
         details: needed.size,
         stored,
         fetched,
         ...(full ? { differs } : {}),
-        actions: actions.map((a) => ({ ...snapshotEntry(a), ...(needed.has(a['Action ID'] as string) ? { detail: true as const } : {}) })),
+        actions: [...actions, ...late].map((a) => ({ ...snapshotEntry(a), ...(needed.has(a['Action ID'] as string) ? { detail: true as const } : {}) })),
     })
     console.log(`Snapshot written to ${file}`)
     return file

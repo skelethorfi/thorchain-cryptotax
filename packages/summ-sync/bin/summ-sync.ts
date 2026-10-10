@@ -35,8 +35,10 @@ try {
         await runApply(client, stateDir, rest[0], { dryRun, approveDeletes: rest.includes('--approve-deletes'), approveFiled: rest.includes('--approve-filed') })
     }
     else if (command === 'prune') {
-        const days = rest.indexOf('--older-than')
-        runPrune(stateDir, days >= 0 ? Number(rest[days + 1]) : undefined)
+        const at = rest.indexOf('--older-than')
+        const days = at >= 0 ? rest[at + 1] : undefined
+        if (at >= 0 && !/^\d+(\.\d+)?$/.test(days ?? '')) throw new Error('--older-than needs a number of days')
+        runPrune(stateDir, days === undefined ? undefined : Number(days))
     }
     else if (command === 'tools') {
         const client = new McpClient(stateDir)

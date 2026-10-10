@@ -73,8 +73,8 @@ Filed years go in a separate apply with `--approve-filed`.
   shows what Summ held. It needs `login --write`. Afterwards, upload the
   files, then pull and plan again.
 - `prune` removes the snapshots older than `--older-than` days (default
-  30; never the latest) and the stored actions only those list, once they
-  are committed (keep the state dir in git; git keeps the removed files). If
+  30; never the latest) and the stored actions no remaining snapshot lists
+  (except those apply saved before a delete), once they are committed (keep the state dir in git; git keeps the removed files). If
   any is not committed, it removes nothing and lists them.
 - `tools` lists the server's tools.
 

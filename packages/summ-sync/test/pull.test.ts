@@ -19,14 +19,16 @@ test('actionsWithTxids finds listed actions by tx hash, in any case and with or 
 })
 
 
-/** Summ as a fake MCP server: the listed actions, all of the managed source; counts inspect calls. `legs`
- * gives an action's outgoing legs, `moved` a value of a field the sync does not read. */
-function fakeSumm(actionIds: string[], legs: Record<string, unknown[]> = {}, moved = 0) {
+/** Summ as a fake MCP server: the listed actions, all of the managed source (or `sourceIds`, as the source
+ * query lists them); counts inspect calls. `legs` gives an action's outgoing legs, `moved` a value of a field
+ * the sync does not read. */
+function fakeSumm(listedIds: string[], legs: Record<string, unknown[]> = {}, moved = 0, sourceIds = listedIds) {
     const inspected: string[] = []
     const client = {
         connect: async () => {},
         callTool: async (name: string, args: Record<string, unknown>) => {
             if (name === 'query_summ_transactions') {
+                const actionIds = args.filter ? sourceIds : listedIds
                 const blocks = actionIds.map((id, i) => `## ${i + 1}. send\n- **Action ID**: \`${id}\`\n- **Tx Hash**: \`h${id}\`\n- **Action Category**: send`)
                 return `# Transactions (Page 1 of 1, ${actionIds.length} returned, ${actionIds.length} total)\n\n${blocks.join('\n\n')}`
             }
@@ -84,4 +86,16 @@ test('pull --full fetches every needed action again and reports a stored id whos
         assert.deepEqual(readSnapshotFile(file).differs, ['a2'])
         assert.equal(readFileSync(join(stateDir, 'actions', 'a1.json'), 'utf8'), a1, 'kept as first read')
         assert.deepEqual(readAction(stateDir, 'a2')?.action.outgoing, [{ _id: 'l', quantity: 2 }], 'replaced')
+    }))
+
+test('an action Summ rebuilt during the pull, seen only by the source query, joins the snapshot', () =>
+    quiet(async () => {
+        const stateDir = mkdtempSync(join(tmpdir(), 'summ-sync-pull-'))
+        writeFileSync(join(stateDir, 'summ-sync.json'), JSON.stringify({ managedSources: ['csv-source'] }))
+        // the full list saw a1 and a2; by the source query a2 had been rebuilt as a3
+        const file = await pull(stateDir, undefined, { client: fakeSumm(['a1', 'a2'], {}, 0, ['a1', 'a3']).client })
+        const snapshot = readSnapshotFile(file)
+        assert.deepEqual(snapshot.actions.map((a) => [a.id, a.detail ?? false]), [['a1', true], ['a2', false], ['a3', true]])
+        assert.equal(snapshot.late, 1)
+        assert.deepEqual([...readSnapshot(file).history.keys()], ['a1', 'a3'])
     }))
