@@ -1,7 +1,8 @@
 // migrate (one-off): the old snapshot folders to the action store and snapshot files (spec:
 // docs/specs/summ-sync.md, State dir). Reads
 //
-//   snapshots/<time>/   actions.jsonl, details/<action id>.json, manifest.json
+//   snapshots/<time>/   actions.jsonl, details/<action id>.json (or .md: inspect_transaction's text, as the
+//                       first version wrote it), manifest.json
 //   deleted/<time>/     <action id>.json, saved by apply before a delete
 //
 // and writes actions/<action id>.json (the first copy of each id) and snapshots/<time>.json. Reports each id
@@ -9,7 +10,7 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import type { ActionDetail, ListedAction } from './parse.ts'
+import { type ActionDetail, type ListedAction, parseDetail } from './parse.ts'
 import { snapshotEntry } from './pull.ts'
 import { readAction, storeAction, syncView, writeSnapshot } from './snapshot.ts'
 
@@ -35,11 +36,12 @@ export function migrate(stateDir: string): MigrateResult {
     }
     const readDetails = (dir: string, from: string): string[] =>
         readdirSync(dir)
-            .filter((f) => f.endsWith('.json'))
+            .filter((f) => /\.(json|md)$/.test(f))
             .sort()
             .map((f) => {
-                keep(JSON.parse(readFileSync(join(dir, f), 'utf8')), from)
-                return f.slice(0, -5)
+                const text = readFileSync(join(dir, f), 'utf8')
+                keep(f.endsWith('.md') ? parseDetail(text) : JSON.parse(text), from)
+                return f.replace(/\.(json|md)$/, '')
             })
 
     const snapshotsDir = join(stateDir, 'snapshots')
