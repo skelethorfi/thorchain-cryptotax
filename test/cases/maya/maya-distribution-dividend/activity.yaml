@@ -1,0 +1,21 @@
+id: maya-distribution/maya1nvch7vk5yv4erwmcct794xlhh8hu6twslyrr8m.18748800
+protocol: maya
+kind: maya.distribution
+status: success
+time: 2026-10-09T13:48:33.000Z
+txids:
+  in: []
+  out: []
+legs:
+  - direction: in
+    wallet: maya1nvch7vk5yv4erwmcct794xlhh8hu6twslyrr8m
+    asset:
+      notation: MAYA.CACAO
+      kind: native
+    role: reward
+    basis: observed
+    amount: "0.0060306687"
+    decimals: 10
+prices: []
+details:
+  height: "18748800"

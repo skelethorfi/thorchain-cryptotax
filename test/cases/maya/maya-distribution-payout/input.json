@@ -1,0 +1,13 @@
+{
+  "description": "CACAO payout to a MAYA holder: paid to a MAYA holder at a payout height (balance step, equal to the block's distribute_maya_fund event)",
+  "source": "maya-distribution",
+  "protocol": "maya",
+  "wallet": "maya1nvch7vk5yv4erwmcct794xlhh8hu6twslyrr8m",
+  "data": {
+    "height": 18748800,
+    "date": "1791553713621193969",
+    "cacao": "60306687",
+    "maya": "15841",
+    "from": "balance"
+  }
+}

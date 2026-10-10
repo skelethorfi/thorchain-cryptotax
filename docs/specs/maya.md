@@ -152,6 +152,69 @@ MAYA token distributions after the liquidity auction). A Maya send that is
 another listed action's inbound or outbound gives no row. Golden cases:
 `maya/send-cacao`, `maya/send-maya-income`.
 
+### CACAO to MAYA holders
+
+Maya pays a share of its revenue in CACAO to every MAYA holder, pro rata, at
+each height divisible by 14400 (about once a day). It is an end-block event,
+`distribute_maya_fund` (`cacao_address`, `cacao_amount`), with a transfer from
+the `maya_fund` module account: there is no tx, so Midgard's actions never
+list it. The public node's
+`block_search` is disabled, and a whole block (`/mayachain/block?height=`) is
+several MB, too much to read once a day.
+
+Maya's Midgard has listed the payouts since release 2.20.0
+(`/v2/maya/<address>/dividends`: height, date in seconds and CACAO amount,
+paged by 400, only payouts of more than 0), but only from height 14947200
+(2026-01-26) onwards, for every holder: what it indexed, not when they first
+held MAYA. The source uses it from that height on: one call per 400 payouts.
+A Midgard without it (404, e.g. an older one set in `MAYA_MIDGARD_API_URL`)
+gets a warning, and every height is read as below; any other error fails the
+run after the usual retries. A payout listed twice (one made between two
+pages) is kept once.
+
+For payouts before that height, the source reads the wallet's balance on Maya's Midgard just before and at
+each payout height (`/v2/balance/<address>?height=h−1` and `?height=h`): the
+CACAO paid is the step between them, and the MAYA held at `h−1` is kept with
+it (Midgard's shared client sends one request a second, so this is about 2 s
+a payout). Where both have a payout, its height, amount and date (to the
+second) equal the dividends list's. That step is exact only when nothing else moved the wallet's CACAO in
+block `h`. When one of the wallet's Midgard actions was sent or paid out at
+`h` (its own height or an outbound's: a streaming swap pays out blocks after
+it starts), or the step is below 0, the source reads the payout from that
+block's `distribute_maya_fund` event instead, with a warning when the wallet
+held MAYA but the block pays it nothing. A CACAO transfer into the wallet at
+`h` that no Midgard action lists would still be counted; none is known.
+
+Each payout read from balances is stored as soon as it is read, so a run that
+fails part way through a long history (about 2 s a payout) resumes there.
+
+Which heights: every payout height from the first one after the wallet first
+received MAYA (a MAYA receipt in its Midgard actions) up to the chain's tip.
+A wallet that never received MAYA has none. Each payout is a record
+(`maya-distribution`, keyed `<wallet>.<height>`, one list per wallet). A run fetches
+only the heights after the last one stored; a past payout does not change.
+A wallet whose first MAYA came with no Midgard action (e.g. at genesis) is
+not covered. Replaying a run made before this source existed gives no
+payouts, as that run had none (`snapshots.md`).
+
+Each payout keeps the method that read it (`from`: `dividends`, `balance` or
+`event`) and is never read again. The dividends list's time is to the second,
+the balance step's to the millisecond, so the same payout read by the other
+method would get another row time and row ID.
+
+Activity `maya.distribution`: in: reward, the CACAO paid (observed); details: the
+height, and the MAYA held when the balance step gives it. A payout of 0 (no
+MAYA held at `h−1`) is not an activity.
+
+| Row | Type | Base | Fee | From, to | Description |
+| --- | --- | --- | --- | --- | --- |
+| Payout | `income` | CACAO, the amount paid | — | `mayaprotocol`, the wallet | `1/1 - Received <amount> CACAO reward for holding MAYA; height <h>` |
+
+It is income when paid: the value is Summ's CACAO price at that time (the
+source gives none). It is `income`, not `staking`: MAYA is held, not staked.
+Golden cases: `maya/maya-distribution-payout` (balance step) and
+`maya/maya-distribution-dividend` (dividends list), the same payout to a public holder.
+
 ### Withdraw liquidity
 
 As THORChain: `ReturnLpToken`, the `Spam` price-helper row and one

@@ -13,8 +13,9 @@ import path from "path";
 import {TaxConfig} from "../config/TaxConfig.ts";
 import {type FetchMode, RecordStore} from "../sources/store/RecordStore.ts";
 import {SnapshotManifest} from "../sources/store/SnapshotManifest.ts";
-import {getProtocol, type Protocol, THORCHAIN, withAssetNames} from "../domain/Protocol.ts";
-import {MidgardSource, type Source, TcySource, ViewblockSource} from "../sources/Source.ts";
+import {getProtocol, MAYA, type Protocol, THORCHAIN, withAssetNames} from "../domain/Protocol.ts";
+import {MayaDistributionSource, MidgardSource, type Source, TcySource, ViewblockSource} from "../sources/Source.ts";
+import {MayaDistributionService} from "../sources/maya/MayaDistributionService.ts";
 import {ageInDays, type NotFinal, type PendingAge, pendingAge} from "../sources/Pending.ts";
 import {getActionDate} from "../sources/thorchain/MidgardUtils.ts";
 import {ACTION_MEMO_WARNING, actionMemoSummary} from "../interpret/midgard/send.ts";
@@ -45,7 +46,7 @@ export class Exporter {
     midgard: MidgardService;
     // Midgard of each other protocol enabled in the config (e.g. Maya)
     thorchain: Protocol;
-    otherMidgards: {protocol: Protocol, midgard: MidgardService, node?: MayanodeService}[];
+    otherMidgards: {protocol: Protocol, midgard: MidgardService, node?: MayanodeService, distribution?: MayaDistributionService}[];
     thornode: ThornodeService;
     cosmosTxs: CosmosTxService;
     tcyDistribution: TcyDistributionService;
@@ -94,18 +95,20 @@ export class Exporter {
                 protocol,
                 midgard: new MidgardService(store, `${protocol.id}-midgard`, protocol.midgardUrl),
                 node: protocol.nodeUrl ? new MayanodeService(store, protocol.nodeUrl) : undefined,
+                distribution: protocol.id === MAYA.id && protocol.nodeUrl ? new MayaDistributionService(store, protocol.midgardUrl, protocol.nodeUrl) : undefined,
             }));
     }
 
     // Each source's bundles for the wallet, in this order: Viewblock (only when the run exports a period
     // before Midgard's send history is complete, docs/specs/sends.md), THORChain Midgard, other protocols'
-    // Midgards (e.g. Maya), TCY distributions
+    // Midgards (e.g. Maya), TCY distributions, CACAO payouts to MAYA holders
     sources(): Source[] {
         return [
             ...(this.config.fromDate < VIEWBLOCK_SENDS_BEFORE ? [new ViewblockSource(this.viewblock)] : []),
             new MidgardSource(this.thorchain, this.midgard, this.thornode, this.cosmosTxs, this.notFinal, this.stuckBefore()),
             ...this.otherMidgards.map(({protocol, midgard, node}) => new MidgardSource(protocol, midgard, this.thornode, this.cosmosTxs, this.notFinal, this.stuckBefore(), node)),
             new TcySource(this.tcyDistribution),
+            ...this.otherMidgards.flatMap(({midgard, distribution}) => distribution ? [new MayaDistributionSource(midgard, distribution)] : []),
         ];
     }
 
@@ -221,10 +224,10 @@ export class Exporter {
         fs.outputFileSync(filePath, JSON.stringify(bundle.data, null, 4));
     }
 
-    // Midgard actions are mapped with their protocol's asset-name settings; Viewblock sends and TCY
-    // distributions with THORChain's defaults
+    // Midgard actions and CACAO payouts to MAYA holders are mapped with their protocol's asset-name settings; Viewblock sends
+    // and TCY distributions with THORChain's defaults
     private protocolFor(bundle: RawBundle): Protocol {
-        if (bundle.source !== 'midgard') {
+        if (bundle.source === 'viewblock' || bundle.source === 'tcy') {
             return THORCHAIN;
         }
 

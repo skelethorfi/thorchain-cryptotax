@@ -368,3 +368,14 @@ describe('RecordStore within one run', () => {
         assert.equal(chooseCopy(copies, rules).choice, 'only');
     });
 });
+
+describe('replaying a run made before a source existed', () => {
+    test('a source the run read nothing from gives nothing; a missing list of a source it read is an error', async () => {
+        const replay = new SnapshotManifest([], [{source: 'midgard', wallet: 'w1', keys: [], missing: [], file: ''} as any]);
+        const store = new RecordStore(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-replay-')), {replay});
+        const never = async () => { throw new Error('no fetch on replay'); };
+
+        assert.deepEqual(await store.list('maya-distribution', 'w1', never, {keyOf: (item: any) => item.id}), []);
+        await assert.rejects(store.list('midgard', 'w2', never, {keyOf: (item: any) => item.id}), /in the replayed run/);
+    });
+});

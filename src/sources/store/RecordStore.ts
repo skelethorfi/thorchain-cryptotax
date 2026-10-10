@@ -209,6 +209,11 @@ export class RecordStore {
         if (this.replay) {
             const list = this.replay.findList(source, wallet);
 
+            // A source added after the replayed run gave it nothing
+            if (!list && !this.replay.hasSource(source)) {
+                return [];
+            }
+
             if (!list) {
                 throw new StoreMissError(`${source} list ${wallet} in the replayed run`);
             }

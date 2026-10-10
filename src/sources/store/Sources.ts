@@ -3,6 +3,7 @@ import type {TxStatusResponse} from "@xchainjs/xchain-thornode";
 import {type ListOptions, monthFolder, type RecordRules} from "./RecordStore.ts";
 import type {ViewblockTx} from "../viewblock/ViewblockTx.ts";
 import type {TcyDistributionItem} from "../tcy/TcyDistributionService.ts";
+import {getPayoutDate, type MayaDistributionPayout} from "../maya/MayaDistributionService.ts";
 import type {CosmosTx} from "../thorchain/CosmosTxService.ts";
 
 // How each source's records are keyed, filed and compared in the store (docs/specs/snapshots.md). The
@@ -99,6 +100,11 @@ export function tcyList(wallet: string): ListOptions<TcyDistributionItem> {
     return {keyOf: item => `${wallet}.${item.date}`, rules: {folderOf: item => monthFolder(new Date(Number(item.date) * 1000))}};
 }
 
+// Each CACAO payout to a MAYA holder is a record, keyed by its wallet and height (docs/specs/maya.md, CACAO to MAYA holders)
+export function mayaDistributionList(wallet: string): ListOptions<MayaDistributionPayout> {
+    return {keyOf: payout => `${wallet}.${payout.height}`, rules: {folderOf: payout => monthFolder(getPayoutDate(payout))}};
+}
+
 // Old Midgard (before its 2022-03-22 store migration) reports LP positions that existed then as adds with
 // the txid 'genesisTx'. Midgard's archive (Liquify) has the real adds instead, so importing both would
 // count those positions twice.
@@ -127,6 +133,7 @@ export const SOURCES: {[source: string]: ListSource | {kind: 'record', rules: Re
         legacyWallet: name => name.replace(/^tcy_distribution_/, ''),
         legacyItems: data => data.distributions ?? [],
     },
+    'maya-distribution': {kind: 'list', options: mayaDistributionList},
     'thornode': {kind: 'record', rules: THORNODE_RULES},
     'thornode-cosmos': {kind: 'record', rules: COSMOS_TX_RULES},
 };

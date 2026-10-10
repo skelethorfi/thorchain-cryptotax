@@ -90,6 +90,8 @@ function importItems(definition: ListSource, wallet: string, all: any[], count: 
     return items.map(options.keyOf);
 }
 
+const WALLET_KEYED = ['tcy', 'maya-distribution'];
+
 // A store, in either layout. A record's key is recomputed from its data where the source has a keyOf, so
 // a store made with older keys gets today's.
 function importStore(root: string, source: string, definition: ListSource | {kind: 'record'},
@@ -109,7 +111,8 @@ function importStore(root: string, source: string, definition: ListSource | {kin
         }
 
         const oldKey = copy.key ?? folderKey;
-        const key = source === 'tcy' ? oldKey : keyOf ? keyOf(copy.data) : oldKey;
+        // A key with the wallet in it (TCY, CACAO to MAYA holders) can't be recomputed from the record alone
+        const key = WALLET_KEYED.includes(source) ? oldKey : keyOf ? keyOf(copy.data) : oldKey;
         renamed.set(oldKey, key);
         renamed.set(v1Folder(oldKey), key);
         add(key, copy.data, '', {fetchedAt: copy.fetchedAt, url: copy.url, importedFrom: copy.importedFrom ?? path.relative(path.dirname(root), file)});

@@ -5,6 +5,8 @@ import {ThornodeService} from "./thorchain/ThornodeService.ts";
 import {CosmosTxService, getCosmosTxIds} from "./thorchain/CosmosTxService.ts";
 import {MayanodeService} from "./maya/MayanodeService.ts";
 import {TcyDistributionService} from "./tcy/TcyDistributionService.ts";
+import type {MayaDistributionService} from "./maya/MayaDistributionService.ts";
+import {MAYA} from "../domain/Protocol.ts";
 import {getActionDate} from "./thorchain/MidgardUtils.ts";
 import {Viewblock} from "./viewblock/index.ts";
 import {type Protocol, THORCHAIN} from "../domain/Protocol.ts";
@@ -172,5 +174,36 @@ export class TcySource implements Source {
 
         const {distributions} = await this.tcyDistribution.getTcyDistribution(wallet);
         return (distributions || []).map(item => ({source: 'tcy', protocol: THORCHAIN.id, wallet, data: item, thornodeTxs: [], cosmosTxs: []}));
+    }
+}
+
+// CACAO payouts to MAYA holders, for Maya wallets that have received MAYA: from the first payout after the first receipt
+// (docs/specs/maya.md, CACAO to MAYA holders)
+export class MayaDistributionSource implements Source {
+    private midgard: MidgardService;
+    private distribution: MayaDistributionService;
+    constructor(midgard: MidgardService, distribution: MayaDistributionService) {
+        this.midgard = midgard;
+        this.distribution = distribution;
+    }
+
+    async bundlesFor(wallet: string): Promise<RawBundle[]> {
+        if (!wallet.toLowerCase().startsWith(MAYA.nativeAddressPrefix)) {
+            return [];
+        }
+
+        const actions = await this.midgard.getActions(wallet);
+        const receipts = actions.filter(action => action.out.some(out => out.address === wallet && out.coins.some(coin => coin.asset === 'MAYA')));
+
+        if (receipts.length === 0) {
+            return [];
+        }
+
+        const firstHeight = Math.min(...receipts.map(action => Number(action.height)));
+        // An action can pay the wallet out in a later block than its own (e.g. a streaming swap)
+        const actionHeights = new Set(actions.flatMap(action => [action.height, ...action.out.map(out => out.height)])
+            .filter((height): height is string => !!height).map(Number));
+        const payouts = await this.distribution.getPayouts(wallet, firstHeight, actionHeights);
+        return payouts.map(payout => ({source: 'maya-distribution', protocol: MAYA.id, wallet, data: payout, thornodeTxs: [], cosmosTxs: []}));
     }
 }
