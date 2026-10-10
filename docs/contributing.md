@@ -17,7 +17,7 @@ saving them with `--write`. Run `npm run typecheck` and `npm test`.
 
 This tool was built mainly to cover one person's own usage, so you may well run
 into errors. Raise them on
-[GitHub](https://github.com/skelethorfi/thorchain-cryptotax/issues) or DM
+[GitHub](https://github.com/skelethorfi/skeletax/issues) or DM
 [@skelethorfi](https://x.com/skelethorfi) on X. A run lists what it could not
 map in its output folder (`unsupported/` and `failures/`), which helps say what
 is missing.

@@ -9,7 +9,7 @@
 
 ### 1. Clone the repo
 
-`git clone git@github.com:skelethorfi/thorchain-cryptotax.git`
+`git clone git@github.com:skelethorfi/skeletax.git`
 
 ### 2. Install the node packages
 
