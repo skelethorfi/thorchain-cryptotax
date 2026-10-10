@@ -8,6 +8,7 @@ import type {ViewblockTx} from "../sources/viewblock/index.ts";
 import {runBundle} from "../pipeline/run.ts";
 import type {Treatment} from "../export/summ/index.ts";
 import type {TcyDistributionItem} from "../sources/tcy/TcyDistributionService.ts";
+import type {MayaFundPayout} from "../sources/maya/MayaFundService.ts";
 import {getProtocol, type ProtocolId} from "../domain/Protocol.ts";
 import type {CosmosTx} from "../sources/thorchain/CosmosTxService.ts";
 import type {BundleSource, RawBundle} from "../sources/RawBundle.ts";
@@ -29,9 +30,9 @@ export interface GoldenCaseInput {
     source: GoldenCaseSource;
     // Protocol of a midgard case. Default: thorchain
     protocol?: ProtocolId;
-    // The wallet being exported. Required for viewblock and tcy, which map relative to a wallet.
+    // The wallet being exported. Required for viewblock, tcy and maya-fund, which map relative to a wallet.
     wallet: string;
-    data: Action | ViewblockTx | TcyDistributionItem;
+    data: Action | ViewblockTx | TcyDistributionItem | MayaFundPayout;
     // Related THORNode transactions (midgard swaps and switches)
     thornodeTxs?: TxStatusResponse[];
     // The Cosmos tx of a contract action

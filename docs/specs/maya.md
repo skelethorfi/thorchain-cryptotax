@@ -152,6 +152,41 @@ MAYA token distributions after the liquidity auction). A Maya send that is
 another listed action's inbound or outbound gives no row. Golden cases:
 `maya/send-cacao`, `maya/send-maya-income`.
 
+### Maya fund: CACAO paid to MAYA holders
+
+Maya pays a share of its revenue in CACAO to every MAYA holder, pro rata, at
+each height divisible by 14400 (about once a day). It is an end-block event,
+`distribute_maya_fund` (`cacao_address`, `cacao_amount`), with a transfer from
+the `maya_fund` module account: there is no tx, so Midgard's actions never
+list it, and Maya's Midgard has no endpoint for it. The public node's
+`block_search` is disabled, and a whole block (`/mayachain/block?height=`) is
+several MB, too much to read once a day.
+
+So the source reads the wallet's balance on Maya's Midgard just before and at
+each payout height (`/v2/balance/<address>?height=h−1` and `?height=h`): the
+CACAO paid is the step between them, and the MAYA held at `h−1` is kept with
+it. That step is exact only when nothing else moved the wallet's CACAO in
+block `h`. When the wallet has a Midgard action at `h`, the source reads the
+payout from that block's `distribute_maya_fund` event instead.
+
+Which heights: every payout height from the first one after the wallet first
+received MAYA (a MAYA receipt in its Midgard actions) up to the chain's tip.
+A wallet that never received MAYA has none. Each payout is a record
+(`maya-fund`, keyed `<wallet>.<height>`, one list per wallet). A run fetches
+only the heights after the last one stored; a past payout does not change.
+
+Activity `maya.fund`: in: reward, the CACAO paid (observed); details: the
+height and the MAYA held. A payout of 0 (no MAYA held at `h−1`) is not an
+activity.
+
+| Row | Type | Base | Fee | From, to | Description |
+| --- | --- | --- | --- | --- | --- |
+| Payout | `income` | CACAO, the amount paid | — | `mayaprotocol`, the wallet | `1/1 - Received <amount> CACAO from the Maya fund for <maya> MAYA held; height <h>` |
+
+It is income when paid: the value is Summ's CACAO price at that time (the
+source gives none). It is `income`, not `staking`: MAYA is held, not staked.
+Golden case: `maya/maya-fund-payout` (a public holder).
+
 ### Withdraw liquidity
 
 As THORChain: `ReturnLpToken`, the `Spam` price-helper row and one

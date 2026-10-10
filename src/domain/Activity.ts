@@ -10,7 +10,7 @@ import type {Asset} from "./Asset.ts";
 export type ActivityKind = 'bond' | 'unbond' | 'swap' | 'refund' | 'lp.add' | 'lp.withdraw' | 'savers.add' | 'savers.withdraw'
     | 'lp.auction.deposit' | 'lp.auction.position'
     | 'switch' | 'runepool.deposit' | 'runepool.withdraw' | 'loan.open' | 'loan.repay'
-    | 'send' | 'tcy.claim' | 'tcy.stake' | 'tcy.unstake' | 'tcy.distribution' | 'thorname'
+    | 'send' | 'tcy.claim' | 'tcy.stake' | 'tcy.unstake' | 'tcy.distribution' | 'thorname' | 'maya.fund'
     | 'rujira.stake' | 'rujira.fin.trade' | 'rujira.merge.deposit' | 'rujira.merge.withdraw';
 
 export type ActivityStatus = 'success' | 'pending' | 'failed';

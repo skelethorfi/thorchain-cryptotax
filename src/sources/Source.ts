@@ -5,6 +5,8 @@ import {ThornodeService} from "./thorchain/ThornodeService.ts";
 import {CosmosTxService, getCosmosTxIds} from "./thorchain/CosmosTxService.ts";
 import {MayanodeService} from "./maya/MayanodeService.ts";
 import {TcyDistributionService} from "./tcy/TcyDistributionService.ts";
+import type {MayaFundService} from "./maya/MayaFundService.ts";
+import {MAYA} from "../domain/Protocol.ts";
 import {getActionDate} from "./thorchain/MidgardUtils.ts";
 import {Viewblock} from "./viewblock/index.ts";
 import {type Protocol, THORCHAIN} from "../domain/Protocol.ts";
@@ -172,5 +174,34 @@ export class TcySource implements Source {
 
         const {distributions} = await this.tcyDistribution.getTcyDistribution(wallet);
         return (distributions || []).map(item => ({source: 'tcy', protocol: THORCHAIN.id, wallet, data: item, thornodeTxs: [], cosmosTxs: []}));
+    }
+}
+
+// Maya fund payouts, for Maya wallets that have received MAYA: from the first payout after the first receipt
+// (docs/specs/maya.md, Maya fund)
+export class MayaFundSource implements Source {
+    private midgard: MidgardService;
+    private fund: MayaFundService;
+    constructor(midgard: MidgardService, fund: MayaFundService) {
+        this.midgard = midgard;
+        this.fund = fund;
+    }
+
+    async bundlesFor(wallet: string): Promise<RawBundle[]> {
+        if (!wallet.toLowerCase().startsWith(MAYA.nativeAddressPrefix)) {
+            return [];
+        }
+
+        const actions = await this.midgard.getActions(wallet);
+        const receipts = actions.filter(action => action.out.some(out => out.address === wallet && out.coins.some(coin => coin.asset === 'MAYA')));
+
+        if (receipts.length === 0) {
+            return [];
+        }
+
+        const firstHeight = Math.min(...receipts.map(action => Number(action.height)));
+        const actionHeights = new Set(actions.map(action => Number(action.height)));
+        const payouts = await this.fund.getPayouts(wallet, firstHeight, actionHeights);
+        return payouts.map(payout => ({source: 'maya-fund', protocol: MAYA.id, wallet, data: payout, thornodeTxs: [], cosmosTxs: []}));
     }
 }
