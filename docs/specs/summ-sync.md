@@ -72,9 +72,48 @@ nothing from it; the only link is the files below. It speaks MCP over
     summ-sync pull  <state dir> [<run dir>] [--full]  # writes a snapshot
     summ-sync plan  <state dir> <run dir>    # reads files only; calls nothing
     summ-sync apply <state dir> <plan dir> [--dry-run] [--approve-deletes] [--approve-filed]
+    summ-sync prune <state dir> [--keep <n>]  # removes committed files no recent snapshot needs
+    summ-sync migrate <state dir>             # one-off: old snapshot folders to the store
 
-The **state dir** holds snapshots, plans, apply logs, the adoption table and
-the overrides file. It is the user's private data: never in this repo.
+The **state dir** holds the action store, snapshots, plans, apply logs, the
+adoption table and the overrides file. It is the user's private data: never
+in this repo. It is meant to be kept in git (prune relies on it).
+
+## State dir
+
+    actions/<action id>.json    one action's JSON and change history, written once
+    snapshots/<time>.json       one pull: counts, and one entry per listed action
+    plans/<time>/               plan.json, plan.md, upload/
+    adopted.csv, overrides.json, apply-log.jsonl, summ-sync.json
+
+**Action store.** Summ's action ids are database ids made when the action
+is (re)built, and every write rebuilds it, so what the sync reads of an
+action never changes under the same id: its legs (all fields plan reads)
+and its change history entries. An id's detail is therefore fetched and
+written once, by pull or by apply, and never rewritten. Other fields do
+move under the same id (`lastModified`, `updatedAt`, `balanceSnapshot`,
+`sortPriority`), as does the history's "_N earlier versions not read._"
+line; the stored file keeps them as first read, and nothing reads them.
+
+**Snapshot file.** A pull's counts (the list's reported total, parsed and
+unique counts, managed sources, the run dir, how many details were fetched
+and how many the store already held), then one entry per listed action:
+`id`, `txHash`, `category`, `tags`, and `detail: true` when the action is
+one the plan needs (below). The file is written whole at the end of the
+pull, so a pull that stops leaves no snapshot. The list pages themselves are
+not kept. An action deleted in Summ is simply absent from later snapshots;
+its stored detail stays.
+
+**Prune** removes snapshot files other than the latest `n` (default 3) and
+store files that none of the kept snapshots lists, but only files git
+tracks with no uncommitted changes (git keeps them); otherwise it removes
+nothing and lists the files. Plans keep their snapshot's name.
+
+**Migrate** reads each old snapshot folder (`snapshots/<time>/` with
+`actions.jsonl`, `details/` and `manifest.json`) and each `deleted/<time>/`
+folder, writes the store files and `snapshots/<time>.json`, and reports
+any id whose copies differ in what the sync reads. It leaves the old
+folders for the user to remove once a plan from the new layout matches.
 
 ## Inputs
 
@@ -87,15 +126,14 @@ on-chain txids are the 64-character hex strings in its description (as
 `run-diff.md`); a payout to an L1 wallet names its outbound txid there too
 (`fees.md`, Txids in descriptions).
 
-**Snapshot** (written by `pull`): `actions.jsonl` (one line per action from
-the list) and `details/<action id>.json` (the action's JSON and change
-history) for each action the plan needs: every action of a managed source,
-and, when pull is given the run dir, every action whose tx hash is a txid
-of a categorised row. Summ's action ids are database ids made when the
-action is (re)built, and every write rebuilds it, so an id the previous
-snapshot holds is unchanged: its detail is copied from there, and only
-new ids are fetched (`pull --full` fetches everything). A snapshot is never patched: after an apply, pull
-again.
+**Snapshot** (written by `pull`, State dir above): every listed action,
+and the detail of each action the plan needs: every action of a managed
+source, and, when pull is given the run dir, every action whose tx hash is
+a txid of a categorised row. Pull fetches only the details the store lacks.
+`pull --full` fetches every needed detail again and reports each stored id
+whose legs or change history entries differ from Summ's (which would
+disprove the store's premise); it then replaces that store file. A snapshot
+is never patched: after an apply, pull again.
 
 **Sync config** (`summ-sync.json` in the state dir):
 
@@ -230,8 +268,8 @@ In this order, stopping at the first failure:
    unrelated actions too, even with `showAssociated: 0`, so a look-up
    inspects each action it lists and keeps only the one holding the leg.
    Summ cannot undo a delete, so apply first saves each action as it
-   just inspected it to `deleted/<time>/<action id>.json` in the state
-   dir, and the log line names the file. A deleted row comes back by
+   just inspected it to the store (`actions/<action id>.json`, unless the
+   store already holds that id), and the log line names the file. A deleted row comes back by
    uploading its CSV line again; the saved file shows what Summ held.
 3. Edits and categorisation. Before each action, look it up again by leg
    `_id` (action ids change after every write) and check the leg still
