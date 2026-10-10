@@ -3,8 +3,8 @@
 //   1. refuse a plan whose snapshot is not the latest, or that Summ changed under since (apply-log.jsonl)
 //   2. deletes (--approve-deletes): each leg looked up by _id, and only actions that hold nothing but the
 //      entry's legs are deleted, by action id; a leg that shares its action with other legs is refused.
-//      Summ's delete has no undo, so each action is first saved as just inspected, to
-//      <state dir>/deleted/<time>/<action id>.json (the detail and change history)
+//      Summ's delete has no undo, so each action is first saved as just inspected (the detail and change
+//      history) to the action store, <state dir>/actions/<action id>.json, unless the store holds that id
 //   3. edits and categorisation, each action looked up again by leg _id and checked against the plan's Summ value;
 //      then the receive Summ made up to pair a categorised send as a transfer is ignored, once it is alone.
 //      Categorisation waits while the plan has uploads: Summ pairs a categorised leg with the uploaded other
@@ -14,11 +14,11 @@
 //
 // Filed-year entries are applied only with --approve-filed, and then only they: a separate apply.
 
-import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, readdirSync, readFileSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
 import { type ActionDetail, parseActions, parseDetail } from './parse.ts'
 import { type DeleteEntry, type EditEntry, type Plan, same } from './plan.ts'
-import { type Leg, latestSnapshot, legsOf, readSnapshotFile } from './snapshot.ts'
+import { type Leg, latestSnapshot, legsOf, readSnapshotFile, storeAction } from './snapshot.ts'
 
 export const WRITE_TOOLS = ['edit_transaction', 'bulk_edit_transactions']
 
@@ -109,8 +109,8 @@ export async function applyPlan(
     say: (text: string) => void = console.log,
     /** Summ rebuilds actions and refreshes its search a few seconds after a write. */
     settleMs = 3000,
-    /** Where each action is saved before it is deleted. */
-    deletedDir: string | null = null,
+    /** The state dir, whose action store keeps each action before it is deleted. */
+    stateDir: string | null = null,
 ): Promise<ApplyResult> {
     const result: ApplyResult = { deleted: 0, edited: 0, heldBack: 0, skipped: [], uploads: [] }
     const write = opts.dryRun ? null : log
@@ -143,13 +143,8 @@ export async function applyPlan(
         // By the actions just inspected, which hold only the entry's legs: never by a filter
         const args = { actionIds: [...actions.keys()], operation: { type: 'delete' } }
         if (!write) return say(`  would delete ${entry.legIds.length} legs of ${entry.summId}`)
-        if (!deletedDir) throw new Error('apply needs a folder to save actions to before deleting them')
-        mkdirSync(deletedDir, { recursive: true })
-        const saved = [...actions].map(([actionId, detail]) => {
-            const file = join(deletedDir, `${actionId}.json`)
-            writeFileSync(file, JSON.stringify(detail, null, 2) + '\n')
-            return file
-        })
+        if (!stateDir) throw new Error('apply needs the state dir to save actions to before deleting them')
+        const saved = [...actions.values()].map((detail) => storeAction(stateDir, detail))
         const text = await client.callTool('bulk_edit_transactions', args)
         result.deleted++
         write({ call: 'bulk_edit_transactions', operation: 'delete', id: entry.id, summId: entry.summId, legIds: entry.legIds, actionIds: [...actions.keys()], saved, result: text })
@@ -235,8 +230,7 @@ export async function runApply(client: ToolCaller & { connect(): Promise<void> }
     await client.connect()
     let result: ApplyResult
     try {
-        const deletedDir = join(stateDir, 'deleted', new Date().toISOString().slice(0, 19).replace(/:/g, '-'))
-        result = await applyPlan(client, plan, planName, opts, log, console.log, 3000, deletedDir)
+        result = await applyPlan(client, plan, planName, opts, log, console.log, 3000, stateDir)
     } catch (e) {
         // Stop at the first failure; a failed write may still have changed Summ, so it counts as a write
         if (!opts.dryRun) log({ call: 'error', error: e instanceof Error ? e.message : String(e) })
