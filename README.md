@@ -38,10 +38,6 @@ Not currently supported
 
 ## Usage
 
-There are 2 ways to run this tool.
-1. Run using NodeJS
-2. Run using Replit
-
 ### Run using NodeJS
 If you are familiar with Git and NodeJS.<br>
 Follow the [NodeJS Instructions](docs/nodejs-instructions.md).
@@ -57,10 +53,6 @@ You can override them by setting environment variables before running the app:
 See [Adding a transaction type](docs/specs/fixtures.md): test cases are built from public
 transactions with the fixture tool (`npm run fixture`), which can refuse to write your own
 wallet addresses and txids into a test case.
-
-### Run using Replit
-Allows you to run in the browser.<br>
-Follow the [Replit Instructions](docs/replit-instructions.md).
 
 ### Two ways to work with Summ (Crypto Tax Calculator)
 
