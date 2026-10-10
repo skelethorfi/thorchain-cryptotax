@@ -35,7 +35,7 @@ function withId(row: SummRow, activity: Activity): SummRow {
     }
 
     const trace = {...row.trace, record: activity.id};
-    return {...row, trace, id: rowId(activity.time, row.walletExchange ?? '', trace)};
+    return {...row, trace, id: rowId(activity.time, row.wallet ?? '', trace)};
 }
 
 function toRows(activity: Activity, protocol: Protocol, treatment: Treatment): SummRow[] {

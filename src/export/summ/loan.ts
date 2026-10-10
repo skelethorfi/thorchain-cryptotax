@@ -16,7 +16,7 @@ export function loanOpenRows(activity: Activity, protocol: Protocol): SummRow[] 
 
     return [
         {
-            walletExchange: collateral.wallet,
+            wallet: collateral.wallet,
             timestamp: time,
             type: SummRowType.CollateralDeposit,
             baseCurrency: input.currency,
@@ -29,7 +29,7 @@ export function loanOpenRows(activity: Activity, protocol: Protocol): SummRow[] 
             description: `1/2 - ${description}`,
         },
         {
-            walletExchange: loan.wallet,
+            wallet: loan.wallet,
             timestamp: time,
             type: SummRowType.Loan,
             baseCurrency: output.currency,
@@ -53,7 +53,7 @@ export function loanRepayRows(activity: Activity, protocol: Protocol): SummRow[]
     const txId = repayment.txid ?? '';
     const time = activity.time;
     const rows: SummRow[] = [{
-        walletExchange: repayment.wallet,
+        wallet: repayment.wallet,
         timestamp: time,
         type: SummRowType.LoanRepayment,
         baseCurrency: input.currency,
@@ -70,7 +70,7 @@ export function loanRepayRows(activity: Activity, protocol: Protocol): SummRow[]
         const output = parseMidgardAsset(collateralBack.asset.notation, protocol);
 
         rows.push({
-            walletExchange: collateralBack.wallet,
+            wallet: collateralBack.wallet,
             timestamp: time,
             type: SummRowType.CollateralWithdrawal,
             baseCurrency: output.currency,

@@ -51,8 +51,8 @@ export function renderCsv(txs: SummRow[]): string {
 // file and every run (docs/specs/periods.md, Row IDs): `<action time>.<role>.<hash>`, the hash being the first
 // 12 hex digits of SHA-256 over the format version, the action's store record, the wallet, the role and the
 // asset. It traces a row in Summ (its "Tx Hash") back to the action.
-export function rowId(time: Date, walletExchange: string, trace: RowTrace): string {
-    const identity = ['v1', trace.record ?? '', walletExchange, trace.role, trace.asset ?? ''].join('|');
+export function rowId(time: Date, wallet: string, trace: RowTrace): string {
+    const identity = ['v1', trace.record ?? '', wallet, trace.role, trace.asset ?? ''].join('|');
     return `${time.toISOString()}.${trace.role}.${crypto.createHash('sha256').update(identity).digest('hex').slice(0, 12)}`;
 }
 
@@ -91,7 +91,7 @@ export const ROW_IDS_FILE = 'row-ids.csv';
 
 // What each row's ID is made from, newest first: to trace a row in Summ back to its action
 export function renderRowIds(rows: SummRow[]): string {
-    const lines = sortNewestFirst([...rows]).map(row => [row.id, formatValue(row.timestamp), row.type, row.walletExchange,
+    const lines = sortNewestFirst([...rows]).map(row => [row.id, formatValue(row.timestamp), row.type, row.wallet,
         row.trace?.record, row.trace?.role, row.trace?.asset].map(value => csvField(value ?? '')).join(','));
     return ['ID,Timestamp (UTC),Type,Wallet,Record,Role,Asset', ...lines].join('\n') + '\n';
 }

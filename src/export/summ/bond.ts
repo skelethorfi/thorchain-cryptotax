@@ -10,7 +10,7 @@ export function bondRows(activity: Activity, protocol: Protocol): SummRow[] {
     const {currency, displayCurrency, amount} = named(principal, protocol);
 
     return [{
-        walletExchange: principal.wallet,
+        wallet: principal.wallet,
         timestamp: activity.time,
         type: isBond ? SummRowType.StakingDeposit : SummRowType.StakingWithdrawal,
         baseCurrency: currency,

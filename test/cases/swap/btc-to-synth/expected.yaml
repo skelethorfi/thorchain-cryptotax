@@ -1,4 +1,4 @@
-walletExchange: bc1q2d2ealhcljw7gxldexph8nk8zatrt0l6sfhgqa
+wallet: bc1q2d2ealhcljw7gxldexph8nk8zatrt0l6sfhgqa
 timestamp: 2022-03-09T20:19:10.670Z
 type: bridge-trade-out
 baseCurrency: BTC
@@ -15,7 +15,7 @@ referencePriceCurrency: USD
 description: 1/2 - Swap 1.018491 BTC to 1.01681035 Synth BTC/BTC; 86164D22C316B687F713B4CBFB5B661C2EF9350B7E7C200BD3A985629E573BF1
 id: 2022-03-09T20:19:10.670Z.out.dd6ef24c2980
 ---
-walletExchange: thor16ker8lgzjjn5qaxat6u62npre7lkmwdaynampm
+wallet: thor16ker8lgzjjn5qaxat6u62npre7lkmwdaynampm
 timestamp: 2022-03-09T20:19:20.670Z
 type: bridge-trade-in
 baseCurrency: ThorSynth.BTC.BTC

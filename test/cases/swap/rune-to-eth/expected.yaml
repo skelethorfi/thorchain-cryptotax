@@ -1,4 +1,4 @@
-walletExchange: thor1lnre6rd4m2fnrpemsmffksvw7wm65gwfcvfa35
+wallet: thor1lnre6rd4m2fnrpemsmffksvw7wm65gwfcvfa35
 timestamp: 2023-05-24T10:15:31.478Z
 type: bridge-trade-out
 baseCurrency: RUNE
@@ -15,7 +15,7 @@ referencePriceCurrency: USD
 description: 1/2 - Swap 9985.25539977 RUNE to 6.10188379 ETH; 197E79C4AF5647087738DAA5D314F37C0435A455F804B4FA0AB4F72B087D70AB
 id: 2023-05-24T10:15:31.478Z.out.e2c2d9933761
 ---
-walletExchange: "0x5225c3548a8d143d68c4b266218c1f92add08ac4"
+wallet: "0x5225c3548a8d143d68c4b266218c1f92add08ac4"
 timestamp: 2023-05-24T10:15:41.478Z
 type: bridge-trade-in
 baseCurrency: ETH

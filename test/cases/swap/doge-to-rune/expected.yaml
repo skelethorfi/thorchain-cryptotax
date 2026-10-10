@@ -1,4 +1,4 @@
-walletExchange: D5qdyiTXkt1MEfoPpimXvjgUCMzV6YtbsM
+wallet: D5qdyiTXkt1MEfoPpimXvjgUCMzV6YtbsM
 timestamp: 2024-06-06T23:16:56.359Z
 type: bridge-trade-out
 baseCurrency: DOGE
@@ -15,7 +15,7 @@ referencePriceCurrency: USD
 description: 1/2 - Swap 102.07047 DOGE to 2.700208 RUNE; BA6C60ED809F3CFED3CCB9E119A582024520A8D23C64B487AD0A44C83D3054EF
 id: 2024-06-06T23:16:56.359Z.out.420ca9dbcfe6
 ---
-walletExchange: thor16tfxw0z2nj2aqatrxfjaadw02j9mpzgndsehj6
+wallet: thor16tfxw0z2nj2aqatrxfjaadw02j9mpzgndsehj6
 timestamp: 2024-06-06T23:17:06.359Z
 type: bridge-trade-in
 baseCurrency: RUNE

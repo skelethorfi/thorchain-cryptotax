@@ -1,4 +1,4 @@
-walletExchange: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
+wallet: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
 timestamp: 2023-11-09T06:40:24.262Z
 type: spam
 baseCurrency: CACAO
@@ -8,7 +8,7 @@ to: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
 description: 4/4 - Dummy transaction to get market price to then manually apply to the receive LP token transaction MayaLP.KUJI.KUJI (symmetric); 493628E56D76DCB664E14C142C35CB4AA45D5643A0958F250F583A4029D11166
 id: 2023-11-09T06:40:04.262Z.price-helper.19e747132ced
 ---
-walletExchange: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
+wallet: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
 timestamp: 2023-11-09T06:40:14.262Z
 type: receive-lp-token
 baseCurrency: MayaLP.KUJI.KUJI
@@ -19,7 +19,7 @@ blockchain: Mayachain
 description: 3/4 - Receive LP token from MayaLP.KUJI.KUJI (symmetric); 493628E56D76DCB664E14C142C35CB4AA45D5643A0958F250F583A4029D11166
 id: 2023-11-09T06:40:04.262Z.in.cf21b461f0ac
 ---
-walletExchange: kujira1wml3m2tkkdv5z6rdj3l4mp229c2493kaayukp6
+wallet: kujira1wml3m2tkkdv5z6rdj3l4mp229c2493kaayukp6
 timestamp: 2023-11-09T06:40:04.262Z
 type: add-liquidity
 baseCurrency: KUJI
@@ -32,7 +32,7 @@ blockchain: KUJI
 description: 2/4 - Add liquidity KUJI to MayaLP.KUJI.KUJI (symmetric); 493628E56D76DCB664E14C142C35CB4AA45D5643A0958F250F583A4029D11166
 id: 2023-11-09T06:40:04.262Z.out.a58a6e671a81
 ---
-walletExchange: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
+wallet: maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q
 timestamp: 2023-11-09T06:40:04.262Z
 type: add-liquidity
 baseCurrency: CACAO

@@ -2,13 +2,13 @@ import { SummRowType } from './SummRowType.ts';
 
 export interface SummRow {
     /**
-     * Wallet/Exchange
+     * Wallet
      * (Not a Summ column)
      *
-     * The wallet address the transaction is related to or 'thorchain' for swap transactions.
-     * Separate CSVs need to be exported/imported for each wallet/exchange.
+     * The wallet address the row belongs to: rows are written to one CSV per wallet, which is
+     * imported into that wallet's account in Summ. Part of the row ID.
      */
-    walletExchange?: string;
+    wallet?: string;
 
     // NOTE: default was previously DD/MM/YYYY HH:mm:ss
     /**

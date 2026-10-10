@@ -1,4 +1,4 @@
-walletExchange: bc1qkk788zfqyh7pgjke63xpg5zrlf27q359ke3x5p
+wallet: bc1qkk788zfqyh7pgjke63xpg5zrlf27q359ke3x5p
 timestamp: 2026-10-01T16:32:12.565Z
 type: failed-out
 baseCurrency: BTC
@@ -11,7 +11,7 @@ blockchain: BTC
 description: "refund (B8E65083589682E5F08EA61CB7502BB297AA7DE16D9F4FB25879272E873AD793): emit asset 1203549 less than price limit 1203965"
 id: 2026-10-01T16:32:12.565Z.out.067a92190828
 ---
-walletExchange: bc1qkk788zfqyh7pgjke63xpg5zrlf27q359ke3x5p
+wallet: bc1qkk788zfqyh7pgjke63xpg5zrlf27q359ke3x5p
 timestamp: 2026-10-01T16:32:12.565Z
 type: fee
 baseCurrency: BTC

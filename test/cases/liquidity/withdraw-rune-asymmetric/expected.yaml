@@ -1,4 +1,4 @@
-walletExchange: thor12vtlhpqe3lwqwn8kpua77n23r3h5s8ptda9cmn
+wallet: thor12vtlhpqe3lwqwn8kpua77n23r3h5s8ptda9cmn
 timestamp: 2021-11-06T01:24:15.352Z
 type: remove-liquidity
 baseCurrency: RUNE
@@ -11,7 +11,7 @@ blockchain: THORChain
 description: 3/3 - Remove liquidity RUNE from ThorLP.ETH.THOR (asymmetric); 540F7BEC12BAC6D2DB5AB1DE894F1EEF4780E2B9E6CA578EC8C97C2D8FC6C54E
 id: 2021-11-06T01:23:55.352Z.in.6ce47b47cab8
 ---
-walletExchange: thor12vtlhpqe3lwqwn8kpua77n23r3h5s8ptda9cmn
+wallet: thor12vtlhpqe3lwqwn8kpua77n23r3h5s8ptda9cmn
 timestamp: 2021-11-06T01:24:05.352Z
 type: spam
 baseCurrency: RUNE
@@ -21,7 +21,7 @@ to: thorchain
 description: 2/3 - Dummy transaction to get market price to then manually apply to the return LP token transaction ThorLP.ETH.THOR (asymmetric); 540F7BEC12BAC6D2DB5AB1DE894F1EEF4780E2B9E6CA578EC8C97C2D8FC6C54E
 id: 2021-11-06T01:23:55.352Z.price-helper.1d65b0c23951
 ---
-walletExchange: thor12vtlhpqe3lwqwn8kpua77n23r3h5s8ptda9cmn
+wallet: thor12vtlhpqe3lwqwn8kpua77n23r3h5s8ptda9cmn
 timestamp: 2021-11-06T01:23:55.352Z
 type: return-lp-token
 baseCurrency: ThorLP.ETH.THOR

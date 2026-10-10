@@ -1,4 +1,4 @@
-walletExchange: thor1-user-wallet-11111
+wallet: thor1-user-wallet-11111
 timestamp: 2020-12-31T13:00:00.000Z
 type: add-liquidity
 baseCurrency: RUNE
@@ -11,7 +11,7 @@ blockchain: THORChain
 description: 1/2 - Deposit 200 RUNE to RUNEPool; 0000000000000000000000000000000000000000000000000000000000000000
 id: 2020-12-31T13:00:00.000Z.out.792e6b19675c
 ---
-walletExchange: thor1-user-wallet-11111
+wallet: thor1-user-wallet-11111
 timestamp: 2020-12-31T13:00:10.000Z
 type: receive-lp-token
 baseCurrency: ThorLP.THOR.RUNE

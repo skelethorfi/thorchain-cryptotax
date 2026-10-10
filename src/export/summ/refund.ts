@@ -15,7 +15,7 @@ export function refundRows(activity: Activity, protocol: Protocol): SummRow[] {
     const txId = activity.txids.in[0] ?? '';
     const time = activity.time;
     const rows: SummRow[] = [{
-        walletExchange: sent.wallet,
+        wallet: sent.wallet,
         timestamp: time,
         type: SummRowType.FailedOut,
         baseCurrency: currency,
@@ -34,7 +34,7 @@ export function refundRows(activity: Activity, protocol: Protocol): SummRow[] {
         const stuck = activity.status === 'pending';
 
         rows.push({
-            walletExchange: sent.wallet,
+            wallet: sent.wallet,
             timestamp: time,
             type: stuck ? SummRowType.Lost : SummRowType.Fee,
             baseCurrency: currency,
