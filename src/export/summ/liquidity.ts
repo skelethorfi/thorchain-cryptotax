@@ -12,7 +12,7 @@ import type {MayaLiquidityAuction} from "../../config/ITaxConfig.ts";
 const MISSING_ADDRESS = 'MISSING-DEPOSIT-ADDRESS';
 
 // Summ does not price the position token, so a spam row carries the value of what went in or came out, to
-// copy onto the token row by hand (README, Liquidity): the first asset's amount times the number of assets.
+// copy onto the token row by hand (docs/specs/liquidity.md): the first asset's amount times the number of assets.
 function priceHelper(first: CryptoTaxTransaction, count: number): {currency: string; amount: string} {
     return {currency: first.baseCurrency, amount: (parseFloat(first.baseAmount) * count).toString()};
 }

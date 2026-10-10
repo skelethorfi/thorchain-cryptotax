@@ -39,7 +39,16 @@ This will get all the transactions for the wallets and create CSV files in the f
 
 - `./output/{current_datetime}/csv`
 
-Refer to the [README](../README.md) for importing into Crypto Tax Calculator
+See [Using the CSVs in Summ](summ.md) for importing them into Summ (Crypto Tax Calculator).
+
+### API endpoints
+
+The default endpoints are in `src/config/apiUrls.ts`. To use others, set these
+environment variables before running:
+
+- `THORNODE_API_URL`
+- `THORNODE_API_ARCHIVE_URL` (THORChain v1: tx statuses up to its last block, 2024-09-04)
+- `MIDGARD_API_URL`
 
 ### Keeping your wallets out of the repo (optional)
 
