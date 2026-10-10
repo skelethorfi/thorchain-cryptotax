@@ -162,6 +162,13 @@ list it, and Maya's Midgard has no endpoint for it. The public node's
 `block_search` is disabled, and a whole block (`/mayachain/block?height=`) is
 several MB, too much to read once a day.
 
+Maya's Midgard has listed the payouts since release 2.20.0
+(`/v2/maya/<address>/dividends`: height, date and CACAO amount, paged by 400),
+but only from height 14947200 (2026-01-26) onwards, for every holder: what
+it indexed, not when they first held MAYA. Where both have a payout, its
+height, date and amount equal what the balance step below gives. As it lacks
+earlier payouts, the source does not use it.
+
 So the source reads the wallet's balance on Maya's Midgard just before and at
 each payout height (`/v2/balance/<address>?height=h−1` and `?height=h`): the
 CACAO paid is the step between them, and the MAYA held at `h−1` is kept with
