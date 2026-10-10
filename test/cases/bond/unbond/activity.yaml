@@ -12,7 +12,6 @@ legs:
       kind: native
     role: principal
     basis: observed
-    txid: "0000000000000000000000000000000000000000000000000000000000000000"
     amount: "5000"
     decimals: 8
   - direction: out

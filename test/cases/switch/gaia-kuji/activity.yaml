@@ -31,7 +31,6 @@ legs:
       kind: native
     role: principal
     basis: observed
-    txid: ""
     amount: "1"
     decimals: 8
 prices: []

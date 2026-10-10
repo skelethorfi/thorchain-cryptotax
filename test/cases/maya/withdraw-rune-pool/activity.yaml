@@ -22,7 +22,6 @@ legs:
       kind: native
     role: principal
     basis: observed
-    txid: ""
     amount: "475.1200903869"
     decimals: 10
   - direction: out

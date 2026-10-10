@@ -1,4 +1,4 @@
-id: midgard/tcy_unstake.0000000000000000000000000000000000000000000000000000000000000000
+id: midgard/tcy_unstake.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3
 protocol: thorchain
 kind: tcy.unstake
 status: success
@@ -11,7 +11,7 @@ legs:
       kind: native
     role: principal
     basis: observed
-    txid: "0000000000000000000000000000000000000000000000000000000000000000"
+    txid: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3
     amount: "6000"
     decimals: 8
   - direction: out
@@ -21,7 +21,7 @@ legs:
       kind: native
     role: gas
     basis: default
-    txid: "0000000000000000000000000000000000000000000000000000000000000000"
+    txid: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3
     amount: "0.02"
     decimals: 8
 prices: []

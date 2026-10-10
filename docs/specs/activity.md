@@ -52,7 +52,7 @@ A leg is one amount moving into or out of one wallet:
 | `amount` | Base units and decimals (see Amounts) |
 | `role` | `principal`: what the action is about. `gas`: what the wallet paid to send its transaction (the inbound fee, `fees.md`). `returned`: paid back by the protocol (e.g. a refund). `reward`: income paid to the wallet |
 | `basis` | `observed`: a source states this amount. `default`: assumed, e.g. THORChain's 0.02 RUNE native fee when nothing gives the gas |
-| `txid` | The on-chain tx the amount moved in, when the source gives it: the tx the wallet sent for an `out` leg, the protocol's payout for an `in` leg. A `gas` leg carries the txid of the tx it paid for and follows its leg, so each deposit keeps its own fee. An action's txids are its legs' txids; a payout to someone else (an affiliate) is not a leg |
+| `txid` | The on-chain tx the amount moved in, when the source gives it: the tx the wallet sent for an `out` leg, the protocol's payout for an `in` leg. None when the source gives an empty txid, or Midgard's all-zero one for a payout on the protocol's own chain (no tx of its own). A `gas` leg carries the txid of the tx it paid for and follows its leg, so each deposit keeps its own fee. An action's txids are its legs' txids; a payout to someone else (an affiliate) is not a leg |
 
 Every amount is either observed or assumed, and `basis` says which. A
 default is recorded as one, so a report can list the rows that rest on

@@ -22,7 +22,6 @@ legs:
       kind: native
     role: principal
     basis: observed
-    txid: ""
     amount: "4000"
     decimals: 8
 prices: []

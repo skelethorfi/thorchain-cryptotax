@@ -32,7 +32,6 @@ legs:
       position: runepool
     role: principal
     basis: observed
-    txid: "0000000000000000000000000000000000000000000000000000000000000000"
     amount: "190"
     decimals: 8
 prices: []
