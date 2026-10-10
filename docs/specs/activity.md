@@ -30,16 +30,16 @@ The types are in `src/domain/` (`Activity.ts`, `Asset.ts`, `Amount.ts`,
 
 | Field | Meaning |
 | --- | --- |
-| `id` |
-| `protocol` |
-| `kind` |
-| `status` |
-| `time` |
-| `txids` |
-| `memo` |
-| `legs` |
-| `prices` |
-| `details` |
+| `id` | The bundle's store record key, e.g. `midgard/bond.<txid>` or `maya-midgard/swap.<txid>` (`getBundleKey`). An action listed for several wallets is one activity |
+| `protocol` | `thorchain` or `maya` |
+| `kind` | What happened (see Kinds) |
+| `status` | `success`, `pending` or `failed`, as the source reports it. The exporter decides what a pending or failed action gives |
+| `time` | When the action happened (Midgard's date) |
+| `txids` | `in`: the txids the wallet sent; `out`: the txids the protocol paid out on |
+| `memo` | The memo the wallet sent, when there is one |
+| `legs` | Every amount that moved into or out of a wallet (see Legs) |
+| `prices` | USD prices the source observed at the time, with where each came from (e.g. `midgard:swap.inPriceUSD`) |
+| `details` | Strings a kind needs in order to be described, e.g. a bond's `node` |
 
 ### Legs
 
@@ -47,13 +47,13 @@ A leg is one amount moving into or out of one wallet:
 
 | Field | Meaning |
 | --- | --- |
-| `direction` |
-| `wallet` |
-| `asset` |
-| `amount` |
-| `role` |
-| `basis` |
-| `txid` |
+| `direction` | `out` of or `in` to the wallet, from the wallet's side (as Summ sees it; `fees.md` explains THORChain's opposite words) |
+| `wallet` | The wallet's address |
+| `asset` | See Assets |
+| `amount` | Base units and decimals (see Amounts) |
+| `role` | `principal`: what the action is about. `gas`: what the wallet paid to send its transaction (the inbound fee, `fees.md`). `returned`: paid back by the protocol (e.g. a refund). `reward`: income paid to the wallet |
+| `basis` | `observed`: a source states this amount. `default`: assumed, e.g. THORChain's 0.02 RUNE native fee when nothing gives the gas |
+| `txid` | The on-chain tx the amount moved in, when the source gives it. A `gas` leg follows the leg it paid for, so each deposit keeps its own fee |
 
 Every amount is either observed or assumed, and `basis` says which. A
 default is recorded as one, so a report can list the rows that rest on
@@ -70,10 +70,10 @@ An asset keeps the source's notation (`BTC.BTC`, `BTC/BTC`, `BTC~BTC`,
 
 | Kind | Examples |
 | --- | --- |
-| `native` |
-| `token` |
-| `synth`, `trade`, `secured` |
-| `position` |
+| `native` | a chain's own coin or a protocol's token: `BTC.BTC`, `THOR.RUNE`, `THOR.TCY`, `MAYA.CACAO`, `x/ruji` |
+| `token` | a token on an L1 chain: `ETH.USDC-0X…` |
+| `synth`, `trade`, `secured` | held on THORChain or Maya, for an L1 asset: `BTC/BTC`, `BTC~BTC`, `BTC-BTC` |
+| `position` | a share of a pool; the notation is the pool, and `position` says which: `lp` (`BTC.BTC`), `savers` (`BTC/BTC`), `runepool` (`THOR.RUNE`) or `merge` (the asset a Rujira merge pool takes, e.g. `THOR.KUJI`) |
 
 Naming an asset for a tax tool (`ThorSynth.BTC.BTC`, `ThorLP.BTC.BTC`,
 `ThorSavers.BTC.BTC`, the `[assets]` prefixes) is the exporter's job
