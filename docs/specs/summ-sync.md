@@ -72,8 +72,7 @@ nothing from it; the only link is the files below. It speaks MCP over
     summ-sync pull  <state dir> [<run dir>] [--full]  # writes a snapshot
     summ-sync plan  <state dir> <run dir>    # reads files only; calls nothing
     summ-sync apply <state dir> <plan dir> [--dry-run] [--approve-deletes] [--approve-filed]
-    summ-sync prune <state dir> [--keep <n>]  # removes committed files no recent snapshot needs
-    summ-sync migrate <state dir>             # one-off: old snapshot folders to the store
+    summ-sync prune <state dir> [--older-than <days>]  # removes old committed snapshots and actions
 
 The **state dir** holds the action store, snapshots, plans, apply logs, the
 adoption table and the overrides file. It is the user's private data: never
@@ -104,16 +103,11 @@ pull, so a pull that stops leaves no snapshot. The list pages themselves are
 not kept. An action deleted in Summ is simply absent from later snapshots;
 its stored detail stays.
 
-**Prune** removes snapshot files other than the latest `n` (default 3) and
-store files that none of the kept snapshots lists, but only files git
-tracks with no uncommitted changes (git keeps them); otherwise it removes
-nothing and lists the files. Plans keep their snapshot's name.
-
-**Migrate** reads each old snapshot folder (`snapshots/<time>/` with
-`actions.jsonl`, `details/` and `manifest.json`) and each `deleted/<time>/`
-folder, writes the store files and `snapshots/<time>.json`, and reports
-any id whose copies differ in what the sync reads. It leaves the old
-folders for the user to remove once a plan from the new layout matches.
+**Prune** removes snapshot files older than `--older-than` days (default
+30, by the time in their name; never the latest) and store files that no
+remaining snapshot lists, but only files git tracks with no uncommitted
+changes (git keeps them); otherwise it removes nothing and lists the files.
+Plans keep their snapshot's name.
 
 ## Inputs
 

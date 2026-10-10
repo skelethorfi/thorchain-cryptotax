@@ -1,5 +1,5 @@
-// prune: removes snapshot files other than the latest `keep`, and action store files that none of the kept
-// snapshots lists, but only files git holds as committed (spec: docs/specs/summ-sync.md, State dir).
+// prune: removes snapshot files older than `days` (never the latest), and action store files that no remaining
+// snapshot lists, but only files git holds as committed (spec: docs/specs/summ-sync.md, State dir).
 
 import { execFileSync } from 'node:child_process'
 import { existsSync, readdirSync, unlinkSync } from 'node:fs'
@@ -15,14 +15,19 @@ export interface PruneResult {
     uncommitted: string[]
 }
 
-export function prune(stateDir: string, keep = 3): PruneResult {
-    if (!Number.isInteger(keep) || keep < 1) throw new Error('--keep must be a whole number of at least 1')
+/** A snapshot's time, from its name (`2024-01-02T03-04-05`, UTC). */
+export const snapshotTime = (name: string): number => Date.parse(`${name.replace(/T(\d\d)-(\d\d)-(\d\d)$/, 'T$1:$2:$3')}Z`)
+
+export function prune(stateDir: string, days = 30, now = Date.now()): PruneResult {
+    if (!(days >= 0)) throw new Error('--older-than must be a number of days')
     const names = snapshotNames(stateDir)
-    const kept = names.slice(-keep)
+    const cutoff = now - days * 86_400_000
+    const old = names.slice(0, -1).filter((n) => snapshotTime(n) < cutoff)
+    const kept = names.filter((n) => !old.includes(n))
     const listed = new Set(kept.flatMap((n) => readSnapshotFile(join(stateDir, 'snapshots', `${n}.json`)).actions.map((a) => a.id)))
     const actionsDir = join(stateDir, 'actions')
     const candidates = [
-        ...names.slice(0, -keep).map((n) => `snapshots/${n}.json`),
+        ...old.map((n) => `snapshots/${n}.json`),
         ...(existsSync(actionsDir) ? readdirSync(actionsDir) : []).filter((f) => !listed.has(f.replace(/\.json$/, ''))).map((f) => `actions/${f}`),
     ]
     if (candidates.length === 0) return { removed: [], uncommitted: [] }
@@ -36,8 +41,8 @@ export function prune(stateDir: string, keep = 3): PruneResult {
     return { removed: candidates, uncommitted: [] }
 }
 
-export function runPrune(stateDir: string, keep?: number): void {
-    const { removed, uncommitted } = prune(stateDir, keep)
+export function runPrune(stateDir: string, days?: number): void {
+    const { removed, uncommitted } = prune(stateDir, days)
     if (uncommitted.length) {
         console.log(`Removed nothing: ${uncommitted.length} files to prune are not committed (commit them first):`)
         for (const f of uncommitted.slice(0, 20)) console.log(`  ${f}`)

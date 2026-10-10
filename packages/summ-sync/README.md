@@ -36,8 +36,7 @@ Filed years go in a separate apply with `--approve-filed`.
     node packages/summ-sync/bin/summ-sync.ts pull  <state dir> [<run dir>] [--full]
     node packages/summ-sync/bin/summ-sync.ts plan  <state dir> <run dir>
     node packages/summ-sync/bin/summ-sync.ts apply <state dir> <plan dir> [--dry-run] [--approve-deletes] [--approve-filed]
-    node packages/summ-sync/bin/summ-sync.ts prune <state dir> [--keep <n>]
-    node packages/summ-sync/bin/summ-sync.ts migrate <state dir>
+    node packages/summ-sync/bin/summ-sync.ts prune <state dir> [--older-than <days>]
     node packages/summ-sync/bin/summ-sync.ts tools <state dir>
 
 - `login` opens the browser to authorise this tool (scope `mcp:read`, or
@@ -73,14 +72,10 @@ Filed years go in a separate apply with `--approve-filed`.
   upload its CSV line again (from the run that wrote it); the saved file
   shows what Summ held. It needs `login --write`. Afterwards, upload the
   files, then pull and plan again.
-- `prune` removes the snapshots older than the latest `n` (default 3) and
-  the stored actions none of those lists, only once they are committed
-  (keep the state dir in git; git keeps the removed files). If any is not
-  committed, it removes nothing and lists them.
-- `migrate` (one-off) turns the snapshot folders of earlier versions
-  (`snapshots/<time>/` with `details/`) and `deleted/` into the action store
-  and snapshot files. It leaves the old folders: plan again, check the plan
-  matches one from before, then remove them.
+- `prune` removes the snapshots older than `--older-than` days (default
+  30; never the latest) and the stored actions only those list, once they
+  are committed (keep the state dir in git; git keeps the removed files). If
+  any is not committed, it removes nothing and lists them.
 - `tools` lists the server's tools.
 
 Each command may call only the tools it needs; `login` and `pull` use read
