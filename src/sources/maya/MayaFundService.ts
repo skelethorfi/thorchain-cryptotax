@@ -59,7 +59,9 @@ export class MayaFundService {
     }
 
     // Every payout to the wallet from the first after firstHeight (its first MAYA receipt). A payout never changes,
-    // so a fetch reads only the heights after the last one stored. actionHeights: of the wallet's own actions.
+    // so a fetch reads only the heights after the last one stored; one read from balances is stored as soon as it
+    // is read, so a fetch that fails part way resumes there. actionHeights: where the wallet's own actions moved
+    // its coins (inbound and outbound heights).
     async getPayouts(wallet: string, firstHeight: number, actionHeights: Set<number>): Promise<MayaFundPayout[]> {
         return this.store.list(this.source, wallet, async () => {
             const stored = this.storedPayouts(wallet);
@@ -73,7 +75,8 @@ export class MayaFundService {
             const balanceUntil = listed ? Math.min(DIVIDENDS_FROM_HEIGHT - 1, tip) : tip;
 
             for (let height = start; height <= balanceUntil; height += MAYA_FUND_INTERVAL) {
-                payouts.push(await this.payout(wallet, height, actionHeights.has(height)));
+                const read = async () => ({data: await this.payout(wallet, height, actionHeights.has(height)), url: `${this.midgardUrl}/v2/balance/${wallet}?height=${height}`});
+                payouts.push(await this.store.record(this.source, mayaFundList(wallet).keyOf({height} as MayaFundPayout), read, mayaFundList(wallet).rules));
             }
 
             payouts.push(...(listed ?? []).filter(payout => payout.height >= start && payout.height <= tip));
@@ -109,7 +112,10 @@ export class MayaFundService {
             }
         }
 
-        return items
+        // Paged newest first, so a payout made between two pages is listed twice
+        const byHeight = new Map(items.map(item => [Number(item.height), item]));
+
+        return [...byHeight.values()]
             .map(item => ({height: Number(item.height), date: `${item.date}000000000`, cacao: item.amount, from: 'dividends' as const}))
             .filter(payout => payout.height >= fromHeight)
             .sort((a, b) => a.height - b.height);
@@ -129,11 +135,15 @@ export class MayaFundService {
         return Number(health.lastAggregated.height);
     }
 
+    // The balance step, unless something else may have moved the wallet's CACAO in the block: its own action there,
+    // or a step below 0. Then the block's event.
     private async payout(wallet: string, height: number, hasOwnAction: boolean): Promise<MayaFundPayout> {
         const before = await this.balance(wallet, height - 1);
         const after = await this.balance(wallet, height);
-        const cacao = hasOwnAction ? await this.eventAmount(wallet, height) : after.cacao - before.cacao;
-        return {height, date: after.date, cacao: String(cacao), maya: String(before.maya), from: hasOwnAction ? 'event' : 'balance'};
+        const step = after.cacao - before.cacao;
+        const fromEvent = hasOwnAction || step < 0n;
+        const cacao = fromEvent ? await this.eventAmount(wallet, height, before.maya) : step;
+        return {height, date: after.date, cacao: String(cacao), maya: String(before.maya), from: fromEvent ? 'event' : 'balance'};
     }
 
     private async balance(wallet: string, height: number): Promise<Balance> {
@@ -143,10 +153,14 @@ export class MayaFundService {
     }
 
     // The block's event, for a block in which the wallet's own action also moved its CACAO (several MB)
-    private async eventAmount(wallet: string, height: number): Promise<bigint> {
+    private async eventAmount(wallet: string, height: number, maya: bigint): Promise<bigint> {
         const block = (await http.get(`${this.nodeUrl}/mayachain/block?height=${height}`)).data;
         const events: {type: string; cacao_address?: string; cacao_amount?: string}[] = block.end_block_events ?? [];
         const paid = events.filter(event => event.type === 'distribute_maya_fund' && event.cacao_address === wallet);
+        if (paid.length === 0 && maya > 0n) {
+            console.warn(`[Maya fund] ${wallet} held MAYA but block ${height} pays it nothing`);
+        }
+
         return paid.reduce((sum, event) => sum + BigInt(event.cacao_amount ?? '0'), 0n);
     }
 }

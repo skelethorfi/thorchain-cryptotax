@@ -200,7 +200,9 @@ export class MayaFundSource implements Source {
         }
 
         const firstHeight = Math.min(...receipts.map(action => Number(action.height)));
-        const actionHeights = new Set(actions.map(action => Number(action.height)));
+        // An action can pay the wallet out in a later block than its own (e.g. a streaming swap)
+        const actionHeights = new Set(actions.flatMap(action => [action.height, ...action.out.map(out => out.height)])
+            .filter((height): height is string => !!height).map(Number));
         const payouts = await this.fund.getPayouts(wallet, firstHeight, actionHeights);
         return payouts.map(payout => ({source: 'maya-fund', protocol: MAYA.id, wallet, data: payout, thornodeTxs: [], cosmosTxs: []}));
     }

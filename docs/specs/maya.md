@@ -158,7 +158,7 @@ Maya pays a share of its revenue in CACAO to every MAYA holder, pro rata, at
 each height divisible by 14400 (about once a day). It is an end-block event,
 `distribute_maya_fund` (`cacao_address`, `cacao_amount`), with a transfer from
 the `maya_fund` module account: there is no tx, so Midgard's actions never
-list it, and Maya's Midgard has no endpoint for it. The public node's
+list it. The public node's
 `block_search` is disabled, and a whole block (`/mayachain/block?height=`) is
 several MB, too much to read once a day.
 
@@ -169,7 +169,8 @@ paged by 400, only payouts of more than 0), but only from height 14947200
 held MAYA. The source uses it from that height on: one call per 400 payouts.
 A Midgard without it (404, e.g. an older one set in `MAYA_MIDGARD_API_URL`)
 gets a warning, and every height is read as below; any other error fails the
-run after the usual retries.
+run after the usual retries. A payout listed twice (one made between two
+pages) is kept once.
 
 For payouts before that height, the source reads the wallet's balance on Maya's Midgard just before and at
 each payout height (`/v2/balance/<address>?height=h−1` and `?height=h`): the
@@ -177,14 +178,24 @@ CACAO paid is the step between them, and the MAYA held at `h−1` is kept with
 it (Midgard's shared client sends one request a second, so this is about 2 s
 a payout). Where both have a payout, its height, amount and date (to the
 second) equal the dividends list's. That step is exact only when nothing else moved the wallet's CACAO in
-block `h`. When the wallet has a Midgard action at `h`, the source reads the
-payout from that block's `distribute_maya_fund` event instead.
+block `h`. When one of the wallet's Midgard actions was sent or paid out at
+`h` (its own height or an outbound's: a streaming swap pays out blocks after
+it starts), or the step is below 0, the source reads the payout from that
+block's `distribute_maya_fund` event instead, with a warning when the wallet
+held MAYA but the block pays it nothing. A CACAO transfer into the wallet at
+`h` that no Midgard action lists would still be counted; none is known.
+
+Each payout read from balances is stored as soon as it is read, so a run that
+fails part way through a long history (about 2 s a payout) resumes there.
 
 Which heights: every payout height from the first one after the wallet first
 received MAYA (a MAYA receipt in its Midgard actions) up to the chain's tip.
 A wallet that never received MAYA has none. Each payout is a record
 (`maya-fund`, keyed `<wallet>.<height>`, one list per wallet). A run fetches
 only the heights after the last one stored; a past payout does not change.
+A wallet whose first MAYA came with no Midgard action (e.g. at genesis) is
+not covered. Replaying a run made before this source existed gives no
+payouts, as that run had none (`snapshots.md`).
 
 Each payout keeps the method that read it (`from`: `dividends`, `balance` or
 `event`) and is never read again. The dividends list's time is to the second,

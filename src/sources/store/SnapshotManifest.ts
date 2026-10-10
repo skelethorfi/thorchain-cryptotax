@@ -82,6 +82,12 @@ export class SnapshotManifest {
         return this.lists.get(this.id(source, wallet));
     }
 
+    // Whether the run read anything from the source
+    hasSource(source: string): boolean {
+        const prefix = `${source}/`;
+        return [...this.lists.keys(), ...this.records.keys()].some(id => id.startsWith(prefix));
+    }
+
     // Writes the manifest; returns the run's summary of it, for the shell to print
     write(outputPath: string): string[] {
         const records = [...this.records.values()].sort((a, b) => this.id(a.source, a.key).localeCompare(this.id(b.source, b.key)));
