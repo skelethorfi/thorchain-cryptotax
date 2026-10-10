@@ -47,11 +47,21 @@ export function actionMemoSummary(count: number, protocols: string[]): string | 
 // opposed to a note such as an exchange's deposit id
 const ACTION_MEMO = /^(=|swap|s|\+|add|a|-|wd|withdraw|loan[+-]|\$[+-]|trade[+-]|secure[+-]|pool[+-]|~|n|name|bond|unbond|tcy[+-]?)(:|$)/i;
 
+// What a send to itself with an action memo was trying to do, for its description: e.g. 'TCY claim' for 'tcy:…'
+const ACTION_NAMES: Record<string, string> = {'tcy': 'TCY claim', 'tcy+': 'TCY stake', 'tcy-': 'TCY unstake'};
+
+export function failedActionName(memo: string): string | undefined {
+    const prefix = ACTION_MEMO.exec(memo)?.[1].toLowerCase();
+    return prefix === undefined ? undefined : ACTION_NAMES[prefix] ?? `'${prefix}' action`;
+}
+
 // A send from the side of the wallet whose listing gave it: the sender's legs (the coin and the native fee),
 // or the receiver's (the coin). A send to itself is the sender's.
 export function sendActivity(send: Send, wallet: string, protocol: Protocol): Activity {
     const asset = /[./~-]/.test(send.asset) ? send.asset : `${protocol.nativeChain}.${send.asset}`;
     const isSender = send.from === wallet;
+    // A send to itself with an action memo reached no protocol: a failed attempt at the action
+    const failedAction = send.from === send.to ? failedActionName(send.memo) : undefined;
 
     if (!isSender && send.to !== wallet) {
         throw new Error(`a send from ${send.from} to ${send.to} listed for ${wallet}`);
@@ -72,7 +82,11 @@ export function sendActivity(send: Send, wallet: string, protocol: Protocol): Ac
         memo: send.memo || undefined,
         legs: isSender ? [coin, {...nativeGas(wallet, protocol), txid: send.txid}] : [coin],
         prices: [],
-        details: {from: send.from, to: send.to, ...(send.memo.startsWith(ARKEO_DELEGATION) ? {purpose: 'delegate-arkeo'} : {})},
+        details: {
+            from: send.from, to: send.to,
+            ...(send.memo.startsWith(ARKEO_DELEGATION) ? {purpose: 'delegate-arkeo'} : {}),
+            ...(failedAction ? {failedAction} : {}),
+        },
     };
 }
 

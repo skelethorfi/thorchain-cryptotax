@@ -90,6 +90,8 @@ for each.
 | Both (a send to itself, e.g. an Arkeo delegation) | as the sender |
 
 `details.purpose` is `delegate-arkeo` for a memo starting `delegate:arkeo:`.
+`details.failedAction` names the action a send to itself with an action memo
+attempted (Rows).
 
 ## Fee
 
@@ -116,6 +118,7 @@ Maya's Midgard reports 0.2 CACAO for every send, so it is not used either.
 | Receiver | `receive` | the coin and amount | — | sender, receiver | `Receive <amount> <coin>; <txid>` |
 | Receiver, sender in `incomeFrom` | `income` | the coin and amount | — | sender, receiver | `Income: receive <amount> <coin>; <txid>` |
 | Send to itself | `fee` | the gas, 0.02 RUNE | — | the wallet, itself | `Fee: send <amount> <coin> to itself; <txid>` |
+| Send to itself with an action memo (a failed attempt) | `fee` | the gas, 0.02 RUNE | — | the wallet, itself | `Fee: failed <action> sent to itself; <txid>`, e.g. `TCY claim` for `tcy:`, `TCY stake` for `tcy+:`, else `'<memo prefix>' action` |
 | Arkeo delegation (a send to itself) | `fee` | the gas, 0.02 RUNE | — | the wallet, itself | `1/1 - DelegateArkeoWallet; <txid>` |
 
 A send to itself moves nothing out of the wallet: the coin sent comes straight

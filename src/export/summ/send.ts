@@ -89,8 +89,8 @@ function selfSendRows(activity: Activity, protocol: Protocol): CryptoTaxTransact
     const {currency, amount} = named(gas, protocol);
     const sent = named(coin, protocol);
     const txId = coin.txid ?? '';
-    const description = activity.details.purpose === 'delegate-arkeo'
-        ? `1/1 - DelegateArkeoWallet; ${txId}`
+    const description = activity.details.purpose === 'delegate-arkeo' ? `1/1 - DelegateArkeoWallet; ${txId}`
+        : activity.details.failedAction ? `Fee: failed ${activity.details.failedAction} sent to itself; ${txId}`
         : `Fee: send ${sent.amount} ${label(coin)} to itself; ${txId}`;
 
     return [{
