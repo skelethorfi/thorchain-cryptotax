@@ -66,7 +66,8 @@ export interface ReportEntry {
     filed: boolean
     id?: string
     legIds?: string[]
-    txid?: string
+    /** The row's txids: the inbound first, then, on an L1 payout, the one Summ's import lists. */
+    txids?: string[]
     detail: string
 }
 
@@ -389,9 +390,9 @@ export function makePlan(input: PlanInput): PlanResult {
         } else if (found.length > 1) {
             plan.report.push({ kind: 'several-legs', filed, id: row.id, legIds: found.map((l) => l.legId), detail: `${found.length} legs of Summ's imports fit the row` })
         } else if (row.txids.length && !row.txids.some((t) => ownLegs.some((l) => normaliseTxid(l.id) === t)) && row.txids.some((t) => input.txHashes.has(t))) {
-            plan.report.push({ kind: 'not-in-snapshot', filed, id: row.id, txid: row.txids[0], detail: 'Summ lists the txid but the snapshot has no detail for it: pull with the run dir' })
+            plan.report.push({ kind: 'not-in-snapshot', filed, id: row.id, txids: row.txids, detail: 'Summ lists the txid but the snapshot has no detail for it: pull with the run dir' })
         } else {
-            plan.report.push({ kind: 'no-leg', filed, id: row.id, txid: row.txids[0], detail: row.txids.length ? 'no leg of Summ\'s imports has the row\'s txid, side, currency and amount' : 'the row\'s description has no txid' })
+            plan.report.push({ kind: 'no-leg', filed, id: row.id, txids: row.txids, detail: row.txids.length ? 'no leg of Summ\'s imports has the row\'s txid, side, currency and amount' : 'the row\'s description has no txid' })
         }
     }
     for (const [row, leg] of categorised) {
@@ -429,7 +430,7 @@ export function makePlan(input: PlanInput): PlanResult {
         const text = [leg.description, ...leg.comments].join(' ')
         for (const m of text.matchAll(/[0-9a-fA-F]{64}/g)) {
             const id = txidRows.get(m[0].toLowerCase())
-            if (id) plan.report.push({ kind: 'manual-entry', filed: isFiled(leg.timestamp), id, legIds: [leg.legId], txid: m[0].toLowerCase(), detail: 'a manual entry names the row\'s txid' })
+            if (id) plan.report.push({ kind: 'manual-entry', filed: isFiled(leg.timestamp), id, legIds: [leg.legId], txids: [m[0].toLowerCase()], detail: 'a manual entry names the row\'s txid' })
         }
     }
 

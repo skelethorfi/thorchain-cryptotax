@@ -3,7 +3,7 @@ import {formatAmount} from "../../domain/Amount.ts";
 import {type CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv/index.ts";
 import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils.ts";
 import {formatBlockchain, type Protocol} from "../../domain/Protocol.ts";
-import {fee, findLeg, leg, legTrace, outboundNote} from "./common.ts";
+import {fee, findLeg, leg, legTrace, paidOutNote} from "./common.ts";
 
 // A loan open (docs/specs/loans.md): the collateral deposit carries the fee; the loan received has none
 export function loanOpenRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
@@ -38,7 +38,7 @@ export function loanOpenRows(activity: Activity, protocol: Protocol): CryptoTaxT
             to: loan.wallet,
             blockchain: formatBlockchain(output.blockchain),
             trace: legTrace(loan),
-            description: `2/2 - ${description}${outboundNote(loan)}`,
+            description: `2/2 - ${description}${paidOutNote(loan)}`,
         },
     ];
 }
@@ -79,7 +79,7 @@ export function loanRepayRows(activity: Activity, protocol: Protocol): CryptoTax
             to: collateralBack.wallet,
             blockchain: formatBlockchain(output.blockchain),
             trace: legTrace(collateralBack),
-            description: `2/2 - LoanRepayment deposit ${input.currency} to repay ${collateral} loan. Closed loan; ${txId}${outboundNote(collateralBack)}`,
+            description: `2/2 - LoanRepayment deposit ${input.currency} to repay ${collateral} loan. Closed loan; ${txId}${paidOutNote(collateralBack)}`,
         });
     }
 

@@ -59,11 +59,18 @@ A row on an **L1 wallet** (any chain but THORChain and Maya) that records a
 payout from the protocol also names the **outbound** txid, the payout's own
 transaction on that chain (Midgard `out[].txID` for that wallet). That is
 the transaction a wallet import of the chain (Summ's, or a block explorer)
-lists, and the inbound txid is nowhere in it:
+lists, and the inbound txid is nowhere in it. The label is `paid out in`,
+which reads the same from the protocol's side (its outbound) and the
+wallet's (a receive):
 
 ```text
-2/2 - Swap 0.001 BTC to 0.032 ETH; <inbound txid>; outbound <outbound txid>
+2/2 - Swap 0.001 BTC to 0.032 ETH; <inbound txid>; paid out in <outbound txid>
 ```
+
+The inbound txid stays first: it is the one txid all rows of the action
+share, the key of the action's source records (run-diff explains a row by
+it), and the only link to THORChain from a row in Summ, whose own import
+already carries the outbound txid.
 
 | Kind | Row on the L1 wallet | Outbound |
 | --- | --- | --- |
@@ -79,9 +86,10 @@ lists, and the inbound txid is nowhere in it:
   have none, and a payout from one protocol to the other is a row in an
   uploaded file, matched by its ID.
 - A payout Midgard lists without a txid (still pending), or with an all-zero
-  one, adds nothing.
+  one, adds nothing. Once it is paid out, a later run adds the txid, so
+  run-diff shows that row's description changing.
 - Refunds keep their own wording: the `Fee` row already says
-  `<amount> returned in <outbound txid>`. The part of a streaming swap
+  `<amount> <coin> returned in <outbound txid>`. The part of a streaming swap
   returned unfilled is not a row (it is netted off the trade-out), so its
   outbound txid is in no description.
 

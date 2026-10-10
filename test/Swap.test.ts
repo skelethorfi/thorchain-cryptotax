@@ -139,12 +139,12 @@ describe('swap', () => {
         assert.equal(result[0].description, '1/2 - Swap 1 BTC to 20 ETH; tx123');
         assert.equal(result[0].baseCurrency, 'BTC');
         assert.equal(result[0].baseAmount, '1');
-        assert.equal(result[1].description, '2/2 - Swap 1 BTC to 20 ETH; tx123; outbound out-tx123');
+        assert.equal(result[1].description, '2/2 - Swap 1 BTC to 20 ETH; tx123; paid out in out-tx123');
         assert.equal(result[1].baseCurrency, 'ETH');
         assert.equal(result[1].baseAmount, '20');
     });
 
-    test('names no outbound txid for a payout to a THORChain or Maya wallet, or one with an all-zero txid', () => {
+    test('names no payout txid for a payout to a THORChain or Maya wallet, or one with an all-zero txid', () => {
         const toRune = createMockAction({
             inputAsset: 'BTC.BTC', inputAmount: 1, outputAsset: 'THOR.RUNE', outputAmount: 20,
             inputAddress: 'btc1address', outputAddress: 'thor1address', txID: 'tx123',

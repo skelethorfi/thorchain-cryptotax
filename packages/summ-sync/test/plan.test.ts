@@ -283,6 +283,9 @@ test('a categorised row with no or several fitting legs is reported, never guess
     const r = btcRow()
     const none = plan({ rows: [r], legs: [ownLeg({ id: TX2 })] }).plan
     assert.deepEqual(none.report.map((e) => e.kind), ['no-leg'])
+    // a payout row's report names every txid, so the one Summ's import lists can be searched for
+    const payout = btcRow({ type: 'bridge-trade-in', feeCurrency: '', feeAmount: '', txids: [TX1, TX2] })
+    assert.deepEqual(plan({ rows: [payout], legs: [] }).plan.report.map((e) => e.txids), [[TX1, TX2]])
     const unfetched = plan({ rows: [r], legs: [], txHashes: new Set([TX1]) }).plan
     assert.deepEqual(unfetched.report.map((e) => e.kind), ['not-in-snapshot'])
     const several = plan({ rows: [r], legs: [ownLeg(), ownLeg({ quantity: 0.01 })] }).plan
