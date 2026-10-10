@@ -115,7 +115,16 @@ Maya's Midgard reports 0.2 CACAO for every send, so it is not used either.
 | Sender | `send` | the coin and amount | 0.02 RUNE | sender, receiver | `Send <amount> <coin>; <txid>` |
 | Receiver | `receive` | the coin and amount | — | sender, receiver | `Receive <amount> <coin>; <txid>` |
 | Receiver, sender in `incomeFrom` | `income` | the coin and amount | — | sender, receiver | `Income: receive <amount> <coin>; <txid>` |
-| Arkeo delegation | `send` | the coin and amount | 0.02 RUNE | the wallet, itself | `1/1 - DelegateArkeoWallet; <txid>` |
+| Send to itself | `fee` | the gas, 0.02 RUNE | — | the wallet, itself | `Fee: send <amount> <coin> to itself; <txid>` |
+| Arkeo delegation (a send to itself) | `fee` | the gas, 0.02 RUNE | — | the wallet, itself | `1/1 - DelegateArkeoWallet; <txid>` |
+
+A send to itself moves nothing out of the wallet: the coin sent comes straight
+back, so it is neither a disposal nor a transfer, and only the gas is a cost.
+It is exported as one `fee` row for the gas. A `send` row of the coin would
+let Summ pair it, as an outgoing transfer, with an unrelated receive of the
+same amount. The amount sent is whatever the wallet chose (an Arkeo
+delegation works with 0.00000001 RUNE or 1 RUNE alike) and only appears in
+the description of a plain send to itself.
 
 `<coin>` is `Synth DOGE` for a synth and `Trade BTC` for a trade asset;
 otherwise the ticker. The blockchain is THORChain, or Mayachain for a Maya

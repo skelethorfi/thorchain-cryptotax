@@ -42,6 +42,20 @@ describe('interpretSend', () => {
     }
 });
 
+describe('a send to itself', () => {
+    test('exports only its gas, as a fee row', async () => {
+        const {sendRows} = await import('../src/export/summ/send.ts');
+        const toSelf = send('');
+        (toSelf.data as any).out[0].address = 'thor1-user-wallet-11111';
+        const [activity] = interpretSend(toSelf, THORCHAIN).activities;
+
+        const rows = sendRows(activity, THORCHAIN);
+
+        assert.deepEqual(rows.map(row => [row.type, row.baseCurrency, row.baseAmount, row.feeAmount]), [['fee', 'RUNE', '0.02', undefined]]);
+        assert.equal(rows[0].description, `Fee: send 1 RUNE to itself; ${'A'.repeat(64)}`);
+    });
+});
+
 describe('actionMemoSummary', () => {
     test('none: no line', () => {
         assert.equal(actionMemoSummary(0, ['thorchain']), undefined);
