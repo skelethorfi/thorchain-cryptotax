@@ -1,5 +1,7 @@
 # skeletax
 
+Formerly called "thorchain-cryptotax".
+
 Exports the activity of your THORChain and Maya Protocol wallets as CSV files
 for [Summ](https://cryptotaxcalculator.io/?via=glaj5hf5) (formerly Crypto Tax
 Calculator), in its advanced CSV format.

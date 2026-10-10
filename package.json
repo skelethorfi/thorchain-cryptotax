@@ -1,5 +1,5 @@
 {
-  "name": "thorchain-cryptotax",
+  "name": "skeletax",
   "version": "1.0.0",
   "main": "src/full-export.ts",
   "type": "module",
