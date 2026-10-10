@@ -227,6 +227,10 @@ In this order, stopping at the first failure:
    filter: Summ's `id` filter lists the leg's action but can list
    unrelated actions too, even with `showAssociated: 0`, so a look-up
    inspects each action it lists and keeps only the one holding the leg.
+   Summ cannot undo a delete, so apply first saves each action as it
+   just inspected it to `deleted/<time>/<action id>.json` in the state
+   dir, and the log line names the file. A deleted row comes back by
+   uploading its CSV line again; the saved file shows what Summ held.
 3. Edits and categorisation. Before each action, look it up again by leg
    `_id` (action ids change after every write) and check the leg still
    holds the plan's "Summ value"; a leg that changed since the pull is

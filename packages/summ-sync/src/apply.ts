@@ -2,7 +2,9 @@
 //
 //   1. refuse a plan whose snapshot is not the latest, or that Summ changed under since (apply-log.jsonl)
 //   2. deletes (--approve-deletes): each leg looked up by _id, and only actions that hold nothing but the
-//      entry's legs are deleted, by action id; a leg that shares its action with other legs is refused
+//      entry's legs are deleted, by action id; a leg that shares its action with other legs is refused.
+//      Summ's delete has no undo, so each action is first saved as just inspected, to
+//      <state dir>/deleted/<time>/<action id>.json (the detail and change history)
 //   3. edits and categorisation, each action looked up again by leg _id and checked against the plan's Summ value;
 //      then the receive Summ made up to pair a categorised send as a transfer is ignored, once it is alone.
 //      Categorisation waits while the plan has uploads: Summ pairs a categorised leg with the uploaded other
@@ -12,9 +14,9 @@
 //
 // Filed-year entries are applied only with --approve-filed, and then only they: a separate apply.
 
-import { appendFileSync, existsSync, readdirSync, readFileSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
-import { parseActions, parseDetail } from './parse.ts'
+import { type ActionDetail, parseActions, parseDetail } from './parse.ts'
 import { type DeleteEntry, type EditEntry, type Plan, same } from './plan.ts'
 import { type Leg, latestSnapshot, legsOf } from './snapshot.ts'
 
@@ -83,14 +85,15 @@ export function undoHandle(text: string): string | null {
 // showAssociated 0, so each is inspected, and a write never selects by this filter
 const idFilter = (legIds: string[]) => ({ type: 'id', value: legIds, showAssociated: 0 })
 
-type Found = { actionId: string; legs: Leg[] }
+type Found = { actionId: string; legs: Leg[]; detail: ActionDetail }
 
 /** The action that holds a leg now (action ids change on every write) and its legs. */
 async function lookUp(client: ToolCaller, legId: string): Promise<Found | null> {
     const listed = parseActions(await client.callTool('query_summ_transactions', { filter: idFilter([legId]), includeHidden: true, count: 50 }))
     for (const actionId of new Set(listed.map((a) => a['Action ID'] as string))) {
-        const legs = legsOf(parseDetail(await client.callTool('inspect_transaction', { actionId })))
-        if (legs.some((l) => l.legId === legId)) return { actionId, legs }
+        const detail = parseDetail(await client.callTool('inspect_transaction', { actionId }))
+        const legs = legsOf(detail)
+        if (legs.some((l) => l.legId === legId)) return { actionId, legs, detail }
     }
     return null
 }
@@ -106,6 +109,8 @@ export async function applyPlan(
     say: (text: string) => void = console.log,
     /** Summ rebuilds actions and refreshes its search a few seconds after a write. */
     settleMs = 3000,
+    /** Where each action is saved before it is deleted. */
+    deletedDir: string | null = null,
 ): Promise<ApplyResult> {
     const result: ApplyResult = { deleted: 0, edited: 0, heldBack: 0, skipped: [], uploads: [] }
     const write = opts.dryRun ? null : log
@@ -127,20 +132,27 @@ export async function applyPlan(
             // Whether a delete selected by leg _id keeps the other legs of the action is not yet shown
             return skip(entry.id, `its actions hold ${entry.otherLegs} other legs`, { legIds: entry.legIds })
         }
-        const actionIds = new Set<string>()
+        const actions = new Map<string, ActionDetail>()
         for (const legId of entry.legIds) {
             const found = await lookUp(client, legId)
             if (!found) return skip(entry.id, `leg ${legId} is no longer in Summ`, { legIds: entry.legIds })
             const others = found.legs.filter((l) => !entry.legIds.includes(l.legId))
             if (others.length) return skip(entry.id, `leg ${legId} now shares its action with ${others.length} other legs`, { legIds: entry.legIds })
-            actionIds.add(found.actionId)
+            actions.set(found.actionId, found.detail)
         }
         // By the actions just inspected, which hold only the entry's legs: never by a filter
-        const args = { actionIds: [...actionIds], operation: { type: 'delete' } }
+        const args = { actionIds: [...actions.keys()], operation: { type: 'delete' } }
         if (!write) return say(`  would delete ${entry.legIds.length} legs of ${entry.summId}`)
+        if (!deletedDir) throw new Error('apply needs a folder to save actions to before deleting them')
+        mkdirSync(deletedDir, { recursive: true })
+        const saved = [...actions].map(([actionId, detail]) => {
+            const file = join(deletedDir, `${actionId}.json`)
+            writeFileSync(file, JSON.stringify(detail, null, 2) + '\n')
+            return file
+        })
         const text = await client.callTool('bulk_edit_transactions', args)
         result.deleted++
-        write({ call: 'bulk_edit_transactions', operation: 'delete', id: entry.id, summId: entry.summId, legIds: entry.legIds, actionIds: [...actionIds], result: text })
+        write({ call: 'bulk_edit_transactions', operation: 'delete', id: entry.id, summId: entry.summId, legIds: entry.legIds, actionIds: [...actions.keys()], saved, result: text })
     }
 
     // ---- Edits, then categorisation: the same call on a managed row's legs or on Summ's own leg
@@ -223,7 +235,8 @@ export async function runApply(client: ToolCaller & { connect(): Promise<void> }
     await client.connect()
     let result: ApplyResult
     try {
-        result = await applyPlan(client, plan, planName, opts, log)
+        const deletedDir = join(stateDir, 'deleted', new Date().toISOString().slice(0, 19).replace(/:/g, '-'))
+        result = await applyPlan(client, plan, planName, opts, log, console.log, 3000, deletedDir)
     } catch (e) {
         // Stop at the first failure; a failed write may still have changed Summ, so it counts as a write
         if (!opts.dryRun) log({ call: 'error', error: e instanceof Error ? e.message : String(e) })

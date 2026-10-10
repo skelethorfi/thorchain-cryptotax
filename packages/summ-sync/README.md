@@ -63,8 +63,13 @@ Filed years go in a separate apply with `--approve-filed`.
   applies the current years' entries, or with `--approve-filed` only the
   filed years'. `--dry-run` does the look-ups and checks with read tools
   only and writes nothing. Every write goes to `<state dir>/apply-log.jsonl`
-  with its undo handle (`undo_edit`; deletes have none). It needs
-  `login --write`. Afterwards, upload the files, then pull and plan again.
+  with its undo handle (`undo_edit`; deletes have none). Before a delete,
+  it saves each action as it inspected it (full JSON and change history) to
+  `<state dir>/deleted/<time>/<action id>.json`. Summ cannot undo a delete
+  and the MCP cannot recreate an uploaded row, so to bring a row back,
+  upload its CSV line again (from the run that wrote it); the saved file
+  shows what Summ held. It needs `login --write`. Afterwards, upload the
+  files, then pull and plan again.
 - `tools` lists the server's tools.
 
 Each command may call only the tools it needs; `login` and `pull` use read

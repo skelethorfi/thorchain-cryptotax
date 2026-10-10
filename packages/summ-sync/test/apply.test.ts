@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { applyPlan, checkFresh, type ApplyOptions, type LogLine, type PlanFile, type ToolCaller, undoHandle } from '../src/apply.ts'
@@ -114,8 +114,9 @@ function planFile(over: Partial<PlanFile> = {}): PlanFile {
 
 async function run(summ: FakeSumm, plan: PlanFile, opts: Partial<ApplyOptions> = {}) {
     const log: Omit<LogLine, 'time' | 'plan'>[] = []
-    const result = await applyPlan(summ, plan, 'p', { ...OPTS, ...opts }, (l) => log.push(l), () => {}, 0)
-    return { result, log }
+    const deleted = join(mkdtempSync(join(tmpdir(), 'summ-sync-deleted-')), 'deleted')
+    const result = await applyPlan(summ, plan, 'p', { ...OPTS, ...opts }, (l) => log.push(l), () => {}, 0, deleted)
+    return { result, log, deleted }
 }
 
 test('an edit looks the leg up again, edits it in its current action and logs the change with its undo handle', async () => {
@@ -236,6 +237,21 @@ test('a delete looks its legs up by _id and deletes only the actions that hold n
     assert.deepEqual(call?.args, { actionIds: ['d'], operation: { type: 'delete' } })
     assert.deepEqual([...summ.actions.keys()], ['unrelated'])
     assert.equal(log[0].operation, 'delete')
+})
+
+test('a deleted action is first saved as it was just inspected, and the log names the file', async () => {
+    const summ = new FakeSumm()
+    summ.add('d', [{ _id: 'leg-9', trade: 'withdrawal', quantity: '1.5' }])
+    const { log, deleted } = await run(summ, planFile({ delete: [del()] }), { approveDeletes: true })
+    const file = join(deleted, 'd.json')
+    assert.deepEqual(log[0].saved, [file])
+    const saved = JSON.parse(readFileSync(file, 'utf8'))
+    assert.deepEqual([saved.action._id, saved.action.incoming[0].quantity], ['d', '1.5'])
+    // a dry run saves nothing
+    const summ2 = new FakeSumm()
+    summ2.add('d', [{ _id: 'leg-9', trade: 'withdrawal', quantity: '1' }])
+    const dry = await run(summ2, planFile({ delete: [del()] }), { approveDeletes: true, dryRun: true })
+    assert.equal(existsSync(dry.deleted), false)
 })
 
 test('a delete whose legs share an action with other legs is refused', async () => {
