@@ -22,6 +22,18 @@ into errors. Raise them on
 map in its output folder (`unsupported/` and `failures/`), which helps say what
 is missing.
 
+## Releases
+
+[Releases](https://github.com/skelethorfi/skeletax/releases) are dated (CalVer):
+one per day with changes on `main`, tagged `vYYYY.MM.DD` at that day's last
+commit. Each lists the day's pull requests, and when they apply:
+
+- **Breaking**: what to change before running, such as the config, Node or
+  where output goes.
+- **Rows change**: how rows of earlier exports differ, including changed row
+  IDs. Summ keeps a re-uploaded row whose content changed beside the old one,
+  so check these before uploading an earlier period again.
+
 ## Supporting development
 
 If it saved you a lot of manual effort, feel free to send a small donation as
