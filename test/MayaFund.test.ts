@@ -1,6 +1,6 @@
 import {describe, mock, test} from "node:test";
 import assert from "node:assert/strict";
-import {interpretMayaFund} from "../src/interpret/maya/fund.ts";
+import {interpretMayaDistribution} from "../src/interpret/maya/distribution.ts";
 import fs from "fs-extra";
 import os from "os";
 import path from "path";
@@ -17,11 +17,11 @@ const payout = (cacao: string, maya: string): RawBundle => ({
 
 describe('Maya fund', () => {
     test('a payout of nothing (no MAYA held) is not an activity', () => {
-        assert.deepEqual(interpretMayaFund(payout('0', '0'), MAYA), []);
+        assert.deepEqual(interpretMayaDistribution(payout('0', '0'), MAYA), []);
     });
 
     test('a payout is CACAO, in base units of 1e10, with the MAYA held in base units of 1e4', () => {
-        const [activity] = interpretMayaFund(payout('12345678901', '15841'), MAYA);
+        const [activity] = interpretMayaDistribution(payout('12345678901', '15841'), MAYA);
 
         assert.equal(activity.legs[0].amount.base, 12345678901n);
         assert.equal(activity.legs[0].amount.decimals, 10);

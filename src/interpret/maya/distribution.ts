@@ -7,7 +7,7 @@ import {getPayoutDate, type MayaFundPayout} from "../../sources/maya/MayaFundSer
 
 // A Maya fund payout: CACAO paid to a MAYA holder at a payout height (docs/specs/maya.md, Maya fund). One of 0
 // (no MAYA held) is not an activity.
-export function interpretMayaFund(bundle: RawBundle, protocol: Protocol): Activity[] {
+export function interpretMayaDistribution(bundle: RawBundle, protocol: Protocol): Activity[] {
     const payout = bundle.data as MayaFundPayout;
     const cacao = toAsset(protocol.nativeAsset);
 
@@ -18,7 +18,7 @@ export function interpretMayaFund(bundle: RawBundle, protocol: Protocol): Activi
     return [{
         id: getBundleKey(bundle),
         protocol: protocol.id,
-        kind: 'maya.fund',
+        kind: 'maya.distribution',
         status: 'success',
         time: getPayoutDate(payout),
         txids: {in: [], out: []},

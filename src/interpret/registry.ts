@@ -14,7 +14,7 @@ import type {Activity} from "../domain/Activity.ts";
 import {interpretRujira, RUJIRA_CONTRACT_TYPES} from "./midgard/rujira.ts";
 import {interpretSend} from "./midgard/send.ts";
 import {interpretViewblockSend} from "./viewblock/send.ts";
-import {interpretMayaFund} from "./maya/fund.ts";
+import {interpretMayaDistribution} from "./maya/distribution.ts";
 
 // A ported action type gives activities, which an exporter turns into rows; the rest still give rows
 export interface Interpretation {
@@ -55,7 +55,7 @@ const REGISTRY: Record<string, Interpreter> = {
     // Viewblock gives only sends from before 2022-04 that Midgard does not list (docs/specs/sends.md)
     'viewblock/send': (bundle, protocol) => ({rows: [], ...interpretViewblockSend(bundle, protocol)}),
     'tcy/distribution': activity(interpretTcyDistribution),
-    'maya-fund/payout': (bundle, protocol) => ({activities: interpretMayaFund(bundle, protocol), rows: [], issues: []}),
+    'maya-fund/payout': (bundle, protocol) => ({activities: interpretMayaDistribution(bundle, protocol), rows: [], issues: []}),
 };
 
 // Midgard action types handled on protocols other than THORChain (see docs/specs/maya.md)

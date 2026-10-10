@@ -9,7 +9,7 @@ import {loanOpenRows, loanRepayRows} from "./loan.ts";
 import {tcyClaimRows, tcyDistributionRows, tcyStakeRows, thornameRows} from "./tcy.ts";
 import {rujiraStakeRows, rujiraTradeRows} from "./rujira.ts";
 import {sendRows} from "./send.ts";
-import {mayaFundRows} from "./maya.ts";
+import {mayaDistributionRows} from "./maya.ts";
 import type {MayaLiquidityAuction} from "../../config/ITaxConfig.ts";
 import {type AssetNamesConfig, getProtocol, type Protocol, withAssetNames} from "../../domain/Protocol.ts";
 
@@ -77,8 +77,8 @@ function toRows(activity: Activity, protocol: Protocol, treatment: Treatment): C
             return tcyDistributionRows(activity, protocol);
         case 'thorname':
             return thornameRows(activity, protocol);
-        case 'maya.fund':
-            return mayaFundRows(activity, protocol);
+        case 'maya.distribution':
+            return mayaDistributionRows(activity, protocol);
         case 'rujira.stake':
             return rujiraStakeRows(activity, protocol);
         case 'rujira.fin.trade':

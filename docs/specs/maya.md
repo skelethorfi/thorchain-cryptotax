@@ -202,7 +202,7 @@ Each payout keeps the method that read it (`from`: `dividends`, `balance` or
 the balance step's to the millisecond, so the same payout read by the other
 method would get another row time and row ID.
 
-Activity `maya.fund`: in: reward, the CACAO paid (observed); details: the
+Activity `maya.distribution`: in: reward, the CACAO paid (observed); details: the
 height, and the MAYA held when the balance step gives it. A payout of 0 (no
 MAYA held at `h−1`) is not an activity.
 
