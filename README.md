@@ -1,225 +1,88 @@
 # thorchain-cryptotax
 
-## What is this?
+Exports the activity of your THORChain and Maya Protocol wallets as CSV files
+for [Summ](https://cryptotaxcalculator.io/?via=glaj5hf5) (formerly Crypto Tax
+Calculator), in its advanced CSV format.
 
-This is a tool to help with doing taxes for your THORChain transactions by exporting them
-into a CSV format that can be directly imported into [Crypto Tax Calculator](https://cryptotaxcalculator.io/?via=glaj5hf5).
+It maps source data (Midgard, THORNode, Viewblock) to rows: what each wallet
+sent, received, deposited and withdrew, and the fee it paid. It does not
+price rows or compute gains: Summ does. Where a treatment is a tax choice
+(e.g. the Maya liquidity auction), the config makes it, and each spec says
+which values are observed on-chain and which are assumed.
 
-It has been built for myself to reduce the manual effort in doing taxes.
-I'm sharing it in the hope that it makes it easier for others as well.
+## What's supported
 
-Having used Crypto Tax Calculator for years, I can highly recommend it.
+- **THORChain swaps** (including streaming swaps with an unfilled part
+  returned) and **refunds**: [fees.md](docs/specs/fees.md)
+- **Liquidity** (add and withdraw): [liquidity.md](docs/specs/liquidity.md)
+- **Savers**: [savers.md](docs/specs/savers.md)
+- **Lending** (loan open and repayment): [loans.md](docs/specs/loans.md)
+- **Sends and receives**, including income from configured senders and sends
+  from before April 2022 via Viewblock: [sends.md](docs/specs/sends.md)
+- **Bond and unbond, RUNEPool, TCY** (claim, stake, unstake, distributions),
+  **THORNames**, and **switches** (BEP2 RUNE upgrade, KUJI):
+  [activity.md](docs/specs/activity.md)
+- **Synths, trade and secured assets**, and how every asset is named:
+  [assets.md](docs/specs/assets.md)
+- **Fees**: which fee goes on which row: [fees.md](docs/specs/fees.md)
+- **Maya Protocol** (swaps, liquidity, refunds, sends), including the
+  [2023 liquidity auction](docs/specs/maya.md#liquidity-auction-2023):
+  [maya.md](docs/specs/maya.md)
+- **Rujira**: staking (bond), FIN market swaps, merge deposit and withdraw:
+  [rujira.md](docs/specs/rujira.md)
+- **Periods and row IDs**: one CSV per wallet per period, in your time zone,
+  with stable row IDs: [periods.md](docs/specs/periods.md)
+- **Actions that are not final** (pending, stuck refunds):
+  [pending.md](docs/specs/pending.md)
+- **Run summaries** and comparing two runs:
+  [run-summary.md](docs/specs/run-summary.md), [run-diff.md](docs/specs/run-diff.md)
+- **Snapshots and offline replay**: every downloaded record is stored, so a
+  run can be replayed without network access:
+  [snapshots.md](docs/specs/snapshots.md)
+- **Summ sync** (experimental): plans and applies the changes that make Summ
+  match a run, through Summ's MCP server:
+  [summ-sync.md](docs/specs/summ-sync.md),
+  [packages/summ-sync](packages/summ-sync/README.md)
 
-You can get $40 off a subscription with this [referral link](https://cryptotaxcalculator.io/?via=glaj5hf5) (only applies if purchasing a plan for the first time).
+## Not supported yet
 
-Currently supported transactions
+- Failed actions (only their fee moved): listed, not exported.
+- Bond rewards; Maya bonding; CACAO yield paid to MAYA token holders.
+- Fees paid on Maya inbound transactions.
+- Rujira unbonding, staking revenue claims, FIN orders, BOW, GHOST and other
+  Rujira contracts. Levana perps are discontinued: enter positions by hand
+  ([rujira.md](docs/specs/rujira.md#levana)).
+- The conversion of open savers positions to TCY in January 2025.
+- Aggregated swaps (routed through more than THORChain).
 
-- sends/receives of Rune
-- sends/receives of Synth Assets
-- upgrade BEP Rune to native Rune
-- swaps
-- LPs (add/remove liquidity)
-- lending
-- savers
-- bonding/unbonding
-- TCY claiming (Note: This is mapped as a Receive/Transfer In)
-- TCY staking/unstaking
-- TCY distributions (i.e. RUNE received from staking TCY)
-- RUNEPool deposit/withdrawal
-- Thorname register/update
-- Rujira: liquid and account staking (bond), FIN market swaps, merge deposit/withdraw (see `docs/specs/rujira.md`)
+A run never drops what it can't map: each such action is saved under
+`unsupported/` (or `failures/`) in the run's output folder and listed in its
+`summary.md`.
 
-Not currently supported
+## Run it
 
-- Rujira unbonding, staking revenue claims, BOW, GHOST and other Rujira contracts
-- Levana perps (discontinued; enter positions by hand)
-- Maya Protocol
-- aggregated swaps (i.e. where the swap is routed through more than just THORChain)
+You don't have to run the commands yourself. You can ask a coding agent (e.g.
+[Claude Code](https://claude.com/claude-code)) to clone this repo, set up a
+config with your wallets, run the export and explain the output. Keep the
+config and the output in a private folder outside the clone, so your wallets
+never end up in the repo.
 
-## Usage
+By hand:
 
-### Run using NodeJS
-If you are familiar with Git and NodeJS.<br>
-Follow the [NodeJS Instructions](docs/nodejs-instructions.md).
+1. Install Node at the version in [`.nvmrc`](.nvmrc) (`nvm install && nvm use`).
+2. `npm ci --ignore-scripts`
+3. Copy [`wallets-config.toml`](wallets-config.toml) to a folder outside the
+   repo, e.g. `../my-tax/wallets-config.toml`, and add your wallets and dates.
+4. `node src/full-export.ts ../my-tax/wallets-config.toml`
 
-API endpoint defaults are committed in `src/config/apiUrls.ts`.
-You can override them by setting environment variables before running the app:
+Output, cache and summary are written next to the config. Add `--offline` to
+re-run from the cache without network access. Details:
+[docs/nodejs-instructions.md](docs/nodejs-instructions.md).
 
-- `THORNODE_API_URL`
-- `THORNODE_API_ARCHIVE_URL` (THORChain v1: tx statuses up to its last block, 2024-09-04)
-- `MIDGARD_API_URL`
+## More
 
-### Contributing a new transaction type
-See [Adding a transaction type](docs/specs/fixtures.md): test cases are built from public
-transactions with the fixture tool (`npm run fixture`), which can refuse to write your own
-wallet addresses and txids into a test case.
-
-### Two ways to work with Summ (Crypto Tax Calculator)
-
-**1. By hand** (the usual way):
-
-1. Make a config for the year (a copy of `wallets-config.toml` with the year's dates and your wallets).
-2. Run the export (`node src/full-export.ts <config>`, see the NodeJS instructions).
-3. Upload your THORChain wallet CSV files ([Import into Crypto Tax Calculator](#import-into-crypto-tax-calculator)).
-4. Categorise the related transactions of your other chains (BTC, ETH, ...) by hand
-   ([Categorising Transactions](#categorising-transactions)).
-
-**2. With summ-sync (experimental).** Syncing with Summ is new: review every plan, and
-expect changes. [`packages/summ-sync`](packages/summ-sync/README.md) compares a run with
-what Summ holds, through Summ's MCP server, and makes the changes for you:
-
-1. Make the config and run the export, as above.
-2. `pull`, then `plan`: the plan lists what to delete and edit in Summ, and writes
-   upload files with only the rows Summ lacks.
-3. `apply`: deletes and edits, so changed rows are gone before their new version is uploaded.
-4. Upload the plan's upload files (not the run's whole CSV files).
-5. `pull`, `plan` and `apply` again: now it categorises the other chains' transactions,
-   with the uploaded rows in Summ to pair them with.
-6. `pull` and `plan` once more: only the entries it cannot resolve itself are left, for you.
-
-### Import into Crypto Tax Calculator
-
-Once you have successfully exported transactions into CSV files, you can import them
-into Crypto Tax Calculator.
-
-Log in to Crypto Tax Calculator
-
-Go to **Integrations**
-
-Click **Add integrations**
-
-Search for **THORChain** and click it
-
-Click **Upload** to select the files
-
-You only need to import your THORChain wallet CSV files (YYYY-MM-DD_YYYY-MM-DD_**THOR**_xxxxx_Sample.csv).<br>
-Not the CSV files for other wallets (as they are added into Crypto Tax Calculator using their own wallet integrations).
-
-Once you've selected all the files then click **Import THORChain CSV**
-
-This will import all the transactions that use your THORChain wallets. This will include
-sends/receives, and swaps, LPs, savers, lending.
-
-### Categorising Transactions
-
-As THORChain is a cross-chain protocol, most transactions span more than one blockchain.
-
-This means the transactions from your THORChain wallet may only be one side of the action.
-For example, a transaction could be adding RUNE to an LP and there could be another transaction of adding BTC
-to the same LP. Or you may have a swap from BTC to ETH which won't even appear as
-any transaction in your THORChain wallet (it will be in the other wallet CSV files and in **all.csv**).
-
-Crypto Tax Calculator has support for these other chains, like BTC, ETH, etc.
-You need to add the wallet addresses in the integrations section of CTC and once they
-are imported, you will need to categorise the transactions from the other chains.
-
-To help you categorise the transactions, you can refer to the **all.csv** file or
-the other individual wallet files to be able to see a description on the transaction
-which can look something like "1/2 - Swap 1 BTC to 20 ETH; tx12345".
-
-Swaps should be updated in CTC as **Cross Chain Sell** (outgoing from your wallet to THORChain) and **Cross Chain Buy** (incoming into your wallet from THORChain).<br>
-They will be listed in the CSV files as `bridge-trade-out` and `bridge-trade-in`.
-
-The same needs to be done for categorising transactions on the other chains.
-Such as **Add Liquidity**, **Remove Liquidity**, etc.
-
-### Missing Market Prices
-
-The other manual step that needs to be performed in CTC is to add missing market
-prices.
-
-If you have a swap of say RUNE to VTHOR, it won't have the market price for VTHOR.
-But it does have the market price for RUNE. So you can copy the fiat amount from the RUNE
-side (Cross Chain Sell) and apply it to the VTHOR side (Cross Chain Buy).
-
-The other instance where there won't be market prices is for adding/removing liquidity
-via LPs or savers.
-
-Add to an LP with dual assets will be listed as 4 transactions in CTC.
-
-- Add Liquidity (Asset 1)
-- Add Liquidity (Asset 2)
-- Receive Receipt Token (aka. Receive LP Token)
-- Spam
-
-The reason for the Spam transaction is to help you get the market price.
-If its a dual LP add then the Spam transaction will be 2x the RUNE amount.
-If its an asymmetric add then the Spam transaction will be a copy of the single asset
-being added.
-
-Copy the fiat value from the Spam transaction, and apply it into the **Receive Receipt Token**
-transaction. If it is withdrawing from an LP then apply it to the **Return Receipt Token** transaction.
-
-## Reporting Issues / Supporting Development
-
-If you run into errors (probably likely as I mainly built this to cover my own usage),
-you can either raise them in GitHub https://github.com/skelethorfi/thorchain-cryptotax/issues or
-DM me on Twitter/X [@skelethorfi](https://x.com/skelethorfi).
-
-If you found this useful, and it saved you a lot of manual effort, feel free to send a small donation as thanks:
-- BTC: `bc1qe3lhk5d72gs6t7q6z5z982dfhzfya7d8t9thha`
-- ETH: `0x6822b44Fe0EDa7962E59ed11bfdFa1F323F19C0a`
-- THORChain: `thor1q3dsqslgz3kdxprvcra3e2xmessznlz0d7n3pf`
-
-## Other Notes
-
-### Liquidity Pools
-
-- LP actions are converted to Add/Remove Liquidity transactions for Crypto Tax Calculator
-- It also creates Receive/Return LP Token transactions
-  - LP Token amount is set to the `liquidityUnits` amount provided by Midgard
-  - LP token is given the name `ThorLP.{asset}`
-    - e.g. ThorLP.BTC.BTC
-
-### Savers
-
-- Savers are converted to Add/Remove Liquidity transactions for Crypto Tax Calculator
-  - **Note:** In THORChain when doing a Savers deposit, it goes into the liquidity pool
-    and the other side of the LP is provided by the protocol.
-    Assumption here is that Savers should be considered as LP rather than staking when
-    converting to Crypto Tax Calculator.
-- It also creates Receive/Return LP Token transactions
-  - LP Token amount is set to the `liquidityUnits` amount provided by Midgard
-    - For Savers, this is equal to the asset amount being added
-  - The position token is named `ThorSavers.{chain}.{asset}`
-    - e.g. ThorSavers.BTC.BTC (it was ThorLP.BTC/BTC before October 2026)
-- A deposit sent from an L1 wallet is exported in the L1 asset (BTC), although Midgard
-  reports it as the synth. See [docs/specs/savers.md](docs/specs/savers.md)
-
-### Synths, trade and secured assets
-
-- Synths are exported as `ThorSynth.BTC.BTC` (`MayaSynth…` on Maya), so Summ keeps them
-  apart from L1 BTC. Trade and secured assets keep the L1 asset's name with THORChain as the
-  blockchain, unless the config prefixes them:
-
-  ```toml
-  [assets]
-  prefixSecuredAssets = true   # ThorSecured.ETH.USDC
-  prefixTradeAssets = true     # ThorTrade.BTC.BTC
-  ```
-
-  See [docs/specs/assets.md](docs/specs/assets.md)
-
-### Sends/Receives
-
-Sends and receives come from Midgard. Midgard's history of sends is incomplete before April 2022, so a run that
-exports a period starting before then also reads the wallet's txs from the viewblock.io API, which is not a
-public API and may change without warning. See [docs/specs/sends.md](docs/specs/sends.md).
-
-### Reference Prices
-
-Swap rows carry Midgard's USD price of each side. Other rows have no reference price
-(the old CoinMarketCap price lookup and the `addReferencePrices` wallet setting were removed;
-a config that still sets it gets a warning).
-
-So adding the market price to LP transactions requires the manual step of copying the fiat amount from
-the related Spam transaction into the market value section for the LP token in CTC.
-
-### Useful References
-
-- [Crypto Tax Calculator - Advanced CSV Import](https://help.cryptotaxcalculator.io/en/articles/5777675-advanced-custom-csv-import)
-- [THORChain Dev Docs - Asset Notation](https://dev.thorchain.org/concepts/asset-notation.html)
-- [THORChain Dev Docs - Transaction Memos](https://dev.thorchain.org/concepts/memos.html)
-- [Thornode API docs](https://gateway.liquify.com/chain/thorchain_api/thorchain/doc)
-- [XChainJS docs](https://docs.xchainjs.org)
-- [`docs/reference/`](docs/reference/): a sample of the Summ advanced CSV and the Midgard API spec
+- [Using the CSVs in Summ](docs/summ.md): the two workflows (by hand, or with
+  summ-sync), import, categorising other chains' transactions, missing prices
+- [Contributing and support](docs/contributing.md): adding a transaction type,
+  reporting issues, donations, references
+- [Specs](docs/specs/README.md): the behaviour of every supported action
