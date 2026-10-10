@@ -11,7 +11,7 @@ export function mayaDistributionRows(activity: Activity, protocol: Protocol): Su
     const amount = formatAmount(reward.amount);
 
     return [{
-        walletExchange: reward.wallet,
+        wallet: reward.wallet,
         timestamp: activity.time,
         type: SummRowType.Income,
         baseCurrency: currency,

@@ -1,4 +1,4 @@
-walletExchange: thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j
+wallet: thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j
 timestamp: 2025-05-19T06:16:37.730Z
 type: bridge-trade-out
 baseCurrency: TCY
@@ -15,7 +15,7 @@ referencePriceCurrency: USD
 description: 1/2 - Swap 50000 TCY to 9716.00781339 RUNE; A46848A2984FB8738BE9B41EB9C8ADA22854BE22F0DAF99B630184C7A172372D
 id: 2025-05-19T06:16:37.730Z.out.ad38239baada
 ---
-walletExchange: thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j
+wallet: thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j
 timestamp: 2025-05-19T06:16:47.730Z
 type: bridge-trade-in
 baseCurrency: RUNE

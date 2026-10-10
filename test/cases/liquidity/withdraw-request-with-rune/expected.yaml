@@ -1,4 +1,4 @@
-walletExchange: thor1zptf89px22fmucr2j924vnrfc8ts3cdw8znj09
+wallet: thor1zptf89px22fmucr2j924vnrfc8ts3cdw8znj09
 timestamp: 2022-03-24T03:14:18.031Z
 type: remove-liquidity
 baseCurrency: RUNE
@@ -11,7 +11,7 @@ blockchain: THORChain
 description: 3/3 - Remove liquidity RUNE from ThorLP.BNB.ETH (asymmetric); E07F05F4C34B9114ECD94B00542452A9E6E24CA16175EE2CBF5FE79449787BEE
 id: 2022-03-24T03:13:58.031Z.in.ec5af1c1a76c
 ---
-walletExchange: thor1zptf89px22fmucr2j924vnrfc8ts3cdw8znj09
+wallet: thor1zptf89px22fmucr2j924vnrfc8ts3cdw8znj09
 timestamp: 2022-03-24T03:14:08.031Z
 type: spam
 baseCurrency: RUNE
@@ -21,7 +21,7 @@ to: thorchain
 description: 2/3 - Dummy transaction to get market price to then manually apply to the return LP token transaction ThorLP.BNB.ETH (asymmetric); E07F05F4C34B9114ECD94B00542452A9E6E24CA16175EE2CBF5FE79449787BEE
 id: 2022-03-24T03:13:58.031Z.price-helper.6d26e7042619
 ---
-walletExchange: thor1zptf89px22fmucr2j924vnrfc8ts3cdw8znj09
+wallet: thor1zptf89px22fmucr2j924vnrfc8ts3cdw8znj09
 timestamp: 2022-03-24T03:13:58.031Z
 type: return-lp-token
 baseCurrency: ThorLP.BNB.ETH

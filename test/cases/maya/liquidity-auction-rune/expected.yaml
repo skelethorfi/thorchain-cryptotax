@@ -1,4 +1,4 @@
-walletExchange: thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07
+wallet: thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07
 timestamp: 2023-03-19T04:16:46.686Z
 type: add-liquidity
 baseCurrency: RUNE
@@ -11,7 +11,7 @@ blockchain: THORChain
 description: "Liquidity auction deposit: add 1000 RUNE to MayaLP.THOR.RUNE; 067A1E01B6E03E3C597276AFF45E2FB6FAF9B73331042DEF39CC0B82B33A43A4"
 id: 2023-03-19T04:16:46.686Z.out.b05046d5f2e7
 ---
-walletExchange: thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07
+wallet: thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07
 timestamp: 2023-03-19T11:49:24.484Z
 type: add-liquidity
 baseCurrency: RUNE
@@ -24,7 +24,7 @@ blockchain: THORChain
 description: "Liquidity auction deposit: add 19.51750656 RUNE to MayaLP.THOR.RUNE; 8FB173CDC60F01BF5DCE2334765B7D29A9E67F877E556A2714C2CD3F5C1CAC36"
 id: 2023-03-19T11:49:24.484Z.out.cc35a5bb9356
 ---
-walletExchange: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
+wallet: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
 timestamp: 2023-04-17T03:13:17.319Z
 type: spam
 baseCurrency: RUNE
@@ -34,7 +34,7 @@ to: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
 description: "6/6 - Dummy transaction to get market price to then manually apply to the receive LP token transaction MayaLP.THOR.RUNE (liquidity auction: the RUNE side, 1036.55294265 RUNE, twice); D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0"
 id: 2023-04-17T03:12:57.319Z.price-helper.e6ee1f3e2ee0
 ---
-walletExchange: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
+wallet: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
 timestamp: 2023-04-17T03:13:07.319Z
 type: receive-lp-token
 baseCurrency: MayaLP.THOR.RUNE
@@ -45,7 +45,7 @@ blockchain: Mayachain
 description: "5/6 - Liquidity auction: receive LP token from MayaLP.THOR.RUNE; D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0"
 id: 2023-04-17T03:12:57.319Z.in.508060c148be
 ---
-walletExchange: thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07
+wallet: thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07
 timestamp: 2023-04-17T03:12:58.319Z
 type: add-liquidity
 baseCurrency: RUNE
@@ -56,7 +56,7 @@ blockchain: THORChain
 description: "4/6 - Liquidity auction: add 17.03543609 RUNE to MayaLP.THOR.RUNE; D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0"
 id: 2023-04-17T03:12:57.319Z.out.bb79a2bf1e0e
 ---
-walletExchange: thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07
+wallet: thor1zqwtyq5rd2whlm78gveedv2rdta2qcgu87dl07
 timestamp: 2023-04-17T03:12:57.319Z
 type: income
 baseCurrency: RUNE
@@ -67,7 +67,7 @@ blockchain: THORChain
 description: "3/6 - Liquidity auction: 17.03543609 RUNE supplied by the auction; D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0"
 id: 2023-04-17T03:12:57.319Z.reward.1fe08092f33a
 ---
-walletExchange: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
+wallet: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
 timestamp: 2023-04-17T03:12:58.319Z
 type: add-liquidity
 baseCurrency: CACAO
@@ -78,7 +78,7 @@ blockchain: Mayachain
 description: "2/6 - Liquidity auction: add 12059.9511346447 CACAO to MayaLP.THOR.RUNE; D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0"
 id: 2023-04-17T03:12:57.319Z.out.2416a6d32436
 ---
-walletExchange: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
+wallet: maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew
 timestamp: 2023-04-17T03:12:57.319Z
 type: income
 baseCurrency: CACAO

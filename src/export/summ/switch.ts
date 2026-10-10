@@ -17,7 +17,7 @@ export function switchRows(activity: Activity, protocol: Protocol): SummRow[] {
 
     return [
         {
-            walletExchange: sent.wallet,
+            wallet: sent.wallet,
             timestamp: activity.time,
             type: SummRowType.BridgeOut,
             baseCurrency: input.currency,
@@ -30,7 +30,7 @@ export function switchRows(activity: Activity, protocol: Protocol): SummRow[] {
             description: `1/2 - Switch ${from} to ${to} (send ${from}); ${txId}`,
         },
         {
-            walletExchange: received.wallet,
+            wallet: received.wallet,
             timestamp: plusSeconds(activity.time, 10),
             type: SummRowType.BridgeIn,
             baseCurrency: output.currency,
@@ -61,12 +61,12 @@ export function runePoolRows(activity: Activity, protocol: Protocol): SummRow[] 
     if (isDeposit) {
         return [
             {
-                walletExchange: wallet, timestamp: activity.time, type: SummRowType.AddLiquidity,
+                wallet: wallet, timestamp: activity.time, type: SummRowType.AddLiquidity,
                 baseCurrency: currency, baseAmount: amount, ...fee(activity, protocol), from: wallet, to: protocol.counterparty,
                 blockchain: protocol.blockchain, trace: legTrace(rune), description: `1/2 - Deposit ${amount} ${currency} to ${RUNEPOOL}; ${txId}`,
             },
             {
-                walletExchange: wallet, timestamp: plusSeconds(activity.time, 10), type: SummRowType.ReceiveLpToken,
+                wallet: wallet, timestamp: plusSeconds(activity.time, 10), type: SummRowType.ReceiveLpToken,
                 baseCurrency: token, baseAmount: formatAmount(position.amount), from: protocol.counterparty, to: wallet,
                 blockchain: protocol.blockchain, trace: legTrace(position), description: `2/2 - Receive LP token from ${RUNEPOOL}; ${txId}`,
             },
@@ -75,12 +75,12 @@ export function runePoolRows(activity: Activity, protocol: Protocol): SummRow[] 
 
     return [
         {
-            walletExchange: wallet, timestamp: activity.time, type: SummRowType.ReturnLpToken,
+            wallet: wallet, timestamp: activity.time, type: SummRowType.ReturnLpToken,
             baseCurrency: token, baseAmount: formatAmount(position.amount), ...fee(activity, protocol), from: wallet, to: protocol.counterparty,
             blockchain: protocol.blockchain, trace: legTrace(position), description: `1/2 - Return LP token to ${RUNEPOOL}; ${txId}`,
         },
         {
-            walletExchange: wallet, timestamp: plusSeconds(activity.time, 10), type: SummRowType.RemoveLiquidity,
+            wallet: wallet, timestamp: plusSeconds(activity.time, 10), type: SummRowType.RemoveLiquidity,
             baseCurrency: currency, baseAmount: amount, from: protocol.counterparty, to: wallet,
             blockchain: protocol.blockchain, trace: legTrace(rune), description: `2/2 - Withdraw ${amount} ${currency} from ${RUNEPOOL}; ${txId}`,
         },

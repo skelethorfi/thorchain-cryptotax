@@ -1,4 +1,4 @@
-walletExchange: bc1qzjvp0aqx8vt6hw06zpc2fhr2xxcujac32nrvu8
+wallet: bc1qzjvp0aqx8vt6hw06zpc2fhr2xxcujac32nrvu8
 timestamp: 2024-02-20T19:01:15.710Z
 type: collateral-deposit
 baseCurrency: BTC
@@ -11,7 +11,7 @@ blockchain: BTC
 description: 1/2 - LoanOpen deposit BTC to borrow RUNE; 005959124F7D1AD405A406FD7029078C1FA45F9B827FCC85F15A3992245B8C61
 id: 2024-02-20T19:01:15.710Z.out.87c5fce4bf2a
 ---
-walletExchange: thor1hhjupkzy3t6ccelhz7qw8epyx4rm8a06nlm5ce
+wallet: thor1hhjupkzy3t6ccelhz7qw8epyx4rm8a06nlm5ce
 timestamp: 2024-02-20T19:01:15.710Z
 type: loan
 baseCurrency: RUNE

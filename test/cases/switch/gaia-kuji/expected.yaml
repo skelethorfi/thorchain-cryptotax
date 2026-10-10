@@ -1,4 +1,4 @@
-walletExchange: cosmos1-user-wallet-11111
+wallet: cosmos1-user-wallet-11111
 timestamp: 2020-12-31T13:00:00.000Z
 type: bridge-out
 baseCurrency: KUJI
@@ -11,7 +11,7 @@ blockchain: GAIA
 description: 1/2 - Switch GAIA.KUJI to THOR.KUJI (send GAIA.KUJI); 0000000000000000000000000000000000000000000000000000000000000000
 id: 2020-12-31T13:00:00.000Z.out.5ec319b96d50
 ---
-walletExchange: thor1-user-wallet-11111
+wallet: thor1-user-wallet-11111
 timestamp: 2020-12-31T13:00:10.000Z
 type: bridge-in
 baseCurrency: KUJI

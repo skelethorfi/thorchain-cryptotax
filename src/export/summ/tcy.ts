@@ -17,7 +17,7 @@ export function tcyClaimRows(activity: Activity, protocol: Protocol): SummRow[] 
     const time = activity.time;
 
     return [{
-        walletExchange: tcy.wallet,
+        wallet: tcy.wallet,
         timestamp: time,
         type: SummRowType.Receive,
         baseCurrency: parseMidgardAsset(tcy.asset.notation, protocol).currency,
@@ -38,7 +38,7 @@ export function tcyStakeRows(activity: Activity, protocol: Protocol): SummRow[] 
     const time = activity.time;
 
     return [{
-        walletExchange: tcy.wallet,
+        wallet: tcy.wallet,
         timestamp: time,
         type: isStake ? SummRowType.StakingDeposit : SummRowType.StakingWithdrawal,
         baseCurrency: parseMidgardAsset(tcy.asset.notation, protocol).currency,
@@ -61,7 +61,7 @@ export function thornameRows(activity: Activity, protocol: Protocol): SummRow[] 
     const time = activity.time;
 
     return [{
-        walletExchange: wallet,
+        wallet: wallet,
         timestamp: time,
         type: SummRowType.Expense,
         baseCurrency: paid ? parseMidgardAsset(paid.asset.notation, protocol).currency : '',
@@ -82,7 +82,7 @@ export function tcyDistributionRows(activity: Activity, protocol: Protocol): Sum
     const time = activity.time;
 
     return [{
-        walletExchange: reward.wallet,
+        wallet: reward.wallet,
         timestamp: time,
         type: SummRowType.Staking,
         baseCurrency: parseMidgardAsset(reward.asset.notation, protocol).currency,

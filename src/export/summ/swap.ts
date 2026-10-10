@@ -20,7 +20,7 @@ export function swapRows(activity: Activity, protocol: Protocol): SummRow[] {
 
     return [
         {
-            walletExchange: sent.wallet,
+            wallet: sent.wallet,
             timestamp: activity.time,
             type: SummRowType.BridgeTradeOut,
             baseCurrency: input.currency,
@@ -36,7 +36,7 @@ export function swapRows(activity: Activity, protocol: Protocol): SummRow[] {
             description: `1/2 - ${swap}${returnedNote}; ${txId}`,
         },
         {
-            walletExchange: received.wallet,
+            wallet: received.wallet,
             timestamp: plusSeconds(activity.time, 10),
             type: SummRowType.BridgeTradeIn,
             baseCurrency: output.currency,

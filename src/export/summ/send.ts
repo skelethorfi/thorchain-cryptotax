@@ -59,7 +59,7 @@ export function sendRows(activity: Activity, protocol: Protocol, incomeFrom?: st
     const description = `${isSend ? 'Send' : isIncome ? 'Income: receive' : 'Receive'} ${amount} ${label(coin)}; ${txId}`;
 
     return [{
-        walletExchange: coin.wallet,
+        wallet: coin.wallet,
         timestamp: activity.time,
         type,
         baseCurrency: currency,
@@ -94,7 +94,7 @@ function selfSendRows(activity: Activity, protocol: Protocol): SummRow[] {
         : `Fee: send ${sent.amount} ${label(coin)} to itself; ${txId}`;
 
     return [{
-        walletExchange: gas.wallet,
+        wallet: gas.wallet,
         timestamp: activity.time,
         type: SummRowType.Fee,
         baseCurrency: currency,

@@ -1,4 +1,4 @@
-walletExchange: thor1cl6wx08s76yhf8smvt5pcqnfh2rts42ytqul4e
+wallet: thor1cl6wx08s76yhf8smvt5pcqnfh2rts42ytqul4e
 timestamp: 2024-01-04T18:57:51.301Z
 type: bridge-trade-out
 baseCurrency: RUNE
@@ -15,7 +15,7 @@ referencePriceCurrency: USD
 description: 1/2 - Swap 244 RUNE to 270.527074 KUJI; 7B11F20814EF6BC5D7ACF1A295CCF1746899A478110220C0BCF4CEC95E516806
 id: 2024-01-04T18:57:51.301Z.out.245ced26baa5
 ---
-walletExchange: kujira13kkml6e2df9fl4tmscqlzqg45va0rzla73f5ed
+wallet: kujira13kkml6e2df9fl4tmscqlzqg45va0rzla73f5ed
 timestamp: 2024-01-04T18:58:01.301Z
 type: bridge-trade-in
 baseCurrency: KUJI

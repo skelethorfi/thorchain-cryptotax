@@ -1,4 +1,4 @@
-walletExchange: 34ST4WAHgDCqpu8wZVheNKBYQoCgJQgtTz
+wallet: 34ST4WAHgDCqpu8wZVheNKBYQoCgJQgtTz
 timestamp: 2023-01-06T21:53:15.332Z
 type: failed-out
 baseCurrency: BTC
@@ -11,7 +11,7 @@ blockchain: BTC
 description: "refund (C8A4043E089D3F5CC511D5AD71010C5E8138DCD3329AC248378D9F97709B9020): fail to process withdraw request: 2 errors occurred:  * internal error  * nothing to withdraw  ; fail to refund (16837 BTC.BTC): fail to prepare outbound tx: tx out item has zero coin"
 id: 2023-01-06T21:53:15.332Z.out.02347a94ab0f
 ---
-walletExchange: 34ST4WAHgDCqpu8wZVheNKBYQoCgJQgtTz
+wallet: 34ST4WAHgDCqpu8wZVheNKBYQoCgJQgtTz
 timestamp: 2023-01-06T21:53:15.332Z
 type: lost
 baseCurrency: BTC

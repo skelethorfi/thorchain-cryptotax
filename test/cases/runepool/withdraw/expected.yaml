@@ -1,4 +1,4 @@
-walletExchange: thor1-user-wallet-11111
+wallet: thor1-user-wallet-11111
 timestamp: 2020-12-31T13:00:00.000Z
 type: return-lp-token
 baseCurrency: ThorLP.THOR.RUNE
@@ -11,7 +11,7 @@ blockchain: THORChain
 description: 1/2 - Return LP token to RUNEPool; 0000000000000000000000000000000000000000000000000000000000000000
 id: 2020-12-31T13:00:00.000Z.out.a0fe295e4c3e
 ---
-walletExchange: thor1-user-wallet-11111
+wallet: thor1-user-wallet-11111
 timestamp: 2020-12-31T13:00:10.000Z
 type: remove-liquidity
 baseCurrency: RUNE

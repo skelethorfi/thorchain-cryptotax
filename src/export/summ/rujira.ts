@@ -31,7 +31,7 @@ export function rujiraStakeRows(activity: Activity, protocol: Protocol): SummRow
     const time = activity.time;
 
     return [{
-        walletExchange: funds.wallet,
+        wallet: funds.wallet,
         timestamp: time,
         type: SummRowType.StakingDeposit,
         baseCurrency: currency,
@@ -65,7 +65,7 @@ export function rujiraTradeRows(activity: Activity, protocol: Protocol): SummRow
 
     return [
         {
-            walletExchange: sent.wallet,
+            wallet: sent.wallet,
             timestamp: time,
             type: SummRowType.BridgeTradeOut,
             baseCurrency: input.currency,
@@ -80,7 +80,7 @@ export function rujiraTradeRows(activity: Activity, protocol: Protocol): SummRow
             description: `1/2 - ${description}`,
         },
         {
-            walletExchange: sent.wallet,
+            wallet: sent.wallet,
             timestamp: plusSeconds(activity.time, 10),
             type: SummRowType.BridgeTradeIn,
             baseCurrency: output.currency,

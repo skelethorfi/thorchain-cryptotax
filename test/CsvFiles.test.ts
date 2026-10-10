@@ -4,8 +4,8 @@ import {csvFiles, isInRange} from '../src/export/summ/files.ts';
 
 const wallets = [{name: 'Main', address: 'thor1-user-wallet-11111', blockchain: 'THOR'}];
 let rowCount = 0;
-const row = (time: string, walletExchange = 'thor1-user-wallet-11111', fromTo: object = {}) =>
-    ({timestamp: new Date(time), type: 'receive', baseCurrency: 'RUNE', baseAmount: '1', walletExchange, id: `row-${++rowCount}`, ...fromTo} as any);
+const row = (time: string, wallet = 'thor1-user-wallet-11111', fromTo: object = {}) =>
+    ({timestamp: new Date(time), type: 'receive', baseCurrency: 'RUNE', baseAmount: '1', wallet, id: `row-${++rowCount}`, ...fromTo} as any);
 const july = {from: '2025-07-01', to: '2025-07-31'};
 const names = (files: {name: string; rows: any[]}[]) => files.map(file => `${file.name} (${file.rows.length})`);
 

@@ -1,4 +1,4 @@
-walletExchange: bc1-user-wallet-aaaaa
+wallet: bc1-user-wallet-aaaaa
 timestamp: 2020-12-31T13:00:00.000Z
 type: collateral-deposit
 baseCurrency: BTC
@@ -11,7 +11,7 @@ blockchain: BTC
 description: 1/2 - LoanOpen deposit BTC to borrow RUNE; 0000000000000000000000000000000000000000000000000000000000000000
 id: 2020-12-31T13:00:00.000Z.out.6491e9be80eb
 ---
-walletExchange: thor1-user-wallet-11111
+wallet: thor1-user-wallet-11111
 timestamp: 2020-12-31T13:00:00.000Z
 type: loan
 baseCurrency: RUNE

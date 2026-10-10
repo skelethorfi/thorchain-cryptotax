@@ -48,7 +48,7 @@ export function addLiquidityRows(activity: Activity, protocol: Protocol): SummRo
         const from = deposit.wallet || MISSING_ADDRESS;
 
         return {
-            walletExchange: from,
+            wallet: from,
             timestamp: activity.time,
             type: SummRowType.AddLiquidity,
             baseCurrency: currency,
@@ -64,7 +64,7 @@ export function addLiquidityRows(activity: Activity, protocol: Protocol): SummRo
     const quote = priceHelper(rows[0], deposits.length);
 
     rows.push({
-        walletExchange: receiver,
+        wallet: receiver,
         timestamp: plusSeconds(activity.time, 10),
         type: SummRowType.ReceiveLpToken,
         baseCurrency: lpToken,
@@ -75,7 +75,7 @@ export function addLiquidityRows(activity: Activity, protocol: Protocol): SummRo
         trace: legTrace(position),
         description: `${total - 1}/${total} - Receive LP token from ${lpToken} (${symmetry}); ${txId}`,
     }, {
-        walletExchange: receiver,
+        wallet: receiver,
         timestamp: plusSeconds(activity.time, 20),
         type: SummRowType.Spam,
         baseCurrency: quote.currency,
@@ -105,7 +105,7 @@ export function withdrawRows(activity: Activity, protocol: Protocol): SummRow[] 
         const {blockchain, currency} = parseMidgardAsset(out.asset.notation, protocol);
 
         return {
-            walletExchange: out.wallet,
+            wallet: out.wallet,
             timestamp: plusSeconds(activity.time, 20),
             type: SummRowType.RemoveLiquidity,
             baseCurrency: currency,
@@ -125,7 +125,7 @@ export function withdrawRows(activity: Activity, protocol: Protocol): SummRow[] 
     // Listed request first, then reversed: the rows come out removals first, as they always have
     return [
         {
-            walletExchange: position.wallet,
+            wallet: position.wallet,
             timestamp: activity.time,
             type: SummRowType.ReturnLpToken,
             baseCurrency: lpToken,
@@ -138,7 +138,7 @@ export function withdrawRows(activity: Activity, protocol: Protocol): SummRow[] 
             description: `1/${total} - Return LP token to ${lpToken} (${symmetry}); ${txId}`,
         },
         {
-            walletExchange: position.wallet,
+            wallet: position.wallet,
             timestamp: plusSeconds(activity.time, 10),
             type: SummRowType.Spam,
             baseCurrency: quote.currency,
@@ -159,7 +159,7 @@ export function auctionDepositRows(activity: Activity, protocol: Protocol): Summ
     const lpToken = getLpTokenName(toPositionAsset(activity.details.pool).notation, protocol);
 
     return [{
-        walletExchange: deposit.wallet,
+        wallet: deposit.wallet,
         timestamp: activity.time,
         type: SummRowType.AddLiquidity,
         baseCurrency: currency,
@@ -196,7 +196,7 @@ export function auctionPositionRows(activity: Activity, protocol: Protocol, trea
         const amount = formatAmount(item.amount);
         const reward = activity.legs.find(other => other.role === 'reward' && other.asset.notation === item.asset.notation);
         const add: SummRow = {
-            walletExchange: item.wallet,
+            wallet: item.wallet,
             timestamp: plusSeconds(activity.time, 1),
             type: SummRowType.AddLiquidity,
             baseCurrency: currency,
@@ -213,7 +213,7 @@ export function auctionPositionRows(activity: Activity, protocol: Protocol, trea
         }
 
         return [{
-            walletExchange: reward.wallet,
+            wallet: reward.wallet,
             timestamp: activity.time,
             type: SummRowType.Income,
             baseCurrency: currency,
@@ -228,7 +228,7 @@ export function auctionPositionRows(activity: Activity, protocol: Protocol, trea
     const side = parseMidgardAsset(activity.details.sideAsset, protocol).currency;
 
     rows.push({
-        walletExchange: position.wallet,
+        wallet: position.wallet,
         timestamp: plusSeconds(activity.time, 10),
         type: SummRowType.ReceiveLpToken,
         baseCurrency: lpToken,
@@ -239,7 +239,7 @@ export function auctionPositionRows(activity: Activity, protocol: Protocol, trea
         trace: legTrace(position),
         description: `${total - 1}/${total} - Liquidity auction: receive LP token from ${lpToken}; ${txId}`,
     }, {
-        walletExchange: position.wallet,
+        wallet: position.wallet,
         timestamp: plusSeconds(activity.time, 20),
         type: SummRowType.Spam,
         baseCurrency: side,

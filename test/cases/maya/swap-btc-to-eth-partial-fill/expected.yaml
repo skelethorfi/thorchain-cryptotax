@@ -1,4 +1,4 @@
-walletExchange: bc1qj2c8q8ex4te9ufp5afdfpwr4e7hz64esnddewp
+wallet: bc1qj2c8q8ex4te9ufp5afdfpwr4e7hz64esnddewp
 timestamp: 2026-08-18T17:46:41.880Z
 type: bridge-trade-out
 baseCurrency: BTC
@@ -15,7 +15,7 @@ referencePriceCurrency: USD
 description: 1/2 - Swap 0.01553482 BTC to 1.05891769 ETH (0.01553184 BTC returned unfilled); 0275FE2418BEC28ADF5D9F8635D0BC06359CC6BB835DC2485EB51DAEC4E1CBCB
 id: 2026-08-18T17:46:41.880Z.out.ee66fccebfd6
 ---
-walletExchange: "0x6bfb3172717047de7d68cdf7cc2073cc73a9495c"
+wallet: "0x6bfb3172717047de7d68cdf7cc2073cc73a9495c"
 timestamp: 2026-08-18T17:46:51.880Z
 type: bridge-trade-in
 baseCurrency: ETH
