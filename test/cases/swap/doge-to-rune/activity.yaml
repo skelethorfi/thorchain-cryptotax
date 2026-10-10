@@ -3,10 +3,6 @@ protocol: thorchain
 kind: swap
 status: success
 time: 2024-06-06T23:16:56.359Z
-txids:
-  in:
-    - BA6C60ED809F3CFED3CCB9E119A582024520A8D23C64B487AD0A44C83D3054EF
-  out: []
 memo: =:THOR.RUNE:thor16tfxw0z2nj2aqatrxfjaadw02j9mpzgndsehj6:0/1/0:ti:70
 legs:
   - direction: out
@@ -16,6 +12,7 @@ legs:
       kind: native
     role: principal
     basis: observed
+    txid: BA6C60ED809F3CFED3CCB9E119A582024520A8D23C64B487AD0A44C83D3054EF
     amount: "102.07047"
     decimals: 8
   - direction: in

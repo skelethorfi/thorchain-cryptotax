@@ -5,7 +5,7 @@ import {toAsset} from "../../domain/Asset.ts";
 import {getActionDate} from "../../sources/thorchain/MidgardUtils.ts";
 import type {Protocol} from "../../domain/Protocol.ts";
 import {getBundleKey, type RawBundle} from "../../sources/RawBundle.ts";
-import {getTxids, nativeGas} from "./bond.ts";
+import {nativeGas} from "./bond.ts";
 import {inboundGas} from "./gas.ts";
 
 // A switch (docs/specs/activity.md): an asset from another chain (e.g. BEP2 RUNE, Cosmos KUJI) sent in and
@@ -60,7 +60,6 @@ function activity(bundle: RawBundle, protocol: Protocol, kind: Activity['kind'],
         kind,
         status: action.status as Activity['status'],
         time: getActionDate(action),
-        txids: getTxids(action),
         legs,
         prices: [],
         details: {},

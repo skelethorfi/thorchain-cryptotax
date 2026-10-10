@@ -3,10 +3,6 @@ protocol: thorchain
 kind: runepool.withdraw
 status: success
 time: 2020-12-31T13:00:00.000Z
-txids:
-  in: []
-  out:
-    - "0000000000000000000000000000000000000000000000000000000000000000"
 legs:
   - direction: out
     wallet: thor1-user-wallet-11111

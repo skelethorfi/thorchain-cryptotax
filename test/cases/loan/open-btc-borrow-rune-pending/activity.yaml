@@ -3,10 +3,6 @@ protocol: thorchain
 kind: loan.open
 status: pending
 time: 2024-02-20T19:01:15.710Z
-txids:
-  in:
-    - 005959124F7D1AD405A406FD7029078C1FA45F9B827FCC85F15A3992245B8C61
-  out: []
 memo: loan+:THOR.RUNE:thor1hhjupkzy3t6ccelhz7qw8epyx4rm8a06nlm5ce:0:thor160yye65pf9rzwrgqmtgav69n6zlsyfpgm9a7xk:0:::0
 legs:
   - direction: out

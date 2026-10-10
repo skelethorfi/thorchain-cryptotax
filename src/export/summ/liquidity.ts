@@ -186,7 +186,7 @@ export function auctionPositionRows(activity: Activity, protocol: Protocol, trea
 
     const position = activity.legs.find(item => item.role === 'principal' && item.direction === 'in')!;
     const lpToken = getLpTokenName(position.asset.notation, protocol);
-    const txId = activity.txids.in[0] ?? '';
+    const txId = position.txid ?? '';
     const isSupplied = (item: Leg) => activity.legs.some(other => other.role === 'reward' && other.asset.notation === item.asset.notation);
     const adds = activity.legs.filter(item => item.role === 'principal' && item.direction === 'out' && (treatment === 'income' || !isSupplied(item)));
     const total = adds.reduce((count, item) => count + (isSupplied(item) ? 2 : 1), 0) + 2;

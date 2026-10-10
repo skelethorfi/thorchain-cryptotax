@@ -3,11 +3,6 @@ protocol: thorchain
 kind: refund
 status: success
 time: 2026-10-01T16:32:12.565Z
-txids:
-  in:
-    - B8E65083589682E5F08EA61CB7502BB297AA7DE16D9F4FB25879272E873AD793
-  out:
-    - 9FFC5E65343D05E872C047BB5A381807ED602A8561AE6E23292F9ED97DF78D46
 memo: =:ETH.WBTC:0xFcffCeAcA8Bdb0Fd8F7b8792ff3Fa57403FDf717:1203965:sto:0
 legs:
   - direction: out
@@ -17,6 +12,7 @@ legs:
       kind: native
     role: principal
     basis: observed
+    txid: B8E65083589682E5F08EA61CB7502BB297AA7DE16D9F4FB25879272E873AD793
     amount: "0.0120779"
     decimals: 8
   - direction: in
@@ -26,6 +22,7 @@ legs:
       kind: native
     role: returned
     basis: observed
+    txid: 9FFC5E65343D05E872C047BB5A381807ED602A8561AE6E23292F9ED97DF78D46
     amount: "0.01204055"
     decimals: 8
   - direction: out
@@ -35,6 +32,7 @@ legs:
       kind: native
     role: gas
     basis: observed
+    txid: B8E65083589682E5F08EA61CB7502BB297AA7DE16D9F4FB25879272E873AD793
     amount: "0.0000166"
     decimals: 8
 prices: []

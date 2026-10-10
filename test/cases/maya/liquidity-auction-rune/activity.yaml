@@ -3,10 +3,6 @@ protocol: maya
 kind: lp.auction.deposit
 status: success
 time: 2023-03-19T04:16:46.686Z
-txids:
-  in:
-    - 067A1E01B6E03E3C597276AFF45E2FB6FAF9B73331042DEF39CC0B82B33A43A4
-  out: []
 memo: +:THOR.RUNE:maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew:wr:30:TIER1
 legs:
   - direction: out
@@ -38,10 +34,6 @@ protocol: maya
 kind: lp.auction.deposit
 status: success
 time: 2023-03-19T11:49:24.484Z
-txids:
-  in:
-    - 8FB173CDC60F01BF5DCE2334765B7D29A9E67F877E556A2714C2CD3F5C1CAC36
-  out: []
 memo: +:THOR.RUNE:maya1zqwtyq5rd2whlm78gveedv2rdta2qcgu8fnnew:wr:30:TIER1
 legs:
   - direction: out
@@ -73,10 +65,6 @@ protocol: maya
 kind: lp.auction.position
 status: success
 time: 2023-04-17T03:12:57.319Z
-txids:
-  in:
-    - D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0
-  out: []
 memo: donate:thor.rune
 legs:
   - direction: in
@@ -86,6 +74,7 @@ legs:
       kind: native
     role: reward
     basis: observed
+    txid: D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0
     amount: "12059.9511346447"
     decimals: 10
   - direction: out
@@ -95,6 +84,7 @@ legs:
       kind: native
     role: principal
     basis: observed
+    txid: D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0
     amount: "12059.9511346447"
     decimals: 10
   - direction: in
@@ -123,6 +113,7 @@ legs:
       position: lp
     role: principal
     basis: observed
+    txid: D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0D0
     amount: "1205995.11346447"
     decimals: 8
 prices: []

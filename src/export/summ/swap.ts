@@ -16,7 +16,7 @@ export function swapRows(activity: Activity, protocol: Protocol): SummRow[] {
     const synth = (notation: string) => notation.includes('/') ? 'Synth ' : '';
     const swap = `Swap ${input.amount} ${synth(sent.asset.notation)}${input.displayCurrency} to ${output.amount} ${synth(received.asset.notation)}${output.displayCurrency}`;
     const returnedNote = returned ? ` (${named(returned, protocol).amount} ${input.displayCurrency} returned unfilled)` : '';
-    const txId = activity.txids.in[0] ?? '';
+    const txId = sent.txid ?? '';
 
     return [
         {

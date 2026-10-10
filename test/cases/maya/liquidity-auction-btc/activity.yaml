@@ -3,10 +3,6 @@ protocol: maya
 kind: lp.auction.position
 status: success
 time: 2023-04-17T03:09:14.548Z
-txids:
-  in:
-    - EF5727E3576CDCD8494A40B98B48B6203DF3A298FCAEE3B09AAC9593DDE921AA
-  out: []
 memo: donate:btc.btc
 legs:
   - direction: in
@@ -16,6 +12,7 @@ legs:
       kind: native
     role: reward
     basis: observed
+    txid: EF5727E3576CDCD8494A40B98B48B6203DF3A298FCAEE3B09AAC9593DDE921AA
     amount: "11900.5990716627"
     decimals: 10
   - direction: out
@@ -25,6 +22,7 @@ legs:
       kind: native
     role: principal
     basis: observed
+    txid: EF5727E3576CDCD8494A40B98B48B6203DF3A298FCAEE3B09AAC9593DDE921AA
     amount: "11900.5990716627"
     decimals: 10
   - direction: out
@@ -44,6 +42,7 @@ legs:
       position: lp
     role: principal
     basis: observed
+    txid: EF5727E3576CDCD8494A40B98B48B6203DF3A298FCAEE3B09AAC9593DDE921AA
     amount: "1190059.90716627"
     decimals: 8
 prices: []

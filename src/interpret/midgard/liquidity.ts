@@ -7,7 +7,6 @@ import {getActionDate, parseMidgardAsset} from "../../sources/thorchain/MidgardU
 import {type Protocol, THORCHAIN} from "../../domain/Protocol.ts";
 import {getBundleKey, type RawBundle} from "../../sources/RawBundle.ts";
 import {isDonateAdd, midgardActionKey} from "../../sources/store/Sources.ts";
-import {getTxids} from "./bond.ts";
 import {inboundGas} from "./gas.ts";
 
 // Liquidity units and savers units are reported with 8 decimals
@@ -91,7 +90,6 @@ function interpretAuction(bundle: RawBundle, protocol: Protocol): {activities: A
             kind: 'lp.auction.deposit',
             status: 'success',
             time: getActionDate(send),
-            txids: {in: [txid], out: []},
             memo: (send.metadata as any)?.send?.memo || undefined,
             legs: [
                 {direction: 'out', wallet, asset: toAsset(sideCoin.asset), amount: amountOf(sideCoin.asset, send.in[0].coins[0].amount), role: 'principal', basis: 'observed', txid},
@@ -101,9 +99,12 @@ function interpretAuction(bundle: RawBundle, protocol: Protocol): {activities: A
             details: {pool: action.pools[0]},
         };
     });
+    // The CACAO side's legs and the position are in the tx that added it; the other side has no txid
+    const txid = cacaoSide.txID ?? '';
+    const onTx = (wallet: string) => wallet === cacaoSide.address && txid ? {txid} : {};
     const supplied = (wallet: string, asset: string, amount: Leg['amount']): Leg[] => [
-        {direction: 'in', wallet, asset: toAsset(asset), amount, role: 'reward', basis: 'observed'},
-        {direction: 'out', wallet, asset: toAsset(asset), amount, role: 'principal', basis: 'observed'},
+        {direction: 'in', wallet, asset: toAsset(asset), amount, role: 'reward', basis: 'observed', ...onTx(wallet)},
+        {direction: 'out', wallet, asset: toAsset(asset), amount, role: 'principal', basis: 'observed', ...onTx(wallet)},
     ];
     const added = (wallet: string, asset: string, amount: Leg['amount']): Leg =>
         ({direction: 'out', wallet, asset: toAsset(asset), amount, role: 'principal', basis: 'observed'});
@@ -113,7 +114,7 @@ function interpretAuction(bundle: RawBundle, protocol: Protocol): {activities: A
         ...(sends.length === 0 ? [added(side.address, sideCoin.asset, amountOf(sideCoin.asset, sideCoin.amount))]
             : extra > 0n ? supplied(side.address, sideCoin.asset, amountOf(sideCoin.asset, extra)) : []),
         {direction: 'in', wallet: cacaoSide.address, asset: toPositionAsset(action.pools[0]),
-            amount: parseAmount(action.metadata.addLiquidity?.liquidityUnits ?? '', UNIT_DECIMALS), role: 'principal', basis: 'observed'},
+            amount: parseAmount(action.metadata.addLiquidity?.liquidityUnits ?? '', UNIT_DECIMALS), role: 'principal', basis: 'observed', ...onTx(cacaoSide.address)},
     ];
     const position = {...activity(bundle, protocol, 'lp.auction.position', legs),
         details: {pool: action.pools[0], side: formatAmount(amountOf(sideCoin.asset, sideCoin.amount)), sideAsset: sideCoin.asset}};
@@ -181,7 +182,6 @@ function activity(bundle: RawBundle, protocol: Protocol, kind: Activity['kind'],
         kind,
         status: action.status as Activity['status'],
         time: getActionDate(action),
-        txids: getTxids(action),
         memo: metadata?.memo || undefined,
         legs,
         prices: [],

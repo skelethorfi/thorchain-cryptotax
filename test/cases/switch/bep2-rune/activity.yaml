@@ -3,9 +3,6 @@ protocol: thorchain
 kind: switch
 status: success
 time: 2021-06-01T12:14:02.199Z
-txids:
-  in: []
-  out: []
 legs:
   - direction: out
     wallet: bnb1mdvkxuuxewcu65w5jd3pmtwqrdpslgnmj6py2r

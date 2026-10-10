@@ -3,10 +3,6 @@ protocol: thorchain
 kind: refund
 status: pending
 time: 2023-01-06T21:53:15.332Z
-txids:
-  in:
-    - C8A4043E089D3F5CC511D5AD71010C5E8138DCD3329AC248378D9F97709B9020
-  out: []
 memo: -:BTC/BTC:6837
 legs:
   - direction: out
@@ -16,6 +12,7 @@ legs:
       kind: native
     role: principal
     basis: observed
+    txid: C8A4043E089D3F5CC511D5AD71010C5E8138DCD3329AC248378D9F97709B9020
     amount: "0.00016837"
     decimals: 8
 prices: []

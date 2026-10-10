@@ -3,10 +3,6 @@ protocol: thorchain
 kind: lp.withdraw
 status: success
 time: 2022-03-24T03:13:58.031Z
-txids:
-  in:
-    - E07F05F4C34B9114ECD94B00542452A9E6E24CA16175EE2CBF5FE79449787BEE
-  out: []
 memo: -:BNB.ETH:10000
 legs:
   - direction: in

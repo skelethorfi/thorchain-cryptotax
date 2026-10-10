@@ -15,6 +15,7 @@ export function interpretBond(bundle: RawBundle, protocol: Protocol): Activity {
     const request = action.in[0];
     const coin = isBond ? request.coins[0] : action.out[0].coins[0];
 
+    const requestTxid = request.txID ?? '';
     const principal: Leg = {
         direction: isBond ? 'out' : 'in',
         wallet: request.address,
@@ -22,6 +23,7 @@ export function interpretBond(bundle: RawBundle, protocol: Protocol): Activity {
         amount: parseAmount(coin.amount, protocol.decimals(coin.asset)),
         role: 'principal',
         basis: 'observed',
+        txid: isBond ? requestTxid : action.out[0].txID ?? '',
     };
 
     return {
@@ -30,9 +32,8 @@ export function interpretBond(bundle: RawBundle, protocol: Protocol): Activity {
         kind: isBond ? 'bond' : 'unbond',
         status: action.status as Activity['status'],
         time: getActionDate(action),
-        txids: getTxids(action),
         memo: (action.metadata.bond as BondMetadata).memo,
-        legs: [principal, nativeGas(request.address, protocol)],
+        legs: [principal, {...nativeGas(request.address, protocol), txid: requestTxid}],
         prices: [],
         details: {node: (action.metadata.bond as BondMetadata).nodeAddress},
     };
@@ -47,9 +48,4 @@ export function nativeGas(wallet: string, protocol: Protocol): Leg {
         role: 'gas',
         basis: 'default',
     };
-}
-
-export function getTxids(action: Action): Activity['txids'] {
-    const ids = (txs: {txID?: string}[]) => [...new Set(txs.map(tx => tx.txID).filter((id): id is string => !!id))];
-    return {in: ids(action.in), out: ids(action.out)};
 }

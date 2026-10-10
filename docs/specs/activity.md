@@ -35,7 +35,6 @@ The types are in `src/domain/` (`Activity.ts`, `Asset.ts`, `Amount.ts`,
 | `kind` | What happened (see Kinds) |
 | `status` | `success`, `pending` or `failed`, as the source reports it. The exporter decides what a pending or failed action gives |
 | `time` | When the action happened (Midgard's date) |
-| `txids` | `in`: the txids the wallet sent; `out`: the txids the protocol paid out on |
 | `memo` | The memo the wallet sent, when there is one |
 | `legs` | Every amount that moved into or out of a wallet (see Legs) |
 | `prices` | USD prices the source observed at the time, with where each came from (e.g. `midgard:swap.inPriceUSD`) |
@@ -53,7 +52,7 @@ A leg is one amount moving into or out of one wallet:
 | `amount` | Base units and decimals (see Amounts) |
 | `role` | `principal`: what the action is about. `gas`: what the wallet paid to send its transaction (the inbound fee, `fees.md`). `returned`: paid back by the protocol (e.g. a refund). `reward`: income paid to the wallet |
 | `basis` | `observed`: a source states this amount. `default`: assumed, e.g. THORChain's 0.02 RUNE native fee when nothing gives the gas |
-| `txid` | The on-chain tx the amount moved in, when the source gives it. A `gas` leg follows the leg it paid for, so each deposit keeps its own fee |
+| `txid` | The on-chain tx the amount moved in, when the source gives it: the tx the wallet sent for an `out` leg, the protocol's payout for an `in` leg. A `gas` leg carries the txid of the tx it paid for and follows its leg, so each deposit keeps its own fee. An action's txids are its legs' txids; a payout to someone else (an affiliate) is not a leg |
 
 Every amount is either observed or assumed, and `basis` says which. A
 default is recorded as one, so a report can list the rows that rest on
@@ -140,10 +139,9 @@ protocol: thorchain
 kind: bond
 status: success
 time: 2020-12-31T13:00:00.000Z
-txids: {in: [0000…0000], out: []}
 legs:
-  - {direction: out, wallet: thor1-user-wallet-11111, asset: THOR.RUNE (native), amount: 1, role: principal, basis: observed}
-  - {direction: out, wallet: thor1-user-wallet-11111, asset: THOR.RUNE (native), amount: 0.02, role: gas, basis: default}
+  - {direction: out, wallet: thor1-user-wallet-11111, asset: THOR.RUNE (native), amount: 1, role: principal, basis: observed, txid: 0000…0000}
+  - {direction: out, wallet: thor1-user-wallet-11111, asset: THOR.RUNE (native), amount: 0.02, role: gas, basis: default, txid: 0000…0000}
 prices: []
 details: {node: thor1-node-address}
 ```

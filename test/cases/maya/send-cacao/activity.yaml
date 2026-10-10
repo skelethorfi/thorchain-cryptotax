@@ -3,10 +3,6 @@ protocol: maya
 kind: send
 status: success
 time: 2026-10-07T14:45:47.525Z
-txids:
-  in:
-    - 99BC41FC2B8B801E95736F3705F76957782D6350B8CC666612E02737B1DB1585
-  out: []
 legs:
   - direction: out
     wallet: maya1tg884362t8ulrt4snny3u90q8uveq0dlvwuahz

@@ -6,7 +6,6 @@ import type {Issue} from "../../domain/Issue.ts";
 import {getActionDate} from "../../sources/thorchain/MidgardUtils.ts";
 import type {Protocol} from "../../domain/Protocol.ts";
 import {getBundleKey, type RawBundle} from "../../sources/RawBundle.ts";
-import {getTxids} from "./bond.ts";
 import {inboundGas} from "./gas.ts";
 
 // https://dev.thorchain.org/concepts/memos.html#swap
@@ -40,19 +39,22 @@ export function interpretSwap(bundle: RawBundle, protocol: Protocol): {activitie
     }
 
     const amount = (coin: {asset: string; amount: string}) => parseAmount(coin.amount, protocol.decimals(coin.asset));
-    const returned = getReturnedAmount(action, input, output);
+    const returnOutputs = getReturnOutputs(action, input, output);
+    const returned = returnOutputs.flatMap(out => out.coins).filter(coin => coin.asset === inputCoin.asset)
+        .reduce((sum, coin) => sum + BigInt(coin.amount), 0n);
+    const txid = input.txID ?? '';
     const legs: Leg[] = [
-        {direction: 'out', wallet: input.address, asset: inputAsset, amount: amount(inputCoin), role: 'principal', basis: 'observed'},
+        {direction: 'out', wallet: input.address, asset: inputAsset, amount: amount(inputCoin), role: 'principal', basis: 'observed', txid},
         ...(returned > 0n ? [{
             direction: 'in', wallet: input.address, asset: inputAsset, amount: amount({asset: inputCoin.asset, amount: returned.toString()}),
-            role: 'returned', basis: 'observed',
+            role: 'returned', basis: 'observed', ...(returnOutputs[0].txID ? {txid: returnOutputs[0].txID} : {}),
         } as Leg] : []),
         {
             direction: 'in', wallet: output.address, asset: outputAsset, amount: amount(outputCoin), role: 'principal', basis: 'observed',
             ...(output.txID ? {txid: output.txID} : {}),
         },
     ];
-    const gas = inboundGas(input.txID ?? '', bundle.thornodeTxs, input.address, inputCoin.asset, protocol);
+    const gas = inboundGas(txid, bundle.thornodeTxs, input.address, inputCoin.asset, protocol);
 
     return {
         activities: [{
@@ -61,9 +63,8 @@ export function interpretSwap(bundle: RawBundle, protocol: Protocol): {activitie
             kind: 'swap',
             status: action.status as Activity['status'],
             time: getActionDate(action),
-            txids: getTxids(action),
             memo: action.metadata.swap?.memo,
-            legs: gas ? [...legs, gas] : legs,
+            legs: gas ? [...legs, {...gas, txid}] : legs,
             prices: getPrices(action, inputCoin.asset, outputCoin.asset),
             details: {},
         }],
@@ -86,15 +87,12 @@ function getPrices(action: Action, inputAsset: string, outputAsset: string): Pri
     return prices;
 }
 
-// Sum of outputs, other than the swap output, returned to the sender in the input asset
-function getReturnedAmount(action: Action, input: Transaction, output: Transaction): bigint {
+// The outputs, other than the swap output, that return the input asset to the sender
+function getReturnOutputs(action: Action, input: Transaction, output: Transaction): Transaction[] {
     const inputAsset = input.coins[0].asset;
 
-    return action.out
-        .filter(out => out !== output && out.address.toLowerCase() === input.address.toLowerCase())
-        .flatMap(out => out.coins)
-        .filter(coin => coin.asset === inputAsset)
-        .reduce((sum, coin) => sum + BigInt(coin.amount), 0n);
+    return action.out.filter(out => out !== output && out.address.toLowerCase() === input.address.toLowerCase()
+        && out.coins.some(coin => coin.asset === inputAsset));
 }
 
 // The output paid to the memo's destination; there may also be outputs for affiliates

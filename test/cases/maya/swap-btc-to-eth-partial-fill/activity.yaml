@@ -3,12 +3,6 @@ protocol: maya
 kind: swap
 status: success
 time: 2026-08-18T17:46:41.880Z
-txids:
-  in:
-    - 0275FE2418BEC28ADF5D9F8635D0BC06359CC6BB835DC2485EB51DAEC4E1CBCB
-  out:
-    - F12741DA9A6B8AB7CC3A38482C557526176217848E3E922BB8D057B8219F61FE
-    - D3D019FEF8CFA4311B18858E32E9ECF647D164A864833796BB53B694F3EFB518
 memo: =:ETH.ETH:0x6BFb3172717047DE7D68CdF7Cc2073Cc73A9495c:157642132/1/3
 legs:
   - direction: out
@@ -18,6 +12,7 @@ legs:
       kind: native
     role: principal
     basis: observed
+    txid: 0275FE2418BEC28ADF5D9F8635D0BC06359CC6BB835DC2485EB51DAEC4E1CBCB
     amount: "0.03106666"
     decimals: 8
   - direction: in
@@ -27,6 +22,7 @@ legs:
       kind: native
     role: returned
     basis: observed
+    txid: F12741DA9A6B8AB7CC3A38482C557526176217848E3E922BB8D057B8219F61FE
     amount: "0.01553184"
     decimals: 8
   - direction: in

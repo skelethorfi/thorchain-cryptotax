@@ -3,11 +3,6 @@ protocol: maya
 kind: swap
 status: success
 time: 2024-01-04T18:57:51.301Z
-txids:
-  in:
-    - 7B11F20814EF6BC5D7ACF1A295CCF1746899A478110220C0BCF4CEC95E516806
-  out:
-    - A3985E660B3F98DA5679EBEBC6DEF9CC4D3878B2B8C64C109D893AB88454FC65
 memo: =:KUJI.KUJI:kujira13kkml6e2df9fl4tmscqlzqg45va0rzla73f5ed::ELD:75
 legs:
   - direction: out
@@ -17,6 +12,7 @@ legs:
       kind: native
     role: principal
     basis: observed
+    txid: 7B11F20814EF6BC5D7ACF1A295CCF1746899A478110220C0BCF4CEC95E516806
     amount: "244"
     decimals: 8
   - direction: in
@@ -36,6 +32,7 @@ legs:
       kind: native
     role: gas
     basis: default
+    txid: 7B11F20814EF6BC5D7ACF1A295CCF1746899A478110220C0BCF4CEC95E516806
     amount: "0.02"
     decimals: 8
 prices:

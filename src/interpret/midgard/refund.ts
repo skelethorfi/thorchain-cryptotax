@@ -6,7 +6,6 @@ import type {Issue} from "../../domain/Issue.ts";
 import {getActionDate} from "../../sources/thorchain/MidgardUtils.ts";
 import type {Protocol} from "../../domain/Protocol.ts";
 import {getBundleKey, type RawBundle} from "../../sources/RawBundle.ts";
-import {getTxids} from "./bond.ts";
 import {inboundGas} from "./gas.ts";
 
 // A refund (docs/specs/fees.md): the wallet sent an amount in, and the protocol returned all or part of
@@ -35,14 +34,16 @@ export function interpretRefund(bundle: RawBundle, protocol: Protocol): {activit
 
     const decimals = protocol.decimals(inputCoin.asset);
     const returned = returnedCoins.reduce((sum, coin) => sum + BigInt(coin.amount), 0n);
+    const txid = input.txID ?? '';
+    const returnTxid = action.out.find(out => out.txID)?.txID;
     const legs: Leg[] = [
-        {direction: 'out', wallet: input.address, asset: inputAsset, amount: parseAmount(inputCoin.amount, decimals), role: 'principal', basis: 'observed'},
+        {direction: 'out', wallet: input.address, asset: inputAsset, amount: parseAmount(inputCoin.amount, decimals), role: 'principal', basis: 'observed', txid},
         ...(returned > 0n ? [{
             direction: 'in', wallet: input.address, asset: inputAsset, amount: parseAmount(returned.toString(), decimals),
-            role: 'returned', basis: 'observed',
+            role: 'returned', basis: 'observed', ...(returnTxid ? {txid: returnTxid} : {}),
         } as Leg] : []),
     ];
-    const gas = inboundGas(input.txID ?? '', bundle.thornodeTxs, input.address, inputCoin.asset, protocol);
+    const gas = inboundGas(txid, bundle.thornodeTxs, input.address, inputCoin.asset, protocol);
     const reason = ((action.metadata.refund as any)?.reason ?? '').replace(/[\n\t]/g, ' ').trim();
     // The source exports a pending refund only once it is stuck (docs/specs/pending.md)
     const issues: Issue[] = action.status === 'pending'
@@ -56,9 +57,8 @@ export function interpretRefund(bundle: RawBundle, protocol: Protocol): {activit
             kind: 'refund',
             status: action.status as Activity['status'],
             time: getActionDate(action),
-            txids: getTxids(action),
             memo: (action.metadata.refund as any)?.memo || undefined,
-            legs: gas ? [...legs, gas] : legs,
+            legs: gas ? [...legs, {...gas, txid}] : legs,
             prices: [],
             details: {reason},
         }],

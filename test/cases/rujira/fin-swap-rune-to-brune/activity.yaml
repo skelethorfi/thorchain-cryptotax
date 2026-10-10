@@ -3,11 +3,6 @@ protocol: thorchain
 kind: rujira.fin.trade
 status: success
 time: 2026-05-06T08:43:29.080Z
-txids:
-  in:
-    - 47E2DFDED36A137A7D3FCBC444E2F149CD3A5778EB7A1395303E95A37FFBA31B
-  out:
-    - 47E2DFDED36A137A7D3FCBC444E2F149CD3A5778EB7A1395303E95A37FFBA31B
 legs:
   - direction: out
     wallet: thor1v46lh3v2vk9mkcvjs46v203xn46ey40p4xtfcn

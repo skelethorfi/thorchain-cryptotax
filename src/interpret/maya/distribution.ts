@@ -21,7 +21,6 @@ export function interpretMayaDistribution(bundle: RawBundle, protocol: Protocol)
         kind: 'maya.distribution',
         status: 'success',
         time: getPayoutDate(payout),
-        txids: {in: [], out: []},
         legs: [{direction: 'in', wallet: bundle.wallet, asset: cacao, amount: parseAmount(payout.cacao, protocol.decimals(protocol.nativeAsset)), role: 'reward', basis: 'observed'}],
         prices: [],
         details: {

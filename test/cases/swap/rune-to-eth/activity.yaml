@@ -3,11 +3,6 @@ protocol: thorchain
 kind: swap
 status: success
 time: 2023-05-24T10:15:31.478Z
-txids:
-  in:
-    - 197E79C4AF5647087738DAA5D314F37C0435A455F804B4FA0AB4F72B087D70AB
-  out:
-    - 1B031CA139B576C2FABAF483A10A47B0EFA213F0EE05518C1826C22C93935AB7
 memo: =:ETH.ETH:0x5225c3548a8d143d68c4b266218c1f92add08ac4:607152672:t:15:f2:2a6F:420042957972160472115800
 legs:
   - direction: out
@@ -17,6 +12,7 @@ legs:
       kind: native
     role: principal
     basis: observed
+    txid: 197E79C4AF5647087738DAA5D314F37C0435A455F804B4FA0AB4F72B087D70AB
     amount: "9985.25539977"
     decimals: 8
   - direction: in
@@ -36,6 +32,7 @@ legs:
       kind: native
     role: gas
     basis: default
+    txid: 197E79C4AF5647087738DAA5D314F37C0435A455F804B4FA0AB4F72B087D70AB
     amount: "0.02"
     decimals: 8
 prices:

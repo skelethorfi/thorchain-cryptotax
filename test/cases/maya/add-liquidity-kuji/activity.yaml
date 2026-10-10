@@ -3,11 +3,6 @@ protocol: maya
 kind: lp.add
 status: success
 time: 2023-11-09T06:40:04.262Z
-txids:
-  in:
-    - 493628E56D76DCB664E14C142C35CB4AA45D5643A0958F250F583A4029D11166
-    - A93E940CECD931784A998010462F25FFF482A4C0A33A415632295AAABC1E7AE3
-  out: []
 memo: +:KUJI.KUJI:maya12d0t6ehehejmeje63scrj0w3p9g6yx9kxyuq5q:wr:30
 legs:
   - direction: out

@@ -3,10 +3,6 @@ protocol: thorchain
 kind: send
 status: success
 time: 2026-10-07T06:39:57.511Z
-txids:
-  in:
-    - A14AEC9C15DE74141C3674E99EE45157F8D24F6B55FB359F9094D0E3F176B53D
-  out: []
 legs:
   - direction: in
     wallet: thor1t60f02r8jvzjrhtnjgfj4ne6rs5wjnejwmj7fh

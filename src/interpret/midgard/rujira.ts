@@ -7,7 +7,6 @@ import type {CosmosTx} from "../../sources/thorchain/CosmosTxService.ts";
 import {getActionDate} from "../../sources/thorchain/MidgardUtils.ts";
 import type {Protocol} from "../../domain/Protocol.ts";
 import {getBundleKey, type RawBundle} from "../../sources/RawBundle.ts";
-import {getTxids} from "./bond.ts";
 
 // Rujira contract actions (wasm calls on THORChain). See docs/specs/rujira.md.
 
@@ -232,7 +231,6 @@ class Call {
                 kind,
                 status: this.action.status as Activity['status'],
                 time: getActionDate(this.action),
-                txids: getTxids(this.action),
                 legs: gas ? [...legs, gas] : legs,
                 prices: [],
                 details: Object.fromEntries(Object.entries(details).filter(([, value]) => value !== undefined)) as Record<string, string>,

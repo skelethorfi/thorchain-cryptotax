@@ -3,10 +3,6 @@ protocol: thorchain
 kind: swap
 status: success
 time: 2022-03-20T07:19:18.793Z
-txids:
-  in:
-    - 91F0B32DB9B7475D3895A376BE95137C441FD7CABBDCC1359CC037650AC1BCBD
-  out: []
 memo: SWAP:BNB/BUSD-BD1:thor1yep703ewakef0h2l9qel93xh96tvkm004pesq7:826719094098
 legs:
   - direction: out
@@ -16,6 +12,7 @@ legs:
       kind: synth
     role: principal
     basis: observed
+    txid: 91F0B32DB9B7475D3895A376BE95137C441FD7CABBDCC1359CC037650AC1BCBD
     amount: "0.21823"
     decimals: 8
   - direction: in
@@ -34,6 +31,7 @@ legs:
       kind: native
     role: gas
     basis: default
+    txid: 91F0B32DB9B7475D3895A376BE95137C441FD7CABBDCC1359CC037650AC1BCBD
     amount: "0.02"
     decimals: 8
 prices:

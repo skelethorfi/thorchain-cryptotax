@@ -3,11 +3,6 @@ protocol: thorchain
 kind: rujira.merge.withdraw
 status: success
 time: 2026-04-25T17:12:18.203Z
-txids:
-  in:
-    - B23EBFA300BD403F35E37662A057DBE783D488F73655DD601B61B3913065D2B0
-  out:
-    - B23EBFA300BD403F35E37662A057DBE783D488F73655DD601B61B3913065D2B0
 legs:
   - direction: out
     wallet: thor168f3hdmg5duafwqsrqfx0n4q5meq98mlv2tyd3

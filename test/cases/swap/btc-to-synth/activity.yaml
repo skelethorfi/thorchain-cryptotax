@@ -3,10 +3,6 @@ protocol: thorchain
 kind: swap
 status: success
 time: 2022-03-09T20:19:10.670Z
-txids:
-  in:
-    - 86164D22C316B687F713B4CBFB5B661C2EF9350B7E7C200BD3A985629E573BF1
-  out: []
 memo: =:BTC/BTC:thor16ker8lgzjjn5qaxat6u62npre7lkmwdaynampm:100167111
 legs:
   - direction: out
@@ -16,6 +12,7 @@ legs:
       kind: native
     role: principal
     basis: observed
+    txid: 86164D22C316B687F713B4CBFB5B661C2EF9350B7E7C200BD3A985629E573BF1
     amount: "1.018491"
     decimals: 8
   - direction: in

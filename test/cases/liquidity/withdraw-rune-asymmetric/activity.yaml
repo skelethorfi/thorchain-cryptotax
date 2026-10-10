@@ -3,10 +3,6 @@ protocol: thorchain
 kind: lp.withdraw
 status: success
 time: 2021-11-06T01:23:55.352Z
-txids:
-  in:
-    - 540F7BEC12BAC6D2DB5AB1DE894F1EEF4780E2B9E6CA578EC8C97C2D8FC6C54E
-  out: []
 memo: -:ETH.THOR-044:10000
 legs:
   - direction: in
