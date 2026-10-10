@@ -42,6 +42,35 @@ describe('interpretSend', () => {
     }
 });
 
+describe('a send to itself', () => {
+    test('exports only its gas, as a fee row', async () => {
+        const {sendRows} = await import('../src/export/summ/send.ts');
+        const toSelf = send('');
+        (toSelf.data as any).out[0].address = 'thor1-user-wallet-11111';
+        const [activity] = interpretSend(toSelf, THORCHAIN).activities;
+
+        const rows = sendRows(activity, THORCHAIN);
+
+        assert.deepEqual(rows.map(row => [row.type, row.baseCurrency, row.baseAmount, row.feeAmount]), [['fee', 'RUNE', '0.02', undefined]]);
+        assert.equal(rows[0].description, `Fee: send 1 RUNE to itself; ${'A'.repeat(64)}`);
+    });
+
+    test('with an action memo, names the failed action', async () => {
+        const {sendRows} = await import('../src/export/summ/send.ts');
+        const toSelf = send('tcy:thor1-user-wallet-11111');
+        (toSelf.data as any).out[0].address = 'thor1-user-wallet-11111';
+        const [activity] = interpretSend(toSelf, THORCHAIN).activities;
+
+        assert.equal(sendRows(activity, THORCHAIN)[0].description, `Fee: failed TCY claim sent to itself; ${'A'.repeat(64)}`);
+    });
+
+    test("an action memo on a send to another wallet is not a failed action", () => {
+        const [activity] = interpretSend(send('tcy:thor1-user-wallet-11111'), THORCHAIN).activities;
+
+        assert.equal(activity.details.failedAction, undefined);
+    });
+});
+
 describe('actionMemoSummary', () => {
     test('none: no line', () => {
         assert.equal(actionMemoSummary(0, ['thorchain']), undefined);

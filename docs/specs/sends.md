@@ -67,9 +67,9 @@ counting these sends; when `maya` is not in `protocols`, it says to add it.
 A send **to itself** with such a memo reached no protocol, so it did nothing
 but pay its fee (most likely a failed attempt at the action, e.g. a TCY claim
 sent to the claiming wallet rather than to THORChain; the TCY claims page had
-faults in May 2025). It still gives its
-`send` row, as the fee was paid, with a warning that says so, and is not
-counted in that end-of-run line.
+faults in May 2025). Like any send to itself (Rows, below), it gives one
+`fee` row for its gas, as only the fee was paid, with a warning that says so,
+and is not counted in that end-of-run line.
 
 A send with no coins (only a memo) moves nothing and gives no row.
 
@@ -90,6 +90,8 @@ for each.
 | Both (a send to itself, e.g. an Arkeo delegation) | as the sender |
 
 `details.purpose` is `delegate-arkeo` for a memo starting `delegate:arkeo:`.
+`details.failedAction` names the action a send to itself with an action memo
+attempted (Rows).
 
 ## Fee
 
@@ -115,7 +117,17 @@ Maya's Midgard reports 0.2 CACAO for every send, so it is not used either.
 | Sender | `send` | the coin and amount | 0.02 RUNE | sender, receiver | `Send <amount> <coin>; <txid>` |
 | Receiver | `receive` | the coin and amount | — | sender, receiver | `Receive <amount> <coin>; <txid>` |
 | Receiver, sender in `incomeFrom` | `income` | the coin and amount | — | sender, receiver | `Income: receive <amount> <coin>; <txid>` |
-| Arkeo delegation | `send` | the coin and amount | 0.02 RUNE | the wallet, itself | `1/1 - DelegateArkeoWallet; <txid>` |
+| Send to itself | `fee` | the gas, 0.02 RUNE | — | the wallet, itself | `Fee: send <amount> <coin> to itself; <txid>` |
+| Send to itself with an action memo (a failed attempt) | `fee` | the gas, 0.02 RUNE | — | the wallet, itself | `Fee: failed <action> sent to itself; <txid>`, e.g. `TCY claim` for `tcy:`, `TCY stake` for `tcy+:`, else `'<memo prefix>' action` |
+| Arkeo delegation (a send to itself) | `fee` | the gas, 0.02 RUNE | — | the wallet, itself | `1/1 - DelegateArkeoWallet; <txid>` |
+
+A send to itself moves nothing out of the wallet: the coin sent comes straight
+back, so it is neither a disposal nor a transfer, and only the gas is a cost.
+It is exported as one `fee` row for the gas. A `send` row of the coin would
+let Summ pair it, as an outgoing transfer, with an unrelated receive of the
+same amount. The amount sent is whatever the wallet chose (an Arkeo
+delegation works with 0.00000001 RUNE or 1 RUNE alike) and only appears in
+the description of a plain send to itself.
 
 `<coin>` is `Synth DOGE` for a synth and `Trade BTC` for a trade asset;
 otherwise the ticker. The blockchain is THORChain, or Mayachain for a Maya
