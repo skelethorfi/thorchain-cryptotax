@@ -19,7 +19,7 @@ const cell = (v: unknown) => show(v).replaceAll('|', '\\|')
 function changeLines(entries: EditEntry[]): string[] {
     return entries.flatMap((e) => [
         ...e.changes.map((c: Change) => `| ${e.id} | ${c.leg} \`${c.legId}\` | ${c.field} | ${cell(c.summ)} | ${cell(c.desired)} |`),
-        ...(e.ignore ?? []).map((legId) => `| ${e.id} | made-up receive \`${legId}\` | – | transfer | ignored |`),
+        ...(e.ignore ?? []).map((legId) => `| ${e.id} | made-up leg \`${legId}\` | – | transfer | ignored |`),
     ])
 }
 

@@ -173,22 +173,22 @@ export async function applyPlan(
 
     /** Summ's made-up other side of a transfer, once the categorised leg is split off: ignored, by action id. */
     async function ignoreMadeUp(entry: EditEntry, legId: string, afterEdit: boolean) {
-        if (!write) return say(`  would ignore the made-up receive ${legId} of ${entry.id}`)
+        if (!write) return say(`  would ignore the made-up leg ${legId} of ${entry.id}`)
         let found: Found | null = null
         for (let attempt = 0; attempt < 5; attempt++) {
             if (afterEdit || attempt > 0) await sleep(settleMs)
             found = await lookUp(client, legId)
             if (found && found.legs.length === 1) break
         }
-        if (!found) return skip(entry.id, `made-up receive ${legId} is no longer in Summ`)
+        if (!found) return skip(entry.id, `made-up leg ${legId} is no longer in Summ`)
         const leg = found.legs.find((l) => l.legId === legId) as Leg
-        if (found.legs.length !== 1) return skip(entry.id, `made-up receive ${legId} still shares its action with ${found.legs.length - 1} other legs`)
-        if (leg.importType !== 'soft-transfer') return skip(entry.id, `leg ${legId} is not a made-up receive (${leg.importType})`)
-        if (leg.trade === 'ignoreIn' || leg.trade === 'ignoreOut') return say(`  made-up receive ${legId} of ${entry.id} is already ignored`)
+        if (found.legs.length !== 1) return skip(entry.id, `made-up leg ${legId} still shares its action with ${found.legs.length - 1} other legs`)
+        if (leg.importType !== 'soft-transfer') return skip(entry.id, `leg ${legId} is not a made-up leg (${leg.importType})`)
+        if (leg.trade === 'ignoreIn' || leg.trade === 'ignoreOut') return say(`  made-up leg ${legId} of ${entry.id} is already ignored`)
         const text = await client.callTool('bulk_edit_transactions', { actionIds: [found.actionId], operation: { type: 'ignore' } })
         const undo = undoHandle(text)
         write({ call: 'bulk_edit_transactions', operation: 'ignore', id: entry.id, legIds: [legId], actionIds: [found.actionId], undo, result: text })
-        say(`  ignored the made-up receive of ${entry.id}${undo ? ` (undo ${undo})` : ''}`)
+        say(`  ignored the made-up leg of ${entry.id}${undo ? ` (undo ${undo})` : ''}`)
     }
 
     /** True when the edit was made. */

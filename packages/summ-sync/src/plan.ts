@@ -36,7 +36,7 @@ export interface EditEntry {
     actionId: string
     changes: Change[]
     /**
-     * Categorised only: the receive Summ made up to pair its leg as a transfer (importType soft-transfer), to
+     * Categorised only: the other side Summ made up to pair its leg as a transfer (importType soft-transfer), to
      * be ignored once the leg is categorised and Summ has split it off into an action of its own.
      */
     ignore?: string[]
