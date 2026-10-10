@@ -1,6 +1,9 @@
 # Specs
 
 - [Fees](./fees.md)
+- [Liquidity](./liquidity.md)
+- [Savers](./savers.md)
+- [Asset names](./assets.md)
 - [Test fixtures (golden cases)](./fixtures.md)
 - [Maya Protocol](./maya.md)
 - [Loans](./loans.md)

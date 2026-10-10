@@ -1,8 +1,0 @@
-modules = ["nodejs-20", "python-3.12"]
-run = "npm run export"
-
-[nix]
-channel = "stable-24_05"
-
-[deployment]
-run = ["sh", "-c", "npm run export"]

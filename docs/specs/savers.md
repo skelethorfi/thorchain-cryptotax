@@ -13,9 +13,13 @@ L1 asset, held it as the synth inside the pool, and paid yield in that asset.
 
 ## Rows
 
-Savers are exported like a liquidity position (README, Savers): an
+Savers are exported like a liquidity position (`liquidity.md`): an
 `AddLiquidity` or `RemoveLiquidity` row for the asset, a `ReceiveLpToken` or
-`ReturnLpToken` row for the position, and the `Spam` price-helper row.
+`ReturnLpToken` row for the position, and the `Spam` price-helper row. A
+savers deposit goes into the pool, and the protocol provides the pool's other
+side, so it is treated as a liquidity position rather than staking (an open
+choice, below). The position token's amount is the `liquidityUnits` Midgard
+reports, which for savers equals the asset amount deposited.
 
 | Field | Value | Why |
 | --- | --- | --- |
