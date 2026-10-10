@@ -90,8 +90,9 @@ is (re)built, and every write rebuilds it, so what the sync reads of an
 action never changes under the same id: its legs (all fields plan reads)
 and its change history entries. An id's detail is therefore fetched and
 written once and never rewritten (except by `pull --full`, below). Pull
-writes it. Apply adds only the read of an action it is about to delete,
-since Summ keeps nothing to fetch afterwards. An action apply edits gets a
+writes it. Apply adds only the fresh read it makes of an action just
+before deleting it, since Summ keeps nothing to fetch afterwards (if the id
+is unchanged since the pull, the store holds it already). An action apply edits gets a
 new id in Summ; apply does not store it, and the next pull fetches it as a
 new id. Other fields do
 move under the same id (`lastModified`, `updatedAt`, `balanceSnapshot`,
