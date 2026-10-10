@@ -47,7 +47,10 @@ export function interpretSwap(bundle: RawBundle, protocol: Protocol): {activitie
             direction: 'in', wallet: input.address, asset: inputAsset, amount: amount({asset: inputCoin.asset, amount: returned.toString()}),
             role: 'returned', basis: 'observed',
         } as Leg] : []),
-        {direction: 'in', wallet: output.address, asset: outputAsset, amount: amount(outputCoin), role: 'principal', basis: 'observed'},
+        {
+            direction: 'in', wallet: output.address, asset: outputAsset, amount: amount(outputCoin), role: 'principal', basis: 'observed',
+            ...(output.txID ? {txid: output.txID} : {}),
+        },
     ];
     const gas = inboundGas(input.txID ?? '', bundle.thornodeTxs, input.address, inputCoin.asset, protocol);
 

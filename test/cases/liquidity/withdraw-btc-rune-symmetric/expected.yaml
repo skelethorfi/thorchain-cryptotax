@@ -8,7 +8,7 @@ feeAmount: ""
 from: thorchain
 to: bc1qn20y0larf5nq26a0hwjmz5e447s5r2t9cgcwxh
 blockchain: BTC
-description: 3/4 - Remove liquidity BTC from ThorLP.BTC.BTC (symmetric); 3C909D763AC1102872E14FE402D04354AE0691E76D24844E6AB86E05F184B0C6
+description: 3/4 - Remove liquidity BTC from ThorLP.BTC.BTC (symmetric); 3C909D763AC1102872E14FE402D04354AE0691E76D24844E6AB86E05F184B0C6; outbound 5612D02DCE579800E7846EC8B7DEB3E4E2E289DAA27937A21D4BA64ED9375053
 id: 2022-04-08T16:32:51.962Z.in.b561f23b4547
 ---
 walletExchange: thor1ef95h5r7xcvahpw480pacslhutw6t6770phu0z

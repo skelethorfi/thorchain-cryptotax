@@ -2,7 +2,7 @@ import type {Activity, Leg} from "../../domain/Activity.ts";
 import {type Amount, formatAmount} from "../../domain/Amount.ts";
 import type {CryptoTaxTransaction, RowTrace} from "./csv/index.ts";
 import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils.ts";
-import {formatBlockchain, type Protocol} from "../../domain/Protocol.ts";
+import {formatBlockchain, PROTOCOLS, type Protocol} from "../../domain/Protocol.ts";
 
 export function leg(activity: Activity, role: Leg['role'], direction?: Leg['direction']): Leg {
     const found = findLeg(activity, role, direction);
@@ -31,6 +31,14 @@ export function legBlockchain(item: Leg, protocol: Protocol): string {
     const onProtocol = isSynth && item.wallet.toLowerCase().startsWith(protocol.nativeAddressPrefix);
     const blockchain = onProtocol ? protocol.nativeChain : named(item, protocol).blockchain;
     return formatBlockchain(blockchain);
+}
+
+// A payout to an L1 wallet names its own txid, the one a wallet import of that chain lists (docs/specs/fees.md,
+// Txids in descriptions). THORChain and Maya wallets, and payouts with no txid yet, get nothing.
+export function outboundNote(item: Leg): string {
+    const onProtocol = Object.values(PROTOCOLS).some(protocol => item.wallet.toLowerCase().startsWith(protocol.nativeAddressPrefix));
+    const paid = item.direction === 'in' && !!item.txid && !/^0+$/.test(item.txid);
+    return paid && !onProtocol ? `; outbound ${item.txid}` : '';
 }
 
 // The fee columns: the gas the wallet paid to send its transaction, blank when unknown (docs/specs/fees.md)
