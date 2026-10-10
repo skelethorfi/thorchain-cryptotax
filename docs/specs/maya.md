@@ -197,7 +197,7 @@ MAYA held at `h−1`) is not an activity.
 
 | Row | Type | Base | Fee | From, to | Description |
 | --- | --- | --- | --- | --- | --- |
-| Payout | `income` | CACAO, the amount paid | — | `mayaprotocol`, the wallet | `1/1 - Received <amount> CACAO from the Maya fund; height <h>` |
+| Payout | `income` | CACAO, the amount paid | — | `mayaprotocol`, the wallet | `1/1 - Received <amount> CACAO reward from holding MAYA; height <h>` |
 
 It is income when paid: the value is Summ's CACAO price at that time (the
 source gives none). It is `income`, not `staking`: MAYA is held, not staked.

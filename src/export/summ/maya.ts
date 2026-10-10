@@ -20,6 +20,6 @@ export function mayaFundRows(activity: Activity, protocol: Protocol): CryptoTaxT
         to: reward.wallet,
         blockchain: protocol.blockchain,
         trace: legTrace(reward),
-        description: `1/1 - Received ${amount} CACAO from the Maya fund; height ${activity.details.height}`,
+        description: `1/1 - Received ${amount} CACAO reward from holding MAYA; height ${activity.details.height}`,
     }];
 }
