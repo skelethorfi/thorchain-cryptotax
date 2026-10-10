@@ -1,11 +1,11 @@
 import type {Activity} from "../../domain/Activity.ts";
-import {type CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv/index.ts";
+import {type SummRow, SummRowType} from "./csv/index.ts";
 import type {Protocol} from "../../domain/Protocol.ts";
 import {fee, findLeg, leg, legBlockchain, legTrace, named, paidOutNote, plusSeconds, referencePrice} from "./common.ts";
 
 // A cross-chain trade: the trade-out on the sending wallet carries the fee; the trade-in on the receiving
 // wallet comes 10 s later. A part returned unfilled is netted off the trade-out.
-export function swapRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
+export function swapRows(activity: Activity, protocol: Protocol): SummRow[] {
     const sent = leg(activity, 'principal', 'out');
     const received = leg(activity, 'principal', 'in');
     const returned = findLeg(activity, 'returned');
@@ -22,7 +22,7 @@ export function swapRows(activity: Activity, protocol: Protocol): CryptoTaxTrans
         {
             walletExchange: sent.wallet,
             timestamp: activity.time,
-            type: CryptoTaxTransactionType.BridgeTradeOut,
+            type: SummRowType.BridgeTradeOut,
             baseCurrency: input.currency,
             baseAmount: input.amount,
             quoteCurrency: output.currency,
@@ -38,7 +38,7 @@ export function swapRows(activity: Activity, protocol: Protocol): CryptoTaxTrans
         {
             walletExchange: received.wallet,
             timestamp: plusSeconds(activity.time, 10),
-            type: CryptoTaxTransactionType.BridgeTradeIn,
+            type: SummRowType.BridgeTradeIn,
             baseCurrency: output.currency,
             baseAmount: output.amount,
             from: protocol.counterparty,

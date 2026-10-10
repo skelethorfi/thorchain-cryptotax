@@ -1,10 +1,10 @@
 import type {Activity} from "../../domain/Activity.ts";
-import {type CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv/index.ts";
+import {type SummRow, SummRowType} from "./csv/index.ts";
 import type {Protocol} from "../../domain/Protocol.ts";
 import {fee, leg, legTrace, named} from "./common.ts";
 
 // One staking row: a bond deposits RUNE with the node, an unbond withdraws it
-export function bondRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
+export function bondRows(activity: Activity, protocol: Protocol): SummRow[] {
     const principal = leg(activity, 'principal');
     const isBond = activity.kind === 'bond';
     const {currency, displayCurrency, amount} = named(principal, protocol);
@@ -12,7 +12,7 @@ export function bondRows(activity: Activity, protocol: Protocol): CryptoTaxTrans
     return [{
         walletExchange: principal.wallet,
         timestamp: activity.time,
-        type: isBond ? CryptoTaxTransactionType.StakingDeposit : CryptoTaxTransactionType.StakingWithdrawal,
+        type: isBond ? SummRowType.StakingDeposit : SummRowType.StakingWithdrawal,
         baseCurrency: currency,
         baseAmount: amount,
         ...fee(activity, protocol),

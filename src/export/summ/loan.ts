@@ -1,12 +1,12 @@
 import type {Activity} from "../../domain/Activity.ts";
 import {formatAmount} from "../../domain/Amount.ts";
-import {type CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv/index.ts";
+import {type SummRow, SummRowType} from "./csv/index.ts";
 import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils.ts";
 import {formatBlockchain, type Protocol} from "../../domain/Protocol.ts";
 import {fee, findLeg, leg, legTrace, paidOutNote} from "./common.ts";
 
 // A loan open (docs/specs/loans.md): the collateral deposit carries the fee; the loan received has none
-export function loanOpenRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
+export function loanOpenRows(activity: Activity, protocol: Protocol): SummRow[] {
     const collateral = leg(activity, 'principal', 'out');
     const loan = leg(activity, 'principal', 'in');
     const input = parseMidgardAsset(collateral.asset.notation, protocol);
@@ -18,7 +18,7 @@ export function loanOpenRows(activity: Activity, protocol: Protocol): CryptoTaxT
         {
             walletExchange: collateral.wallet,
             timestamp: time,
-            type: CryptoTaxTransactionType.CollateralDeposit,
+            type: SummRowType.CollateralDeposit,
             baseCurrency: input.currency,
             baseAmount: formatAmount(collateral.amount),
             ...fee(activity, protocol),
@@ -31,7 +31,7 @@ export function loanOpenRows(activity: Activity, protocol: Protocol): CryptoTaxT
         {
             walletExchange: loan.wallet,
             timestamp: time,
-            type: CryptoTaxTransactionType.Loan,
+            type: SummRowType.Loan,
             baseCurrency: output.currency,
             baseAmount: formatAmount(loan.amount),
             from: protocol.counterparty,
@@ -44,7 +44,7 @@ export function loanOpenRows(activity: Activity, protocol: Protocol): CryptoTaxT
 }
 
 // A loan repayment carries the fee; when the loan closes, the collateral comes back with no fee
-export function loanRepayRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
+export function loanRepayRows(activity: Activity, protocol: Protocol): SummRow[] {
     const repayment = leg(activity, 'principal', 'out');
     const collateralBack = findLeg(activity, 'principal', 'in');
     const input = parseMidgardAsset(repayment.asset.notation, protocol);
@@ -52,10 +52,10 @@ export function loanRepayRows(activity: Activity, protocol: Protocol): CryptoTax
     const closure = collateralBack ? 'Closed loan' : 'No closure';
     const txId = repayment.txid ?? '';
     const time = activity.time;
-    const rows: CryptoTaxTransaction[] = [{
+    const rows: SummRow[] = [{
         walletExchange: repayment.wallet,
         timestamp: time,
-        type: CryptoTaxTransactionType.LoanRepayment,
+        type: SummRowType.LoanRepayment,
         baseCurrency: input.currency,
         baseAmount: formatAmount(repayment.amount),
         ...fee(activity, protocol),
@@ -72,7 +72,7 @@ export function loanRepayRows(activity: Activity, protocol: Protocol): CryptoTax
         rows.push({
             walletExchange: collateralBack.wallet,
             timestamp: time,
-            type: CryptoTaxTransactionType.CollateralWithdrawal,
+            type: SummRowType.CollateralWithdrawal,
             baseCurrency: output.currency,
             baseAmount: formatAmount(collateralBack.amount),
             from: protocol.counterparty,

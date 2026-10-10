@@ -1,6 +1,6 @@
 import type {Activity, Leg} from "../../domain/Activity.ts";
 import {formatAmount, parseAmount} from "../../domain/Amount.ts";
-import {type CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv/index.ts";
+import {type SummRow, SummRowType} from "./csv/index.ts";
 import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils.ts";
 import {formatBlockchain, type Protocol} from "../../domain/Protocol.ts";
 import {findLeg, leg, legTrace, plusSeconds} from "./common.ts";
@@ -8,7 +8,7 @@ import {findLeg, leg, legTrace, plusSeconds} from "./common.ts";
 // Rujira rows (docs/specs/rujira.md): staking is a staking deposit; FIN swaps and merges are trades
 
 // The fee columns when the wasm call paid gas; none at all otherwise
-function feeIfPaid(activity: Activity, protocol: Protocol): Pick<CryptoTaxTransaction, 'feeCurrency' | 'feeAmount'> {
+function feeIfPaid(activity: Activity, protocol: Protocol): Pick<SummRow, 'feeCurrency' | 'feeAmount'> {
     const gas = findLeg(activity, 'gas');
     return gas ? {feeCurrency: parseMidgardAsset(gas.asset.notation, protocol).currency, feeAmount: formatAmount(gas.amount)} : {};
 }
@@ -22,7 +22,7 @@ function name(item: Leg, protocol: Protocol): {currency: string; displayCurrency
         : {currency, displayCurrency};
 }
 
-export function rujiraStakeRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
+export function rujiraStakeRows(activity: Activity, protocol: Protocol): SummRow[] {
     const funds = leg(activity, 'principal', 'out');
     const {currency, displayCurrency} = name(funds, protocol);
     const amount = formatAmount(funds.amount);
@@ -33,7 +33,7 @@ export function rujiraStakeRows(activity: Activity, protocol: Protocol): CryptoT
     return [{
         walletExchange: funds.wallet,
         timestamp: time,
-        type: CryptoTaxTransactionType.StakingDeposit,
+        type: SummRowType.StakingDeposit,
         baseCurrency: currency,
         baseAmount: amount,
         ...feeIfPaid(activity, protocol),
@@ -52,7 +52,7 @@ const TRADES: {[kind: string]: {label: string}} = {
 };
 
 // A trade-out carrying the fee, and the trade-in 10 s later; an amount returned unfilled is netted off
-export function rujiraTradeRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
+export function rujiraTradeRows(activity: Activity, protocol: Protocol): SummRow[] {
     const {label} = TRADES[activity.kind];
     const sent = leg(activity, 'principal', 'out');
     const received = leg(activity, 'principal', 'in');
@@ -67,7 +67,7 @@ export function rujiraTradeRows(activity: Activity, protocol: Protocol): CryptoT
         {
             walletExchange: sent.wallet,
             timestamp: time,
-            type: CryptoTaxTransactionType.BridgeTradeOut,
+            type: SummRowType.BridgeTradeOut,
             baseCurrency: input.currency,
             baseAmount: input.amount,
             quoteCurrency: output.currency,
@@ -82,7 +82,7 @@ export function rujiraTradeRows(activity: Activity, protocol: Protocol): CryptoT
         {
             walletExchange: sent.wallet,
             timestamp: plusSeconds(activity.time, 10),
-            type: CryptoTaxTransactionType.BridgeTradeIn,
+            type: SummRowType.BridgeTradeIn,
             baseCurrency: output.currency,
             baseAmount: output.amount,
             from: protocol.counterparty,

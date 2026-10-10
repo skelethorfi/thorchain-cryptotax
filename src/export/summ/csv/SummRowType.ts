@@ -16,11 +16,11 @@
  * - Quote Currency
  * - Quote Amount
  */
-export const CryptoTaxTransactionType = {
+export const SummRowType = {
     /**
      * Unspecified transaction type.
      * This is used when the transaction type is not specified or cannot be determined.
-     * Not a valid Crypto Tax Calculator type.
+     * Not a valid Summ type.
      */
     Unspecified: 'unspecified',
 
@@ -301,4 +301,4 @@ export const CryptoTaxTransactionType = {
     SendPq: 'send-pq',
 } as const;
 
-export type CryptoTaxTransactionType = typeof CryptoTaxTransactionType[keyof typeof CryptoTaxTransactionType];
+export type SummRowType = typeof SummRowType[keyof typeof SummRowType];

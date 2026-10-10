@@ -1,6 +1,6 @@
 import type {Activity, Leg} from "../../domain/Activity.ts";
 import {formatAmount} from "../../domain/Amount.ts";
-import {type CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv/index.ts";
+import {type SummRow, SummRowType} from "./csv/index.ts";
 import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils.ts";
 import {toPositionAsset} from "../../domain/Asset.ts";
 import {getLpTokenName} from "./ThorchainUtils.ts";
@@ -13,12 +13,12 @@ const MISSING_ADDRESS = 'MISSING-DEPOSIT-ADDRESS';
 
 // Summ does not price the position token, so a spam row carries the value of what went in or came out, to
 // copy onto the token row by hand (docs/specs/liquidity.md): the first asset's amount times the number of assets.
-function priceHelper(first: CryptoTaxTransaction, count: number): {currency: string; amount: string} {
+function priceHelper(first: SummRow, count: number): {currency: string; amount: string} {
     return {currency: first.baseCurrency, amount: (parseFloat(first.baseAmount) * count).toString()};
 }
 
 // The fee columns of a principal leg: the gas leg that follows it, blank when none (docs/specs/fees.md)
-function feeFor(activity: Activity, item: Leg, protocol: Protocol): Pick<CryptoTaxTransaction, 'feeCurrency' | 'feeAmount'> {
+function feeFor(activity: Activity, item: Leg, protocol: Protocol): Pick<SummRow, 'feeCurrency' | 'feeAmount'> {
     const next = activity.legs[activity.legs.indexOf(item) + 1];
 
     if (next?.role !== 'gas') {
@@ -34,7 +34,7 @@ function describe(activity: Activity, assetCount: number): string {
 
 // Each deposit as an add-liquidity row with its own fee, the position as a receive-LP-token row 10 s later,
 // and the price-helper row 20 s later
-export function addLiquidityRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
+export function addLiquidityRows(activity: Activity, protocol: Protocol): SummRow[] {
     const deposits = activity.legs.filter(item => item.role === 'principal' && item.direction === 'out');
     const position = activity.legs.find(item => item.role === 'principal' && item.direction === 'in')!;
     const lpToken = getLpTokenName(position.asset.notation, protocol);
@@ -43,14 +43,14 @@ export function addLiquidityRows(activity: Activity, protocol: Protocol): Crypto
     const txId = deposits[0].txid ?? '';
     const receiver = position.wallet || MISSING_ADDRESS;
 
-    const rows: CryptoTaxTransaction[] = deposits.map((deposit, i) => {
+    const rows: SummRow[] = deposits.map((deposit, i) => {
         const {blockchain, currency} = parseMidgardAsset(deposit.asset.notation, protocol);
         const from = deposit.wallet || MISSING_ADDRESS;
 
         return {
             walletExchange: from,
             timestamp: activity.time,
-            type: CryptoTaxTransactionType.AddLiquidity,
+            type: SummRowType.AddLiquidity,
             baseCurrency: currency,
             baseAmount: formatAmount(deposit.amount),
             ...feeFor(activity, deposit, protocol),
@@ -66,7 +66,7 @@ export function addLiquidityRows(activity: Activity, protocol: Protocol): Crypto
     rows.push({
         walletExchange: receiver,
         timestamp: plusSeconds(activity.time, 10),
-        type: CryptoTaxTransactionType.ReceiveLpToken,
+        type: SummRowType.ReceiveLpToken,
         baseCurrency: lpToken,
         baseAmount: formatAmount(position.amount),
         from: protocol.counterparty,
@@ -77,7 +77,7 @@ export function addLiquidityRows(activity: Activity, protocol: Protocol): Crypto
     }, {
         walletExchange: receiver,
         timestamp: plusSeconds(activity.time, 20),
-        type: CryptoTaxTransactionType.Spam,
+        type: SummRowType.Spam,
         baseCurrency: quote.currency,
         baseAmount: quote.amount,
         from: protocol.counterparty,
@@ -91,7 +91,7 @@ export function addLiquidityRows(activity: Activity, protocol: Protocol): Crypto
 
 // The position as a return-LP-token row carrying the request's fee, the price-helper row 10 s later, and each
 // asset paid out as a remove-liquidity row 20 s later (the native asset first)
-export function withdrawRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
+export function withdrawRows(activity: Activity, protocol: Protocol): SummRow[] {
     const paidOut = activity.legs.filter(item => item.role === 'principal' && item.direction === 'in');
     const position = activity.legs.find(item => item.role === 'principal' && item.direction === 'out')!;
     const nativeFirst = paidOut[0].wallet.startsWith(protocol.nativeChain.toLowerCase());
@@ -101,13 +101,13 @@ export function withdrawRows(activity: Activity, protocol: Protocol): CryptoTaxT
     const total = paidOut.length + 2;
     const txId = position.txid ?? '';
 
-    const removals: CryptoTaxTransaction[] = ordered.map((out, i) => {
+    const removals: SummRow[] = ordered.map((out, i) => {
         const {blockchain, currency} = parseMidgardAsset(out.asset.notation, protocol);
 
         return {
             walletExchange: out.wallet,
             timestamp: plusSeconds(activity.time, 20),
-            type: CryptoTaxTransactionType.RemoveLiquidity,
+            type: SummRowType.RemoveLiquidity,
             baseCurrency: currency,
             baseAmount: formatAmount(out.amount),
             // What came out is already net of the protocol's fees (fees.md)
@@ -127,7 +127,7 @@ export function withdrawRows(activity: Activity, protocol: Protocol): CryptoTaxT
         {
             walletExchange: position.wallet,
             timestamp: activity.time,
-            type: CryptoTaxTransactionType.ReturnLpToken,
+            type: SummRowType.ReturnLpToken,
             baseCurrency: lpToken,
             baseAmount: formatAmount(position.amount),
             ...feeFor(activity, position, protocol),
@@ -140,7 +140,7 @@ export function withdrawRows(activity: Activity, protocol: Protocol): CryptoTaxT
         {
             walletExchange: position.wallet,
             timestamp: plusSeconds(activity.time, 10),
-            type: CryptoTaxTransactionType.Spam,
+            type: SummRowType.Spam,
             baseCurrency: quote.currency,
             baseAmount: quote.amount,
             from: position.wallet,
@@ -153,7 +153,7 @@ export function withdrawRows(activity: Activity, protocol: Protocol): CryptoTaxT
 }
 
 // Maya's liquidity auction (docs/specs/maya.md). A deposit: an add-liquidity row with its fee, at its own date.
-export function auctionDepositRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
+export function auctionDepositRows(activity: Activity, protocol: Protocol): SummRow[] {
     const deposit = leg(activity, 'principal', 'out');
     const {blockchain, currency} = parseMidgardAsset(deposit.asset.notation, protocol);
     const lpToken = getLpTokenName(toPositionAsset(activity.details.pool).notation, protocol);
@@ -161,7 +161,7 @@ export function auctionDepositRows(activity: Activity, protocol: Protocol): Cryp
     return [{
         walletExchange: deposit.wallet,
         timestamp: activity.time,
-        type: CryptoTaxTransactionType.AddLiquidity,
+        type: SummRowType.AddLiquidity,
         baseCurrency: currency,
         baseAmount: formatAmount(deposit.amount),
         ...feeFor(activity, deposit, protocol),
@@ -177,7 +177,7 @@ export function auctionDepositRows(activity: Activity, protocol: Protocol): Cryp
 // row 1 s later; with 'deposit', nothing, so the position's cost is what was deposited. A side added at the end
 // (deposits not found): an add-liquidity row. Then the position as a receive-LP-token row 10 s later, and the
 // price-helper row 20 s later: the deposited asset's side twice, as the pool is symmetric.
-export function auctionPositionRows(activity: Activity, protocol: Protocol, treatment?: MayaLiquidityAuction): CryptoTaxTransaction[] {
+export function auctionPositionRows(activity: Activity, protocol: Protocol, treatment?: MayaLiquidityAuction): SummRow[] {
     if (!treatment) {
         throw new Error(`Config: this run has a Maya liquidity auction position (${activity.time.toISOString().slice(0, 10)}). `
             + 'Set mayaLiquidityAuction = "income" (what the auction supplied is income at its end) or "deposit" '
@@ -191,14 +191,14 @@ export function auctionPositionRows(activity: Activity, protocol: Protocol, trea
     const adds = activity.legs.filter(item => item.role === 'principal' && item.direction === 'out' && (treatment === 'income' || !isSupplied(item)));
     const total = adds.reduce((count, item) => count + (isSupplied(item) ? 2 : 1), 0) + 2;
     let n = 0;
-    const rows: CryptoTaxTransaction[] = adds.flatMap(item => {
+    const rows: SummRow[] = adds.flatMap(item => {
         const {blockchain, currency} = parseMidgardAsset(item.asset.notation, protocol);
         const amount = formatAmount(item.amount);
         const reward = activity.legs.find(other => other.role === 'reward' && other.asset.notation === item.asset.notation);
-        const add: CryptoTaxTransaction = {
+        const add: SummRow = {
             walletExchange: item.wallet,
             timestamp: plusSeconds(activity.time, 1),
-            type: CryptoTaxTransactionType.AddLiquidity,
+            type: SummRowType.AddLiquidity,
             baseCurrency: currency,
             baseAmount: amount,
             from: item.wallet,
@@ -215,7 +215,7 @@ export function auctionPositionRows(activity: Activity, protocol: Protocol, trea
         return [{
             walletExchange: reward.wallet,
             timestamp: activity.time,
-            type: CryptoTaxTransactionType.Income,
+            type: SummRowType.Income,
             baseCurrency: currency,
             baseAmount: amount,
             from: protocol.counterparty,
@@ -230,7 +230,7 @@ export function auctionPositionRows(activity: Activity, protocol: Protocol, trea
     rows.push({
         walletExchange: position.wallet,
         timestamp: plusSeconds(activity.time, 10),
-        type: CryptoTaxTransactionType.ReceiveLpToken,
+        type: SummRowType.ReceiveLpToken,
         baseCurrency: lpToken,
         baseAmount: formatAmount(position.amount),
         from: protocol.counterparty,
@@ -241,7 +241,7 @@ export function auctionPositionRows(activity: Activity, protocol: Protocol, trea
     }, {
         walletExchange: position.wallet,
         timestamp: plusSeconds(activity.time, 20),
-        type: CryptoTaxTransactionType.Spam,
+        type: SummRowType.Spam,
         baseCurrency: side,
         baseAmount: (parseFloat(activity.details.side) * 2).toString(),
         from: protocol.counterparty,

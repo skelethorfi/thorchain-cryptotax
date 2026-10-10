@@ -1,7 +1,7 @@
 import {Viewblock} from "../sources/viewblock/index.ts";
 import fs from "fs-extra";
 import {format} from 'date-fns-tz';
-import {type CryptoTaxTransaction, renderRowIds, ROW_IDS_FILE, writeCsv} from "../export/summ/csv/index.ts";
+import {type SummRow, renderRowIds, ROW_IDS_FILE, writeCsv} from "../export/summ/csv/index.ts";
 import {MidgardService} from "../sources/thorchain/MidgardService.ts";
 import {ThornodeService} from "../sources/thorchain/ThornodeService.ts";
 import {CosmosTxService} from "../sources/thorchain/CosmosTxService.ts";
@@ -126,7 +126,7 @@ export class Exporter {
     }
 
     // Every row of the bundles; issues are logged, and unsupported and failed actions saved
-    getRows(bundles: RawBundle[], outputPath: string): CryptoTaxTransaction[] {
+    getRows(bundles: RawBundle[], outputPath: string): SummRow[] {
         this.reportNotFinal();
         const unique = dedupeBundles(bundles);
         const sends = selectSends(unique.bundles);
@@ -235,7 +235,7 @@ export class Exporter {
     }
 
     // Writes the CSV files that csvFiles lays out
-    saveToCsv(txs: CryptoTaxTransaction[], outputPath: string) {
+    saveToCsv(txs: SummRow[], outputPath: string) {
         const ranges = generateDateRanges(this.config.fromDate, this.config.toDate, this.config.frequency);
         const {files, exported, warnings} = csvFiles(txs, ranges, this.config.wallets, this.config.timezone);
         warnings.forEach(warning => this.report.warn(`WARN: ${warning}`));

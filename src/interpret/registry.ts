@@ -1,5 +1,5 @@
 import {type Action, ActionTypeEnum as ActionType} from "@xchainjs/xchain-midgard";
-import type {CryptoTaxTransaction} from "../export/summ/csv/index.ts";
+import type {SummRow} from "../export/summ/csv/index.ts";
 import type {Issue} from "../domain/Issue.ts";
 import type {RawBundle} from "../sources/RawBundle.ts";
 import {type Protocol, THORCHAIN} from "../domain/Protocol.ts";
@@ -19,7 +19,7 @@ import {interpretMayaDistribution} from "./maya/distribution.ts";
 // A ported action type gives activities, which an exporter turns into rows; the rest still give rows
 export interface Interpretation {
     activities: Activity[];
-    rows: CryptoTaxTransaction[];
+    rows: SummRow[];
     issues: Issue[];
 }
 
