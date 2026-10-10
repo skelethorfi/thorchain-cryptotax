@@ -89,7 +89,11 @@ in this repo. It is meant to be kept in git (prune relies on it).
 is (re)built, and every write rebuilds it, so what the sync reads of an
 action never changes under the same id: its legs (all fields plan reads)
 and its change history entries. An id's detail is therefore fetched and
-written once, by pull or by apply, and never rewritten. Other fields do
+written once and never rewritten (except by `pull --full`, below). Pull
+writes it. Apply adds only the read of an action it is about to delete,
+since Summ keeps nothing to fetch afterwards. An action apply edits gets a
+new id in Summ; apply does not store it, and the next pull fetches it as a
+new id. Other fields do
 move under the same id (`lastModified`, `updatedAt`, `balanceSnapshot`,
 `sortPriority`), as does the history's "_N earlier versions not read._"
 line; the stored file keeps them as first read, and nothing reads them.
