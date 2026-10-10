@@ -3,7 +3,7 @@ import path from "path";
 import YAML from "yaml";
 import type {Action} from "@xchainjs/xchain-midgard";
 import type {TxStatusResponse} from "@xchainjs/xchain-thornode";
-import type {CryptoTaxTransaction} from "../export/summ/csv/index.ts";
+import type {SummRow} from "../export/summ/csv/index.ts";
 import type {ViewblockTx} from "../sources/viewblock/index.ts";
 import {runBundle} from "../pipeline/run.ts";
 import type {Treatment} from "../export/summ/index.ts";
@@ -129,7 +129,7 @@ export function toPlainActivity(activity: Activity): object {
 
 // A row as expected.yaml holds it: the timestamp as ISO, as the CSV writes it
 // The row as expected.yaml holds it: its CSV columns (the trace is in the ID)
-export function toPlainRow({trace, ...row}: CryptoTaxTransaction): object {
+export function toPlainRow({trace, ...row}: SummRow): object {
     return {...row, timestamp: row.timestamp.toISOString()};
 }
 

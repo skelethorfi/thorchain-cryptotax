@@ -4,13 +4,13 @@ import fs from "fs-extra";
 import os from "os";
 import path from "path";
 import {diffRecords, diffRows, diffRuns, explain, parseCsv, parseCsvLine, type Row} from "../src/cli/diff.ts";
-import {type CryptoTaxTransaction, renderCsv} from "../src/export/summ/csv/index.ts";
+import {type SummRow, renderCsv} from "../src/export/summ/csv/index.ts";
 import type {RecordEntry} from "../src/sources/store/SnapshotManifest.ts";
 
 const TX_A = 'A1'.repeat(32);
 const TX_B = 'b2'.repeat(32);
 
-const tx = (time: string, amount: string, txid: string, extra: Partial<CryptoTaxTransaction> = {}): CryptoTaxTransaction => ({
+const tx = (time: string, amount: string, txid: string, extra: Partial<SummRow> = {}): SummRow => ({
     timestamp: new Date(time),
     type: 'receive' as any,
     baseCurrency: 'RUNE',
@@ -22,7 +22,7 @@ const tx = (time: string, amount: string, txid: string, extra: Partial<CryptoTax
     ...extra,
 });
 
-const rows = (txs: CryptoTaxTransaction[]): Row[] => parseCsv(renderCsv(txs));
+const rows = (txs: SummRow[]): Row[] => parseCsv(renderCsv(txs));
 
 const record = (key: string, sha256: string, choice = 'only'): RecordEntry =>
     ({source: 'midgard', key, file: `records/midgard/${key}.0.json`, fetchedAt: null, sha256, choice, copies: 1});
@@ -88,7 +88,7 @@ describe('diffRecords and explain', () => {
 });
 
 describe('diffRuns', () => {
-    const writeRun = (dir: string, files: {[name: string]: CryptoTaxTransaction[]}, records: RecordEntry[]) => {
+    const writeRun = (dir: string, files: {[name: string]: SummRow[]}, records: RecordEntry[]) => {
         Object.entries(files).forEach(([name, txs]) => fs.outputFileSync(path.join(dir, 'csv', name), renderCsv(txs)));
         fs.outputJsonSync(path.join(dir, 'snapshots.json'), {layout: 3, records, lists: []});
     };

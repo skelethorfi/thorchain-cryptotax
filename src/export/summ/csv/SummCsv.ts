@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import fs from 'fs-extra';
-import type {CryptoTaxTransaction, RowTrace} from './CryptoTaxTranaction.ts';
-import {ctcSortDesc} from "./index.ts";
+import type {SummRow, RowTrace} from './SummRow.ts';
+import {sortNewestFirst} from "./index.ts";
 
 export const csvMapping = [
     { header: 'Timestamp (UTC)', field: 'timestamp' },
@@ -25,7 +25,7 @@ function createHeader(): string {
     return csvMapping.map((item) => item.header).join(',') + '\n';
 }
 
-export function txToCsv(tx: CryptoTaxTransaction): string {
+export function txToCsv(tx: SummRow): string {
     return csvMapping
         .map((column) => csvField(formatValue((tx as any)[column.field])))
         .join(',');
@@ -43,8 +43,8 @@ export function csvField(value: string): string {
 }
 
 // The text of one CSV file: the header, then the rows newest first
-export function renderCsv(txs: CryptoTaxTransaction[]): string {
-    return createHeader() + ctcSortDesc([...txs]).map(txToCsv).join('\n');
+export function renderCsv(txs: SummRow[]): string {
+    return createHeader() + sortNewestFirst([...txs]).map(txToCsv).join('\n');
 }
 
 // A row's ID depends only on what the row is, never on its amounts or wording, so it is the same in every
@@ -57,7 +57,7 @@ export function rowId(time: Date, walletExchange: string, trace: RowTrace): stri
 }
 
 // Checks every row has an ID and no two share one: two rows with one identity are a mapper bug
-export function assignRowIds(rows: CryptoTaxTransaction[]): CryptoTaxTransaction[] {
+export function assignRowIds(rows: SummRow[]): SummRow[] {
     const seen = new Set<string>();
 
     for (const row of rows) {
@@ -77,7 +77,7 @@ export function assignRowIds(rows: CryptoTaxTransaction[]): CryptoTaxTransaction
 
 export function writeCsv(
     filename: string,
-    txs: CryptoTaxTransaction[]
+    txs: SummRow[]
 ) {
     if (txs.length === 0) {
         return;
@@ -90,8 +90,8 @@ export function writeCsv(
 export const ROW_IDS_FILE = 'row-ids.csv';
 
 // What each row's ID is made from, newest first: to trace a row in Summ back to its action
-export function renderRowIds(rows: CryptoTaxTransaction[]): string {
-    const lines = ctcSortDesc([...rows]).map(row => [row.id, formatValue(row.timestamp), row.type, row.walletExchange,
+export function renderRowIds(rows: SummRow[]): string {
+    const lines = sortNewestFirst([...rows]).map(row => [row.id, formatValue(row.timestamp), row.type, row.walletExchange,
         row.trace?.record, row.trace?.role, row.trace?.asset].map(value => csvField(value ?? '')).join(','));
     return ['ID,Timestamp (UTC),Type,Wallet,Record,Role,Asset', ...lines].join('\n') + '\n';
 }

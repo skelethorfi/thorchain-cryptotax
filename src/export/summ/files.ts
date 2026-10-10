@@ -1,10 +1,10 @@
-import {assignRowIds, type CryptoTaxTransaction} from "./csv/index.ts";
+import {assignRowIds, type SummRow} from "./csv/index.ts";
 import type {IWallet} from "../../config/IWallet.ts";
 import {type DateRange, nextDay, startOfDay} from "../../utils/DateRange.ts";
 
 export interface CsvFile {
     name: string;
-    rows: CryptoTaxTransaction[];
+    rows: SummRow[];
 }
 
 // Which rows go in which CSV file, and how many rows the wallet files hold. Pure: the shell writes the
@@ -17,7 +17,7 @@ export interface CsvFile {
 //                                 the period's rows of the 'thorchain' wallet (each from or to it)
 // A period's days are calendar days in timeZone (docs/specs/periods.md). Throws when a row in a period lands
 // in no wallet file.
-export function csvFiles(allRows: CryptoTaxTransaction[], ranges: DateRange[], wallets: IWallet[], timeZone: string = 'UTC'): {files: CsvFile[]; exported: number; warnings: string[]} {
+export function csvFiles(allRows: SummRow[], ranges: DateRange[], wallets: IWallet[], timeZone: string = 'UTC'): {files: CsvFile[]; exported: number; warnings: string[]} {
     const rows = assignRowIds(allRows);
     const warnings: string[] = [];
     const files: CsvFile[] = [{name: 'all.csv', rows}];
@@ -65,7 +65,7 @@ export function isInRange(time: Date, range: DateRange, timeZone: string = 'UTC'
     return time.getTime() >= from && time.getTime() < to;
 }
 
-function getUniqueWalletExchanges(rows: CryptoTaxTransaction[], warnings: string[]): Set<string> {
+function getUniqueWalletExchanges(rows: SummRow[], warnings: string[]): Set<string> {
     return new Set(rows.map(row => {
         if (!row.walletExchange) {
             warnings.push(`missing walletExchange: ${row.timestamp.toISOString()} ${row.type} ${row.baseAmount} ${row.baseCurrency}`);

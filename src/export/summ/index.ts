@@ -1,5 +1,5 @@
 import type {Activity} from "../../domain/Activity.ts";
-import {type CryptoTaxTransaction, rowId} from "./csv/index.ts";
+import {type SummRow, rowId} from "./csv/index.ts";
 import {bondRows} from "./bond.ts";
 import {swapRows} from "./swap.ts";
 import {refundRows} from "./refund.ts";
@@ -23,13 +23,13 @@ export interface Treatment {
 }
 
 // Activities as rows of Summ's advanced CSV, the same rows the old mappers wrote
-export function exportSumm(activities: Activity[], treatment: Treatment = {}): CryptoTaxTransaction[] {
+export function exportSumm(activities: Activity[], treatment: Treatment = {}): SummRow[] {
     return activities.flatMap(activity => toRows(activity, withAssetNames(getProtocol(activity.protocol), treatment.assets), treatment)
         .map(row => withId(row, activity)));
 }
 
 // Each row's ID, from its action's record and time and the role its mapper gave it (docs/specs/periods.md)
-function withId(row: CryptoTaxTransaction, activity: Activity): CryptoTaxTransaction {
+function withId(row: SummRow, activity: Activity): SummRow {
     if (!row.trace) {
         throw new Error(`${activity.id}: a ${row.type} row has no role`);
     }
@@ -38,7 +38,7 @@ function withId(row: CryptoTaxTransaction, activity: Activity): CryptoTaxTransac
     return {...row, trace, id: rowId(activity.time, row.walletExchange ?? '', trace)};
 }
 
-function toRows(activity: Activity, protocol: Protocol, treatment: Treatment): CryptoTaxTransaction[] {
+function toRows(activity: Activity, protocol: Protocol, treatment: Treatment): SummRow[] {
     switch (activity.kind) {
         case 'bond':
         case 'unbond':

@@ -2,7 +2,7 @@ import { runBundle } from '../src/pipeline/run.ts';
 import type { Action, Transaction } from '@xchainjs/xchain-midgard';
 import {describe, test} from "node:test";
 import assert from "node:assert/strict";
-import { CryptoTaxTransactionType } from '../src/export/summ/csv/index.ts';
+import { SummRowType } from '../src/export/summ/csv/index.ts';
 import { toMidgardNanoTimestamp } from '../src/sources/thorchain/MidgardUtils.ts';
 import { MAYA, type Protocol, THORCHAIN } from '../src/domain/Protocol.ts';
 
@@ -133,8 +133,8 @@ describe('swap', () => {
         const result = swap(action);
 
         assert.equal(result.length, 2);
-        assert.equal(result[0].type, CryptoTaxTransactionType.BridgeTradeOut);
-        assert.equal(result[1].type, CryptoTaxTransactionType.BridgeTradeIn);
+        assert.equal(result[0].type, SummRowType.BridgeTradeOut);
+        assert.equal(result[1].type, SummRowType.BridgeTradeIn);
 
         assert.equal(result[0].description, '1/2 - Swap 1 BTC to 20 ETH; tx123');
         assert.equal(result[0].baseCurrency, 'BTC');

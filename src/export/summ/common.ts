@@ -1,6 +1,6 @@
 import type {Activity, Leg} from "../../domain/Activity.ts";
 import {type Amount, formatAmount} from "../../domain/Amount.ts";
-import type {CryptoTaxTransaction, RowTrace} from "./csv/index.ts";
+import type {SummRow, RowTrace} from "./csv/index.ts";
 import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils.ts";
 import {formatBlockchain, PROTOCOLS, type Protocol} from "../../domain/Protocol.ts";
 
@@ -42,7 +42,7 @@ export function paidOutNote(item: Leg): string {
 }
 
 // The fee columns: the gas the wallet paid to send its transaction, blank when unknown (docs/specs/fees.md)
-export function fee(activity: Activity, protocol: Protocol): Pick<CryptoTaxTransaction, 'feeCurrency' | 'feeAmount'> {
+export function fee(activity: Activity, protocol: Protocol): Pick<SummRow, 'feeCurrency' | 'feeAmount'> {
     const gas = findLeg(activity, 'gas');
 
     if (!gas) {
@@ -54,7 +54,7 @@ export function fee(activity: Activity, protocol: Protocol): Pick<CryptoTaxTrans
 }
 
 // The USD price the source observed, as the reference price columns
-export function referencePrice(activity: Activity, source: string): Pick<CryptoTaxTransaction, 'referencePricePerUnit' | 'referencePriceCurrency'> {
+export function referencePrice(activity: Activity, source: string): Pick<SummRow, 'referencePricePerUnit' | 'referencePriceCurrency'> {
     const usd = activity.prices.find(price => price.source === source)?.usd;
     return {referencePricePerUnit: usd || undefined, referencePriceCurrency: usd ? 'USD' : undefined};
 }

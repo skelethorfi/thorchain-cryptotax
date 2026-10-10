@@ -1,17 +1,17 @@
 import type {Activity} from "../../domain/Activity.ts";
 import {formatAmount} from "../../domain/Amount.ts";
-import {type CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv/index.ts";
+import {type SummRow, SummRowType} from "./csv/index.ts";
 import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils.ts";
 import type {Protocol} from "../../domain/Protocol.ts";
 import {findLeg, leg, legTrace} from "./common.ts";
 
 // The fee columns from the gas leg, or no fee columns at all when there is none (as these rows always had)
-function feeIfAny(activity: Activity, protocol: Protocol): Pick<CryptoTaxTransaction, 'feeCurrency' | 'feeAmount'> {
+function feeIfAny(activity: Activity, protocol: Protocol): Pick<SummRow, 'feeCurrency' | 'feeAmount'> {
     const gas = findLeg(activity, 'gas');
     return gas ? {feeCurrency: parseMidgardAsset(gas.asset.notation, protocol).currency, feeAmount: formatAmount(gas.amount)} : {};
 }
 
-export function tcyClaimRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
+export function tcyClaimRows(activity: Activity, protocol: Protocol): SummRow[] {
     const tcy = leg(activity, 'principal', 'in');
     const amount = formatAmount(tcy.amount);
     const time = activity.time;
@@ -19,7 +19,7 @@ export function tcyClaimRows(activity: Activity, protocol: Protocol): CryptoTaxT
     return [{
         walletExchange: tcy.wallet,
         timestamp: time,
-        type: CryptoTaxTransactionType.Receive,
+        type: SummRowType.Receive,
         baseCurrency: parseMidgardAsset(tcy.asset.notation, protocol).currency,
         baseAmount: amount,
         ...feeIfAny(activity, protocol),
@@ -31,7 +31,7 @@ export function tcyClaimRows(activity: Activity, protocol: Protocol): CryptoTaxT
     }];
 }
 
-export function tcyStakeRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
+export function tcyStakeRows(activity: Activity, protocol: Protocol): SummRow[] {
     const isStake = activity.kind === 'tcy.stake';
     const tcy = leg(activity, 'principal');
     const amount = formatAmount(tcy.amount);
@@ -40,7 +40,7 @@ export function tcyStakeRows(activity: Activity, protocol: Protocol): CryptoTaxT
     return [{
         walletExchange: tcy.wallet,
         timestamp: time,
-        type: isStake ? CryptoTaxTransactionType.StakingDeposit : CryptoTaxTransactionType.StakingWithdrawal,
+        type: isStake ? SummRowType.StakingDeposit : SummRowType.StakingWithdrawal,
         baseCurrency: parseMidgardAsset(tcy.asset.notation, protocol).currency,
         baseAmount: amount,
         ...feeIfAny(activity, protocol),
@@ -53,7 +53,7 @@ export function tcyStakeRows(activity: Activity, protocol: Protocol): CryptoTaxT
 }
 
 // A THORName is an expense: the RUNE paid when registering or renewing, and the fee
-export function thornameRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
+export function thornameRows(activity: Activity, protocol: Protocol): SummRow[] {
     const paid = findLeg(activity, 'principal', 'out');
     const gas = leg(activity, 'gas');
     const wallet = paid?.wallet ?? gas.wallet;
@@ -63,7 +63,7 @@ export function thornameRows(activity: Activity, protocol: Protocol): CryptoTaxT
     return [{
         walletExchange: wallet,
         timestamp: time,
-        type: CryptoTaxTransactionType.Expense,
+        type: SummRowType.Expense,
         baseCurrency: paid ? parseMidgardAsset(paid.asset.notation, protocol).currency : '',
         baseAmount: amount,
         ...feeIfAny(activity, protocol),
@@ -76,7 +76,7 @@ export function thornameRows(activity: Activity, protocol: Protocol): CryptoTaxT
 }
 
 // A TCY distribution is staking income, priced at the RUNE price the API gave for the day
-export function tcyDistributionRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
+export function tcyDistributionRows(activity: Activity, protocol: Protocol): SummRow[] {
     const reward = leg(activity, 'reward');
     const amount = formatAmount(reward.amount);
     const time = activity.time;
@@ -84,7 +84,7 @@ export function tcyDistributionRows(activity: Activity, protocol: Protocol): Cry
     return [{
         walletExchange: reward.wallet,
         timestamp: time,
-        type: CryptoTaxTransactionType.Staking,
+        type: SummRowType.Staking,
         baseCurrency: parseMidgardAsset(reward.asset.notation, protocol).currency,
         baseAmount: amount,
         from: protocol.counterparty,

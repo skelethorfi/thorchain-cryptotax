@@ -1,7 +1,7 @@
 import {assetFromStringEx} from "@xchainjs/xchain-util";
 import type {Activity, Leg} from "../../domain/Activity.ts";
 import type {Protocol} from "../../domain/Protocol.ts";
-import {type CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv/index.ts";
+import {type SummRow, SummRowType} from "./csv/index.ts";
 import {fee, findLeg, leg, legTrace, named} from "./common.ts";
 
 // Reward distribution wallets known from what they do (docs/specs/sends.md): ordinary wallets, not protocol
@@ -28,10 +28,10 @@ export function isIncomeReceipt(from: string, asset: string, incomeFrom?: string
 }
 
 // The run summary's lines about known distributors' transfers among the rows
-export function knownDistributorReport(rows: CryptoTaxTransaction[], incomeFrom?: string[]): {info: string[]; warnings: string[]} {
+export function knownDistributorReport(rows: SummRow[], incomeFrom?: string[]): {info: string[]; warnings: string[]} {
     const fromKnown = (type: string) => rows.filter(row => row.type === type && KNOWN_DISTRIBUTORS.some(known => known.address === row.from?.toLowerCase()));
-    const income = incomeFrom === undefined ? fromKnown(CryptoTaxTransactionType.Income) : [];
-    const receives = fromKnown(CryptoTaxTransactionType.Receive);
+    const income = incomeFrom === undefined ? fromKnown(SummRowType.Income) : [];
+    const receives = fromKnown(SummRowType.Receive);
 
     return {
         info: income.length ? [`${income.length} receipts from known distribution wallets are income (incomeFrom is not set; docs/specs/sends.md)`] : [],
@@ -44,7 +44,7 @@ export function knownDistributorReport(rows: CryptoTaxTransaction[], incomeFrom?
 // A send or a receive on the wallet that listed it. A transfer received is income when isIncomeReceipt says so.
 // A send to itself (e.g. an Arkeo delegation) moves nothing out of the wallet, so only its gas is exported, as a
 // fee row (docs/specs/sends.md).
-export function sendRows(activity: Activity, protocol: Protocol, incomeFrom?: string[]): CryptoTaxTransaction[] {
+export function sendRows(activity: Activity, protocol: Protocol, incomeFrom?: string[]): SummRow[] {
     const coin = leg(activity, 'principal');
     const isSend = coin.direction === 'out';
 
@@ -53,7 +53,7 @@ export function sendRows(activity: Activity, protocol: Protocol, incomeFrom?: st
     }
 
     const isIncome = !isSend && isIncomeReceipt(activity.details.from ?? '', coin.asset.notation, incomeFrom);
-    const type = isSend ? CryptoTaxTransactionType.Send : isIncome ? CryptoTaxTransactionType.Income : CryptoTaxTransactionType.Receive;
+    const type = isSend ? SummRowType.Send : isIncome ? SummRowType.Income : SummRowType.Receive;
     const {currency, amount} = named(coin, protocol);
     const txId = coin.txid ?? '';
     const description = `${isSend ? 'Send' : isIncome ? 'Income: receive' : 'Receive'} ${amount} ${label(coin)}; ${txId}`;
@@ -78,7 +78,7 @@ function isToItself(activity: Activity): boolean {
     return !!from && from.toLowerCase() === to?.toLowerCase();
 }
 
-function selfSendRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
+function selfSendRows(activity: Activity, protocol: Protocol): SummRow[] {
     const coin = leg(activity, 'principal');
     const gas = findLeg(activity, 'gas');
 
@@ -96,7 +96,7 @@ function selfSendRows(activity: Activity, protocol: Protocol): CryptoTaxTransact
     return [{
         walletExchange: gas.wallet,
         timestamp: activity.time,
-        type: CryptoTaxTransactionType.Fee,
+        type: SummRowType.Fee,
         baseCurrency: currency,
         baseAmount: amount,
         from: activity.details.from,

@@ -1,9 +1,9 @@
-import { CryptoTaxTransactionType } from './CryptoTaxTransactionType.ts';
+import { SummRowType } from './SummRowType.ts';
 
-export interface CryptoTaxTransaction {
+export interface SummRow {
     /**
      * Wallet/Exchange
-     * (Not a Crypto Tax Calculator property)
+     * (Not a Summ column)
      *
      * The wallet address the transaction is related to or 'thorchain' for swap transactions.
      * Separate CSVs need to be exported/imported for each wallet/exchange.
@@ -25,7 +25,7 @@ export interface CryptoTaxTransaction {
      * Type
      * This is the type of transaction, e.g., buy, sell. You can read more about the valid transaction types below.
      */
-    type: CryptoTaxTransactionType;
+    type: SummRowType;
 
     /**
      * Base Currency
