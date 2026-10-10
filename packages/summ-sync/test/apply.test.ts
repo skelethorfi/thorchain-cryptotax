@@ -309,8 +309,8 @@ test('undoHandle reads the bulk edit id of an edit result', () => {
 function stateDir(snapshots: [string, string][], log: string[] = []): string {
     const dir = mkdtempSync(join(tmpdir(), 'summ-sync-apply-'))
     for (const [name, takenAt] of snapshots) {
-        mkdirSync(join(dir, 'snapshots', name), { recursive: true })
-        writeFileSync(join(dir, 'snapshots', name, 'manifest.json'), JSON.stringify({ takenAt }))
+        mkdirSync(join(dir, 'snapshots'), { recursive: true })
+        writeFileSync(join(dir, 'snapshots', `${name}.json`), JSON.stringify({ takenAt, total: 0, actions: [] }))
     }
     if (log.length) writeFileSync(join(dir, 'apply-log.jsonl'), log.join('\n') + '\n')
     return dir

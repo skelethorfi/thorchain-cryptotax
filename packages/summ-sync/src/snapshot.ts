@@ -1,8 +1,14 @@
-// A snapshot written by pull, read as legs: each incoming, outgoing and fee leg of every action with full
-// detail, plus the tx hashes of every listed action.
+// The action store and the snapshots pull writes (spec: docs/specs/summ-sync.md, State dir):
+//
+//   <state dir>/actions/<action id>.json   one action's JSON and change history, written once: Summ gives an
+//                                          action a new id whenever it changes
+//   <state dir>/snapshots/<time>.json      one pull: its counts and an entry per listed action
+//
+// A snapshot is read as legs: each incoming, outgoing and fee leg of every action it needs the detail of, plus
+// the tx hashes of every listed action.
 
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
+import { basename, dirname, join } from 'node:path'
 import type { ActionDetail } from './parse.ts'
 
 export type LegSide = 'incoming' | 'outgoing' | 'fees'
@@ -71,27 +77,86 @@ export function legsOf(detail: ActionDetail): Leg[] {
     )
 }
 
-export function latestSnapshot(stateDir: string): string {
-    const dir = join(stateDir, 'snapshots')
-    const names = existsSync(dir) ? readdirSync(dir).filter((n) => existsSync(join(dir, n, 'manifest.json'))).sort() : []
-    if (names.length === 0) throw new Error(`No complete snapshot in ${dir}: run pull first`)
-    return join(dir, names[names.length - 1])
+/** One listed action in a snapshot. `detail` marks the actions whose detail the plan reads. */
+export interface SnapshotEntry {
+    id: string
+    txHash: string
+    category: string
+    tags: string[]
+    detail?: true
 }
 
-export function readSnapshot(dir: string): Snapshot {
+export interface SnapshotFile {
+    takenAt: string
+    /** The total the list reported. */
+    total: number
+    [count: string]: unknown
+    actions: SnapshotEntry[]
+}
+
+export const actionFile = (stateDir: string, actionId: string): string => join(stateDir, 'actions', `${actionId}.json`)
+
+export function readAction(stateDir: string, actionId: string): ActionDetail | null {
+    const file = actionFile(stateDir, actionId)
+    return existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null
+}
+
+/** Writes an action to the store unless it holds the id already (or `replace`); returns the file. */
+export function storeAction(stateDir: string, detail: ActionDetail, replace = false): string {
+    const file = actionFile(stateDir, detail.action._id)
+    if (replace || !existsSync(file)) {
+        mkdirSync(dirname(file), { recursive: true })
+        writeFileSync(file, JSON.stringify(detail, null, 2) + '\n')
+    }
+    return file
+}
+
+/** What the sync reads of an action: its legs and change history entries. The fields that move under the same
+ * id (lastModified, updatedAt, balanceSnapshot, sortPriority, the count of earlier versions) are left out. */
+export function syncView(detail: ActionDetail): string {
+    return JSON.stringify({ legs: legsOf(detail), history: detail.history.filter((h) => !/earlier versions not read/.test(h)) })
+}
+
+/** The snapshot names (their times), oldest first. */
+export function snapshotNames(stateDir: string): string[] {
+    const dir = join(stateDir, 'snapshots')
+    return existsSync(dir) ? readdirSync(dir).filter((n) => n.endsWith('.json')).map((n) => n.slice(0, -5)).sort() : []
+}
+
+/** The latest snapshot file. */
+export function latestSnapshot(stateDir: string): string {
+    const names = snapshotNames(stateDir)
+    if (names.length === 0) throw new Error(`No snapshot in ${join(stateDir, 'snapshots')}: run pull first`)
+    return join(stateDir, 'snapshots', `${names[names.length - 1]}.json`)
+}
+
+/** Written whole, one action per line, so a pull that stops leaves no snapshot. */
+export function writeSnapshot(file: string, snapshot: SnapshotFile): void {
+    const { actions, ...counts } = snapshot
+    const head = Object.entries(counts).map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)},`)
+    const text = ['{', ...head, '  "actions": [', actions.map((a) => `    ${JSON.stringify(a)}`).join(',\n'), '  ]', '}', ''].join('\n')
+    mkdirSync(dirname(file), { recursive: true })
+    writeFileSync(`${file}.tmp`, text)
+    renameSync(`${file}.tmp`, file)
+}
+
+export function readSnapshotFile(file: string): SnapshotFile {
+    return JSON.parse(readFileSync(file, 'utf8'))
+}
+
+/** A snapshot file read with the stored details of the actions it marks. */
+export function readSnapshot(file: string): Snapshot {
+    const stateDir = dirname(dirname(file))
+    const entries = readSnapshotFile(file).actions
     const legs: Leg[] = []
     const history = new Map<string, string[]>()
-    const detailsDir = join(dir, 'details')
-    for (const name of existsSync(detailsDir) ? readdirSync(detailsDir).sort() : []) {
-        const detail: ActionDetail = JSON.parse(readFileSync(join(detailsDir, name), 'utf8'))
+    for (const id of [...new Set(entries.filter((e) => e.detail).map((e) => e.id))].sort()) {
+        const detail = readAction(stateDir, id)
+        if (!detail) throw new Error(`${basename(file)} lists action ${id}, which is not in ${join(stateDir, 'actions')}`)
         legs.push(...legsOf(detail))
         history.set(detail.action._id, detail.history)
     }
     const txHashes = new Set<string>()
-    for (const line of readFileSync(join(dir, 'actions.jsonl'), 'utf8').split('\n')) {
-        if (!line) continue
-        const hash = JSON.parse(line)['Tx Hash']
-        if (typeof hash === 'string') for (const h of hash.split(/[\s,]+/)) if (h) txHashes.add(normaliseTxid(h))
-    }
-    return { name: dir.split(/[\\/]/).pop() as string, legs, history, txHashes }
+    for (const { txHash } of entries) for (const h of txHash.split(/[\s,]+/)) if (h) txHashes.add(normaliseTxid(h))
+    return { name: basename(file, '.json'), legs, history, txHashes }
 }

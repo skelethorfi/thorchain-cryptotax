@@ -18,7 +18,7 @@ import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, write
 import { basename, dirname, join } from 'node:path'
 import { type ActionDetail, parseActions, parseDetail } from './parse.ts'
 import { type DeleteEntry, type EditEntry, type Plan, same } from './plan.ts'
-import { type Leg, latestSnapshot, legsOf } from './snapshot.ts'
+import { type Leg, latestSnapshot, legsOf, readSnapshotFile } from './snapshot.ts'
 
 export const WRITE_TOOLS = ['edit_transaction', 'bulk_edit_transactions']
 
@@ -60,10 +60,10 @@ export function readPlanFile(path: string): { dir: string; plan: PlanFile } {
 /** Refuses a plan made from an older snapshot, or one Summ was written to after the snapshot was taken. */
 export function checkFresh(stateDir: string, plan: PlanFile): void {
     const latest = latestSnapshot(stateDir)
-    if (basename(latest) !== plan.snapshot) {
-        throw new Error(`The plan is from snapshot ${plan.snapshot}, the latest is ${basename(latest)}: plan again`)
+    if (basename(latest, '.json') !== plan.snapshot) {
+        throw new Error(`The plan is from snapshot ${plan.snapshot}, the latest is ${basename(latest, '.json')}: plan again`)
     }
-    const takenAt = JSON.parse(readFileSync(join(latest, 'manifest.json'), 'utf8')).takenAt as string
+    const takenAt = readSnapshotFile(latest).takenAt
     const log = join(stateDir, 'apply-log.jsonl')
     const later = existsSync(log)
         ? readFileSync(log, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l) as LogLine).filter((l) => l.time > takenAt && l.call !== 'skip')
