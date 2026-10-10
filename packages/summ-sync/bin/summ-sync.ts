@@ -4,6 +4,7 @@
 import { runApply, WRITE_TOOLS } from '../src/apply.ts'
 import { login, READ_SCOPE, WRITE_SCOPE } from '../src/auth.ts'
 import { McpClient, READ_TOOLS } from '../src/mcp.ts'
+import { runPrune } from '../src/prune.ts'
 import { pull } from '../src/pull.ts'
 import { writePlan } from '../src/write-plan.ts'
 
@@ -13,6 +14,9 @@ const USAGE = `Usage:
   summ-sync plan  <state dir> <run dir>   compare a run with the latest snapshot (calls nothing)
   summ-sync apply <state dir> <plan dir> [--dry-run] [--approve-deletes] [--approve-filed]
                                           carry out a plan (needs login --write)
+  summ-sync prune <state dir> [--older-than <days>]
+                                          remove committed snapshots older than that (default 30, never the
+                                          latest) and the stored actions only they list
   summ-sync tools <state dir>             list the MCP server's tools`
 
 const [command, stateDir, ...rest] = process.argv.slice(2)
@@ -29,6 +33,12 @@ try {
         const dryRun = rest.includes('--dry-run')
         const client = new McpClient(stateDir, dryRun ? READ_TOOLS : [...READ_TOOLS, ...WRITE_TOOLS])
         await runApply(client, stateDir, rest[0], { dryRun, approveDeletes: rest.includes('--approve-deletes'), approveFiled: rest.includes('--approve-filed') })
+    }
+    else if (command === 'prune') {
+        const at = rest.indexOf('--older-than')
+        const days = at >= 0 ? rest[at + 1] : undefined
+        if (at >= 0 && !/^\d+(\.\d+)?$/.test(days ?? '')) throw new Error('--older-than needs a number of days')
+        runPrune(stateDir, days === undefined ? undefined : Number(days))
     }
     else if (command === 'tools') {
         const client = new McpClient(stateDir)

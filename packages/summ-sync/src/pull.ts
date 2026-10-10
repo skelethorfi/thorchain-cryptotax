@@ -1,24 +1,20 @@
-// pull: a snapshot of Summ's state, never patched afterwards.
+// pull: a snapshot of Summ's state, never patched afterwards (spec: docs/specs/summ-sync.md, State dir).
 //
-//   <state dir>/snapshots/<timestamp>/
-//     pages/NNNN.md            every page of the action list, as returned
-//     actions.jsonl            one line per action (parsed from the pages)
-//     details/<action id>.json full JSON and change history of each action
-//                              of a managed source (config.managedSources) and,
-//                              given a run dir, of each action whose tx hash is a
-//                              txid of a categorised row (a chain not in managedChains).
-//                              Copied from the previous snapshot when it holds the same
-//                              action id: Summ gives an action a new id whenever it
-//                              changes, so only new ids are fetched (unless --full)
-//     manifest.json            counts, what was fetched and reused, and from which snapshot
+//   <state dir>/snapshots/<time>.json   the counts, and one entry per listed action (id, tx hash, category, tags)
+//   <state dir>/actions/<id>.json       the full JSON and change history of each action the plan needs: every
+//                                       action of a managed source (config.managedSources) and, given a run dir,
+//                                       each action whose tx hash is a txid of a categorised row (a chain not in
+//                                       managedChains). Fetched only when the store lacks the id: Summ gives an
+//                                       action a new id whenever it changes. --full fetches them all again and
+//                                       reports any stored id whose legs or history differ
 
-import { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { McpClient } from './mcp.ts'
 import { type ListedAction, parseActions, parseDetail, parsePageHeader } from './parse.ts'
 import { type Config, loadConfig } from './config.ts'
 import { readRun, type Row } from './run.ts'
-import { latestSnapshot, normaliseTxid } from './snapshot.ts'
+import { actionFile, normaliseTxid, readAction, type SnapshotEntry, storeAction, syncView, writeSnapshot } from './snapshot.ts'
 
 const PAGE_SIZE = 250
 
@@ -54,80 +50,87 @@ export function actionsWithTxids(actions: ListedAction[], txids: Set<string>): s
     return actions.filter((a) => typeof a['Tx Hash'] === 'string' && txids.has(normaliseTxid(a['Tx Hash']))).map((a) => a['Action ID'] as string)
 }
 
-/** The previous snapshot's details dir, to copy unchanged actions from; null for a full pull or none. */
-function previousDetails(stateDir: string, full: boolean): { name: string; dir: string; ids: Set<string> } | null {
-    if (full || !existsSync(join(stateDir, 'snapshots'))) return null
-    let base: string
-    try {
-        base = latestSnapshot(stateDir)
-    } catch {
-        return null
-    }
-    const dir = join(base, 'details')
-    const ids = new Set(existsSync(dir) ? readdirSync(dir).map((n) => n.replace(/\.json$/, '')) : [])
-    return { name: base.split(/[\\/]/).pop() as string, dir, ids }
+const str = (v: string | string[] | undefined): string => (typeof v === 'string' ? v : '')
+
+/** A listed action as the snapshot keeps it. */
+export function snapshotEntry(a: ListedAction): SnapshotEntry {
+    return { id: a['Action ID'] as string, txHash: str(a['Tx Hash']), category: str(a['Action Category']), tags: a.tags }
 }
 
 export async function pull(stateDir: string, runDir?: string, { full = false, client = new McpClient(stateDir) as Client } = {}): Promise<string> {
     const config = loadConfig(stateDir)
     const txids = runDir ? categorisedTxids(readRun(runDir).rows, config) : null
-    const previous = previousDetails(stateDir, full)
     const stamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-')
-    const dir = join(stateDir, 'snapshots', stamp)
-    mkdirSync(join(dir, 'pages'), { recursive: true })
+    const file = join(stateDir, 'snapshots', `${stamp}.json`)
     await client.connect()
 
     console.log('Fetching every action (including ignored, spam and dust)')
     const pages = await queryAll(client)
-    pages.forEach((text, i) => writeFileSync(join(dir, 'pages', `${String(i + 1).padStart(4, '0')}.md`), text))
     const actions = pages.flatMap(parseActions)
-    writeFileSync(join(dir, 'actions.jsonl'), actions.map((a) => JSON.stringify(a)).join('\n') + '\n')
-
     const total = parsePageHeader(pages[0]).total
     const unique = new Set(actions.map((a) => a['Action ID'])).size
     console.log(`  ${actions.length} actions parsed, ${unique} unique, server reported ${total}`)
-    if (unique !== total) console.log('  WARNING: counts differ. The data changed during the pull or the parser missed rows; check pages/.')
+    if (unique !== total) console.log('  WARNING: counts differ. The data changed during the pull or the parser missed rows.')
 
-    mkdirSync(join(dir, 'details'), { recursive: true })
-    const done = new Set<string>()
-    let reused = 0
+    const needed = new Set<string>()
+    let stored = 0
+    let fetched = 0
+    const differs: string[] = []
     const fetchDetails = async (ids: string[]) => {
-        const todo = ids.filter((id) => !done.has(id))
-        const copy = todo.filter((id) => previous?.ids.has(id))
-        for (const actionId of copy) copyFileSync(join(previous!.dir, `${actionId}.json`), join(dir, 'details', `${actionId}.json`))
-        copy.forEach((id) => done.add(id))
-        reused += copy.length
-        const fetch = todo.filter((id) => !done.has(id))
-        console.log(`  ${copy.length} unchanged (copied from ${previous?.name ?? '–'}), ${fetch.length} to fetch`)
+        const todo = [...new Set(ids)].filter((id) => !needed.has(id))
+        todo.forEach((id) => needed.add(id))
+        const fetch = full ? todo : todo.filter((id) => !existsSync(actionFile(stateDir, id)))
+        stored += todo.length - fetch.length
+        console.log(`  ${todo.length - fetch.length} already in the store, ${fetch.length} to fetch`)
         for (const [i, actionId] of fetch.entries()) {
             const detail = parseDetail(await client.callTool('inspect_transaction', { actionId }))
-            writeFileSync(join(dir, 'details', `${actionId}.json`), JSON.stringify(detail, null, 2) + '\n')
-            done.add(actionId)
+            const before = full ? readAction(stateDir, actionId) : null
+            const changed = before !== null && syncView(before) !== syncView(detail)
+            if (changed) differs.push(actionId)
+            storeAction(stateDir, detail, changed)
+            fetched++
             process.stdout.write(`\r  ${i + 1}/${fetch.length}   `)
         }
         if (fetch.length) process.stdout.write('\n')
     }
+    // An action Summ rebuilt while the full list was paged appears under its new id only in the source query:
+    // it joins the snapshot's entries, so plan reads its legs
+    const listed = new Set(actions.map((a) => a['Action ID']))
+    const late: ListedAction[] = []
     for (const source of config.managedSources) {
         console.log(`Full detail for source "${source}"`)
-        await fetchDetails((await queryAll(client, { type: 'source', value: [source] })).flatMap(parseActions).map((a) => a['Action ID'] as string))
+        const sourceActions = (await queryAll(client, { type: 'source', value: [source] })).flatMap(parseActions)
+        for (const a of sourceActions) {
+            if (listed.has(a['Action ID'])) continue
+            listed.add(a['Action ID'])
+            late.push(a)
+        }
+        await fetchDetails(sourceActions.map((a) => a['Action ID'] as string))
     }
+    if (late.length) console.log(`  WARNING: ${late.length} actions of a managed source were not in the full list (Summ changed during the pull); added to the snapshot`)
     if (txids) {
         console.log("Full detail for the actions with a categorised row's txid")
         await fetchDetails(actionsWithTxids(actions, txids))
     }
+    if (differs.length) {
+        console.log(`WARNING: ${differs.length} stored actions differ from Summ under the same id (replaced; the old versions are in git if committed):`)
+        for (const id of differs) console.log(`  ${id}`)
+    }
 
-    const manifest = {
+    writeSnapshot(file, {
         takenAt: new Date().toISOString(),
         total,
         parsed: actions.length,
         unique,
         managedSources: config.managedSources,
         run: runDir ?? null,
-        details: done.size,
-        reused,
-        reusedFrom: previous && reused ? previous.name : null,
-    }
-    writeFileSync(join(dir, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n')
-    console.log(`Snapshot written to ${dir}`)
-    return dir
+        late: late.length,
+        details: needed.size,
+        stored,
+        fetched,
+        ...(full ? { differs } : {}),
+        actions: [...actions, ...late].map((a) => ({ ...snapshotEntry(a), ...(needed.has(a['Action ID'] as string) ? { detail: true as const } : {}) })),
+    })
+    console.log(`Snapshot written to ${file}`)
+    return file
 }

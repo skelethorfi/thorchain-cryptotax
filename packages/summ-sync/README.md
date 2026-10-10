@@ -36,20 +36,22 @@ Filed years go in a separate apply with `--approve-filed`.
     node packages/summ-sync/bin/summ-sync.ts pull  <state dir> [<run dir>] [--full]
     node packages/summ-sync/bin/summ-sync.ts plan  <state dir> <run dir>
     node packages/summ-sync/bin/summ-sync.ts apply <state dir> <plan dir> [--dry-run] [--approve-deletes] [--approve-filed]
+    node packages/summ-sync/bin/summ-sync.ts prune <state dir> [--older-than <days>]
     node packages/summ-sync/bin/summ-sync.ts tools <state dir>
 
 - `login` opens the browser to authorise this tool (scope `mcp:read`, or
   `mcp:read mcp:write` with `--write`) and keeps the token in
   `<state dir>/.auth.json` (mode 600).
-- `pull` writes `<state dir>/snapshots/<timestamp>/`: every page of the
-  action list (`pages/`), one line per action (`actions.jsonl`), the full
-  JSON and change history of each action of a managed source
-  (`details/<action id>.json`), and `manifest.json`. Given a run dir, it
-  also fetches the detail of each action whose tx hash is a txid of the
-  run's categorised rows (chains not in `managedChains`). Summ gives an
-  action a new id whenever it changes, so detail the previous snapshot
-  holds under the same id is copied from it, and only new ids are
-  fetched; `--full` fetches all of it again (e.g. before filing a year).
+- `pull` writes `<state dir>/snapshots/<timestamp>.json`: the counts and
+  one entry per listed action (id, tx hash, category, tags). The full JSON
+  and change history of each action of a managed source goes to the action
+  store, `<state dir>/actions/<action id>.json`. Given a run dir, it also
+  stores the detail of each action whose tx hash is a txid of the run's
+  categorised rows (chains not in `managedChains`). Summ gives an action a
+  new id whenever it changes, so an id is fetched once and only ids the
+  store lacks are fetched; `--full` fetches them all again (e.g. before
+  filing a year) and warns about any stored id whose legs or history
+  differ.
 - `plan` compares the run's period wallet files with the latest snapshot
   and writes `<state dir>/plans/<timestamp>/`: `plan.json`, `plan.md` and
   `upload/` (the rows Summ lacks, per file). It calls nothing. It adds the
@@ -65,11 +67,15 @@ Filed years go in a separate apply with `--approve-filed`.
   only and writes nothing. Every write goes to `<state dir>/apply-log.jsonl`
   with its undo handle (`undo_edit`; deletes have none). Before a delete,
   it saves each action as it inspected it (full JSON and change history) to
-  `<state dir>/deleted/<time>/<action id>.json`. Summ cannot undo a delete
+  the action store, `<state dir>/actions/<action id>.json`. Summ cannot undo a delete
   and the MCP cannot recreate an uploaded row, so to bring a row back,
   upload its CSV line again (from the run that wrote it); the saved file
   shows what Summ held. It needs `login --write`. Afterwards, upload the
   files, then pull and plan again.
+- `prune` removes the snapshots older than `--older-than` days (default
+  30; never the latest) and the stored actions no remaining snapshot lists
+  (except those apply saved before a delete), once they are committed (keep the state dir in git; git keeps the removed files). If
+  any is not committed, it removes nothing and lists them.
 - `tools` lists the server's tools.
 
 Each command may call only the tools it needs; `login` and `pull` use read

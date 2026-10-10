@@ -3,7 +3,6 @@
 //   adopted.csv       Leg,ID: a leg uploaded with an old <file>:<n> ID, and the row it was adopted to
 //   overrides.json    values the user set in Summ, kept over the run's (spec: Drift and overrides)
 //   apply-log.jsonl   one line per call apply made; an edit's lines carry {legId, field, value, ...}
-//   deleted/<time>/   each action apply deleted, as inspected just before (written by apply)
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'

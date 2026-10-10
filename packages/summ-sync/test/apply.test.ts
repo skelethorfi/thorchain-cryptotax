@@ -114,9 +114,9 @@ function planFile(over: Partial<PlanFile> = {}): PlanFile {
 
 async function run(summ: FakeSumm, plan: PlanFile, opts: Partial<ApplyOptions> = {}) {
     const log: Omit<LogLine, 'time' | 'plan'>[] = []
-    const deleted = join(mkdtempSync(join(tmpdir(), 'summ-sync-deleted-')), 'deleted')
-    const result = await applyPlan(summ, plan, 'p', { ...OPTS, ...opts }, (l) => log.push(l), () => {}, 0, deleted)
-    return { result, log, deleted }
+    const state = mkdtempSync(join(tmpdir(), 'summ-sync-state-'))
+    const result = await applyPlan(summ, plan, 'p', { ...OPTS, ...opts }, (l) => log.push(l), () => {}, 0, state)
+    return { result, log, state }
 }
 
 test('an edit looks the leg up again, edits it in its current action and logs the change with its undo handle', async () => {
@@ -239,11 +239,11 @@ test('a delete looks its legs up by _id and deletes only the actions that hold n
     assert.equal(log[0].operation, 'delete')
 })
 
-test('a deleted action is first saved as it was just inspected, and the log names the file', async () => {
+test('a deleted action is first saved to the store as it was just inspected, and the log names the file', async () => {
     const summ = new FakeSumm()
     summ.add('d', [{ _id: 'leg-9', trade: 'withdrawal', quantity: '1.5' }])
-    const { log, deleted } = await run(summ, planFile({ delete: [del()] }), { approveDeletes: true })
-    const file = join(deleted, 'd.json')
+    const { log, state } = await run(summ, planFile({ delete: [del()] }), { approveDeletes: true })
+    const file = join(state, 'actions', 'd.json')
     assert.deepEqual(log[0].saved, [file])
     const saved = JSON.parse(readFileSync(file, 'utf8'))
     assert.deepEqual([saved.action._id, saved.action.incoming[0].quantity], ['d', '1.5'])
@@ -251,7 +251,7 @@ test('a deleted action is first saved as it was just inspected, and the log name
     const summ2 = new FakeSumm()
     summ2.add('d', [{ _id: 'leg-9', trade: 'withdrawal', quantity: '1' }])
     const dry = await run(summ2, planFile({ delete: [del()] }), { approveDeletes: true, dryRun: true })
-    assert.equal(existsSync(dry.deleted), false)
+    assert.equal(existsSync(join(dry.state, 'actions')), false)
 })
 
 test('a delete whose legs share an action with other legs is refused', async () => {
@@ -309,8 +309,8 @@ test('undoHandle reads the bulk edit id of an edit result', () => {
 function stateDir(snapshots: [string, string][], log: string[] = []): string {
     const dir = mkdtempSync(join(tmpdir(), 'summ-sync-apply-'))
     for (const [name, takenAt] of snapshots) {
-        mkdirSync(join(dir, 'snapshots', name), { recursive: true })
-        writeFileSync(join(dir, 'snapshots', name, 'manifest.json'), JSON.stringify({ takenAt }))
+        mkdirSync(join(dir, 'snapshots'), { recursive: true })
+        writeFileSync(join(dir, 'snapshots', `${name}.json`), JSON.stringify({ takenAt, total: 0, actions: [] }))
     }
     if (log.length) writeFileSync(join(dir, 'apply-log.jsonl'), log.join('\n') + '\n')
     return dir
