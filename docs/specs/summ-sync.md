@@ -84,7 +84,8 @@ the files the user uploads. `csv/all.csv` is not read: it holds rows outside
 the run's periods. `row-ids.csv` traces an `ID` back to its action for the
 user; plan does not need it. No other file is written for the sync. A row's
 on-chain txids are the 64-character hex strings in its description (as
-`run-diff.md`).
+`run-diff.md`); a payout to an L1 wallet names its outbound txid there too
+(`fees.md`, Txids in descriptions).
 
 **Snapshot** (written by `pull`): `actions.jsonl` (one line per action from
 the list) and `details/<action id>.json` (the action's JSON and change
@@ -270,7 +271,3 @@ upload adds once done.
 ## Open
 
 - Whether a categorised leg's amount is gross or net of the fee, per chain.
-- A categorised row that receives on an L1 (the outbound of a swap) names
-  only the THORChain inbound txid in its description, while Summ's leg
-  carries the outbound txid, so it matches no leg until the exporter adds
-  the outbound txid to the description.
