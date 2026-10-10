@@ -5,21 +5,21 @@ import {getDistributionDate, type TcyDistributionItem} from "./tcy/TcyDistributi
 import type {CosmosTx} from "./thorchain/CosmosTxService.ts";
 import {getActionDate} from "./thorchain/MidgardUtils.ts";
 import {type ProtocolId, THORCHAIN} from "../domain/Protocol.ts";
-import {isDonateAdd, mayaFundList, midgardActionKey, tcyList, VIEWBLOCK_LIST} from "./store/Sources.ts";
-import {getPayoutDate, type MayaFundPayout} from "./maya/MayaFundService.ts";
+import {isDonateAdd, mayaDistributionList, midgardActionKey, tcyList, VIEWBLOCK_LIST} from "./store/Sources.ts";
+import {getPayoutDate, type MayaDistributionPayout} from "./maya/MayaDistributionService.ts";
 
-export type BundleSource = 'midgard' | 'viewblock' | 'tcy' | 'maya-fund';
+export type BundleSource = 'midgard' | 'viewblock' | 'tcy' | 'maya-distribution';
 
 // Everything one action needs to be mapped: the listed item plus the related txs fetched for it.
 // The exporter and the fixture tool build bundles the same way (Source.ts); a golden case's
 // input.json holds one.
 export interface RawBundle {
     source: BundleSource;
-    // Protocol of a midgard action; 'thorchain' for viewblock and tcy, 'maya' for maya-fund
+    // Protocol of a midgard action; 'thorchain' for viewblock and tcy, 'maya' for maya-distribution
     protocol: ProtocolId;
     // The wallet it was listed for
     wallet: string;
-    data: Action | ViewblockTx | TcyDistributionItem | MayaFundPayout;
+    data: Action | ViewblockTx | TcyDistributionItem | MayaDistributionPayout;
     // The inbound THORNode tx statuses (gas the wallet paid on an L1 chain)
     thornodeTxs: TxStatusResponse[];
     // The Cosmos tx of a contract action
@@ -40,8 +40,8 @@ export function getBundleDate(bundle: RawBundle): Date {
             return new Date((bundle.data as ViewblockTx).timestamp);
         case 'tcy':
             return getDistributionDate(bundle.data as TcyDistributionItem);
-        case 'maya-fund':
-            return getPayoutDate(bundle.data as MayaFundPayout);
+        case 'maya-distribution':
+            return getPayoutDate(bundle.data as MayaDistributionPayout);
     }
 }
 
@@ -60,8 +60,8 @@ export function getBundleKey(bundle: RawBundle): string {
             return `viewblock/${VIEWBLOCK_LIST.keyOf(bundle.data as ViewblockTx)}`;
         case 'tcy':
             return `tcy/${tcyList(bundle.wallet).keyOf(bundle.data as TcyDistributionItem)}`;
-        case 'maya-fund':
-            return `maya-fund/${mayaFundList(bundle.wallet).keyOf(bundle.data as MayaFundPayout)}`;
+        case 'maya-distribution':
+            return `maya-distribution/${mayaDistributionList(bundle.wallet).keyOf(bundle.data as MayaDistributionPayout)}`;
     }
 }
 

@@ -152,7 +152,7 @@ MAYA token distributions after the liquidity auction). A Maya send that is
 another listed action's inbound or outbound gives no row. Golden cases:
 `maya/send-cacao`, `maya/send-maya-income`.
 
-### Maya fund: CACAO paid to MAYA holders
+### CACAO to MAYA holders
 
 Maya pays a share of its revenue in CACAO to every MAYA holder, pro rata, at
 each height divisible by 14400 (about once a day). It is an end-block event,
@@ -191,7 +191,7 @@ fails part way through a long history (about 2 s a payout) resumes there.
 Which heights: every payout height from the first one after the wallet first
 received MAYA (a MAYA receipt in its Midgard actions) up to the chain's tip.
 A wallet that never received MAYA has none. Each payout is a record
-(`maya-fund`, keyed `<wallet>.<height>`, one list per wallet). A run fetches
+(`maya-distribution`, keyed `<wallet>.<height>`, one list per wallet). A run fetches
 only the heights after the last one stored; a past payout does not change.
 A wallet whose first MAYA came with no Midgard action (e.g. at genesis) is
 not covered. Replaying a run made before this source existed gives no
@@ -212,8 +212,8 @@ MAYA held at `h−1`) is not an activity.
 
 It is income when paid: the value is Summ's CACAO price at that time (the
 source gives none). It is `income`, not `staking`: MAYA is held, not staked.
-Golden cases: `maya/maya-fund-payout` (balance step) and
-`maya/maya-fund-dividend` (dividends list), the same payout to a public holder.
+Golden cases: `maya/maya-distribution-payout` (balance step) and
+`maya/maya-distribution-dividend` (dividends list), the same payout to a public holder.
 
 ### Withdraw liquidity
 

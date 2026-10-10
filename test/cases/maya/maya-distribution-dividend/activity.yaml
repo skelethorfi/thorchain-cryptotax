@@ -1,8 +1,8 @@
-id: maya-fund/maya1nvch7vk5yv4erwmcct794xlhh8hu6twslyrr8m.18748800
+id: maya-distribution/maya1nvch7vk5yv4erwmcct794xlhh8hu6twslyrr8m.18748800
 protocol: maya
 kind: maya.distribution
 status: success
-time: 2026-10-09T13:48:33.621Z
+time: 2026-10-09T13:48:33.000Z
 txids:
   in: []
   out: []
@@ -19,4 +19,3 @@ legs:
 prices: []
 details:
   height: "18748800"
-  maya: "1.5841"

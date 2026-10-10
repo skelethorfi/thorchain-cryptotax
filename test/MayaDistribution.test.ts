@@ -4,18 +4,18 @@ import {interpretMayaDistribution} from "../src/interpret/maya/distribution.ts";
 import fs from "fs-extra";
 import os from "os";
 import path from "path";
-import {DIVIDENDS_FROM_HEIGHT, MAYA_FUND_INTERVAL, MayaFundService, nextPayoutHeight} from "../src/sources/maya/MayaFundService.ts";
+import {DIVIDENDS_FROM_HEIGHT, MAYA_DISTRIBUTION_INTERVAL, MayaDistributionService, nextPayoutHeight} from "../src/sources/maya/MayaDistributionService.ts";
 import {http} from "../src/sources/http.ts";
 import {RecordStore} from "../src/sources/store/RecordStore.ts";
 import {MAYA} from "../src/domain/Protocol.ts";
 import type {RawBundle} from "../src/sources/RawBundle.ts";
 
 const payout = (cacao: string, maya: string): RawBundle => ({
-    source: 'maya-fund', protocol: 'maya', wallet: 'maya1-user-wallet-11111', thornodeTxs: [], cosmosTxs: [],
+    source: 'maya-distribution', protocol: 'maya', wallet: 'maya1-user-wallet-11111', thornodeTxs: [], cosmosTxs: [],
     data: {height: 14400, date: '1700000000000000000', cacao, maya, from: 'balance'},
 });
 
-describe('Maya fund', () => {
+describe('CACAO to MAYA holders', () => {
     test('a payout of nothing (no MAYA held) is not an activity', () => {
         assert.deepEqual(interpretMayaDistribution(payout('0', '0'), MAYA), []);
     });
@@ -35,7 +35,7 @@ describe('Maya fund', () => {
 
 // A Midgard where each payout adds 100 to the wallet's CACAO and the chain is at `tip`
 function fakeMidgard(tip: number, hasDividends: boolean) {
-    const paidBy = (height: number) => Math.floor(height / MAYA_FUND_INTERVAL) * 100;
+    const paidBy = (height: number) => Math.floor(height / MAYA_DISTRIBUTION_INTERVAL) * 100;
     return mock.method(http, 'get', async (url: string) => {
         if (url.endsWith('/v2/health')) {
             return {data: {lastAggregated: {height: tip}}};
@@ -51,7 +51,7 @@ function fakeMidgard(tip: number, hasDividends: boolean) {
         if (url.includes('/dividends') && hasDividends) {
             const from = Number(/from=(\d+)/.exec(url)?.[1] ?? 0);
             const heights = [];
-            for (let height = DIVIDENDS_FROM_HEIGHT; height <= tip; height += MAYA_FUND_INTERVAL) heights.push(height);
+            for (let height = DIVIDENDS_FROM_HEIGHT; height <= tip; height += MAYA_DISTRIBUTION_INTERVAL) heights.push(height);
             return {data: {dividends: heights.filter(height => height >= from).reverse().map(height => ({date: String(height), height: String(height), amount: '100'}))}};
         }
 
@@ -59,42 +59,42 @@ function fakeMidgard(tip: number, hasDividends: boolean) {
     });
 }
 
-describe('MayaFundService', () => {
+describe('MayaDistributionService', () => {
     const wallet = 'maya1-user-wallet-11111';
-    const firstHeight = DIVIDENDS_FROM_HEIGHT - 2 * MAYA_FUND_INTERVAL - 5;
-    const store = () => new RecordStore(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-maya-fund-')));
+    const firstHeight = DIVIDENDS_FROM_HEIGHT - 2 * MAYA_DISTRIBUTION_INTERVAL - 5;
+    const store = () => new RecordStore(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-maya-distribution-')));
     const summary = (payouts: {height: number; cacao: string; from: string}[]) =>
         payouts.map(payout => [payout.height - DIVIDENDS_FROM_HEIGHT, payout.cacao, payout.from]);
 
     test("reads payouts before the dividends list from balances, and later ones from the list", async () => {
-        const get = fakeMidgard(DIVIDENDS_FROM_HEIGHT + MAYA_FUND_INTERVAL + 7, true);
+        const get = fakeMidgard(DIVIDENDS_FROM_HEIGHT + MAYA_DISTRIBUTION_INTERVAL + 7, true);
 
-        const payouts = await new MayaFundService(store(), 'https://midgard', 'https://node').getPayouts(wallet, firstHeight, new Set());
+        const payouts = await new MayaDistributionService(store(), 'https://midgard', 'https://node').getPayouts(wallet, firstHeight, new Set());
 
         assert.deepEqual(summary(payouts), [
-            [-2 * MAYA_FUND_INTERVAL, '100', 'balance'], [-MAYA_FUND_INTERVAL, '100', 'balance'],
-            [0, '100', 'dividends'], [MAYA_FUND_INTERVAL, '100', 'dividends'],
+            [-2 * MAYA_DISTRIBUTION_INTERVAL, '100', 'balance'], [-MAYA_DISTRIBUTION_INTERVAL, '100', 'balance'],
+            [0, '100', 'dividends'], [MAYA_DISTRIBUTION_INTERVAL, '100', 'dividends'],
         ]);
         get.mock.restore();
     });
 
     test('reads every payout from balances when this Midgard has no dividends list', async () => {
-        const get = fakeMidgard(DIVIDENDS_FROM_HEIGHT + MAYA_FUND_INTERVAL + 7, false);
+        const get = fakeMidgard(DIVIDENDS_FROM_HEIGHT + MAYA_DISTRIBUTION_INTERVAL + 7, false);
 
-        const payouts = await new MayaFundService(store(), 'https://midgard', 'https://node').getPayouts(wallet, firstHeight, new Set());
+        const payouts = await new MayaDistributionService(store(), 'https://midgard', 'https://node').getPayouts(wallet, firstHeight, new Set());
 
         assert.deepEqual(payouts.map(payout => payout.from), ['balance', 'balance', 'balance', 'balance']);
         get.mock.restore();
     });
 
     test('a later run asks only for payouts after the last one stored', async () => {
-        const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-maya-fund-'));
+        const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-maya-distribution-'));
         let get = fakeMidgard(DIVIDENDS_FROM_HEIGHT + 7, true);
-        await new MayaFundService(new RecordStore(root), 'https://midgard', 'https://node').getPayouts(wallet, firstHeight, new Set());
+        await new MayaDistributionService(new RecordStore(root), 'https://midgard', 'https://node').getPayouts(wallet, firstHeight, new Set());
         get.mock.restore();
-        get = fakeMidgard(DIVIDENDS_FROM_HEIGHT + 2 * MAYA_FUND_INTERVAL + 7, true);
+        get = fakeMidgard(DIVIDENDS_FROM_HEIGHT + 2 * MAYA_DISTRIBUTION_INTERVAL + 7, true);
 
-        const payouts = await new MayaFundService(new RecordStore(root), 'https://midgard', 'https://node').getPayouts(wallet, firstHeight, new Set());
+        const payouts = await new MayaDistributionService(new RecordStore(root), 'https://midgard', 'https://node').getPayouts(wallet, firstHeight, new Set());
 
         assert.equal(payouts.length, 5);
         assert.deepEqual(get.mock.calls.map(call => call.arguments[0]).filter(url => !url.endsWith('/health')),
@@ -103,11 +103,11 @@ describe('MayaFundService', () => {
     });
 });
 
-describe('MayaFundService, reading from balances', () => {
+describe('MayaDistributionService, reading from balances', () => {
     const wallet = 'maya1-user-wallet-11111';
-    const at = (k: number) => MAYA_FUND_INTERVAL * k;
-    const root = () => fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-maya-fund-'));
-    const service = (dir: string) => new MayaFundService(new RecordStore(dir), 'https://midgard', 'https://node');
+    const at = (k: number) => MAYA_DISTRIBUTION_INTERVAL * k;
+    const root = () => fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-maya-distribution-'));
+    const service = (dir: string) => new MayaDistributionService(new RecordStore(dir), 'https://midgard', 'https://node');
 
     // Payouts at heights at(1)..at(3), all before the dividends list; cacao(height) gives the balance, and a block
     // read gives `event` CACAO to the wallet
@@ -139,7 +139,7 @@ describe('MayaFundService, reading from balances', () => {
 
     test("a step below 0, or the wallet's own action in the block, is read from the block's event", async () => {
         // At at(2) the wallet also spent 1000 CACAO
-        const get = fake(height => Math.floor(height / MAYA_FUND_INTERVAL) * 100 - (height >= at(2) ? 1000 : 0));
+        const get = fake(height => Math.floor(height / MAYA_DISTRIBUTION_INTERVAL) * 100 - (height >= at(2) ? 1000 : 0));
 
         const payouts = await service(root()).getPayouts(wallet, 1, new Set([at(3)]));
 
@@ -149,7 +149,7 @@ describe('MayaFundService, reading from balances', () => {
 
     test('payouts read before a failure are kept, and the next run resumes after them', async () => {
         const dir = root();
-        const paid = (height: number) => Math.floor(height / MAYA_FUND_INTERVAL) * 100;
+        const paid = (height: number) => Math.floor(height / MAYA_DISTRIBUTION_INTERVAL) * 100;
         let get = fake(paid, 7, at(3));
         await assert.rejects(service(dir).getPayouts(wallet, 1, new Set()));
         get.mock.restore();
@@ -164,10 +164,10 @@ describe('MayaFundService, reading from balances', () => {
     });
 });
 
-describe('MayaFundService, dividends list', () => {
+describe('MayaDistributionService, dividends list', () => {
     test('a payout listed on two pages (made between them) is kept once', async () => {
         const wallet = 'maya1-user-wallet-11111';
-        const top = DIVIDENDS_FROM_HEIGHT + 400 * MAYA_FUND_INTERVAL;
+        const top = DIVIDENDS_FROM_HEIGHT + 400 * MAYA_DISTRIBUTION_INTERVAL;
         const item = (height: number) => ({date: String(height), height: String(height), amount: '100'});
         const get = mock.method(http, 'get', async (url: string) => {
             if (url.endsWith('/v2/health')) {
@@ -175,12 +175,12 @@ describe('MayaFundService, dividends list', () => {
             }
 
             // 401 payouts, newest first; the second page repeats the last of the first
-            const all = Array.from({length: 401}, (_, i) => top - i * MAYA_FUND_INTERVAL).map(item);
+            const all = Array.from({length: 401}, (_, i) => top - i * MAYA_DISTRIBUTION_INTERVAL).map(item);
             const offset = Number(/offset=(\d+)/.exec(url)![1]);
             return {data: {dividends: offset === 0 ? all.slice(0, 400) : all.slice(399)}};
         });
 
-        const payouts = await new MayaFundService(new RecordStore(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-maya-fund-'))), 'https://midgard', 'https://node')
+        const payouts = await new MayaDistributionService(new RecordStore(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-maya-distribution-'))), 'https://midgard', 'https://node')
             .getPayouts(wallet, DIVIDENDS_FROM_HEIGHT - 1, new Set());
 
         assert.equal(payouts.length, 401);
@@ -189,9 +189,9 @@ describe('MayaFundService, dividends list', () => {
     });
 });
 
-describe('MayaFundSource', () => {
+describe('MayaDistributionSource', () => {
     test("starts after the wallet's first MAYA receipt, and counts outbound heights as its own actions", async () => {
-        const {MayaFundSource} = await import('../src/sources/Source.ts');
+        const {MayaDistributionSource} = await import('../src/sources/Source.ts');
         const wallet = 'maya1-user-wallet-11111';
         const tx = (address: string, asset: string, height?: string) => ({address, coins: [{asset, amount: '1'}], txID: 'A', ...(height ? {height} : {})});
         const actions = [
@@ -199,7 +199,7 @@ describe('MayaFundSource', () => {
             {height: '300', in: [tx('maya1-other', 'MAYA')], out: [tx(wallet, 'MAYA')]},
         ];
         const calls: unknown[][] = [];
-        const source = new MayaFundSource({getActions: async () => actions} as any,
+        const source = new MayaDistributionSource({getActions: async () => actions} as any,
             {getPayouts: async (...args: unknown[]) => { calls.push(args); return []; }} as any);
 
         await source.bundlesFor(wallet);

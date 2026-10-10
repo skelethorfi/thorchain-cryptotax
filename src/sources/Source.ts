@@ -5,7 +5,7 @@ import {ThornodeService} from "./thorchain/ThornodeService.ts";
 import {CosmosTxService, getCosmosTxIds} from "./thorchain/CosmosTxService.ts";
 import {MayanodeService} from "./maya/MayanodeService.ts";
 import {TcyDistributionService} from "./tcy/TcyDistributionService.ts";
-import type {MayaFundService} from "./maya/MayaFundService.ts";
+import type {MayaDistributionService} from "./maya/MayaDistributionService.ts";
 import {MAYA} from "../domain/Protocol.ts";
 import {getActionDate} from "./thorchain/MidgardUtils.ts";
 import {Viewblock} from "./viewblock/index.ts";
@@ -177,14 +177,14 @@ export class TcySource implements Source {
     }
 }
 
-// Maya fund payouts, for Maya wallets that have received MAYA: from the first payout after the first receipt
-// (docs/specs/maya.md, Maya fund)
-export class MayaFundSource implements Source {
+// CACAO payouts to MAYA holders, for Maya wallets that have received MAYA: from the first payout after the first receipt
+// (docs/specs/maya.md, CACAO to MAYA holders)
+export class MayaDistributionSource implements Source {
     private midgard: MidgardService;
-    private fund: MayaFundService;
-    constructor(midgard: MidgardService, fund: MayaFundService) {
+    private distribution: MayaDistributionService;
+    constructor(midgard: MidgardService, distribution: MayaDistributionService) {
         this.midgard = midgard;
-        this.fund = fund;
+        this.distribution = distribution;
     }
 
     async bundlesFor(wallet: string): Promise<RawBundle[]> {
@@ -203,7 +203,7 @@ export class MayaFundSource implements Source {
         // An action can pay the wallet out in a later block than its own (e.g. a streaming swap)
         const actionHeights = new Set(actions.flatMap(action => [action.height, ...action.out.map(out => out.height)])
             .filter((height): height is string => !!height).map(Number));
-        const payouts = await this.fund.getPayouts(wallet, firstHeight, actionHeights);
-        return payouts.map(payout => ({source: 'maya-fund', protocol: MAYA.id, wallet, data: payout, thornodeTxs: [], cosmosTxs: []}));
+        const payouts = await this.distribution.getPayouts(wallet, firstHeight, actionHeights);
+        return payouts.map(payout => ({source: 'maya-distribution', protocol: MAYA.id, wallet, data: payout, thornodeTxs: [], cosmosTxs: []}));
     }
 }

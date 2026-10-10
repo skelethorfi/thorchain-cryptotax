@@ -4,7 +4,7 @@ import type {Protocol} from "../../domain/Protocol.ts";
 import {type CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv/index.ts";
 import {leg, legTrace, named} from "./common.ts";
 
-// A Maya fund payout is income when paid; MAYA is held, not staked (docs/specs/maya.md, Maya fund)
+// A CACAO payout to a MAYA holder is income when paid; MAYA is held, not staked (docs/specs/maya.md, CACAO to MAYA holders)
 export function mayaDistributionRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
     const reward = leg(activity, 'reward');
     const {currency} = named(reward, protocol);

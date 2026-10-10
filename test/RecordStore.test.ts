@@ -375,7 +375,7 @@ describe('replaying a run made before a source existed', () => {
         const store = new RecordStore(fs.mkdtempSync(path.join(os.tmpdir(), 'tc-ct-replay-')), {replay});
         const never = async () => { throw new Error('no fetch on replay'); };
 
-        assert.deepEqual(await store.list('maya-fund', 'w1', never, {keyOf: (item: any) => item.id}), []);
+        assert.deepEqual(await store.list('maya-distribution', 'w1', never, {keyOf: (item: any) => item.id}), []);
         await assert.rejects(store.list('midgard', 'w2', never, {keyOf: (item: any) => item.id}), /in the replayed run/);
     });
 });

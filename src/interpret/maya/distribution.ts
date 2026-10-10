@@ -3,12 +3,12 @@ import {formatAmount, parseAmount} from "../../domain/Amount.ts";
 import {toAsset} from "../../domain/Asset.ts";
 import type {Protocol} from "../../domain/Protocol.ts";
 import {getBundleKey, type RawBundle} from "../../sources/RawBundle.ts";
-import {getPayoutDate, type MayaFundPayout} from "../../sources/maya/MayaFundService.ts";
+import {getPayoutDate, type MayaDistributionPayout} from "../../sources/maya/MayaDistributionService.ts";
 
-// A Maya fund payout: CACAO paid to a MAYA holder at a payout height (docs/specs/maya.md, Maya fund). One of 0
+// A CACAO payout to a MAYA holder at a payout height (docs/specs/maya.md, CACAO to MAYA holders). One of 0
 // (no MAYA held) is not an activity.
 export function interpretMayaDistribution(bundle: RawBundle, protocol: Protocol): Activity[] {
-    const payout = bundle.data as MayaFundPayout;
+    const payout = bundle.data as MayaDistributionPayout;
     const cacao = toAsset(protocol.nativeAsset);
 
     if (BigInt(payout.cacao) <= 0n) {

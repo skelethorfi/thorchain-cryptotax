@@ -55,7 +55,7 @@ const REGISTRY: Record<string, Interpreter> = {
     // Viewblock gives only sends from before 2022-04 that Midgard does not list (docs/specs/sends.md)
     'viewblock/send': (bundle, protocol) => ({rows: [], ...interpretViewblockSend(bundle, protocol)}),
     'tcy/distribution': activity(interpretTcyDistribution),
-    'maya-fund/payout': (bundle, protocol) => ({activities: interpretMayaDistribution(bundle, protocol), rows: [], issues: []}),
+    'maya-distribution/payout': (bundle, protocol) => ({activities: interpretMayaDistribution(bundle, protocol), rows: [], issues: []}),
 };
 
 // Midgard action types handled on protocols other than THORChain (see docs/specs/maya.md)
@@ -83,7 +83,7 @@ export function getBundleType(bundle: RawBundle): {type: string; subtype?: strin
             return {type: 'send'};
         case 'tcy':
             return {type: 'distribution'};
-        case 'maya-fund':
+        case 'maya-distribution':
             return {type: 'payout'};
     }
 }

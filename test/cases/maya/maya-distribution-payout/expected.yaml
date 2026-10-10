@@ -1,5 +1,5 @@
 walletExchange: maya1nvch7vk5yv4erwmcct794xlhh8hu6twslyrr8m
-timestamp: 2026-10-09T13:48:33.000Z
+timestamp: 2026-10-09T13:48:33.621Z
 type: income
 baseCurrency: CACAO
 baseAmount: "0.0060306687"
@@ -7,4 +7,4 @@ from: mayaprotocol
 to: maya1nvch7vk5yv4erwmcct794xlhh8hu6twslyrr8m
 blockchain: Mayachain
 description: 1/1 - Received 0.0060306687 CACAO reward for holding MAYA; height 18748800
-id: 2026-10-09T13:48:33.000Z.reward.9e1836d2f8d8
+id: 2026-10-09T13:48:33.621Z.reward.229036f31b08
