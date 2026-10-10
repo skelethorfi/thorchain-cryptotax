@@ -1,8 +1,8 @@
 import {assetFromStringEx} from "@xchainjs/xchain-util";
-import type {Activity} from "../../domain/Activity.ts";
+import type {Activity, Leg} from "../../domain/Activity.ts";
 import type {Protocol} from "../../domain/Protocol.ts";
 import {type CryptoTaxTransaction, CryptoTaxTransactionType} from "./csv/index.ts";
-import {fee, leg, legTrace, named} from "./common.ts";
+import {fee, findLeg, leg, legTrace, named} from "./common.ts";
 
 // Reward distribution wallets known from what they do (docs/specs/sends.md): ordinary wallets, not protocol
 // modules, so no source names them. Their transfers of the listed assets are income unless the config sets
@@ -41,20 +41,22 @@ export function knownDistributorReport(rows: CryptoTaxTransaction[], incomeFrom?
     };
 }
 
-// A send or a receive on the wallet that listed it; an Arkeo delegation is a send to itself. A transfer received
-// is income when isIncomeReceipt says so (docs/specs/sends.md).
+// A send or a receive on the wallet that listed it. A transfer received is income when isIncomeReceipt says so.
+// A send to itself (e.g. an Arkeo delegation) moves nothing out of the wallet, so only its gas is exported, as a
+// fee row (docs/specs/sends.md).
 export function sendRows(activity: Activity, protocol: Protocol, incomeFrom?: string[]): CryptoTaxTransaction[] {
     const coin = leg(activity, 'principal');
     const isSend = coin.direction === 'out';
+
+    if (isSend && isToItself(activity)) {
+        return selfSendRows(activity, protocol);
+    }
+
     const isIncome = !isSend && isIncomeReceipt(activity.details.from ?? '', coin.asset.notation, incomeFrom);
     const type = isSend ? CryptoTaxTransactionType.Send : isIncome ? CryptoTaxTransactionType.Income : CryptoTaxTransactionType.Receive;
     const {currency, amount} = named(coin, protocol);
-    const ticker = assetFromStringEx(coin.asset.notation).ticker;
-    const label = coin.asset.kind === 'synth' ? `Synth ${ticker}` : coin.asset.kind === 'trade' ? `Trade ${ticker}` : ticker;
     const txId = coin.txid ?? '';
-    const description = activity.details.purpose === 'delegate-arkeo'
-        ? `1/1 - DelegateArkeoWallet; ${txId}`
-        : `${isSend ? 'Send' : isIncome ? 'Income: receive' : 'Receive'} ${amount} ${label}; ${txId}`;
+    const description = `${isSend ? 'Send' : isIncome ? 'Income: receive' : 'Receive'} ${amount} ${label(coin)}; ${txId}`;
 
     return [{
         walletExchange: coin.wallet,
@@ -69,4 +71,43 @@ export function sendRows(activity: Activity, protocol: Protocol, incomeFrom?: st
         trace: legTrace(coin),
         description,
     }];
+}
+
+function isToItself(activity: Activity): boolean {
+    const {from, to} = activity.details;
+    return !!from && from.toLowerCase() === to?.toLowerCase();
+}
+
+function selfSendRows(activity: Activity, protocol: Protocol): CryptoTaxTransaction[] {
+    const coin = leg(activity, 'principal');
+    const gas = findLeg(activity, 'gas');
+
+    if (!gas) {
+        return [];
+    }
+
+    const {currency, amount} = named(gas, protocol);
+    const sent = named(coin, protocol);
+    const txId = coin.txid ?? '';
+    const description = activity.details.purpose === 'delegate-arkeo' ? `1/1 - DelegateArkeoWallet; ${txId}`
+        : activity.details.failedAction ? `Fee: failed ${activity.details.failedAction} sent to itself; ${txId}`
+        : `Fee: send ${sent.amount} ${label(coin)} to itself; ${txId}`;
+
+    return [{
+        walletExchange: gas.wallet,
+        timestamp: activity.time,
+        type: CryptoTaxTransactionType.Fee,
+        baseCurrency: currency,
+        baseAmount: amount,
+        from: activity.details.from,
+        to: activity.details.to,
+        blockchain: protocol.blockchain,
+        trace: legTrace(gas),
+        description,
+    }];
+}
+
+function label(coin: Leg): string {
+    const ticker = assetFromStringEx(coin.asset.notation).ticker;
+    return coin.asset.kind === 'synth' ? `Synth ${ticker}` : coin.asset.kind === 'trade' ? `Trade ${ticker}` : ticker;
 }
