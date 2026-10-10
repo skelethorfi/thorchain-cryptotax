@@ -1,25 +1,34 @@
 #!/usr/bin/env node
 // summ-sync: keep Summ matching a set of Summ CSV files (README.md).
 
+import { runApply, WRITE_TOOLS } from '../src/apply.ts'
 import { login, READ_SCOPE, WRITE_SCOPE } from '../src/auth.ts'
-import { McpClient } from '../src/mcp.ts'
+import { McpClient, READ_TOOLS } from '../src/mcp.ts'
 import { pull } from '../src/pull.ts'
 import { writePlan } from '../src/write-plan.ts'
 
 const USAGE = `Usage:
   summ-sync login <state dir> [--write]   authorise in the browser (read, or read and write)
-  summ-sync pull  <state dir> [<run dir>] snapshot Summ into <state dir>/snapshots/
+  summ-sync pull  <state dir> [<run dir>] [--full]  snapshot Summ into <state dir>/snapshots/
   summ-sync plan  <state dir> <run dir>   compare a run with the latest snapshot (calls nothing)
+  summ-sync apply <state dir> <plan dir> [--dry-run] [--approve-deletes] [--approve-filed]
+                                          carry out a plan (needs login --write)
   summ-sync tools <state dir>             list the MCP server's tools`
 
 const [command, stateDir, ...rest] = process.argv.slice(2)
 try {
     if (!stateDir) throw new Error(USAGE)
     if (command === 'login') await login(stateDir, rest.includes('--write') ? WRITE_SCOPE : READ_SCOPE)
-    else if (command === 'pull') await pull(stateDir, rest[0])
+    else if (command === 'pull') await pull(stateDir, rest.find((a) => !a.startsWith('--')), { full: rest.includes('--full') })
     else if (command === 'plan') {
         if (!rest[0]) throw new Error(USAGE)
         writePlan(stateDir, rest[0])
+    }
+    else if (command === 'apply') {
+        if (!rest[0]) throw new Error(USAGE)
+        const dryRun = rest.includes('--dry-run')
+        const client = new McpClient(stateDir, dryRun ? READ_TOOLS : [...READ_TOOLS, ...WRITE_TOOLS])
+        await runApply(client, stateDir, rest[0], { dryRun, approveDeletes: rest.includes('--approve-deletes'), approveFiled: rest.includes('--approve-filed') })
     }
     else if (command === 'tools') {
         const client = new McpClient(stateDir)

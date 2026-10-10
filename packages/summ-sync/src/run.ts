@@ -116,6 +116,11 @@ export function parseWalletFile(name: string, text: string): { file: RunFile; ro
     return { file, rows }
 }
 
+/** The run's distinct periods. */
+export function periodsOf(files: { period: Period }[]): Period[] {
+    return [...new Map(files.map((f) => [`${f.period.from}_${f.period.to}`, f.period])).values()]
+}
+
 export function readRun(runDir: string): { files: RunFile[]; rows: Row[] } {
     const dir = join(runDir, 'csv')
     const files: RunFile[] = []

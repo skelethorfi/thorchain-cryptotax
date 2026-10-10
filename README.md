@@ -62,6 +62,29 @@ wallet addresses and txids into a test case.
 Allows you to run in the browser.<br>
 Follow the [Replit Instructions](docs/replit-instructions.md).
 
+### Two ways to work with Summ (Crypto Tax Calculator)
+
+**1. By hand** (the usual way):
+
+1. Make a config for the year (a copy of `wallets-config.toml` with the year's dates and your wallets).
+2. Run the export (`node src/full-export.ts <config>`, see the NodeJS instructions).
+3. Upload your THORChain wallet CSV files ([Import into Crypto Tax Calculator](#import-into-crypto-tax-calculator)).
+4. Categorise the related transactions of your other chains (BTC, ETH, ...) by hand
+   ([Categorising Transactions](#categorising-transactions)).
+
+**2. With summ-sync (experimental).** Syncing with Summ is new: review every plan, and
+expect changes. [`packages/summ-sync`](packages/summ-sync/README.md) compares a run with
+what Summ holds, through Summ's MCP server, and makes the changes for you:
+
+1. Make the config and run the export, as above.
+2. `pull`, then `plan`: the plan lists what to delete and edit in Summ, and writes
+   upload files with only the rows Summ lacks.
+3. `apply`: deletes and edits, so changed rows are gone before their new version is uploaded.
+4. Upload the plan's upload files (not the run's whole CSV files).
+5. `pull`, `plan` and `apply` again: now it categorises the other chains' transactions,
+   with the uploaded rows in Summ to pair them with.
+6. `pull` and `plan` once more: only the entries it cannot resolve itself are left, for you.
+
 ### Import into Crypto Tax Calculator
 
 Once you have successfully exported transactions into CSV files, you can import them

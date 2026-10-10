@@ -10,13 +10,32 @@ It is TypeScript that Node 24 runs directly (type stripping, so only
 erasable syntax: no enums or namespaces); `tsc` from the repo root checks it. It talks to Summ only through Summ's MCP server
 (`https://mcp.summ.com/mcp`), with your own login.
 
-Status: `login`, `pull` and `plan`. `apply` is next.
+Status: experimental. `login`, `pull`, `plan` and `apply` work; review every
+plan before you apply it.
+
+## A year's sync
+
+1. Export the year with the exporter (a run dir with `csv/`).
+2. `login <state dir> --write` once (the token is refreshed after that).
+3. `pull <state dir> <run dir>`, then `plan <state dir> <run dir>`. Read `plan.md`.
+4. `apply <state dir> <plan dir>` (`--dry-run` first; `--approve-deletes` if the
+   plan deletes). It deletes and edits, and holds back categorisation while the
+   plan has uploads.
+5. Upload the files in `<plan dir>/upload/` to Summ, under the account named
+   in `managedSources`. They hold only the rows Summ lacks.
+6. `pull`, `plan`, `apply` again: it categorises Summ's own legs, now that
+   Summ can pair them with the uploaded rows, and ignores the receives Summ
+   made up to pair a send as a transfer.
+7. `pull` and `plan`: what is left is under Report, for you to resolve.
+
+Filed years go in a separate apply with `--approve-filed`.
 
 ## Usage
 
     node packages/summ-sync/bin/summ-sync.ts login <state dir> [--write]
-    node packages/summ-sync/bin/summ-sync.ts pull  <state dir> [<run dir>]
+    node packages/summ-sync/bin/summ-sync.ts pull  <state dir> [<run dir>] [--full]
     node packages/summ-sync/bin/summ-sync.ts plan  <state dir> <run dir>
+    node packages/summ-sync/bin/summ-sync.ts apply <state dir> <plan dir> [--dry-run] [--approve-deletes] [--approve-filed]
     node packages/summ-sync/bin/summ-sync.ts tools <state dir>
 
 - `login` opens the browser to authorise this tool (scope `mcp:read`, or
@@ -27,17 +46,35 @@ Status: `login`, `pull` and `plan`. `apply` is next.
   JSON and change history of each action of a managed source
   (`details/<action id>.json`), and `manifest.json`. Given a run dir, it
   also fetches the detail of each action whose tx hash is a txid of the
-  run's categorised rows (chains not in `managedChains`).
+  run's categorised rows (chains not in `managedChains`). Summ gives an
+  action a new id whenever it changes, so detail the previous snapshot
+  holds under the same id is copied from it, and only new ids are
+  fetched; `--full` fetches all of it again (e.g. before filing a year).
 - `plan` compares the run's period wallet files with the latest snapshot
   and writes `<state dir>/plans/<timestamp>/`: `plan.json`, `plan.md` and
   `upload/` (the rows Summ lacks, per file). It calls nothing. It adds the
   legs it adopted (old `<file>:<n>` IDs) to `adopted.csv`, and the values
   you changed in Summ to `overrides.json`, where they win over the run until
   you delete them.
+- `apply` carries out a plan made from the latest snapshot: deletes (only
+  with `--approve-deletes`), then edits and categorisation, each checked
+  against Summ's current value first (categorisation waits while the plan
+  has uploads); then it lists the upload files. It
+  applies the current years' entries, or with `--approve-filed` only the
+  filed years'. `--dry-run` does the look-ups and checks with read tools
+  only and writes nothing. Every write goes to `<state dir>/apply-log.jsonl`
+  with its undo handle (`undo_edit`; deletes have none). Before a delete,
+  it saves each action as it inspected it (full JSON and change history) to
+  `<state dir>/deleted/<time>/<action id>.json`. Summ cannot undo a delete
+  and the MCP cannot recreate an uploaded row, so to bring a row back,
+  upload its CSV line again (from the run that wrote it); the saved file
+  shows what Summ held. It needs `login --write`. Afterwards, upload the
+  files, then pull and plan again.
 - `tools` lists the server's tools.
 
 Each command may call only the tools it needs; `login` and `pull` use read
-tools only, `plan` none. Requests are spaced 400 ms apart.
+tools only, `plan` none, `apply` also `edit_transaction` and
+`bulk_edit_transactions`. Requests are spaced 400 ms apart.
 
 ## State dir
 

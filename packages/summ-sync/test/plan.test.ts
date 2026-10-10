@@ -249,6 +249,27 @@ test('a categorised row sets the type and fee of Summ\'s own leg with its txid, 
     assert.equal(p.upload.length, 0)
 })
 
+test('the receive Summ made up to pair a categorised send as a transfer is ignored, never matched', () => {
+    const made = (over: Partial<Leg> = {}) => ownLeg({ side: 'incoming', trade: 'deposit', quantity: 0.0101, source: 'manual', importType: 'soft-transfer', to: 'THORChain', ...over })
+    const fee = () => ownLeg({ side: 'fees', trade: 'fee', quantity: 0.0001 })
+    // in the send's action, before the send is categorised
+    const soft = made()
+    const before = plan({ rows: [btcRow({ type: 'bridge-trade-out' })], legs: [ownLeg(), fee(), soft] }).plan
+    assert.deepEqual(before.categorise.map((e) => [e.changes.map((c) => c.desired), e.ignore]), [[['bridgeTradeOut'], [soft.legId]]])
+    // left on its own after the send was categorised: ignored without an edit
+    const alone = made({ actionId: 'l2' })
+    const after = plan({ rows: [btcRow({ type: 'bridge-trade-out' })], legs: [ownLeg({ trade: 'bridgeTradeOut' }), fee(), alone] }).plan
+    assert.deepEqual(after.categorise.map((e) => [e.changes, e.ignore]), [[[], [alone.legId]]])
+    // already ignored, or the row is a plain send (Summ's transfer is right): nothing to do
+    assert.deepEqual(plan({ rows: [btcRow({ type: 'bridge-trade-out' })], legs: [ownLeg({ trade: 'bridgeTradeOut' }), fee(), made({ trade: 'ignoreIn' })] }).plan.categorise, [])
+    assert.deepEqual(plan({ rows: [btcRow()], legs: [ownLeg(), fee(), made()] }).plan.categorise, [])
+    // a categorised receive is never matched to a made-up leg of the same amount
+    const receive = btcRow({ type: 'bridge-trade-in', feeCurrency: '', feeAmount: '' })
+    const own = ownLeg({ side: 'incoming', trade: 'deposit', quantity: 0.01 })
+    const p = plan({ rows: [receive], legs: [own, made({ quantity: 0.01 })] }).plan
+    assert.deepEqual([p.report, p.categorise.map((e) => e.changes[0].legId)], [[], [own.legId]])
+})
+
 test('a categorised row with no or several fitting legs is reported, never guessed', () => {
     const r = btcRow()
     const none = plan({ rows: [r], legs: [ownLeg({ id: TX2 })] }).plan

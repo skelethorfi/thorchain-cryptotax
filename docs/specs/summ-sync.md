@@ -69,9 +69,9 @@ nothing from it; the only link is the files below. It speaks MCP over
 ## Commands
 
     summ-sync login <state dir> [--write]  # browser OAuth; token in the state dir
-    summ-sync pull  <state dir> [<run dir>]  # writes a snapshot
+    summ-sync pull  <state dir> [<run dir>] [--full]  # writes a snapshot
     summ-sync plan  <state dir> <run dir>    # reads files only; calls nothing
-    summ-sync apply <state dir> <plan file> [--approve-deletes] [--approve-filed]
+    summ-sync apply <state dir> <plan dir> [--dry-run] [--approve-deletes] [--approve-filed]
 
 The **state dir** holds snapshots, plans, apply logs, the adoption table and
 the overrides file. It is the user's private data: never in this repo.
@@ -90,7 +90,10 @@ on-chain txids are the 64-character hex strings in its description (as
 the list) and `details/<action id>.json` (the action's JSON and change
 history) for each action the plan needs: every action of a managed source,
 and, when pull is given the run dir, every action whose tx hash is a txid
-of a categorised row. A snapshot is never patched: after an apply, pull
+of a categorised row. Summ's action ids are database ids made when the
+action is (re)built, and every write rebuilds it, so an id the previous
+snapshot holds is unchanged: its detail is copied from there, and only
+new ids are fetched (`pull --full` fetches everything). A snapshot is never patched: after an apply, pull
 again.
 
 **Sync config** (`summ-sync.json` in the state dir):
@@ -133,6 +136,15 @@ legacy legs fit, is reported, and those rows are not uploaded.
 txid of the row, with the same currency, and an amount equal to the row's
 or the row's plus its fee (Summ records the gross amount on some chains).
 Exactly one leg must match; none or several is reported, not guessed.
+
+**Made-up receives.** Summ pairs a send of its own imports with a receive
+it makes up itself (source `manual`, import type `soft-transfer`, to an
+account such as "THORChain"), so the send is a transfer that disposes of
+nothing. Once the send is categorised as anything but a plain send,
+Summ splits that receive off as a Receive of its own (`unmatchedTransfer`),
+and the asset counts twice. So plan lists each such leg (same txid and
+currency, not yet ignored) with the categorised row, and apply ignores
+it. A made-up leg is never matched to a categorised row.
 
 ## Compared fields
 
@@ -205,14 +217,44 @@ user to delete.
 
 In this order, stopping at the first failure:
 
-1. Check the plan's snapshot is the latest; refuse an older plan.
-2. Deletes (approved), by the leg `_id`s, never by a filter.
+1. Check the plan's snapshot is the latest, and that `apply-log.jsonl`
+   records no write since that snapshot was taken; refuse otherwise (pull
+   and plan again).
+2. Deletes (approved). Each leg is looked up again by `_id`, and only
+   actions that now hold nothing but the entry's legs are deleted, by
+   their action ids. A delete whose legs share an action with other legs
+   (in the plan or in Summ now) is skipped and reported. Never by a
+   filter: Summ's `id` filter lists the leg's action but can list
+   unrelated actions too, even with `showAssociated: 0`, so a look-up
+   inspects each action it lists and keeps only the one holding the leg.
+   Summ cannot undo a delete, so apply first saves each action as it
+   just inspected it to `deleted/<time>/<action id>.json` in the state
+   dir, and the log line names the file. A deleted row comes back by
+   uploading its CSV line again; the saved file shows what Summ held.
 3. Edits and categorisation. Before each action, look it up again by leg
    `_id` (action ids change after every write) and check the leg still
    holds the plan's "Summ value"; a leg that changed since the pull is
-   skipped and reported.
+   skipped and reported. All changes of one action go in one
+   `edit_transaction`.
+   Then each made-up receive of the row is looked up again by `_id`
+   (waiting a few seconds for Summ to split it off) and ignored by its
+   action id, only when that action holds nothing else; if the edit was
+   skipped, so is the ignore. An undo handle cannot be relied on to back
+   out of this: once Summ re-pairs the categorised leg with another
+   (e.g. an uploaded bridge-trade-in), the edit's handle is stale.
 4. Print the upload files for the user to upload.
-5. Write `apply-log.jsonl`: each call, its result and its undo handle.
+5. Write `apply-log.jsonl` as it goes: each call, its result and its undo
+   handle, one line per changed field (`legId`, `field`, `value`) for
+   plan's drift check, and each skip.
+
+While the plan has uploads (for the years this apply covers), apply holds
+back categorisation: Summ pairs a categorised leg with the other side of
+its swap only when that side is already in Summ, so the user uploads first
+and runs pull, plan and apply again.
+
+An apply carries out the current years' entries, or with `--approve-filed`
+only the filed years'. `--dry-run` does steps 1 to 3 with read tools only
+and writes nothing.
 
 Then `pull` and `plan` again: the plan should be empty, apart from what the
 upload adds once done.
