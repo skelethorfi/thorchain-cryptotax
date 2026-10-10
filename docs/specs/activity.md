@@ -118,7 +118,7 @@ exporter cannot be built until it handles every kind.
 | `tcy.claim` | 8d | in: principal, the TCY claimed (observed); gas: the native fee (default), only when the claim was sent from the same THORChain wallet | `claimedFor`: the address that held the claim |
 | `tcy.stake`, `tcy.unstake` | 8d | the TCY sent or received (observed); gas: the native fee (default) | — |
 | `tcy.distribution` | 8d | in: reward, the RUNE paid to the wallet it was listed for (observed). Price: the RUNE price the TCY API gives (`midgard:tcy.distribution.price`) | — |
-| `maya.fund` | — | in: reward, the CACAO paid to a MAYA holder at a payout height (observed: the wallet's balance step, or the block's event; `maya.md`) | `height`, `maya`: the MAYA held |
+| `maya.fund` | — | in: reward, the CACAO paid to a MAYA holder at a payout height (observed: Midgard's dividends list, the wallet's balance step, or the block's event; `maya.md`) | `height`; `maya`: the MAYA held, when the balance step gives it |
 | `thorname` | 8d | out: principal, the RUNE paid to register or renew (observed, when any; an update pays none); gas: the native fee (default). An update with no input address takes the name's owner as the wallet | `name` |
 | `rujira.stake` | 8e | out: principal, the coin bonded (observed); gas: the wasm call's gas from its Cosmos tx (observed, when any; not the native fee, `rujira.md`) | `bond`: `liquid` or `account`; `shares` for a liquid bond |
 | `rujira.fin.trade` | 8e | out: principal, the coin sent to FIN (observed); in: returned, any of it sent back (observed); in: principal, the coin received, net of FIN's fee, from the Cosmos tx (observed); gas as above | — |

@@ -163,16 +163,20 @@ list it, and Maya's Midgard has no endpoint for it. The public node's
 several MB, too much to read once a day.
 
 Maya's Midgard has listed the payouts since release 2.20.0
-(`/v2/maya/<address>/dividends`: height, date and CACAO amount, paged by 400),
-but only from height 14947200 (2026-01-26) onwards, for every holder: what
-it indexed, not when they first held MAYA. Where both have a payout, its
-height, date and amount equal what the balance step below gives. As it lacks
-earlier payouts, the source does not use it.
+(`/v2/maya/<address>/dividends`: height, date in seconds and CACAO amount,
+paged by 400, only payouts of more than 0), but only from height 14947200
+(2026-01-26) onwards, for every holder: what it indexed, not when they first
+held MAYA. The source uses it from that height on: one call per 400 payouts.
+A Midgard without it (404, e.g. an older one set in `MAYA_MIDGARD_API_URL`)
+gets a warning, and every height is read as below; any other error fails the
+run after the usual retries.
 
-So the source reads the wallet's balance on Maya's Midgard just before and at
+For payouts before that height, the source reads the wallet's balance on Maya's Midgard just before and at
 each payout height (`/v2/balance/<address>?height=h−1` and `?height=h`): the
 CACAO paid is the step between them, and the MAYA held at `h−1` is kept with
-it. That step is exact only when nothing else moved the wallet's CACAO in
+it (Midgard's shared client sends one request a second, so this is about 2 s
+a payout). Where both have a payout, its height, amount and date (to the
+second) equal the dividends list's. That step is exact only when nothing else moved the wallet's CACAO in
 block `h`. When the wallet has a Midgard action at `h`, the source reads the
 payout from that block's `distribute_maya_fund` event instead.
 
@@ -182,17 +186,23 @@ A wallet that never received MAYA has none. Each payout is a record
 (`maya-fund`, keyed `<wallet>.<height>`, one list per wallet). A run fetches
 only the heights after the last one stored; a past payout does not change.
 
+Each payout keeps the method that read it (`from`: `dividends`, `balance` or
+`event`) and is never read again. The dividends list's time is to the second,
+the balance step's to the millisecond, so the same payout read by the other
+method would get another row time and row ID.
+
 Activity `maya.fund`: in: reward, the CACAO paid (observed); details: the
-height and the MAYA held. A payout of 0 (no MAYA held at `h−1`) is not an
-activity.
+height, and the MAYA held when the balance step gives it. A payout of 0 (no
+MAYA held at `h−1`) is not an activity.
 
 | Row | Type | Base | Fee | From, to | Description |
 | --- | --- | --- | --- | --- | --- |
-| Payout | `income` | CACAO, the amount paid | — | `mayaprotocol`, the wallet | `1/1 - Received <amount> CACAO from the Maya fund for <maya> MAYA held; height <h>` |
+| Payout | `income` | CACAO, the amount paid | — | `mayaprotocol`, the wallet | `1/1 - Received <amount> CACAO from the Maya fund; height <h>` |
 
 It is income when paid: the value is Summ's CACAO price at that time (the
 source gives none). It is `income`, not `staking`: MAYA is held, not staked.
-Golden case: `maya/maya-fund-payout` (a public holder).
+Golden cases: `maya/maya-fund-payout` (balance step) and
+`maya/maya-fund-dividend` (dividends list), the same payout to a public holder.
 
 ### Withdraw liquidity
 

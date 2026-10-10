@@ -1,0 +1,12 @@
+{
+  "description": "Maya fund payout from Maya Midgard's dividends list (from height 14947200 on): no MAYA held is given",
+  "source": "maya-fund",
+  "protocol": "maya",
+  "wallet": "maya1nvch7vk5yv4erwmcct794xlhh8hu6twslyrr8m",
+  "data": {
+    "height": 18748800,
+    "date": "1791553713000000000",
+    "cacao": "60306687",
+    "from": "dividends"
+  }
+}

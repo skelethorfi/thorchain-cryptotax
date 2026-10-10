@@ -24,6 +24,9 @@ export function interpretMayaFund(bundle: RawBundle, protocol: Protocol): Activi
         txids: {in: [], out: []},
         legs: [{direction: 'in', wallet: bundle.wallet, asset: cacao, amount: parseAmount(payout.cacao, protocol.decimals(protocol.nativeAsset)), role: 'reward', basis: 'observed'}],
         prices: [],
-        details: {height: String(payout.height), maya: formatAmount(parseAmount(payout.maya, protocol.decimals('MAYA')))},
+        details: {
+            height: String(payout.height),
+            ...(payout.maya !== undefined ? {maya: formatAmount(parseAmount(payout.maya, protocol.decimals('MAYA')))} : {}),
+        },
     }];
 }
