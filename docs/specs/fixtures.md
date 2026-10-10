@@ -11,7 +11,7 @@ Cases must never contain a contributor's own wallets or transactions.
 ```
 test/cases/<group>/<name>/
   input.json      raw source data (a raw bundle)
-  activity.yaml   reviewed activities, for action types ported to activities (activity.md)
+  activity.yaml   reviewed activities (activity.md); none when the action gives none
   expected.yaml   reviewed CSV rows
 ```
 
@@ -28,10 +28,9 @@ test/cases/<group>/<name>/
 | `cosmosTxs` | Optional Cosmos txs of a contract action |
 
 `test/GoldenCases.test.ts` runs every case through `runBundle`, the same path the
-exporter uses, and compares the result with `expected.yaml`. For an action type
-ported to activities it also compares the activities with `activity.yaml`, so an
-interpreter bug and an exporter bug fail different checks; a ported case without
-`activity.yaml` fails. `npm run fixture -- show` prints both, and `--write` saves
+exporter uses, and compares the result with `expected.yaml`. It also compares the activities
+with `activity.yaml` (none means no activities), so an interpreter bug and an
+exporter bug fail different checks. `npm run fixture -- show` prints both, and `--write` saves
 both after review. A case without
 `expected.yaml` is reported as a todo: its input is in, but its mapper or review is
 not.
