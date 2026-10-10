@@ -37,6 +37,7 @@ Filed years go in a separate apply with `--approve-filed`.
     node packages/summ-sync/bin/summ-sync.ts plan  <state dir> <run dir>
     node packages/summ-sync/bin/summ-sync.ts apply <state dir> <plan dir> [--dry-run] [--approve-deletes] [--approve-filed]
     node packages/summ-sync/bin/summ-sync.ts prune <state dir> [--keep <n>]
+    node packages/summ-sync/bin/summ-sync.ts migrate <state dir>
     node packages/summ-sync/bin/summ-sync.ts tools <state dir>
 
 - `login` opens the browser to authorise this tool (scope `mcp:read`, or
@@ -76,6 +77,10 @@ Filed years go in a separate apply with `--approve-filed`.
   the stored actions none of those lists, only once they are committed
   (keep the state dir in git; git keeps the removed files). If any is not
   committed, it removes nothing and lists them.
+- `migrate` (one-off) turns the snapshot folders of earlier versions
+  (`snapshots/<time>/` with `details/`) and `deleted/` into the action store
+  and snapshot files. It leaves the old folders: plan again, check the plan
+  matches one from before, then remove them.
 - `tools` lists the server's tools.
 
 Each command may call only the tools it needs; `login` and `pull` use read

@@ -4,6 +4,7 @@
 import { runApply, WRITE_TOOLS } from '../src/apply.ts'
 import { login, READ_SCOPE, WRITE_SCOPE } from '../src/auth.ts'
 import { McpClient, READ_TOOLS } from '../src/mcp.ts'
+import { runMigrate } from '../src/migrate.ts'
 import { runPrune } from '../src/prune.ts'
 import { pull } from '../src/pull.ts'
 import { writePlan } from '../src/write-plan.ts'
@@ -16,6 +17,7 @@ const USAGE = `Usage:
                                           carry out a plan (needs login --write)
   summ-sync prune <state dir> [--keep <n>]  remove committed snapshots and stored actions older than the
                                           latest n snapshots (default 3) need
+  summ-sync migrate <state dir>           one-off: old snapshot folders to the action store
   summ-sync tools <state dir>             list the MCP server's tools`
 
 const [command, stateDir, ...rest] = process.argv.slice(2)
@@ -37,6 +39,7 @@ try {
         const keep = rest.indexOf('--keep')
         runPrune(stateDir, keep >= 0 ? Number(rest[keep + 1]) : undefined)
     }
+    else if (command === 'migrate') runMigrate(stateDir)
     else if (command === 'tools') {
         const client = new McpClient(stateDir)
         await client.connect()
