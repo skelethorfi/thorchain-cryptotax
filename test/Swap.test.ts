@@ -60,7 +60,8 @@ describe('swap', () => {
                         amount: '' + outputAmount * Math.pow(10, 8),
                     },
                 ],
-                txID,
+                // The payout's own tx on the output chain
+                txID: `out-${txID}`,
             } as Transaction,
         ],
         metadata: {
@@ -138,9 +139,29 @@ describe('swap', () => {
         assert.equal(result[0].description, '1/2 - Swap 1 BTC to 20 ETH; tx123');
         assert.equal(result[0].baseCurrency, 'BTC');
         assert.equal(result[0].baseAmount, '1');
-        assert.equal(result[1].description, '2/2 - Swap 1 BTC to 20 ETH; tx123');
+        assert.equal(result[1].description, '2/2 - Swap 1 BTC to 20 ETH; tx123; paid out in out-tx123');
         assert.equal(result[1].baseCurrency, 'ETH');
         assert.equal(result[1].baseAmount, '20');
+    });
+
+    test('names no payout txid for a payout to a THORChain or Maya wallet, or one with an all-zero txid', () => {
+        const toRune = createMockAction({
+            inputAsset: 'BTC.BTC', inputAmount: 1, outputAsset: 'THOR.RUNE', outputAmount: 20,
+            inputAddress: 'btc1address', outputAddress: 'thor1address', txID: 'tx123',
+        });
+        const toCacao = createMockAction({
+            inputAsset: 'BTC.BTC', inputAmount: 1, outputAsset: 'MAYA.CACAO', outputAmount: 20,
+            inputAddress: 'btc1address', outputAddress: 'maya1address', txID: 'tx123',
+        });
+        const zeroTxid = createMockAction({
+            inputAsset: 'BTC.BTC', inputAmount: 1, outputAsset: 'ETH.ETH', outputAmount: 20,
+            inputAddress: 'btc1address', outputAddress: 'eth1address', txID: 'tx123',
+        });
+        zeroTxid.out[0].txID = '0'.repeat(64);
+
+        assert.equal(swap(toRune)[1].description, '2/2 - Swap 1 BTC to 20 RUNE; tx123');
+        assert.equal(swap(toCacao, [], MAYA)[1].description, '2/2 - Swap 1 BTC to 0.2 CACAO; tx123');
+        assert.equal(swap(zeroTxid)[1].description, '2/2 - Swap 1 BTC to 20 ETH; tx123');
     });
 
     test('should use inbound thornode gas instead of Midgard network fee for non-THOR swaps', () => {

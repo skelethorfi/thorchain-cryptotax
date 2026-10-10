@@ -49,6 +49,50 @@ One more trap: Summ's `FailedIn` and `FailedOut` follow Summ's direction, not
 THORChain's. A refunded THORChain *inbound* is a `FailedOut`, because the
 wallet sent it.
 
+### Txids in descriptions
+
+A row's description names the inbound txid (most end with `; <txid>`): the
+transaction the wallet sent, which names the action on Midgard and
+THORNode.
+
+A row on an **L1 wallet** (any chain but THORChain and Maya) that records a
+payout from the protocol also names the **outbound** txid, the payout's own
+transaction on that chain (Midgard `out[].txID` for that wallet). That is
+the transaction a wallet import of the chain (Summ's, or a block explorer)
+lists, and the inbound txid is nowhere in it. The label is `paid out in`,
+which reads the same from the protocol's side (its outbound) and the
+wallet's (a receive):
+
+```text
+2/2 - Swap 0.001 BTC to 0.032 ETH; <inbound txid>; paid out in <outbound txid>
+```
+
+The inbound txid stays first: it is the one txid all rows of the action
+share, the key of the action's source records (run-diff explains a row by
+it), and the only link to THORChain from a row in Summ, whose own import
+already carries the outbound txid.
+
+| Kind | Row on the L1 wallet | Outbound |
+| --- | --- | --- |
+| swap | `BridgeTradeIn` (the `2/2` row) | the output paid to the memo's destination |
+| lp.withdraw, savers.withdraw | `RemoveLiquidity` of the L1 asset | that asset's payout |
+| loan.open | `Loan` (the `2/2` row) | the loan paid out |
+| loan.repay | `CollateralWithdrawal` (the `2/2` row) | the collateral paid back |
+
+- Only that row changes. The other rows of the action (on THORChain, Maya,
+  or the L1 rows the wallet sent) keep their descriptions, so their
+  uploaded copies in Summ stay as they are.
+- A row on THORChain or Maya gets no outbound txid: THORChain's own payouts
+  have none, and a payout from one protocol to the other is a row in an
+  uploaded file, matched by its ID.
+- A payout Midgard lists without a txid (still pending), or with an all-zero
+  one, adds nothing. Once it is paid out, a later run adds the txid, so
+  run-diff shows that row's description changing.
+- Refunds keep their own wording: the `Fee` row already says
+  `<amount> <coin> returned in <outbound txid>`. The part of a streaming swap
+  returned unfilled is not a row (it is netted off the trade-out), so its
+  outbound txid is in no description.
+
 ## The inbound fee
 
 `getInboundFee` (`src/export/summ/ThorchainUtils.ts`) gives the fee

@@ -167,7 +167,7 @@ test('after categorising, the receive Summ made up is ignored by its own action 
     assert.deepEqual([line?.legIds, line?.undo, line?.field], [['made-up'], 'ignore2abcdef', undefined])
 })
 
-test('a made-up receive already on its own is ignored without an edit', async () => {
+test('a made-up leg already on its own is ignored without an edit', async () => {
     const summ = new FakeSumm()
     summ.add('b', [{ ...MADE_UP }])
     const { result } = await run(summ, planFile({ categorise: [edit({ changes: [], ignore: ['made-up'] })] }))
@@ -175,7 +175,7 @@ test('a made-up receive already on its own is ignored without an edit', async ()
     assert.equal(summ.actions.get('b')?.[0].trade, 'ignoreIn')
 })
 
-test('a made-up receive still in an action with other legs is skipped, not ignored', async () => {
+test('a made-up leg still in an action with other legs is skipped, not ignored', async () => {
     const summ = new FakeSumm()
     summ.splits = false
     summ.add('a', [{ _id: 'leg-1', trade: 'withdrawal', quantity: '1' }, { ...MADE_UP }])
@@ -184,7 +184,7 @@ test('a made-up receive still in an action with other legs is skipped, not ignor
     assert.equal(summ.calls.some((c) => c.name === 'bulk_edit_transactions'), false)
 })
 
-test('a made-up receive is not ignored when its send was skipped', async () => {
+test('a made-up leg is not ignored when its send was skipped', async () => {
     const summ = new FakeSumm()
     summ.add('a', [{ _id: 'leg-1', trade: 'deposit', quantity: '1' }, { ...MADE_UP }])
     await run(summ, planFile({ categorise: [edit({ ignore: ['made-up'] })] }))

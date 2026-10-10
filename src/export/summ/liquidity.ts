@@ -5,7 +5,7 @@ import {parseMidgardAsset} from "../../sources/thorchain/MidgardUtils.ts";
 import {toPositionAsset} from "../../domain/Asset.ts";
 import {getLpTokenName} from "./ThorchainUtils.ts";
 import {formatBlockchain, type Protocol} from "../../domain/Protocol.ts";
-import {leg, legTrace, plusSeconds} from "./common.ts";
+import {leg, legTrace, paidOutNote, plusSeconds} from "./common.ts";
 import type {MayaLiquidityAuction} from "../../config/ITaxConfig.ts";
 
 // Summ needs a wallet for every row; an old deposit can have none
@@ -117,7 +117,7 @@ export function withdrawRows(activity: Activity, protocol: Protocol): CryptoTaxT
             to: out.wallet,
             blockchain: formatBlockchain(blockchain),
             trace: legTrace(out),
-            description: `${total - i}/${total} - Remove liquidity ${currency} from ${lpToken} (${symmetry}); ${txId}`,
+            description: `${total - i}/${total} - Remove liquidity ${currency} from ${lpToken} (${symmetry}); ${txId}${paidOutNote(out)}`,
         };
     });
     const quote = priceHelper(removals[0], paidOut.length);

@@ -270,10 +270,22 @@ test('the receive Summ made up to pair a categorised send as a transfer is ignor
     assert.deepEqual([p.report, p.categorise.map((e) => e.changes[0].legId)], [[], [own.legId]])
 })
 
+test('the send Summ made up to pair a categorised receive as a transfer is ignored', () => {
+    const receive = btcRow({ type: 'bridge-trade-in', feeCurrency: '', feeAmount: '' })
+    const own = ownLeg({ side: 'incoming', trade: 'deposit', quantity: 0.01 })
+    const made = ownLeg({ side: 'outgoing', trade: 'withdrawal', quantity: 0.01, source: 'manual', importType: 'soft-transfer', from: 'THORChain' })
+    const p = plan({ rows: [receive], legs: [own, made] }).plan
+    assert.deepEqual(p.categorise.map((e) => [e.changes.map((c) => [c.legId, c.desired]), e.ignore]), [[[[own.legId, 'bridgeTradeIn']], [made.legId]]])
+    assert.deepEqual(p.report, [])
+})
+
 test('a categorised row with no or several fitting legs is reported, never guessed', () => {
     const r = btcRow()
     const none = plan({ rows: [r], legs: [ownLeg({ id: TX2 })] }).plan
     assert.deepEqual(none.report.map((e) => e.kind), ['no-leg'])
+    // a payout row's report names every txid, so the one Summ's import lists can be searched for
+    const payout = btcRow({ type: 'bridge-trade-in', feeCurrency: '', feeAmount: '', txids: [TX1, TX2] })
+    assert.deepEqual(plan({ rows: [payout], legs: [] }).plan.report.map((e) => e.txids), [[TX1, TX2]])
     const unfetched = plan({ rows: [r], legs: [], txHashes: new Set([TX1]) }).plan
     assert.deepEqual(unfetched.report.map((e) => e.kind), ['not-in-snapshot'])
     const several = plan({ rows: [r], legs: [ownLeg(), ownLeg({ quantity: 0.01 })] }).plan

@@ -84,7 +84,8 @@ the files the user uploads. `csv/all.csv` is not read: it holds rows outside
 the run's periods. `row-ids.csv` traces an `ID` back to its action for the
 user; plan does not need it. No other file is written for the sync. A row's
 on-chain txids are the 64-character hex strings in its description (as
-`run-diff.md`).
+`run-diff.md`); a payout to an L1 wallet names its outbound txid there too
+(`fees.md`, Txids in descriptions).
 
 **Snapshot** (written by `pull`): `actions.jsonl` (one line per action from
 the list) and `details/<action id>.json` (the action's JSON and change
@@ -137,12 +138,13 @@ txid of the row, with the same currency, and an amount equal to the row's
 or the row's plus its fee (Summ records the gross amount on some chains).
 Exactly one leg must match; none or several is reported, not guessed.
 
-**Made-up receives.** Summ pairs a send of its own imports with a receive
+**Made-up legs.** Summ pairs a send of its own imports with a receive
 it makes up itself (source `manual`, import type `soft-transfer`, to an
 account such as "THORChain"), so the send is a transfer that disposes of
-nothing. Once the send is categorised as anything but a plain send,
-Summ splits that receive off as a Receive of its own (`unmatchedTransfer`),
-and the asset counts twice. So plan lists each such leg (same txid and
+nothing; a receive it pairs with a made-up send (withdrawal from such an
+account). Once the leg is categorised as anything but a plain send or
+receive, Summ splits the made-up leg off as an action of its own
+(`unmatchedTransfer`), and the asset counts twice. So plan lists each such leg (same txid and
 currency, not yet ignored) with the categorised row, and apply ignores
 it. A made-up leg is never matched to a categorised row.
 
@@ -236,7 +238,7 @@ In this order, stopping at the first failure:
    holds the plan's "Summ value"; a leg that changed since the pull is
    skipped and reported. All changes of one action go in one
    `edit_transaction`.
-   Then each made-up receive of the row is looked up again by `_id`
+   Then each made-up leg of the row is looked up again by `_id`
    (waiting a few seconds for Summ to split it off) and ignored by its
    action id, only when that action holds nothing else; if the edit was
    skipped, so is the ignore. An undo handle cannot be relied on to back
@@ -270,7 +272,3 @@ upload adds once done.
 ## Open
 
 - Whether a categorised leg's amount is gross or net of the fee, per chain.
-- A categorised row that receives on an L1 (the outbound of a swap) names
-  only the THORChain inbound txid in its description, while Summ's leg
-  carries the outbound txid, so it matches no leg until the exporter adds
-  the outbound txid to the description.

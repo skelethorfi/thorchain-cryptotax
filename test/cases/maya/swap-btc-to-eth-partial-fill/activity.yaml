@@ -36,6 +36,7 @@ legs:
       kind: native
     role: principal
     basis: observed
+    txid: D3D019FEF8CFA4311B18858E32E9ECF647D164A864833796BB53B694F3EFB518
     amount: "1.05891769"
     decimals: 8
 prices:

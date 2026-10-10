@@ -26,6 +26,7 @@ legs:
       kind: token
     role: principal
     basis: observed
+    txid: 55860A1E4E029A040242443BC45DD278B2484949AB016F26123FED6B11510619
     amount: "6325.973167"
     decimals: 8
   - direction: out
