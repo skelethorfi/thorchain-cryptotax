@@ -50,6 +50,11 @@ export function shouldIncludeAction(action: Action): boolean {
         return true;
     }
 
+    // A failed send moved nothing but still paid the native fee (docs/specs/sends.md)
+    if (action.type === ActionTypeEnum.Send && action.status === ActionStatusEnum.Failed) {
+        return true;
+    }
+
     const txType = (action.metadata.swap as any)?.txType;
 
     // Loan repayments show as 'pending' if the loan is not closed

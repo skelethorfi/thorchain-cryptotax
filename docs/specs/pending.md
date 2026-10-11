@@ -32,6 +32,7 @@ The same cut-off stops a run fetching a stuck THORNode or Cosmos tx again
 | covered: a successful action in the wallet's list has the same inbound txid | no: that action accounts for it |
 | stuck refund, not covered | yes: `FailedOut` and `Lost` (below) |
 | stuck swap that paid nothing out, not covered | yes: as a stuck refund (below) |
+| failed send | yes: a `fee` row for its gas (`sends.md`) |
 | any other action that is not `success` | no |
 
 **Covered.** Midgard lists a savers deposit as a successful `addLiquidity`

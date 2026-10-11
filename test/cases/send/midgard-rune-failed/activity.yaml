@@ -1,0 +1,20 @@
+id: midgard/send.5259FD87E03237BDCDDD503EA7C0DC91A8AF4286D1F2E9474D51150A4114B654
+protocol: thorchain
+kind: send
+status: failed
+time: 2026-10-10T19:08:51.325Z
+legs:
+  - direction: out
+    wallet: thor127w9jk8sgzr896vkhtjft9h9f0e0tf9qrj2fs3
+    asset:
+      notation: THOR.RUNE
+      kind: native
+    role: gas
+    basis: default
+    txid: 5259FD87E03237BDCDDD503EA7C0DC91A8AF4286D1F2E9474D51150A4114B654
+    amount: "0.02"
+    decimals: 8
+prices: []
+details:
+  from: thor127w9jk8sgzr896vkhtjft9h9f0e0tf9qrj2fs3
+  to: thor1hqxgjdwd7m29lc6l33y6509x9ctwewfxtver8s

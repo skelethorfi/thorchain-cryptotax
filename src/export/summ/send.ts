@@ -43,8 +43,12 @@ export function knownDistributorReport(rows: SummRow[], incomeFrom?: string[]): 
 
 // A send or a receive on the wallet that listed it. A transfer received is income when isIncomeReceipt says so.
 // A send to itself (e.g. an Arkeo delegation) moves nothing out of the wallet, so only its gas is exported, as a
-// fee row (docs/specs/sends.md).
+// fee row (docs/specs/sends.md). So is a failed send's, which moved nothing.
 export function sendRows(activity: Activity, protocol: Protocol, incomeFrom?: string[]): SummRow[] {
+    if (activity.status === 'failed') {
+        return failedSendRows(activity, protocol);
+    }
+
     const coin = leg(activity, 'principal');
     const isSend = coin.direction === 'out';
 
@@ -104,6 +108,24 @@ function selfSendRows(activity: Activity, protocol: Protocol): SummRow[] {
         blockchain: protocol.blockchain,
         trace: legTrace(gas),
         description,
+    }];
+}
+
+function failedSendRows(activity: Activity, protocol: Protocol): SummRow[] {
+    const gas = leg(activity, 'gas');
+    const {currency, amount} = named(gas, protocol);
+
+    return [{
+        wallet: gas.wallet,
+        timestamp: activity.time,
+        type: SummRowType.Fee,
+        baseCurrency: currency,
+        baseAmount: amount,
+        from: activity.details.from,
+        to: activity.details.to,
+        blockchain: protocol.blockchain,
+        trace: legTrace(gas),
+        description: `Fee: failed send; ${gas.txid ?? ''}`,
     }];
 }
 

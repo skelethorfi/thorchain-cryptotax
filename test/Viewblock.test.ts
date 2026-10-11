@@ -7,6 +7,8 @@ import {Viewblock} from '../src/sources/viewblock/index.ts';
 import {withoutCurrentValues} from '../src/sources/store/Sources.ts';
 import {RecordStore} from '../src/sources/store/RecordStore.ts';
 import {http} from '../src/sources/http.ts';
+import {interpretViewblockSend} from '../src/interpret/viewblock/send.ts';
+import {THORCHAIN} from '../src/domain/Protocol.ts';
 
 describe('Viewblock', () => {
     const tx = (hash: string) => ({hash, timestamp: Date.UTC(2021, 6, 1)});
@@ -52,5 +54,24 @@ describe('withoutCurrentValues', () => {
         const tx = {input: {amount: '1', usd: '10', usdNew: '12'}, outbounds: [{usd: '5', usdNew: '6'}]};
 
         assert.deepEqual(withoutCurrentValues([tx]), [{input: {amount: '1', usd: '10'}, outbounds: [{usd: '5'}]}]);
+    });
+});
+
+describe('interpretViewblockSend', () => {
+    const bundle = (code: number, wallet: string) => ({
+        source: 'viewblock' as const, protocol: 'thorchain' as const, wallet, thornodeTxs: [], cosmosTxs: [],
+        data: {
+            hash: 'B'.repeat(64), timestamp: Date.UTC(2021, 6, 1), code, memo: '', types: ['send'],
+            input: {asset: 'THOR.RUNE', amount: '1'},
+            msgs: [{'@type': '/types.MsgSend', from_address: 'thor1-sender', to_address: 'thor1-receiver', amount: [{denom: 'rune', amount: '100000000'}]}],
+        } as any,
+    });
+
+    test('a failed tx is its sender\'s fee only', () => {
+        const sender = interpretViewblockSend(bundle(5, 'thor1-sender'), THORCHAIN);
+        const receiver = interpretViewblockSend(bundle(5, 'thor1-receiver'), THORCHAIN);
+
+        assert.deepEqual(sender.activities.map(a => [a.status, a.legs.map(leg => leg.role)]), [['failed', ['gas']]]);
+        assert.deepEqual(receiver.activities, []);
     });
 });

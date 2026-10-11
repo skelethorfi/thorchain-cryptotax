@@ -56,8 +56,9 @@ export function failedActionName(memo: string): string | undefined {
 }
 
 // A send from the side of the wallet whose listing gave it: the sender's legs (the coin and the native fee),
-// or the receiver's (the coin). A send to itself is the sender's.
-export function sendActivity(send: Send, wallet: string, protocol: Protocol): Activity {
+// or the receiver's (the coin). A send to itself is the sender's. A failed send moved no coin: its only leg is
+// the sender's native fee, which was still paid (failedSend).
+export function sendActivity(send: Send, wallet: string, protocol: Protocol, failed = false): Activity {
     const asset = /[./~-]/.test(send.asset) ? send.asset : `${protocol.nativeChain}.${send.asset}`;
     const isSender = send.from === wallet;
     // A send to itself with an action memo reached no protocol: a failed attempt at the action
@@ -65,6 +66,10 @@ export function sendActivity(send: Send, wallet: string, protocol: Protocol): Ac
 
     if (!isSender && send.to !== wallet) {
         throw new Error(`a send from ${send.from} to ${send.to} listed for ${wallet}`);
+    }
+
+    if (failed && !isSender) {
+        throw new Error('a failed send listed for its receiver');
     }
 
     const coin: Leg = {
@@ -76,10 +81,11 @@ export function sendActivity(send: Send, wallet: string, protocol: Protocol): Ac
         id: send.id,
         protocol: protocol.id,
         kind: 'send',
-        status: 'success',
+        status: failed ? 'failed' : 'success',
         time: send.time,
         memo: send.memo || undefined,
-        legs: isSender ? [coin, {...nativeGas(wallet, protocol), txid: send.txid}] : [coin],
+        legs: failed ? [{...nativeGas(wallet, protocol), txid: send.txid}]
+            : isSender ? [coin, {...nativeGas(wallet, protocol), txid: send.txid}] : [coin],
         prices: [],
         details: {
             from: send.from, to: send.to,
@@ -87,6 +93,13 @@ export function sendActivity(send: Send, wallet: string, protocol: Protocol): Ac
             ...(failedAction ? {failedAction} : {}),
         },
     };
+}
+
+// A failed send gives an activity only on its sender's side, where the fee was paid; its receiver got nothing
+export function failedSend(send: Send, wallet: string, protocol: Protocol): {activities: Activity[]; issues: Issue[]} {
+    return send.from === wallet
+        ? {activities: [sendActivity(send, wallet, protocol, true)], issues: []}
+        : {activities: [], issues: [{kind: 'ignored', message: 'failed send to the wallet: it moved nothing'}]};
 }
 
 // A Midgard send, on THORChain or Maya. A send with no coins (e.g. a TCY unstake request's memo) moves nothing.
@@ -109,6 +122,10 @@ export function interpretSend(bundle: RawBundle, protocol: Protocol): {activitie
         amount: coin.amount,
         memo: (action.metadata as any)?.send?.memo ?? '',
     };
+
+    if (action.status === 'failed') {
+        return failedSend(send, bundle.wallet, protocol);
+    }
 
     // selectSends has dropped the sends another listed action explains; one with an action memo left over was
     // most likely received by a protocol whose actions this run does not list (actionMemoSummary). One sent to

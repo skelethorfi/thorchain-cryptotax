@@ -15,6 +15,17 @@ const send = (memo: string): RawBundle => ({
 });
 
 describe('interpretSend', () => {
+    test('a failed send is its sender\'s fee only; its receiver got nothing', () => {
+        const failed = send('');
+        (failed.data as any).status = 'failed';
+        const sender = interpretSend(failed, THORCHAIN);
+        const receiver = interpretSend({...failed, wallet: 'thor1-other-wallet-2222'}, THORCHAIN);
+
+        assert.deepEqual(sender.activities.map(a => [a.status, a.legs.map(leg => leg.role)]), [['failed', ['gas']]]);
+        assert.deepEqual(receiver.activities, []);
+        assert.deepEqual(receiver.issues.map(issue => issue.kind), ['ignored']);
+    });
+
     for (const memo of ['=:ARB.USDC:0xabc:0:be:16', 'swap:BTC.BTC:bc1q', '+:BTC.BTC', 'trade+:thor1x', '~:name:THOR:thor1x']) {
         test(`warns on a send whose memo asks for an action: ${memo}`, () => {
             const {activities, issues} = interpretSend(send(memo), THORCHAIN);

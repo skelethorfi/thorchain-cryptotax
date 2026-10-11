@@ -45,6 +45,17 @@ describe('MidgardSource actions that are not final', () => {
         ]);
     });
 
+    test('a failed send is exported: it paid the fee', async () => {
+        const notFinal: NotFinal[] = [];
+        const bundles = await source(THORCHAIN, [action('send', 'failed', 'L'), action('swap', 'failed', 'M')], notFinal).bundlesFor('thor1wallet');
+
+        assert.deepEqual(bundles.map(b => (b.data as any).in[0].txID), ['L']);
+        assert.deepEqual(notFinal.map(({key, exported}) => ({key, exported})), [
+            {key: 'midgard/send.L', exported: true},
+            {key: 'midgard/swap.M', exported: false},
+        ]);
+    });
+
     test('keys another protocol\'s actions by its Midgard', async () => {
         const notFinal: NotFinal[] = [];
         await source(MAYA, [action('refund', 'pending', 'D')], notFinal).bundlesFor('thor1wallet');

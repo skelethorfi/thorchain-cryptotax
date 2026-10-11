@@ -1,0 +1,10 @@
+wallet: thor127w9jk8sgzr896vkhtjft9h9f0e0tf9qrj2fs3
+timestamp: 2026-10-10T19:08:51.325Z
+type: fee
+baseCurrency: RUNE
+baseAmount: "0.02"
+from: thor127w9jk8sgzr896vkhtjft9h9f0e0tf9qrj2fs3
+to: thor1hqxgjdwd7m29lc6l33y6509x9ctwewfxtver8s
+blockchain: THORChain
+description: "Fee: failed send; 5259FD87E03237BDCDDD503EA7C0DC91A8AF4286D1F2E9474D51150A4114B654"
+id: 2026-10-10T19:08:51.325Z.gas.1b46b4f54c57
