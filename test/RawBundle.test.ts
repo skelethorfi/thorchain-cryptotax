@@ -63,6 +63,13 @@ describe('selectSends', () => {
         assert.deepEqual(selectSends([mayaSwap, send]), {bundles: [mayaSwap], dropped: {inbound: 1, outbound: 0, viewblock: 0}});
     });
 
+    test("drops the inbound send of a stuck Maya swap exported as lost, so the RUNE leaves the wallet once", () => {
+        const stuck = bundle('midgard', 'thor1a', {...action('AB', 'swap'), status: 'pending'}, 'maya');
+        const send = bundle('midgard', 'thor1a', action('AB', 'send'));
+
+        assert.deepEqual(selectSends([stuck, send]).bundles, [stuck]);
+    });
+
     test('keeps only Viewblock sends from before 2022-04 that Midgard does not list', () => {
         const early = bundle('viewblock', 'thor1a', vbSend('E1', '2022-03-31T23:59:59Z'));
         const listed = bundle('viewblock', 'thor1a', vbSend('e2', '2021-07-01T00:00:00Z'));

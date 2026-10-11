@@ -24,14 +24,19 @@ export function interpretSwap(bundle: RawBundle, protocol: Protocol): {activitie
     const input = action.in[0];
     const inputCoin = input.coins[0];
     const inputAsset = toAsset(inputCoin.asset);
-    const output = getOutput(action);
-    const outputCoin = output.coins[0];
-    const outputAsset = toAsset(outputCoin.asset);
 
     // A synth swapped from an L1 address is a savers withdrawal's internal leg, not the wallet's swap
     if (inputCoin.asset.includes('/') && !input.address.toLowerCase().startsWith(protocol.nativeAddressPrefix)) {
         return {activities: [], issues: [{kind: 'ignored', message: 'synth swap from an L1 address (a savers withdrawal)'}]};
     }
+
+    if (action.status === 'pending') {
+        return stuckSwap(bundle, protocol);
+    }
+
+    const output = getOutput(action);
+    const outputCoin = output.coins[0];
+    const outputAsset = toAsset(outputCoin.asset);
 
     // Can appear with lending transactions
     if (inputCoin.asset === 'THOR.TOR' || outputCoin.asset === 'THOR.TOR') {
@@ -69,6 +74,40 @@ export function interpretSwap(bundle: RawBundle, protocol: Protocol): {activitie
             details: {},
         }],
         issues: [],
+    };
+}
+
+// A swap still pending past the cut-off that paid nothing out, which the source exports only then: the wallet
+// sent its coin and nothing came back, so it is exported like a stuck refund (docs/specs/pending.md)
+function stuckSwap(bundle: RawBundle, protocol: Protocol): {activities: Activity[]; issues: Issue[]} {
+    const action = bundle.data as Action;
+    const input = action.in[0];
+    const inputCoin = input.coins[0];
+
+    if (action.out.some(out => out.coins.length > 0)) {
+        throw new Error('swap: still pending with coins paid out');
+    }
+
+    const txid = input.txID ?? '';
+    const sent: Leg = {
+        direction: 'out', wallet: input.address, asset: toAsset(inputCoin.asset),
+        amount: parseAmount(inputCoin.amount, protocol.decimals(inputCoin.asset)), role: 'principal', basis: 'observed', txid,
+    };
+    const gas = inboundGas(txid, bundle.thornodeTxs, input.address, inputCoin.asset, protocol);
+
+    return {
+        activities: [{
+            id: getBundleKey(bundle),
+            protocol: protocol.id,
+            kind: 'swap',
+            status: 'pending',
+            time: getActionDate(action),
+            memo: action.metadata.swap?.memo,
+            legs: gas ? [sent, {...gas, txid}] : [sent],
+            prices: [],
+            details: {reason: 'still pending past the cut-off, nothing paid out'},
+        }],
+        issues: [{kind: 'warning', message: 'swap still pending past the cut-off with nothing paid out: what was sent is exported as lost; check nothing came back'}],
     };
 }
 

@@ -31,6 +31,8 @@ The same cut-off stops a run fetching a stuck THORNode or Cosmos tx again
 | pending loan open with an output | yes: it was paid out (`loans.md`) |
 | covered: a successful action in the wallet's list has the same inbound txid | no: that action accounts for it |
 | stuck refund, not covered | yes: `FailedOut` and `Lost` (below) |
+| stuck swap that paid nothing out, not covered | yes: as a stuck refund (below) |
+| failed send that paid the fee (THORChain, from block 11,637,012) | yes: a `fee` row for its gas (`sends.md`) |
 | any other action that is not `success` | no |
 
 **Covered.** Midgard lists a savers deposit as a successful `addLiquidity`
@@ -50,12 +52,32 @@ gets a warning to check that it never came back. The amount sent and the gas
 are observed on-chain; that it is lost is assumed from Midgard's status.
 
 A pending refund younger than the cut-off is not exported: it may still be
-paid out. A stuck pending swap that is not covered is listed but not
-exported (none is known): check it by hand.
+paid out.
+
+**Stuck swap.** A swap (not a loan) still pending past the cut-off, not
+covered, sharing its inbound txid with no other listed action (e.g. a
+pending refund of the same coin, which would make two disposals of it), with
+no coins paid out: the wallet sent its coin and nothing came
+back, which is a stuck refund under another name. It gives the same rows, a
+`FailedOut` with the gas and a `Lost` for the amount sent, described
+`swap (<txid>): …`, and the same warning. A stuck swap that paid some coins
+out, or that shares its txid with another action, is listed but not
+exported: check it by hand. The interpreter trusts the source's age check: a
+pending swap looked up by txid (e.g. by the fixture tool) maps as stuck
+whatever its age, as a pending refund does.
+
+**Inbound send.** An action that is not exported may have been paid for by a
+send the run does list, e.g. the RUNE sent to Maya's vault for a Maya swap
+still pending. Once the action is exported, that send is dropped as its
+inbound (`sends.md`); until then it is exported as a plain send, so the coin
+still leaves the wallet. Its rows change when the action becomes final.
 
 Every action that is not `success`, exported or not, is listed once in the run
 summary's Not final section (`run-summary.md`), oldest first, with its status,
-age in days, whether it is recent, waiting or stuck, whether it was exported or
-what covers it, and its store record key. The Counts section gives the totals.
+age in days, whether it is recent, waiting or stuck (a pending action only;
+a failed one is final), whether it was exported,
+what covers it, or which send stands in for it ("its inbound is exported as a
+send (<key>)", with "until it is final" for a pending action), and its store record key. The Counts
+section gives the totals.
 
 Golden case: `refund/btc-pending-never-paid`.

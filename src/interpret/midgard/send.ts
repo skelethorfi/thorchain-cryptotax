@@ -3,7 +3,7 @@ import type {Activity, Leg} from "../../domain/Activity.ts";
 import {parseAmount} from "../../domain/Amount.ts";
 import {toAsset} from "../../domain/Asset.ts";
 import type {Issue} from "../../domain/Issue.ts";
-import type {Protocol} from "../../domain/Protocol.ts";
+import {failedTxPaidFee, type Protocol} from "../../domain/Protocol.ts";
 import {getActionDate} from "../../sources/thorchain/MidgardUtils.ts";
 import {getBundleKey, type RawBundle} from "../../sources/RawBundle.ts";
 import {nativeGas} from "./bond.ts";
@@ -56,9 +56,9 @@ export function failedActionName(memo: string): string | undefined {
 }
 
 // A send from the side of the wallet whose listing gave it: the sender's legs (the coin and the native fee),
-// or the receiver's (the coin). A send to itself is the sender's.
-export function sendActivity(send: Send, wallet: string, protocol: Protocol): Activity {
-    const asset = /[./~-]/.test(send.asset) ? send.asset : `${protocol.nativeChain}.${send.asset}`;
+// or the receiver's (the coin). A send to itself is the sender's. A failed send moved no coin: its only leg is
+// the sender's native fee, which was still paid (failedSend).
+export function sendActivity(send: Send, wallet: string, protocol: Protocol, failed = false): Activity {
     const isSender = send.from === wallet;
     // A send to itself with an action memo reached no protocol: a failed attempt at the action
     const failedAction = send.from === send.to ? failedActionName(send.memo) : undefined;
@@ -67,19 +67,20 @@ export function sendActivity(send: Send, wallet: string, protocol: Protocol): Ac
         throw new Error(`a send from ${send.from} to ${send.to} listed for ${wallet}`);
     }
 
-    const coin: Leg = {
-        direction: isSender ? 'out' : 'in', wallet, asset: toAsset(asset), amount: parseAmount(send.amount, protocol.decimals(asset)),
-        role: 'principal', basis: 'observed', txid: send.txid,
-    };
+    if (failed && !isSender) {
+        throw new Error('a failed send listed for its receiver');
+    }
+
+    const gas: Leg = {...nativeGas(wallet, protocol), txid: send.txid};
 
     return {
         id: send.id,
         protocol: protocol.id,
         kind: 'send',
-        status: 'success',
+        status: failed ? 'failed' : 'success',
         time: send.time,
         memo: send.memo || undefined,
-        legs: isSender ? [coin, {...nativeGas(wallet, protocol), txid: send.txid}] : [coin],
+        legs: failed ? [gas] : isSender ? [coinLeg(send, wallet, protocol), gas] : [coinLeg(send, wallet, protocol)],
         prices: [],
         details: {
             from: send.from, to: send.to,
@@ -89,26 +90,50 @@ export function sendActivity(send: Send, wallet: string, protocol: Protocol): Ac
     };
 }
 
+function coinLeg(send: Send, wallet: string, protocol: Protocol): Leg {
+    const asset = /[./~-]/.test(send.asset) ? send.asset : `${protocol.nativeChain}.${send.asset}`;
+    return {
+        direction: send.from === wallet ? 'out' : 'in', wallet, asset: toAsset(asset), amount: parseAmount(send.amount, protocol.decimals(asset)),
+        role: 'principal', basis: 'observed', txid: send.txid,
+    };
+}
+
+// A failed send moved nothing. From the protocol's failedTxFeeFromHeight it still paid the native fee, so it gives an
+// activity on its sender's side; before that it paid nothing, and its receiver never gets anything (docs/specs/sends.md)
+export function failedSend(send: Send, height: number, wallet: string, protocol: Protocol): {activities: Activity[]; issues: Issue[]} {
+    if (send.from !== wallet) {
+        return {activities: [], issues: [{kind: 'ignored', message: 'failed send to the wallet: it moved nothing'}]};
+    }
+
+    return failedTxPaidFee(protocol, height)
+        ? {activities: [sendActivity(send, wallet, protocol, true)], issues: []}
+        : {activities: [], issues: [{kind: 'ignored', message: 'failed send from before failed txs paid the native fee: it paid nothing'}]};
+}
+
 // A Midgard send, on THORChain or Maya. A send with no coins (e.g. a TCY unstake request's memo) moves nothing.
 export function interpretSend(bundle: RawBundle, protocol: Protocol): {activities: Activity[]; issues: Issue[]} {
     const action = bundle.data as Action;
     const input = action.in[0];
     const coin = input?.coins[0];
+    const send: Send = {
+        id: getBundleKey(bundle),
+        time: getActionDate(action),
+        txid: input?.txID ?? '',
+        from: input?.address ?? '',
+        to: action.out[0]?.address ?? '',
+        asset: coin?.asset ?? '',
+        amount: coin?.amount ?? '0',
+        memo: (action.metadata as any)?.send?.memo ?? '',
+    };
+
+    // A failed send pays the same fee with or without coins
+    if (action.status === 'failed') {
+        return failedSend(send, Number(action.height), bundle.wallet, protocol);
+    }
 
     if (!coin) {
         return {activities: [], issues: [{kind: 'ignored', message: 'Midgard send with no coins'}]};
     }
-
-    const send: Send = {
-        id: getBundleKey(bundle),
-        time: getActionDate(action),
-        txid: input.txID ?? '',
-        from: input.address,
-        to: action.out[0]?.address ?? '',
-        asset: coin.asset,
-        amount: coin.amount,
-        memo: (action.metadata as any)?.send?.memo ?? '',
-    };
 
     // selectSends has dropped the sends another listed action explains; one with an action memo left over was
     // most likely received by a protocol whose actions this run does not list (actionMemoSummary). One sent to

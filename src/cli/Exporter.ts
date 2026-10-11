@@ -16,7 +16,7 @@ import {SnapshotManifest} from "../sources/store/SnapshotManifest.ts";
 import {getProtocol, MAYA, type Protocol, THORCHAIN, withAssetNames} from "../domain/Protocol.ts";
 import {MayaDistributionSource, MidgardSource, type Source, TcySource, ViewblockSource} from "../sources/Source.ts";
 import {MayaDistributionService} from "../sources/maya/MayaDistributionService.ts";
-import {ageInDays, type NotFinal, type PendingAge, pendingAge} from "../sources/Pending.ts";
+import {ageInDays, inboundSends, type NotFinal, type PendingAge, pendingAge} from "../sources/Pending.ts";
 import {getActionDate} from "../sources/thorchain/MidgardUtils.ts";
 import {ACTION_MEMO_WARNING, actionMemoSummary} from "../interpret/midgard/send.ts";
 import {knownDistributorReport} from "../export/summ/send.ts";
@@ -127,9 +127,9 @@ export class Exporter {
 
     // Every row of the bundles; issues are logged, and unsupported and failed actions saved
     getRows(bundles: RawBundle[], outputPath: string): SummRow[] {
-        this.reportNotFinal();
         const unique = dedupeBundles(bundles);
         const sends = selectSends(unique.bundles);
+        this.reportNotFinal(sends.bundles);
         const auction = attachAuctionDeposits(sends.bundles);
 
         if (unique.duplicates > 0) {
@@ -166,22 +166,26 @@ export class Exporter {
         return new Date(this.today.getTime() - this.config.pendingStuckDays * 86400_000);
     }
 
-    // Every action that is not final, once, oldest first, with its age and whether it was exported
-    // (docs/specs/pending.md)
-    private reportNotFinal() {
+    // Every action that is not final, once, oldest first, with its age and whether it was exported, or which send
+    // stands in for it (docs/specs/pending.md)
+    private reportNotFinal(bundles: RawBundle[]) {
         const byKey = new Map(this.notFinal.map(item => [item.key, item]));
+        const sends = inboundSends([...byKey.values()], bundles);
         const items = [...byKey.values()].sort((a, b) => getActionDate(a.action).getTime() - getActionDate(b.action).getTime());
 
         if (items.length === 0) {
             return;
         }
 
-        const ages = items.map(item => pendingAge(getActionDate(item.action), this.today, this.config.pendingGraceDays, this.config.pendingStuckDays));
+        // Only a pending action may still finish, so only it has an age class; a failed one is final as failed
+        const ages = items.map(item => item.action.status === 'pending'
+            ? pendingAge(getActionDate(item.action), this.today, this.config.pendingGraceDays, this.config.pendingStuckDays) : undefined);
 
         const count = (age: PendingAge) => ages.filter(a => a === age).length;
+        const others = ages.filter(age => age === undefined).length;
         const exported = items.filter(item => item.exported).length;
         const covered = items.filter(item => item.coveredBy).length;
-        this.report.info(`Not final: ${items.length} Midgard actions (${count('recent')} recent, ${count('waiting')} waiting, ${count('stuck')} stuck); ${exported} exported, ${covered} covered by a successful action, ${items.length - exported - covered} not exported`);
+        this.report.info(`Not final: ${items.length} Midgard actions (${count('recent')} recent, ${count('waiting')} waiting, ${count('stuck')} stuck${others ? `, ${others} failed` : ''}); ${exported} exported, ${covered} covered by a successful action, ${items.length - exported - covered} not exported`);
 
         items.forEach((item, i) => {
             const {action} = item;
@@ -189,7 +193,10 @@ export class Exporter {
             const txType = (action.metadata?.swap as any)?.txType;
             const type = txType ? `${action.type} (${txType})` : action.type;
             const days = Math.floor(ageInDays(date, this.today));
-            this.report.issue('notFinal', `${date.toISOString()} ${type}: ${action.status}, ${days} days old, ${ages[i]}; ${item.coveredBy ? `covered by ${item.coveredBy}` : item.exported ? 'exported' : 'not exported'}`, item.key);
+            const send = sends.get(item.key);
+            const outcome = item.coveredBy ? `covered by ${item.coveredBy}` : item.exported ? 'exported'
+                : send ? `not exported; its inbound is exported as a send (${send})${ages[i] ? ' until it is final' : ''}` : 'not exported';
+            this.report.issue('notFinal', `${date.toISOString()} ${type}: ${action.status}, ${days} days old${ages[i] ? `, ${ages[i]}` : ''}; ${outcome}`, item.key);
         });
     }
 

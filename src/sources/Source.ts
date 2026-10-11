@@ -9,7 +9,7 @@ import type {MayaDistributionService} from "./maya/MayaDistributionService.ts";
 import {MAYA} from "../domain/Protocol.ts";
 import {getActionDate} from "./thorchain/MidgardUtils.ts";
 import {Viewblock} from "./viewblock/index.ts";
-import {type Protocol, THORCHAIN} from "../domain/Protocol.ts";
+import {failedTxPaidFee, type Protocol, THORCHAIN} from "../domain/Protocol.ts";
 import {getBundleKey, type RawBundle} from "./RawBundle.ts";
 import type {NotFinal} from "./Pending.ts";
 
@@ -66,6 +66,13 @@ export function shouldIncludeAction(action: Action): boolean {
     return false;
 }
 
+// A swap, not a loan, with no coins paid out
+function isUnpaidSwap(action: Action): boolean {
+    const txType = (action.metadata.swap as any)?.txType;
+    return action.type === ActionTypeEnum.Swap && txType !== 'loanOpen' && txType !== 'loanRepayment'
+        && action.in[0]?.coins[0]?.asset !== 'THOR.TOR' && !action.out.some(out => out.coins.length > 0);
+}
+
 // Midgard actions of one protocol. Only THORChain actions get their THORNode and Cosmos txs.
 // notFinal: collects every action whose status is not 'success', exported or not, for the run summary.
 // stuckBefore: an action still pending from before this date is stuck (docs/specs/pending.md)
@@ -96,6 +103,10 @@ export class MidgardSource implements Source {
         const settled = new Map(actions
             .filter(action => action.status === ActionStatusEnum.Success && action.type !== ActionTypeEnum.Send && action.in[0]?.txID)
             .map(action => [action.in[0].txID, keyOf(action)]));
+        // How many actions other than sends each inbound txid has, whatever their status
+        const inbounds = new Map<string, number>();
+        actions.filter(action => action.type !== ActionTypeEnum.Send && action.in[0]?.txID)
+            .forEach(action => inbounds.set(action.in[0].txID, (inbounds.get(action.in[0].txID) ?? 0) + 1));
         const bundles: RawBundle[] = [];
 
         for (const action of actions) {
@@ -103,7 +114,10 @@ export class MidgardSource implements Source {
 
             if (action.status !== ActionStatusEnum.Success) {
                 const coveredBy = settled.get(action.in[0]?.txID ?? '');
-                included ||= !coveredBy && this.isStuckRefund(action);
+                // A stuck swap shares its coin with any other action of its txid (e.g. a pending refund): listed only
+                const shared = action.type === ActionTypeEnum.Swap && (inbounds.get(action.in[0]?.txID ?? '') ?? 0) > 1;
+                included ||= !coveredBy && !shared && this.isStuckLoss(action);
+                included ||= this.isFailedSendWithFee(action);
                 this.notFinal.push({key: keyOf(action), action, exported: included, ...(coveredBy ? {coveredBy} : {})});
             }
 
@@ -115,10 +129,18 @@ export class MidgardSource implements Source {
         return bundles;
     }
 
-    // A refund still pending past the cut-off will not be paid out: it is exported, and what was not returned is
-    // lost (docs/specs/pending.md)
-    private isStuckRefund(action: Action): boolean {
-        return action.type === ActionTypeEnum.Refund && !!this.stuckBefore && getActionDate(action) < this.stuckBefore;
+    // A refund, or a swap that paid nothing out, still pending past the cut-off will not be paid out: it is
+    // exported, and what was not returned is lost (docs/specs/pending.md). A loan is left to shouldIncludeAction.
+    private isStuckLoss(action: Action): boolean {
+        return (action.type === ActionTypeEnum.Refund || isUnpaidSwap(action))
+            && !!this.stuckBefore && getActionDate(action) < this.stuckBefore;
+    }
+
+    // A failed send moved nothing, but from the protocol's failedTxFeeFromHeight it still paid the native fee
+    // (docs/specs/sends.md)
+    private isFailedSendWithFee(action: Action): boolean {
+        return action.type === ActionTypeEnum.Send && action.status === ActionStatusEnum.Failed
+            && failedTxPaidFee(this.protocol, Number(action.height));
     }
 
     // The bundle of one action; the fixture tool uses this for an action it looked up by txid

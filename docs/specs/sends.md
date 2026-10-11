@@ -74,8 +74,26 @@ and is not counted in that end-of-run line.
 A send with no coins (only a memo) moves nothing and gives no row.
 
 A failed send (Midgard status `failed`; Viewblock `code` other than 0, e.g.
-5 for an insufficient balance) moved nothing and gives no row. Its 0.02 RUNE
-fee was still paid; fees of failed actions are not exported yet.
+5 for an insufficient balance) moved no coin and nothing came back. Whether
+it paid the native fee depends on when it was sent:
+
+- **From THORChain block 11,637,012 (2023-07-10)**, the first on version
+  1.115.0, the fee is taken in the ante handler, before the message runs,
+  and kept when the message fails (thornode commit `335fda2ce`, "deduct
+  native tx fees during ante"). THORNode shows such a tx with its code and a
+  single transfer of 0.02 RUNE from the sender to the Reserve. It gives one
+  `fee` row for the gas on the sender's side (Rows, below), with or without
+  coins, and nothing on the receiver's. Its activity has status `failed` and
+  the gas leg only. Golden case: `send/midgard-rune-failed`.
+- **Before that**, the send handler checked the balance before charging the
+  fee, and a failed message's changes were rolled back, fee included: it
+  paid nothing and gives no row. Every Viewblock send (before 2022-04) is in
+  this period. Midgard reports 0.2 RUNE `networkFees` on such sends, which
+  is not what was paid, so it is not used.
+- **On Maya**, whether a failed send pays the fee is not checked yet: it
+  gives no row.
+
+The block is `failedTxFeeFromHeight` in `src/domain/Protocol.ts`.
 
 ## Activity
 
@@ -119,6 +137,7 @@ Maya's Midgard reports 0.2 CACAO for every send, so it is not used either.
 | Receiver, sender in `incomeFrom` | `income` | the coin and amount | — | sender, receiver | `Income: receive <amount> <coin>; <txid>` |
 | Send to itself | `fee` | the gas, 0.02 RUNE | — | the wallet, itself | `Fee: send <amount> <coin> to itself; <txid>` |
 | Send to itself with an action memo (a failed attempt) | `fee` | the gas, 0.02 RUNE | — | the wallet, itself | `Fee: failed <action> sent to itself; <txid>`, e.g. `TCY claim` for `tcy:`, `TCY stake` for `tcy+:`, else `'<memo prefix>' action` |
+| Failed send from THORChain block 11,637,012 (sender only) | `fee` | the gas, 0.02 RUNE | — | sender, receiver | `Fee: failed send; <txid>` |
 | Arkeo delegation (a send to itself) | `fee` | the gas, 0.02 RUNE | — | the wallet, itself | `1/1 - DelegateArkeoWallet; <txid>` |
 
 A send to itself moves nothing out of the wallet: the coin sent comes straight

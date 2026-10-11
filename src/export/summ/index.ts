@@ -44,7 +44,8 @@ function toRows(activity: Activity, protocol: Protocol, treatment: Treatment): S
         case 'unbond':
             return bondRows(activity, protocol);
         case 'swap':
-            return swapRows(activity, protocol);
+            // A stuck swap that paid nothing out is a stuck refund (docs/specs/pending.md)
+            return activity.status === 'pending' ? refundRows(activity, protocol) : swapRows(activity, protocol);
         case 'refund':
             return refundRows(activity, protocol);
         case 'lp.add':

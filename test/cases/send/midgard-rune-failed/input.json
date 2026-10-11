@@ -1,0 +1,49 @@
+{
+  "description": "send failed: [THOR.RUNE] -> [THOR.RUNE]",
+  "source": "midgard",
+  "wallet": "thor127w9jk8sgzr896vkhtjft9h9f0e0tf9qrj2fs3",
+  "data": {
+    "date": "1791659331325283183",
+    "height": "28187295",
+    "in": [
+      {
+        "address": "thor127w9jk8sgzr896vkhtjft9h9f0e0tf9qrj2fs3",
+        "coins": [
+          {
+            "amount": "4041830000",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "txID": "5259FD87E03237BDCDDD503EA7C0DC91A8AF4286D1F2E9474D51150A4114B654"
+      }
+    ],
+    "metadata": {
+      "send": {
+        "code": "5",
+        "memo": "",
+        "networkFees": [
+          {
+            "amount": "20000000",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "reason": "failed to execute message; message index: 0: spendable balance 4039834117rune is smaller than 4041830000rune: insufficient funds"
+      }
+    },
+    "out": [
+      {
+        "address": "thor1hqxgjdwd7m29lc6l33y6509x9ctwewfxtver8s",
+        "coins": [
+          {
+            "amount": "4041830000",
+            "asset": "THOR.RUNE"
+          }
+        ],
+        "txID": "5259FD87E03237BDCDDD503EA7C0DC91A8AF4286D1F2E9474D51150A4114B654"
+      }
+    ],
+    "pools": [],
+    "status": "failed",
+    "type": "send"
+  }
+}

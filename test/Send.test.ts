@@ -2,7 +2,7 @@ import {describe, test} from "node:test";
 import assert from "node:assert/strict";
 import {ACTION_MEMO_WARNING, actionMemoSummary, interpretSend, SELF_SEND_MEMO_WARNING} from "../src/interpret/midgard/send.ts";
 import type {RawBundle} from "../src/sources/RawBundle.ts";
-import {THORCHAIN} from "../src/domain/Protocol.ts";
+import {MAYA, THORCHAIN} from "../src/domain/Protocol.ts";
 
 const send = (memo: string): RawBundle => ({
     source: 'midgard', protocol: 'thorchain', wallet: 'thor1-user-wallet-11111', thornodeTxs: [], cosmosTxs: [],
@@ -15,6 +15,31 @@ const send = (memo: string): RawBundle => ({
 });
 
 describe('interpretSend', () => {
+    const failed = (height: number, coins = true): RawBundle => {
+        const bundle = send('');
+        Object.assign(bundle.data as any, {status: 'failed', height: String(height)});
+        if (!coins) {
+            (bundle.data as any).in[0].coins = [];
+        }
+        return bundle;
+    };
+
+    test('a failed send is its sender\'s fee only, with or without coins; its receiver got nothing', () => {
+        const height = THORCHAIN.failedTxFeeFromHeight!;
+        const roles = (bundle: RawBundle) => interpretSend(bundle, THORCHAIN).activities.map(a => [a.status, a.legs.map(leg => leg.role)]);
+        const receiver = interpretSend({...failed(height), wallet: 'thor1-other-wallet-2222'}, THORCHAIN);
+
+        assert.deepEqual(roles(failed(height)), [['failed', ['gas']]]);
+        assert.deepEqual(roles(failed(height, false)), [['failed', ['gas']]]);
+        assert.deepEqual(receiver.activities, []);
+        assert.deepEqual(receiver.issues.map(issue => issue.kind), ['ignored']);
+    });
+
+    test('a failed send from before failed txs paid the fee gives nothing, as on Maya, where it is unchecked', () => {
+        assert.deepEqual(interpretSend(failed(THORCHAIN.failedTxFeeFromHeight! - 1), THORCHAIN).activities, []);
+        assert.deepEqual(interpretSend(failed(30_000_000), MAYA).activities, []);
+    });
+
     for (const memo of ['=:ARB.USDC:0xabc:0:be:16', 'swap:BTC.BTC:bc1q', '+:BTC.BTC', 'trade+:thor1x', '~:name:THOR:thor1x']) {
         test(`warns on a send whose memo asks for an action: ${memo}`, () => {
             const {activities, issues} = interpretSend(send(memo), THORCHAIN);
