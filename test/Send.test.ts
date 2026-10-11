@@ -35,8 +35,11 @@ describe('interpretSend', () => {
         assert.deepEqual(receiver.issues.map(issue => issue.kind), ['ignored']);
     });
 
-    test('a failed send from before failed txs paid the fee gives nothing, as on Maya, where it never did', () => {
+    test('a failed THORChain send before 1.115.0 paid no fee, so it gives nothing', () => {
         assert.deepEqual(interpretSend(failed(THORCHAIN.failedTxFeeFromHeight! - 1), THORCHAIN).activities, []);
+    });
+
+    test('a failed Maya send paid no fee at any height, so it gives nothing', () => {
         assert.deepEqual(interpretSend(failed(30_000_000), MAYA).activities, []);
     });
 
