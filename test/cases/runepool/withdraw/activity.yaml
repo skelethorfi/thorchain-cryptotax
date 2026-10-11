@@ -1,12 +1,8 @@
-id: midgard/runePoolWithdraw.0000000000000000000000000000000000000000000000000000000000000000
+id: midgard/runePoolWithdraw.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1
 protocol: thorchain
 kind: runepool.withdraw
 status: success
 time: 2020-12-31T13:00:00.000Z
-txids:
-  in: []
-  out:
-    - "0000000000000000000000000000000000000000000000000000000000000000"
 legs:
   - direction: out
     wallet: thor1-user-wallet-11111
@@ -16,7 +12,7 @@ legs:
       position: runepool
     role: principal
     basis: observed
-    txid: "0000000000000000000000000000000000000000000000000000000000000000"
+    txid: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1
     amount: "190"
     decimals: 8
   - direction: out
@@ -26,7 +22,7 @@ legs:
       kind: native
     role: gas
     basis: default
-    txid: "0000000000000000000000000000000000000000000000000000000000000000"
+    txid: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1
     amount: "0.02"
     decimals: 8
   - direction: in
@@ -36,7 +32,7 @@ legs:
       kind: native
     role: principal
     basis: observed
-    txid: "0000000000000000000000000000000000000000000000000000000000000000"
+    txid: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1
     amount: "220"
     decimals: 8
 prices: []

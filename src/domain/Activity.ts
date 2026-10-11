@@ -22,8 +22,6 @@ export interface Activity {
     kind: ActivityKind;
     status: ActivityStatus;
     time: Date;
-    // The txids the wallet sent (in) and the protocol paid out (out), as the source gives them
-    txids: {in: string[]; out: string[]};
     memo?: string;
     legs: Leg[];
     // USD prices the source observed at the time (e.g. a swap's inPriceUSD)
@@ -48,7 +46,8 @@ export interface Leg {
     amount: Amount;
     role: LegRole;
     basis: Basis;
-    // The on-chain tx the amount moved in, when the source gives it
+    // The on-chain tx the amount moved in, when the source gives it: the wallet's own tx for an out leg, the
+    // protocol's payout for an in leg; a gas leg has its tx's. An action's txids are its legs' (docs/specs/activity.md)
     txid?: string;
 }
 

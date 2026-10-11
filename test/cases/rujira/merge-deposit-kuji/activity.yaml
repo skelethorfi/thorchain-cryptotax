@@ -3,11 +3,6 @@ protocol: thorchain
 kind: rujira.merge.deposit
 status: success
 time: 2025-04-10T09:59:07.551Z
-txids:
-  in:
-    - 83BFCC90762BF2BB93C692E977F080CC8D34A22174BF232E7F857EEA92713A9F
-  out:
-    - 83BFCC90762BF2BB93C692E977F080CC8D34A22174BF232E7F857EEA92713A9F
 legs:
   - direction: out
     wallet: thor12e7ryh3z4034zd398lwudmyvkm7hngy5uzu9kr

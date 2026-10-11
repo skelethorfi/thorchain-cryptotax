@@ -5,7 +5,6 @@ import {toAsset} from "../../domain/Asset.ts";
 import {getActionDate} from "../../sources/thorchain/MidgardUtils.ts";
 import type {Protocol} from "../../domain/Protocol.ts";
 import {getBundleKey, type RawBundle} from "../../sources/RawBundle.ts";
-import {getTxids} from "./bond.ts";
 import {inboundGas} from "./gas.ts";
 
 // https://dev.thorchain.org/concepts/memos.html (open loan, repay loan)
@@ -107,7 +106,6 @@ function activity(bundle: RawBundle, protocol: Protocol, kind: Activity['kind'],
         kind,
         status: action.status as Activity['status'],
         time: getActionDate(action),
-        txids: getTxids(action),
         ...(memo ? {memo} : {}),
         legs,
         prices: [],

@@ -3,10 +3,6 @@ protocol: thorchain
 kind: switch
 status: success
 time: 2020-12-31T13:00:00.000Z
-txids:
-  in:
-    - "0000000000000000000000000000000000000000000000000000000000000000"
-  out: []
 legs:
   - direction: out
     wallet: cosmos1-user-wallet-11111
@@ -35,7 +31,6 @@ legs:
       kind: native
     role: principal
     basis: observed
-    txid: ""
     amount: "1"
     decimals: 8
 prices: []

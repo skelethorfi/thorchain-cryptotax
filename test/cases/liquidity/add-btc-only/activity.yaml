@@ -3,10 +3,6 @@ protocol: thorchain
 kind: lp.add
 status: success
 time: 2021-07-02T15:10:45.360Z
-txids:
-  in:
-    - C2464B416BB28AD81C5685037B26C56BAC1EE82623CEF33DD8D7FA1A1902383B
-  out: []
 memo: +:BTC.BTC:thor1l7rzfcphhelk2pc06cj5t9z4kvkj06vmv0yed3
 legs:
   - direction: out

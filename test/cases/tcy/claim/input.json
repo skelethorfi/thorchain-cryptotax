@@ -9,7 +9,7 @@
       {
         "address": "bc1-user-wallet-11111",
         "coins": [],
-        "txID": "0000000000000000000000000000000000000000000000000000000000000000"
+        "txID": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2"
       }
     ],
     "metadata": {
@@ -26,7 +26,7 @@
             "asset": "THOR.TCY"
           }
         ],
-        "txID": "0000000000000000000000000000000000000000000000000000000000000000"
+        "txID": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2"
       }
     ],
     "pools": [],

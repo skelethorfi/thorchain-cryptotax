@@ -3,11 +3,6 @@ protocol: thorchain
 kind: lp.withdraw
 status: success
 time: 2022-04-08T16:32:51.962Z
-txids:
-  in:
-    - 3C909D763AC1102872E14FE402D04354AE0691E76D24844E6AB86E05F184B0C6
-  out:
-    - 5612D02DCE579800E7846EC8B7DEB3E4E2E289DAA27937A21D4BA64ED9375053
 memo: -:BTC.BTC:10000
 legs:
   - direction: in
@@ -17,7 +12,6 @@ legs:
       kind: native
     role: principal
     basis: observed
-    txid: ""
     amount: "5271.38655272"
     decimals: 8
   - direction: in

@@ -10,7 +10,7 @@ import {interpretAddLiquidity, interpretWithdraw} from "./midgard/liquidity.ts";
 import {interpretRunePool, interpretSwitch} from "./midgard/switch.ts";
 import {interpretLoanOpen, interpretLoanRepay} from "./midgard/loan.ts";
 import {interpretTcyClaim, interpretTcyDistribution, interpretTcyStake, interpretThorname} from "./midgard/tcy.ts";
-import type {Activity} from "../domain/Activity.ts";
+import type {Activity, Leg} from "../domain/Activity.ts";
 import {interpretRujira, RUJIRA_CONTRACT_TYPES} from "./midgard/rujira.ts";
 import {interpretSend} from "./midgard/send.ts";
 import {interpretViewblockSend} from "./viewblock/send.ts";
@@ -111,10 +111,28 @@ export function interpret(bundle: RawBundle, baseProtocol: Protocol): Interpreta
             return {activities: [], rows: [], issues: [{kind: 'unsupported', message: `unsupported action: ${[type, subtype].filter(Boolean).join(' ')}`}]};
         }
 
-        return interpreter(bundle, protocol);
+        return withSourceTxids(interpreter(bundle, protocol));
     } catch (e: any) {
         return {activities: [], rows: [], issues: [{kind: 'failed', message: failureMessage(bundle, protocol, e)}]};
     }
+}
+
+// A leg names a txid only when the source gives a tx: not an empty one, nor the all-zero txid Midgard gives a
+// payout made on the protocol's own chain, which has no tx of its own (docs/specs/activity.md)
+function withSourceTxids(result: Interpretation): Interpretation {
+    const hasTx = (leg: Leg) => !!leg.txid && !(leg.direction === 'in' && /^0+$/.test(leg.txid));
+    const activities = result.activities.map(activity => ({
+        ...activity,
+        legs: activity.legs.map(leg => {
+            if (hasTx(leg)) {
+                return leg;
+            }
+
+            const {txid, ...rest} = leg;
+            return rest;
+        }),
+    }));
+    return {...result, activities};
 }
 
 function failureMessage(bundle: RawBundle, protocol: Protocol, e: any): string {

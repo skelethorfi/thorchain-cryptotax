@@ -3,9 +3,6 @@ protocol: thorchain
 kind: tcy.distribution
 status: success
 time: 2020-12-31T13:00:00.000Z
-txids:
-  in: []
-  out: []
 legs:
   - direction: in
     wallet: thor1-user-wallet-11111

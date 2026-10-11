@@ -9,10 +9,11 @@ import {fee, findLeg, leg, legTrace, named} from "./common.ts";
 // stuck refund still pending, which was never paid out (docs/specs/pending.md). The return itself is not a row.
 export function refundRows(activity: Activity, protocol: Protocol): SummRow[] {
     const sent = leg(activity, 'principal', 'out');
-    const returnedAmount = {...sent.amount, base: findLeg(activity, 'returned')?.amount.base ?? 0n};
+    const returned = findLeg(activity, 'returned');
+    const returnedAmount = {...sent.amount, base: returned?.amount.base ?? 0n};
     const notReturned = {...sent.amount, base: sent.amount.base - returnedAmount.base};
     const {blockchain, currency, amount: sentAmount} = named(sent, protocol);
-    const txId = activity.txids.in[0] ?? '';
+    const txId = sent.txid ?? '';
     const time = activity.time;
     const rows: SummRow[] = [{
         wallet: sent.wallet,
@@ -29,7 +30,7 @@ export function refundRows(activity: Activity, protocol: Protocol): SummRow[] {
     }];
 
     if (notReturned.base > 0n) {
-        const returnTxId = activity.txids.out[0];
+        const returnTxId = returned?.txid;
         const returnedNote = `${formatAmount(returnedAmount)} ${currency} returned` + (returnTxId ? ` in ${returnTxId}` : '');
         const stuck = activity.status === 'pending';
 

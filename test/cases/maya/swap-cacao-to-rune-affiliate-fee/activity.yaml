@@ -3,11 +3,6 @@ protocol: maya
 kind: swap
 status: success
 time: 2025-10-22T05:31:32.329Z
-txids:
-  in:
-    - 2A97C214BB0AA5F9052E632B0966080148F1ABFF8089A66428D0C2E286C67DAD
-  out:
-    - BF9E99F21BABCBCA9A8EC5F0A8995005D7D227009795939DA89F12F88D632818
 memo: =:THOR.RUNE:thor1e0f53kfv9fghpxz8vrupl4kgulzg5cyapytl9g:0/3/0:leo:45
 legs:
   - direction: out
@@ -17,6 +12,7 @@ legs:
       kind: native
     role: principal
     basis: observed
+    txid: 2A97C214BB0AA5F9052E632B0966080148F1ABFF8089A66428D0C2E286C67DAD
     amount: "1300"
     decimals: 10
   - direction: in
@@ -36,6 +32,7 @@ legs:
       kind: native
     role: gas
     basis: default
+    txid: 2A97C214BB0AA5F9052E632B0966080148F1ABFF8089A66428D0C2E286C67DAD
     amount: "0.2"
     decimals: 10
 prices:

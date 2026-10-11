@@ -78,7 +78,6 @@ export function sendActivity(send: Send, wallet: string, protocol: Protocol): Ac
         kind: 'send',
         status: 'success',
         time: send.time,
-        txids: {in: [send.txid], out: []},
         memo: send.memo || undefined,
         legs: isSender ? [coin, {...nativeGas(wallet, protocol), txid: send.txid}] : [coin],
         prices: [],

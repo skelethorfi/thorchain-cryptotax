@@ -3,11 +3,6 @@ protocol: thorchain
 kind: swap
 status: success
 time: 2025-05-19T06:16:37.730Z
-txids:
-  in:
-    - A46848A2984FB8738BE9B41EB9C8ADA22854BE22F0DAF99B630184C7A172372D
-  out:
-    - "0000000000000000000000000000000000000000000000000000000000000000"
 memo: =:THOR.RUNE:thor18rwaeeu4ahvsna95xv7ejjyf2ppwn5lyxyw69j:0/1/0:va:50
 legs:
   - direction: out
@@ -17,6 +12,7 @@ legs:
       kind: native
     role: principal
     basis: observed
+    txid: A46848A2984FB8738BE9B41EB9C8ADA22854BE22F0DAF99B630184C7A172372D
     amount: "50000"
     decimals: 8
   - direction: in
@@ -35,6 +31,7 @@ legs:
       kind: native
     role: gas
     basis: default
+    txid: A46848A2984FB8738BE9B41EB9C8ADA22854BE22F0DAF99B630184C7A172372D
     amount: "0.02"
     decimals: 8
 prices:

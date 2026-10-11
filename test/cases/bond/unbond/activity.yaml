@@ -3,11 +3,6 @@ protocol: thorchain
 kind: unbond
 status: success
 time: 2020-12-31T13:00:00.000Z
-txids:
-  in:
-    - "0000000000000000000000000000000000000000000000000000000000000000"
-  out:
-    - "0000000000000000000000000000000000000000000000000000000000000000"
 memo: UNBOND:thor1-node-address:500000000000
 legs:
   - direction: in
@@ -26,6 +21,7 @@ legs:
       kind: native
     role: gas
     basis: default
+    txid: "0000000000000000000000000000000000000000000000000000000000000000"
     amount: "0.02"
     decimals: 8
 prices: []

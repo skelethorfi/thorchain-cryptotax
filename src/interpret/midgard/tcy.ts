@@ -6,7 +6,7 @@ import {getActionDate} from "../../sources/thorchain/MidgardUtils.ts";
 import {getDistributionDate, type TcyDistributionItem} from "../../sources/tcy/TcyDistributionService.ts";
 import type {Protocol} from "../../domain/Protocol.ts";
 import {getBundleKey, type RawBundle} from "../../sources/RawBundle.ts";
-import {getTxids, nativeGas} from "./bond.ts";
+import {nativeGas} from "./bond.ts";
 
 // TCY amounts are reported with 8 decimals
 const DECIMALS = 8;
@@ -68,7 +68,6 @@ export function interpretTcyDistribution(bundle: RawBundle, protocol: Protocol):
         kind: 'tcy.distribution',
         status: 'success',
         time: getDistributionDate(item),
-        txids: {in: [], out: []},
         legs: [{direction: 'in', wallet: bundle.wallet, asset: rune, amount: parseAmount(item.amount, DECIMALS), role: 'reward', basis: 'observed'}],
         prices: [{asset: rune, usd: formatAmount(parseAmount(item.price, DECIMALS)), source: 'midgard:tcy.distribution.price'}],
         details: {},
@@ -84,7 +83,6 @@ function activity(bundle: RawBundle, protocol: Protocol, kind: Activity['kind'],
         kind,
         status: action.status as Activity['status'],
         time: getActionDate(action),
-        txids: getTxids(action),
         legs,
         prices: [],
         details,

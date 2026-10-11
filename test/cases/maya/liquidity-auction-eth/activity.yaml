@@ -3,10 +3,6 @@ protocol: maya
 kind: lp.auction.position
 status: success
 time: 2023-04-17T02:15:03.459Z
-txids:
-  in:
-    - 4B0A6F2299E84841A89F99B0F066CE7E6BC400A60906A1925738B3CC4F1D97CD
-  out: []
 memo: donate:eth.eth
 legs:
   - direction: in
@@ -16,6 +12,7 @@ legs:
       kind: native
     role: reward
     basis: observed
+    txid: 4B0A6F2299E84841A89F99B0F066CE7E6BC400A60906A1925738B3CC4F1D97CD
     amount: "14821.3903175001"
     decimals: 10
   - direction: out
@@ -25,6 +22,7 @@ legs:
       kind: native
     role: principal
     basis: observed
+    txid: 4B0A6F2299E84841A89F99B0F066CE7E6BC400A60906A1925738B3CC4F1D97CD
     amount: "14821.3903175001"
     decimals: 10
   - direction: out
@@ -44,6 +42,7 @@ legs:
       position: lp
     role: principal
     basis: observed
+    txid: 4B0A6F2299E84841A89F99B0F066CE7E6BC400A60906A1925738B3CC4F1D97CD
     amount: "1482139.03175001"
     decimals: 8
 prices: []

@@ -3,10 +3,6 @@ protocol: thorchain
 kind: loan.open
 status: success
 time: 2020-12-31T13:00:00.000Z
-txids:
-  in:
-    - "0000000000000000000000000000000000000000000000000000000000000000"
-  out: []
 memo: loan+:THOR.RUNE:thor1-user-wallet-11111:0:thor1-affiliate-wallet-fffff:100:::0
 legs:
   - direction: out
@@ -26,7 +22,6 @@ legs:
       kind: native
     role: principal
     basis: observed
-    txid: ""
     amount: "4000"
     decimals: 8
 prices: []

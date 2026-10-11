@@ -12,7 +12,7 @@ describe('loan rows', () => {
     const leg = (direction: Leg['direction'], wallet: string, notation: string, amount: string, txid: string): Leg =>
         ({direction, wallet, asset: toAsset(notation), amount: parseAmount(amount, 8), role: 'principal', basis: 'observed', txid});
     const activity = (kind: Activity['kind'], legs: Leg[], details: Record<string, string> = {}): Activity =>
-        ({id: `midgard/swap.${IN}`, protocol: 'thorchain', kind, status: 'success', time: new Date('2024-03-01T10:00:00Z'), txids: {in: [IN], out: [OUT]}, legs, prices: [], details});
+        ({id: `midgard/swap.${IN}`, protocol: 'thorchain', kind, status: 'success', time: new Date('2024-03-01T10:00:00Z'), legs, prices: [], details});
 
     test('a loan paid out to an L1 wallet names its payout txid; one paid in RUNE does not', () => {
         const toBtc = loanOpenRows(activity('loan.open', [leg('out', '0xwallet', 'ETH.ETH', '100000000', IN), leg('in', 'bc1wallet', 'BTC.BTC', '1000000', OUT)]), THORCHAIN);
