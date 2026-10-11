@@ -177,12 +177,15 @@ export class Exporter {
             return;
         }
 
-        const ages = items.map(item => pendingAge(getActionDate(item.action), this.today, this.config.pendingGraceDays, this.config.pendingStuckDays));
+        // Only a pending action may still finish, so only it has an age class; a failed one is final as failed
+        const ages = items.map(item => item.action.status === 'pending'
+            ? pendingAge(getActionDate(item.action), this.today, this.config.pendingGraceDays, this.config.pendingStuckDays) : undefined);
 
         const count = (age: PendingAge) => ages.filter(a => a === age).length;
+        const others = ages.filter(age => age === undefined).length;
         const exported = items.filter(item => item.exported).length;
         const covered = items.filter(item => item.coveredBy).length;
-        this.report.info(`Not final: ${items.length} Midgard actions (${count('recent')} recent, ${count('waiting')} waiting, ${count('stuck')} stuck); ${exported} exported, ${covered} covered by a successful action, ${items.length - exported - covered} not exported`);
+        this.report.info(`Not final: ${items.length} Midgard actions (${count('recent')} recent, ${count('waiting')} waiting, ${count('stuck')} stuck${others ? `, ${others} failed` : ''}); ${exported} exported, ${covered} covered by a successful action, ${items.length - exported - covered} not exported`);
 
         items.forEach((item, i) => {
             const {action} = item;
@@ -192,8 +195,8 @@ export class Exporter {
             const days = Math.floor(ageInDays(date, this.today));
             const send = sends.get(item.key);
             const outcome = item.coveredBy ? `covered by ${item.coveredBy}` : item.exported ? 'exported'
-                : send ? `not exported; its inbound is exported as a send (${send}) until it is final` : 'not exported';
-            this.report.issue('notFinal', `${date.toISOString()} ${type}: ${action.status}, ${days} days old, ${ages[i]}; ${outcome}`, item.key);
+                : send ? `not exported; its inbound is exported as a send (${send})${ages[i] ? ' until it is final' : ''}` : 'not exported';
+            this.report.issue('notFinal', `${date.toISOString()} ${type}: ${action.status}, ${days} days old${ages[i] ? `, ${ages[i]}` : ''}; ${outcome}`, item.key);
         });
     }
 

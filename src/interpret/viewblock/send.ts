@@ -6,7 +6,7 @@ import {MSG_SEND_TYPES, type ViewblockTx} from "../../sources/viewblock/index.ts
 import {failedSend, type Send, sendActivity} from "../midgard/send.ts";
 
 // A Viewblock send, for sends before 2022-04 that Midgard does not list (docs/specs/sends.md). The coin is
-// the tx's input; a failed tx (code other than 0) moved nothing but paid the native fee.
+// the tx's input; a failed tx (code other than 0) moved nothing, and before 2022-04 paid no fee either (failedSend).
 export function interpretViewblockSend(bundle: RawBundle, protocol: Protocol): {activities: Activity[]; issues: Issue[]} {
     const tx = bundle.data as ViewblockTx;
     const msgs = tx.msgs.filter(msg => MSG_SEND_TYPES.includes(msg['@type']));
@@ -27,7 +27,7 @@ export function interpretViewblockSend(bundle: RawBundle, protocol: Protocol): {
     };
 
     if (tx.code !== 0) {
-        return failedSend(send, bundle.wallet, protocol);
+        return failedSend(send, tx.height, bundle.wallet, protocol);
     }
 
     return {activities: [sendActivity(send, bundle.wallet, protocol)], issues: []};

@@ -9,7 +9,7 @@ import type {MayaDistributionService} from "./maya/MayaDistributionService.ts";
 import {MAYA} from "../domain/Protocol.ts";
 import {getActionDate} from "./thorchain/MidgardUtils.ts";
 import {Viewblock} from "./viewblock/index.ts";
-import {type Protocol, THORCHAIN} from "../domain/Protocol.ts";
+import {failedTxPaidFee, type Protocol, THORCHAIN} from "../domain/Protocol.ts";
 import {getBundleKey, type RawBundle} from "./RawBundle.ts";
 import type {NotFinal} from "./Pending.ts";
 
@@ -47,11 +47,6 @@ function isL1Asset(asset?: string): boolean {
 
 export function shouldIncludeAction(action: Action): boolean {
     if (action.status === ActionStatusEnum.Success) {
-        return true;
-    }
-
-    // A failed send moved nothing but still paid the native fee (docs/specs/sends.md)
-    if (action.type === ActionTypeEnum.Send && action.status === ActionStatusEnum.Failed) {
         return true;
     }
 
@@ -108,6 +103,10 @@ export class MidgardSource implements Source {
         const settled = new Map(actions
             .filter(action => action.status === ActionStatusEnum.Success && action.type !== ActionTypeEnum.Send && action.in[0]?.txID)
             .map(action => [action.in[0].txID, keyOf(action)]));
+        // How many actions other than sends each inbound txid has, whatever their status
+        const inbounds = new Map<string, number>();
+        actions.filter(action => action.type !== ActionTypeEnum.Send && action.in[0]?.txID)
+            .forEach(action => inbounds.set(action.in[0].txID, (inbounds.get(action.in[0].txID) ?? 0) + 1));
         const bundles: RawBundle[] = [];
 
         for (const action of actions) {
@@ -115,7 +114,10 @@ export class MidgardSource implements Source {
 
             if (action.status !== ActionStatusEnum.Success) {
                 const coveredBy = settled.get(action.in[0]?.txID ?? '');
-                included ||= !coveredBy && this.isStuckLoss(action);
+                // A stuck swap shares its coin with any other action of its txid (e.g. a pending refund): listed only
+                const shared = action.type === ActionTypeEnum.Swap && (inbounds.get(action.in[0]?.txID ?? '') ?? 0) > 1;
+                included ||= !coveredBy && !shared && this.isStuckLoss(action);
+                included ||= this.isFailedSendWithFee(action);
                 this.notFinal.push({key: keyOf(action), action, exported: included, ...(coveredBy ? {coveredBy} : {})});
             }
 
@@ -132,6 +134,13 @@ export class MidgardSource implements Source {
     private isStuckLoss(action: Action): boolean {
         return (action.type === ActionTypeEnum.Refund || isUnpaidSwap(action))
             && !!this.stuckBefore && getActionDate(action) < this.stuckBefore;
+    }
+
+    // A failed send moved nothing, but from the protocol's failedTxFeeFromHeight it still paid the native fee
+    // (docs/specs/sends.md)
+    private isFailedSendWithFee(action: Action): boolean {
+        return action.type === ActionTypeEnum.Send && action.status === ActionStatusEnum.Failed
+            && failedTxPaidFee(this.protocol, Number(action.height));
     }
 
     // The bundle of one action; the fixture tool uses this for an action it looked up by txid

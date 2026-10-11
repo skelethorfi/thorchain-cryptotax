@@ -27,6 +27,9 @@ export interface Protocol {
     nodeUrl?: string;
     // Fallback inbound gas (base units of the native asset) when THORNode data is missing
     defaultGas?: string;
+    // From this block a tx whose message fails still pays the native fee, taken before the message runs; before it,
+    // and where unset, a failed tx paid nothing (docs/specs/sends.md)
+    failedTxFeeFromHeight?: number;
     // Decimals of an asset's base amounts as reported by this protocol's Midgard
     decimals(asset: string): number;
 }
@@ -43,6 +46,8 @@ export const THORCHAIN: Protocol = {
     assetNamePrefix: 'Thor',
     midgardUrl: API_URLS.midgard,
     defaultGas: '2000000',
+    // Version 1.115.0 moved the native fee into the ante handler (thornode 335fda2ce); first block on 1.115.0
+    failedTxFeeFromHeight: 11637012,
     decimals: () => 8,
 };
 
@@ -103,4 +108,9 @@ export function withAssetNames(protocol: Protocol, assets: AssetNamesConfig = {}
         prefixSecuredAssets: assets.prefixSecuredAssets ?? false,
         prefixTradeAssets: assets.prefixTradeAssets ?? false,
     };
+}
+
+// Whether a tx whose message failed still paid the native fee
+export function failedTxPaidFee(protocol: Protocol, height: number): boolean {
+    return protocol.failedTxFeeFromHeight !== undefined && height >= protocol.failedTxFeeFromHeight;
 }

@@ -45,14 +45,29 @@ describe('MidgardSource actions that are not final', () => {
         ]);
     });
 
-    test('a failed send is exported: it paid the fee', async () => {
+    test('a failed send is exported once failed txs paid the fee; an older one, or another failed action, is not', async () => {
         const notFinal: NotFinal[] = [];
-        const bundles = await source(THORCHAIN, [action('send', 'failed', 'L'), action('swap', 'failed', 'M')], notFinal).bundlesFor('thor1wallet');
+        const paid = {...action('send', 'failed', 'L'), height: String(THORCHAIN.failedTxFeeFromHeight)};
+        const older = {...action('send', 'failed', 'N'), height: String(THORCHAIN.failedTxFeeFromHeight! - 1)};
+        const bundles = await source(THORCHAIN, [paid, older, action('swap', 'failed', 'M')], notFinal).bundlesFor('thor1wallet');
 
         assert.deepEqual(bundles.map(b => (b.data as any).in[0].txID), ['L']);
         assert.deepEqual(notFinal.map(({key, exported}) => ({key, exported})), [
             {key: 'midgard/send.L', exported: true},
+            {key: 'midgard/send.N', exported: false},
             {key: 'midgard/swap.M', exported: false},
+        ]);
+    });
+
+    test('a stuck swap that shares its txid with another action is listed, not exported: the coin is the same', async () => {
+        const notFinal: NotFinal[] = [];
+        const bundles = await source(MAYA, [action('swap', 'pending', 'P', 'swap'), action('refund', 'pending', 'P')], notFinal,
+            new Date(date.getTime() + DAY)).bundlesFor('thor1wallet');
+
+        assert.deepEqual(bundles.map(b => (b.data as any).type), ['refund']);
+        assert.deepEqual(notFinal.map(({key, exported}) => ({key, exported})), [
+            {key: 'maya-midgard/swap.P', exported: false},
+            {key: 'maya-midgard/refund.P', exported: true},
         ]);
     });
 

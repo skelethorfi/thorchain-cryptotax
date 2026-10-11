@@ -61,17 +61,14 @@ describe('interpretViewblockSend', () => {
     const bundle = (code: number, wallet: string) => ({
         source: 'viewblock' as const, protocol: 'thorchain' as const, wallet, thornodeTxs: [], cosmosTxs: [],
         data: {
-            hash: 'B'.repeat(64), timestamp: Date.UTC(2021, 6, 1), code, memo: '', types: ['send'],
+            hash: 'B'.repeat(64), timestamp: Date.UTC(2021, 6, 1), height: 1_000_000, code, memo: '', types: ['send'],
             input: {asset: 'THOR.RUNE', amount: '1'},
             msgs: [{'@type': '/types.MsgSend', from_address: 'thor1-sender', to_address: 'thor1-receiver', amount: [{denom: 'rune', amount: '100000000'}]}],
         } as any,
     });
 
-    test('a failed tx is its sender\'s fee only', () => {
-        const sender = interpretViewblockSend(bundle(5, 'thor1-sender'), THORCHAIN);
-        const receiver = interpretViewblockSend(bundle(5, 'thor1-receiver'), THORCHAIN);
-
-        assert.deepEqual(sender.activities.map(a => [a.status, a.legs.map(leg => leg.role)]), [['failed', ['gas']]]);
-        assert.deepEqual(receiver.activities, []);
+    test('a failed tx gives nothing: before 2022-04 a failed tx paid no fee', () => {
+        assert.deepEqual(interpretViewblockSend(bundle(5, 'thor1-sender'), THORCHAIN).activities, []);
+        assert.deepEqual(interpretViewblockSend(bundle(5, 'thor1-receiver'), THORCHAIN).activities, []);
     });
 });
