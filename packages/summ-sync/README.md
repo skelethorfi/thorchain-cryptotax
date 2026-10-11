@@ -93,7 +93,8 @@ optional:
   "managedChains": ["THOR", "MAYA"],
   "managedSources": ["thorchain"],
   "filedBefore": "2024-01-01",
-  "timezone": "Europe/London"
+  "timezone": "Europe/London",
+  "extraDirs": ["../manual"]
 }
 ```
 
@@ -107,6 +108,10 @@ optional:
   an amendment.
 - `timezone`: your Summ account's timezone (default `UTC`), for the days of
   the run's periods and of `filedBefore`.
+- `extraDirs`: folders (relative to the state dir, searched recursively) of
+  CSV files you made by hand in the run's file shape, e.g. rows the exporter
+  cannot produce. A file counts only when its period is one of the run's, and
+  its rows are managed like the run's (without it, plan deletes them).
 
 ## Tests
 

@@ -46,6 +46,8 @@ export const SUMM_TYPES: Record<string, SummType> = {
     'loan-repayment': OUT('loanRepayment'),
     'collateral-deposit': OUT('collateralDeposit'),
     'collateral-withdrawal': IN('collateralWithdrawal'),
+    'open-position': OUT('increasePositionWithdrawal'),
+    'close-position': IN('decreasePositionDeposit'),
 }
 
 export function summType(csvType: string): SummType | undefined {

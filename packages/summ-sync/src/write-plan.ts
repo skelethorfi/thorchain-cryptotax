@@ -7,7 +7,7 @@
 
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { loadConfig } from './config.ts'
+import { extraDirsOf, loadConfig } from './config.ts'
 import { type Change, makePlan, type EditEntry, type Plan } from './plan.ts'
 import { readRun, type Row, type RunFile } from './run.ts'
 import { latestSnapshot, readSnapshot } from './snapshot.ts'
@@ -92,7 +92,7 @@ export function writePlan(stateDir: string, runDir: string): string {
     const config = loadConfig(stateDir)
     const snapshotDir = latestSnapshot(stateDir)
     const snapshot = readSnapshot(snapshotDir)
-    const { files, rows } = readRun(runDir)
+    const { files, rows } = readRun(runDir, extraDirsOf(stateDir, config))
     const now = new Date().toISOString()
     const { plan, adopted, overrides } = makePlan({
         files,

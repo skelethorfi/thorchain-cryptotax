@@ -12,7 +12,7 @@ import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { McpClient } from './mcp.ts'
 import { type ListedAction, parseActions, parseDetail, parsePageHeader } from './parse.ts'
-import { type Config, loadConfig } from './config.ts'
+import { type Config, extraDirsOf, loadConfig } from './config.ts'
 import { readRun, type Row } from './run.ts'
 import { actionFile, normaliseTxid, readAction, type SnapshotEntry, storeAction, syncView, writeSnapshot } from './snapshot.ts'
 
@@ -59,7 +59,7 @@ export function snapshotEntry(a: ListedAction): SnapshotEntry {
 
 export async function pull(stateDir: string, runDir?: string, { full = false, client = new McpClient(stateDir) as Client } = {}): Promise<string> {
     const config = loadConfig(stateDir)
-    const txids = runDir ? categorisedTxids(readRun(runDir).rows, config) : null
+    const txids = runDir ? categorisedTxids(readRun(runDir, extraDirsOf(stateDir, config)).rows, config) : null
     const stamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-')
     const file = join(stateDir, 'snapshots', `${stamp}.json`)
     await client.connect()

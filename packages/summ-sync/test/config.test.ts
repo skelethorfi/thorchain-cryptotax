@@ -12,7 +12,7 @@ test('a missing config gives the defaults', () => {
 test('a config overrides the defaults it names', () => {
     const dir = mkdtempSync(join(tmpdir(), 'summ-sync-'))
     writeFileSync(join(dir, 'summ-sync.json'), JSON.stringify({ managedSources: ['thorchain'], filedBefore: '2024-01-01' }))
-    assert.deepEqual(loadConfig(dir), { managedChains: ['THOR', 'MAYA'], managedSources: ['thorchain'], filedBefore: '2024-01-01', timezone: 'UTC' })
+    assert.deepEqual(loadConfig(dir), { managedChains: ['THOR', 'MAYA'], managedSources: ['thorchain'], filedBefore: '2024-01-01', timezone: 'UTC', extraDirs: [] })
 })
 
 test('a config with wrong types is refused', () => {
