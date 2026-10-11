@@ -1,7 +1,7 @@
 // <state dir>/summ-sync.json: the sync's settings (docs: README.md).
 
 import { existsSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 
 export interface Config {
     /** Chains whose CSV files the user uploads; the sync manages their rows. */
@@ -12,6 +12,8 @@ export interface Config {
     filedBefore: string | null
     /** Summ's account timezone (IANA name): the days of the run's periods and of filedBefore. */
     timezone: string
+    /** Folders (relative to the state dir) of hand-made period files, e.g. manual rows; read with the run. */
+    extraDirs: string[]
 }
 
 export const DEFAULTS: Config = {
@@ -19,11 +21,12 @@ export const DEFAULTS: Config = {
     managedSources: [],
     filedBefore: null,
     timezone: 'UTC',
+    extraDirs: [],
 }
 
 export function parseConfig(text: string): Config {
     const config: Config = { ...DEFAULTS, ...JSON.parse(text) }
-    for (const key of ['managedChains', 'managedSources'] as const) {
+    for (const key of ['managedChains', 'managedSources', 'extraDirs'] as const) {
         const value: unknown = config[key]
         if (!Array.isArray(value) || !value.every((v) => typeof v === 'string')) {
             throw new Error(`summ-sync.json: ${key} must be a list of strings`)
@@ -43,4 +46,9 @@ export function parseConfig(text: string): Config {
 export function loadConfig(stateDir: string): Config {
     const file = join(stateDir, 'summ-sync.json')
     return existsSync(file) ? parseConfig(readFileSync(file, 'utf8')) : { ...DEFAULTS }
+}
+
+/** config.extraDirs as paths: each is relative to the state dir. */
+export function extraDirsOf(stateDir: string, config: Config): string[] {
+    return config.extraDirs.map((dir) => resolve(stateDir, dir))
 }

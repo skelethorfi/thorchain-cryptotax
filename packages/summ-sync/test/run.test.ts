@@ -47,6 +47,22 @@ test('readRun reads only the period wallet files and refuses an ID in two files'
     assert.throws(() => readRun(run), /is in .* and /)
 })
 
+test('readRun adds extra files of the run\'s periods only', () => {
+    const run = mkdtempSync(join(tmpdir(), 'summ-sync-run-'))
+    mkdirSync(join(run, 'csv'))
+    writeFileSync(join(run, 'csv', '2023-07-01_2024-06-30_THOR_abcde_Example.csv'), `${HEADER}\n${LINE}`)
+    const extra = mkdtempSync(join(tmpdir(), 'summ-sync-extra-'))
+    mkdirSync(join(extra, 'current'))
+    mkdirSync(join(extra, 'earlier'))
+    const manual = LINE.replace('2024-03-01T10:00:00.000Z.out.aaaaaaaaaaaa', '2023-07-01_2024-06-30_THOR_abcde_Example_manual.csv:1')
+    writeFileSync(join(extra, 'current', '2023-07-01_2024-06-30_THOR_abcde_Example_manual.csv'), `${HEADER}\n${manual}`)
+    writeFileSync(join(extra, 'earlier', '2022-07-01_2023-06-30_THOR_abcde_Example_manual.csv'), `${HEADER}\n${manual.replaceAll('2023-07-01_2024-06-30', '2022-07-01_2023-06-30')}`)
+    writeFileSync(join(extra, 'README.md'), 'not a period file')
+    const { files, rows } = readRun(run, [extra])
+    assert.deepEqual(files.map((f) => f.name), ['2023-07-01_2024-06-30_THOR_abcde_Example.csv', '2023-07-01_2024-06-30_THOR_abcde_Example_manual.csv'])
+    assert.deepEqual(rows.map((r) => r.id), ['2024-03-01T10:00:00.000Z.out.aaaaaaaaaaaa', '2023-07-01_2024-06-30_THOR_abcde_Example_manual.csv:1'])
+})
+
 test('periods are whole days in the timezone', () => {
     assert.equal(new Date(startOfDay('2024-07-01', 'UTC')).toISOString(), '2024-07-01T00:00:00.000Z')
     assert.equal(new Date(startOfDay('2024-07-01', 'Pacific/Auckland')).toISOString(), '2024-06-30T12:00:00.000Z')

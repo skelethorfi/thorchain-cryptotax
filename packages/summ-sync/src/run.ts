@@ -4,9 +4,11 @@
 //
 // all.csv and all-<from>_<to>.csv are not read: all.csv holds rows outside the run's periods, and
 // neither is uploaded. Each row's on-chain txids are the 64-hex strings in its description.
+// Extra folders (config.extraDirs) hold hand-made files of the same shape (manual rows, amendments);
+// a file there counts only when its period is one of the run's, so it never widens the plan's scope.
 
 import { readdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 
 export interface Period {
     from: string
@@ -121,13 +123,13 @@ export function periodsOf(files: { period: Period }[]): Period[] {
     return [...new Map(files.map((f) => [`${f.period.from}_${f.period.to}`, f.period])).values()]
 }
 
-export function readRun(runDir: string): { files: RunFile[]; rows: Row[] } {
+export function readRun(runDir: string, extraDirs: string[] = []): { files: RunFile[]; rows: Row[] } {
     const dir = join(runDir, 'csv')
     const files: RunFile[] = []
     const rows: Row[] = []
     const seen = new Map<string, string>()
-    for (const name of readdirSync(dir).filter((n) => WALLET_FILE.test(n)).sort()) {
-        const parsed = parseWalletFile(name, readFileSync(join(dir, name), 'utf8'))
+    const add = (path: string, name: string) => {
+        const parsed = parseWalletFile(name, readFileSync(path, 'utf8'))
         files.push(parsed.file)
         for (const row of parsed.rows) {
             const other = seen.get(row.id)
@@ -136,6 +138,16 @@ export function readRun(runDir: string): { files: RunFile[]; rows: Row[] } {
             rows.push(row)
         }
     }
+    for (const name of readdirSync(dir).filter((n) => WALLET_FILE.test(n)).sort()) add(join(dir, name), name)
     if (files.length === 0) throw new Error(`No period wallet files (<from>_<to>_<CHAIN>_...csv) in ${dir}`)
+    const periods = new Set(files.map((f) => `${f.period.from}_${f.period.to}`))
+    for (const extra of extraDirs) {
+        const names = (readdirSync(extra, { recursive: true }) as string[]).filter((n) => WALLET_FILE.test(basename(n))).sort()
+        for (const path of names) {
+            const name = basename(path)
+            const m = name.match(WALLET_FILE) as RegExpMatchArray
+            if (periods.has(`${m[1]}_${m[2]}`)) add(join(extra, path), name)
+        }
+    }
     return { files, rows }
 }

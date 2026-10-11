@@ -125,7 +125,13 @@ Plans keep their snapshot's name.
 wallet files, `csv/<from>_<to>_<CHAIN>_<wallet>_<name>.csv` (`periods.md`),
 the files the user uploads. `csv/all.csv` is not read: it holds rows outside
 the run's periods. `row-ids.csv` traces an `ID` back to its action for the
-user; plan does not need it. No other file is written for the sync. A row's
+user; plan does not need it. No other file is written for the sync.
+**Extra folders** (`extraDirs` in `summ-sync.json`): files made by hand in
+the same shape and naming, e.g. rows the exporter cannot produce, uploaded
+like the run's. Their rows are part of the desired state; without them, plan
+would delete those rows as old IDs. Only a file whose period is one of the
+run's counts: another period would widen the plan's scope to a year the run
+does not hold. A row's
 on-chain txids are the 64-character hex strings in its description (as
 `run-diff.md`); a payout to an L1 wallet names its outbound txid there too
 (`fees.md`, Txids in descriptions).
