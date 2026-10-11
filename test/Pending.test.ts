@@ -64,6 +64,20 @@ describe('MidgardSource actions that are not final', () => {
         assert.deepEqual(exported(stuck), [{key: 'midgard/refund.E', exported: true, coveredBy: undefined}]);
     });
 
+    test('a stuck swap that paid nothing out is exported; one that paid out, or a loan, is not', async () => {
+        const notFinal: NotFinal[] = [];
+        const paid = {...action('swap', 'pending', 'J'), out: [{address: 'thor1wallet', coins: [{asset: 'BTC.BTC', amount: '1'}]}]};
+        const bundles = await source(THORCHAIN, [action('swap', 'pending', 'I', 'swap'), paid, action('swap', 'pending', 'K', 'loanOpen')],
+            notFinal, new Date(date.getTime() + DAY)).bundlesFor('thor1wallet');
+
+        assert.deepEqual(bundles.map(b => (b.data as any).in[0].txID), ['I']);
+        assert.deepEqual(exported(notFinal).map(({key, exported}) => ({key, exported})), [
+            {key: 'midgard/swap.I', exported: true},
+            {key: 'midgard/swap.J', exported: false},
+            {key: 'midgard/swap.K', exported: false},
+        ]);
+    });
+
     test('an action covered by a successful one of the same txid is not exported, e.g. a savers deposit\'s swap', async () => {
         const notFinal: NotFinal[] = [];
         const afterIt = new Date(date.getTime() + DAY);

@@ -66,6 +66,13 @@ export function shouldIncludeAction(action: Action): boolean {
     return false;
 }
 
+// A swap, not a loan, with no coins paid out
+function isUnpaidSwap(action: Action): boolean {
+    const txType = (action.metadata.swap as any)?.txType;
+    return action.type === ActionTypeEnum.Swap && txType !== 'loanOpen' && txType !== 'loanRepayment'
+        && action.in[0]?.coins[0]?.asset !== 'THOR.TOR' && !action.out.some(out => out.coins.length > 0);
+}
+
 // Midgard actions of one protocol. Only THORChain actions get their THORNode and Cosmos txs.
 // notFinal: collects every action whose status is not 'success', exported or not, for the run summary.
 // stuckBefore: an action still pending from before this date is stuck (docs/specs/pending.md)
@@ -103,7 +110,7 @@ export class MidgardSource implements Source {
 
             if (action.status !== ActionStatusEnum.Success) {
                 const coveredBy = settled.get(action.in[0]?.txID ?? '');
-                included ||= !coveredBy && this.isStuckRefund(action);
+                included ||= !coveredBy && this.isStuckLoss(action);
                 this.notFinal.push({key: keyOf(action), action, exported: included, ...(coveredBy ? {coveredBy} : {})});
             }
 
@@ -115,10 +122,11 @@ export class MidgardSource implements Source {
         return bundles;
     }
 
-    // A refund still pending past the cut-off will not be paid out: it is exported, and what was not returned is
-    // lost (docs/specs/pending.md)
-    private isStuckRefund(action: Action): boolean {
-        return action.type === ActionTypeEnum.Refund && !!this.stuckBefore && getActionDate(action) < this.stuckBefore;
+    // A refund, or a swap that paid nothing out, still pending past the cut-off will not be paid out: it is
+    // exported, and what was not returned is lost (docs/specs/pending.md). A loan is left to shouldIncludeAction.
+    private isStuckLoss(action: Action): boolean {
+        return (action.type === ActionTypeEnum.Refund || isUnpaidSwap(action))
+            && !!this.stuckBefore && getActionDate(action) < this.stuckBefore;
     }
 
     // The bundle of one action; the fixture tool uses this for an action it looked up by txid

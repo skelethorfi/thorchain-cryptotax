@@ -104,6 +104,28 @@ describe('swap', () => {
         },
     });
 
+    test('a stuck swap that paid nothing out is a failed-out with its gas and a lost row, like a stuck refund', () => {
+        const action = {...createMockAction({
+            inputAsset: 'BTC.BTC', inputAmount: 0.5, outputAsset: 'ETH.ETH', outputAmount: 0,
+            inputAddress: 'btc1address', outputAddress: 'eth1address', txID: 'tx456',
+        }), status: 'pending', out: []} as Action;
+        const rows = swap(action, [createMockThornodeTx({txID: 'tx456', gasAsset: 'BTC.BTC', gasAmount: '1000'})]);
+
+        assert.deepEqual(rows.map(row => [row.type, row.baseAmount, row.baseCurrency, row.feeAmount, row.description]), [
+            [SummRowType.FailedOut, '0.5', 'BTC', '0.00001', 'swap (tx456): still pending past the cut-off, nothing paid out'],
+            [SummRowType.Lost, '0.5', 'BTC', undefined, 'swap (tx456): never paid out (still pending), 0.5 BTC sent, 0 BTC returned'],
+        ]);
+    });
+
+    test('a pending swap with coins paid out is not taken for a stuck one', () => {
+        const action = {...createMockAction({
+            inputAsset: 'BTC.BTC', inputAmount: 0.5, outputAsset: 'ETH.ETH', outputAmount: 8,
+            inputAddress: 'btc1address', outputAddress: 'eth1address', txID: 'tx789',
+        }), status: 'pending'} as Action;
+
+        assert.throws(() => swap(action), /still pending with coins paid out/);
+    });
+
     test('should error on incorrect asset string', () => {
         const action = createMockAction({
             inputAsset: 'BTCBTC',

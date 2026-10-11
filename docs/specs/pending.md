@@ -31,6 +31,7 @@ The same cut-off stops a run fetching a stuck THORNode or Cosmos tx again
 | pending loan open with an output | yes: it was paid out (`loans.md`) |
 | covered: a successful action in the wallet's list has the same inbound txid | no: that action accounts for it |
 | stuck refund, not covered | yes: `FailedOut` and `Lost` (below) |
+| stuck swap that paid nothing out, not covered | yes: as a stuck refund (below) |
 | any other action that is not `success` | no |
 
 **Covered.** Midgard lists a savers deposit as a successful `addLiquidity`
@@ -50,8 +51,14 @@ gets a warning to check that it never came back. The amount sent and the gas
 are observed on-chain; that it is lost is assumed from Midgard's status.
 
 A pending refund younger than the cut-off is not exported: it may still be
-paid out. A stuck pending swap that is not covered is listed but not
-exported (none is known): check it by hand.
+paid out.
+
+**Stuck swap.** A swap (not a loan) still pending past the cut-off, not
+covered, with no coins paid out: the wallet sent its coin and nothing came
+back, which is a stuck refund under another name. It gives the same rows, a
+`FailedOut` with the gas and a `Lost` for the amount sent, described
+`swap (<txid>): …`, and the same warning. A stuck swap that paid some coins
+out is listed but not exported: check it by hand.
 
 Every action that is not `success`, exported or not, is listed once in the run
 summary's Not final section (`run-summary.md`), oldest first, with its status,
