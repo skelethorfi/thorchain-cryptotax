@@ -61,9 +61,17 @@ back, which is a stuck refund under another name. It gives the same rows, a
 `swap (<txid>): …`, and the same warning. A stuck swap that paid some coins
 out is listed but not exported: check it by hand.
 
+**Inbound send.** An action that is not exported may have been paid for by a
+send the run does list, e.g. the RUNE sent to Maya's vault for a Maya swap
+still pending. Once the action is exported, that send is dropped as its
+inbound (`sends.md`); until then it is exported as a plain send, so the coin
+still leaves the wallet. Its rows change when the action becomes final.
+
 Every action that is not `success`, exported or not, is listed once in the run
 summary's Not final section (`run-summary.md`), oldest first, with its status,
-age in days, whether it is recent, waiting or stuck, whether it was exported or
-what covers it, and its store record key. The Counts section gives the totals.
+age in days, whether it is recent, waiting or stuck, whether it was exported,
+what covers it, or which send stands in for it ("its inbound is exported as a
+send (<key>) until it is final"), and its store record key. The Counts
+section gives the totals.
 
 Golden case: `refund/btc-pending-never-paid`.

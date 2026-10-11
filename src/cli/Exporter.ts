@@ -16,7 +16,7 @@ import {SnapshotManifest} from "../sources/store/SnapshotManifest.ts";
 import {getProtocol, MAYA, type Protocol, THORCHAIN, withAssetNames} from "../domain/Protocol.ts";
 import {MayaDistributionSource, MidgardSource, type Source, TcySource, ViewblockSource} from "../sources/Source.ts";
 import {MayaDistributionService} from "../sources/maya/MayaDistributionService.ts";
-import {ageInDays, type NotFinal, type PendingAge, pendingAge} from "../sources/Pending.ts";
+import {ageInDays, inboundSends, type NotFinal, type PendingAge, pendingAge} from "../sources/Pending.ts";
 import {getActionDate} from "../sources/thorchain/MidgardUtils.ts";
 import {ACTION_MEMO_WARNING, actionMemoSummary} from "../interpret/midgard/send.ts";
 import {knownDistributorReport} from "../export/summ/send.ts";
@@ -127,9 +127,9 @@ export class Exporter {
 
     // Every row of the bundles; issues are logged, and unsupported and failed actions saved
     getRows(bundles: RawBundle[], outputPath: string): SummRow[] {
-        this.reportNotFinal();
         const unique = dedupeBundles(bundles);
         const sends = selectSends(unique.bundles);
+        this.reportNotFinal(sends.bundles);
         const auction = attachAuctionDeposits(sends.bundles);
 
         if (unique.duplicates > 0) {
@@ -166,10 +166,11 @@ export class Exporter {
         return new Date(this.today.getTime() - this.config.pendingStuckDays * 86400_000);
     }
 
-    // Every action that is not final, once, oldest first, with its age and whether it was exported
-    // (docs/specs/pending.md)
-    private reportNotFinal() {
+    // Every action that is not final, once, oldest first, with its age and whether it was exported, or which send
+    // stands in for it (docs/specs/pending.md)
+    private reportNotFinal(bundles: RawBundle[]) {
         const byKey = new Map(this.notFinal.map(item => [item.key, item]));
+        const sends = inboundSends([...byKey.values()], bundles);
         const items = [...byKey.values()].sort((a, b) => getActionDate(a.action).getTime() - getActionDate(b.action).getTime());
 
         if (items.length === 0) {
@@ -189,7 +190,10 @@ export class Exporter {
             const txType = (action.metadata?.swap as any)?.txType;
             const type = txType ? `${action.type} (${txType})` : action.type;
             const days = Math.floor(ageInDays(date, this.today));
-            this.report.issue('notFinal', `${date.toISOString()} ${type}: ${action.status}, ${days} days old, ${ages[i]}; ${item.coveredBy ? `covered by ${item.coveredBy}` : item.exported ? 'exported' : 'not exported'}`, item.key);
+            const send = sends.get(item.key);
+            const outcome = item.coveredBy ? `covered by ${item.coveredBy}` : item.exported ? 'exported'
+                : send ? `not exported; its inbound is exported as a send (${send}) until it is final` : 'not exported';
+            this.report.issue('notFinal', `${date.toISOString()} ${type}: ${action.status}, ${days} days old, ${ages[i]}; ${outcome}`, item.key);
         });
     }
 

@@ -1,6 +1,6 @@
 import {describe, test} from "node:test";
 import assert from "node:assert/strict";
-import {type NotFinal, pendingAge} from '../src/sources/Pending.ts';
+import {inboundSends, type NotFinal, pendingAge} from '../src/sources/Pending.ts';
 import {MidgardSource} from '../src/sources/Source.ts';
 import {MAYA, THORCHAIN} from '../src/domain/Protocol.ts';
 
@@ -112,5 +112,23 @@ describe('MidgardSource actions that are not final', () => {
             .bundlesFor('thor1wallet');
 
         assert.deepEqual(exported(notFinal), [{key: 'maya-midgard/refund.H', exported: true, coveredBy: undefined}]);
+    });
+});
+
+describe('inboundSends', () => {
+    const action = (type: string, status: string, txID: string) => ({type, status, in: [{txID, coins: []}], out: [], metadata: {}} as any);
+    const bundle = (data: any) => ({source: 'midgard' as const, protocol: 'thorchain' as const, wallet: 'thor1wallet', data, thornodeTxs: [], cosmosTxs: []});
+    const item = (key: string, data: any, exported = false, coveredBy?: string): NotFinal => ({key, action: data, exported, ...(coveredBy ? {coveredBy} : {})});
+
+    test('names the send that is the inbound of an action not exported nor covered', () => {
+        const sends = [bundle(action('send', 'success', 'aa')), bundle(action('send', 'success', 'BB')), bundle(action('send', 'success', 'CC'))];
+        const notFinal = [
+            item('maya-midgard/swap.AA', action('swap', 'pending', 'AA')),
+            item('maya-midgard/refund.BB', action('refund', 'pending', 'BB'), true),
+            item('midgard/swap.CC', action('swap', 'pending', 'CC'), false, 'midgard/addLiquidity.CC'),
+            item('midgard/swap.DD', action('swap', 'pending', 'DD')),
+        ];
+
+        assert.deepEqual([...inboundSends(notFinal, sends)], [['maya-midgard/swap.AA', 'midgard/send.aa']]);
     });
 });
