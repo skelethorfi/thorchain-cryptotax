@@ -90,10 +90,24 @@ it paid the native fee depends on when it was sent:
   paid nothing and gives no row. Every Viewblock send (before 2022-04) is in
   this period. Midgard reports 0.2 RUNE `networkFees` on such sends, which
   is not what was paid, so it is not used.
-- **On Maya**, whether a failed send pays the fee is not checked yet: it
-  gives no row.
+- **On Maya**, a failed send never pays the native fee, so it gives no row.
+  Mayanode charges the fee in the send handler (`handleV127` in
+  `x/mayachain/handler_send.go`), and a failed message's changes are rolled
+  back, fee included. Its ante handler, active from version 1.133.0 (first
+  block 18,613,349, 2026-09-30; mayanode commit `f86ed80df`, "custom ante
+  handler port from THORNode"), only checks that the sender can cover the
+  amount and the fee; it charges nothing ("the actual fee deduction stays
+  in the delivery handler"). Mayanode shows a failed send before that
+  height (halted chain, transfers disabled, insufficient funds) with its
+  code and no transfer to the Reserve. From that height an underfunded
+  send is turned away before it reaches a block, and Maya's Midgard lists
+  no failed send after it. A few failed sends carry a Cosmos SDK fee that
+  the wallet set in the tx (`auth_info.fee`, e.g. 7,500 base units, under
+  0.000001 CACAO), which goes to the fee collector even though the message
+  failed. It is dust and is not exported.
 
-The block is `failedTxFeeFromHeight` in `src/domain/Protocol.ts`.
+The block is `failedTxFeeFromHeight` in `src/domain/Protocol.ts`; MAYA has
+none.
 
 ## Activity
 

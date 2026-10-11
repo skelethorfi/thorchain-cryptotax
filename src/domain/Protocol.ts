@@ -75,6 +75,8 @@ export const MAYA: Protocol = {
     nodeUrl: process.env.MAYANODE_API_URL || 'https://mayanode.mayachain.info',
     // NativeTransactionFee from Mayanode constants and mimir (2026-10-01): 0.2 CACAO
     defaultGas: '2000000000',
+    // No failedTxFeeFromHeight: Mayanode charges the native fee in the send handler, so a failed send paid nothing;
+    // its ante handler (1.133.0, mayanode f86ed80df) only checks the balance
     decimals: (asset: string) => MAYA_DECIMALS[asset.toUpperCase()] ?? 8,
 };
 
