@@ -5,7 +5,7 @@ import type {Asset} from "./Asset.ts";
 // What happened on-chain, independent of any tax tool and of which wallet is exported
 // (docs/specs/activity.md). Interpreters make it from a bundle; exporters turn it into rows.
 
-// One kind per thing that happens. The union grows as each action type is ported to an activity, so every
+// One kind per thing that happens. The union grows as each action type is supported, so every
 // exporter has to handle a kind before it can be emitted.
 export type ActivityKind = 'bond' | 'unbond' | 'swap' | 'refund' | 'lp.add' | 'lp.withdraw' | 'savers.add' | 'savers.withdraw'
     | 'lp.auction.deposit' | 'lp.auction.position'

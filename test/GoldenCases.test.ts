@@ -25,7 +25,7 @@ describe('golden cases', () => {
         });
     }
 
-    // A ported action type is checked at both layers, so an interpreter bug and an exporter bug fail
+    // Every case is checked at both layers, so an interpreter bug and an exporter bug fail
     // different checks
     for (const dir of reviewed) {
         test(`${name(dir)} activity.yaml`, () => {

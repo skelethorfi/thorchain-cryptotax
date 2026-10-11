@@ -1,5 +1,4 @@
 import {type Action, ActionTypeEnum as ActionType} from "@xchainjs/xchain-midgard";
-import type {SummRow} from "../export/summ/csv/index.ts";
 import type {Issue} from "../domain/Issue.ts";
 import type {RawBundle} from "../sources/RawBundle.ts";
 import {type Protocol, THORCHAIN} from "../domain/Protocol.ts";
@@ -16,31 +15,26 @@ import {interpretSend} from "./midgard/send.ts";
 import {interpretViewblockSend} from "./viewblock/send.ts";
 import {interpretMayaDistribution} from "./maya/distribution.ts";
 
-// A ported action type gives activities, which an exporter turns into rows; the rest still give rows
+// The activities of one bundle, which an exporter turns into rows, and its problems
 export interface Interpretation {
     activities: Activity[];
-    rows: SummRow[];
     issues: Issue[];
 }
 
-// Turns one bundle into rows. Pure: no network, files, clock or logging; problems are returned as issues.
+// Turns one bundle into activities. Pure: no network, files, clock or logging; problems are returned as issues.
 export type Interpreter = (bundle: RawBundle, protocol: Protocol) => Interpretation;
 
 const activity = (interpreter: (bundle: RawBundle, protocol: Protocol) => Activity): Interpreter => (bundle, protocol) =>
-    ({activities: [interpreter(bundle, protocol)], rows: [], issues: []});
-
-const ignore = (message: string): Interpreter => () => ({activities: [], rows: [], issues: [{kind: 'ignored', message}]});
-
-const rujira: Interpreter = (bundle, protocol) => ({rows: [], ...interpretRujira(bundle, protocol)});
+    ({activities: [interpreter(bundle, protocol)], issues: []});
 
 // Keyed on 'source/type' or 'source/type/subtype'; a subtype entry wins over its type's
 const REGISTRY: Record<string, Interpreter> = {
-    [`midgard/${ActionType.AddLiquidity}`]: (bundle, protocol) => ({rows: [], ...interpretAddLiquidity(bundle, protocol)}),
-    [`midgard/${ActionType.Withdraw}`]: (bundle, protocol) => ({rows: [], ...interpretWithdraw(bundle, protocol)}),
-    [`midgard/${ActionType.Swap}`]: (bundle, protocol) => ({rows: [], ...interpretSwap(bundle, protocol)}),
+    [`midgard/${ActionType.AddLiquidity}`]: interpretAddLiquidity,
+    [`midgard/${ActionType.Withdraw}`]: interpretWithdraw,
+    [`midgard/${ActionType.Swap}`]: interpretSwap,
     [`midgard/${ActionType.Swap}/loanOpen`]: activity(interpretLoanOpen),
     [`midgard/${ActionType.Swap}/loanRepayment`]: activity(interpretLoanRepay),
-    [`midgard/${ActionType.Refund}`]: (bundle, protocol) => ({rows: [], ...interpretRefund(bundle, protocol)}),
+    [`midgard/${ActionType.Refund}`]: interpretRefund,
     [`midgard/${ActionType.Switch}`]: activity(interpretSwitch),
     [`midgard/${ActionType.Thorname}`]: activity(interpretThorname),
     [`midgard/${ActionType.RunePoolDeposit}`]: activity(interpretRunePool),
@@ -50,12 +44,12 @@ const REGISTRY: Record<string, Interpreter> = {
     'midgard/tcy_claim': activity(interpretTcyClaim),
     'midgard/tcy_stake': activity(interpretTcyStake),
     'midgard/tcy_unstake': activity(interpretTcyStake),
-    [`midgard/${ActionType.Send}`]: (bundle, protocol) => ({rows: [], ...interpretSend(bundle, protocol)}),
-    ...Object.fromEntries(RUJIRA_CONTRACT_TYPES.map(type => [`midgard/contract/${type}`, rujira])),
+    [`midgard/${ActionType.Send}`]: interpretSend,
+    ...Object.fromEntries(RUJIRA_CONTRACT_TYPES.map(type => [`midgard/contract/${type}`, interpretRujira])),
     // Viewblock gives only sends from before 2022-04 that Midgard does not list (docs/specs/sends.md)
-    'viewblock/send': (bundle, protocol) => ({rows: [], ...interpretViewblockSend(bundle, protocol)}),
+    'viewblock/send': interpretViewblockSend,
     'tcy/distribution': activity(interpretTcyDistribution),
-    'maya-distribution/payout': (bundle, protocol) => ({activities: interpretMayaDistribution(bundle, protocol), rows: [], issues: []}),
+    'maya-distribution/payout': (bundle, protocol) => ({activities: interpretMayaDistribution(bundle, protocol), issues: []}),
 };
 
 // Midgard action types handled on protocols other than THORChain (see docs/specs/maya.md)
@@ -108,12 +102,12 @@ export function interpret(bundle: RawBundle, baseProtocol: Protocol): Interpreta
 
         if (!interpreter) {
             const {type, subtype} = getBundleType(bundle);
-            return {activities: [], rows: [], issues: [{kind: 'unsupported', message: `unsupported action: ${[type, subtype].filter(Boolean).join(' ')}`}]};
+            return {activities: [], issues: [{kind: 'unsupported', message: `unsupported action: ${[type, subtype].filter(Boolean).join(' ')}`}]};
         }
 
         return withSourceTxids(interpreter(bundle, protocol));
     } catch (e: any) {
-        return {activities: [], rows: [], issues: [{kind: 'failed', message: failureMessage(bundle, protocol, e)}]};
+        return {activities: [], issues: [{kind: 'failed', message: failureMessage(bundle, protocol, e)}]};
     }
 }
 

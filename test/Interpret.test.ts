@@ -15,7 +15,7 @@ describe('interpret', () => {
         // Make the asset string invalid
         (bundle.data as any).in[0].coins[0].asset = 'INVALID';
 
-        assert.deepEqual(interpret(bundle, THORCHAIN), {activities: [], rows: [], issues: [{
+        assert.deepEqual(interpret(bundle, THORCHAIN), {activities: [], issues: [{
             kind: 'failed',
             message: '[Midgard] Failed to parse asset string: "INVALID". type: switch, txid: 0000000000000000000000000000000000000000000000000000000000000000',
         }]});
@@ -62,7 +62,7 @@ describe('interpret', () => {
             metadata: {swap: {memo: '=:BTC.BTC:bc1qexample', networkFees: [], affiliateAddress: '', affiliateFee: '0', isStreamingSwap: false, txType: 'swap'}},
         };
 
-        assert.deepEqual(interpret(midgardBundle(action), THORCHAIN), {activities: [], rows: [], issues: [{
+        assert.deepEqual(interpret(midgardBundle(action), THORCHAIN), {activities: [], issues: [{
             kind: 'ignored',
             message: 'synth swap from an L1 address (a savers withdrawal)',
         }]});
