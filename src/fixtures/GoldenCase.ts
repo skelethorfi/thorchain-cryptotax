@@ -17,8 +17,7 @@ import {formatAmount} from "../domain/Amount.ts";
 
 // A golden test case is a folder containing:
 //   input.json    - the raw source data (a GoldenCaseInput: a RawBundle plus a description)
-//   activity.yaml - the activities an interpreter makes from it, reviewed by hand; only for action
-//                   types ported to activities (docs/specs/activity.md)
+//   activity.yaml - the activities an interpreter makes from it, reviewed by hand (docs/specs/activity.md)
 //   expected.yaml - the CSV rows the exporter should produce, reviewed by hand;
 //                   one YAML document per row, separated by '---' ('[]' for no rows)
 // Inputs must never contain anyone's own wallets or txids (see docs/specs/fixtures.md).
@@ -167,7 +166,7 @@ export function runCase(input: GoldenCaseInput): object[] {
     return runCaseLayers(input).rows;
 }
 
-// The activities a ported action type gives, and the rows as expected.yaml holds them
+// The activities a case gives, and the rows as expected.yaml holds them
 export function runCaseLayers(input: GoldenCaseInput): {activities: Activity[]; rows: object[]} {
     const {activities, rows, issues} = runBundle(toBundle(input), getProtocol(input.protocol), input.treatment);
     const failure = issues.find(issue => issue.kind === 'failed');

@@ -11,14 +11,13 @@ export interface BundleResult {
     bundle: RawBundle;
     time: Date;
     activities: Activity[];
-    // The rows of an action type not yet ported to activities, then the activities' rows
     rows: SummRow[];
     issues: Issue[];
 }
 
 export function runBundle(bundle: RawBundle, protocol: Protocol, treatment: Treatment = {}): BundleResult {
-    const {activities, rows, issues} = interpret(bundle, protocol);
-    return {bundle, time: getBundleDate(bundle), activities, rows: [...rows, ...exportSumm(activities, treatment)], issues};
+    const {activities, issues} = interpret(bundle, protocol);
+    return {bundle, time: getBundleDate(bundle), activities, rows: exportSumm(activities, treatment), issues};
 }
 
 // Every row, newest bundle first. A failed bundle gives no rows. The sort is stable, so bundles at the
